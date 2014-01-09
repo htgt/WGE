@@ -41,7 +41,7 @@ sub exon_search :Local('exon_search') {
 	my ($self, $c) = @_;
 	my $params = $c->req->params;
 	
-	check_params_exist( $params, [ 'marker_symbol', 'species' ] );
+	check_params_exist( $c, $params, [ 'marker_symbol', 'species' ] );
 	
     $c->log->debug('Finding exons for gene ' . $params->{marker_symbol});
 
@@ -69,7 +69,7 @@ sub crispr_search :Local('crispr_search') {
 	my ($self, $c) = @_;
 	my $params = $c->req->params;
 	
-	check_params_exist( $params, [ 'exon_id[]' ]);
+	check_params_exist( $c, $params, [ 'exon_id[]' ]);
 	
 	$c->stash->{json_data} = _get_exon_attribute( $c, "crisprs", $params->{ 'exon_id[]' } );
 	$c->forward('View::JSON');
@@ -79,7 +79,7 @@ sub pair_search :Local('pair_search') {
 	my ($self, $c) = @_;
 	my $params = $c->req->params;
 	
-	check_params_exist( $params, [ 'exon_id[]' ]);
+	check_params_exist( $c, $params, [ 'exon_id[]' ]);
 	
 	$c->stash->{json_data} = _get_exon_attribute( $c, "pairs", $params->{ 'exon_id[]' } );
 	$c->forward('View::JSON');
@@ -130,7 +130,7 @@ sub check_params_exist {
     my ( $c, $params, $options ) = @_;
 
     for my $option ( @{ $options } ) {
-        _send_error($c, ucfirst(lc $option) . " is required", 400 ) unless defined $params->{$option};
+        _send_error($c, "Error: ".ucfirst(lc $option) . " is required", 400 ) unless defined $params->{$option};
     }
 }
 
