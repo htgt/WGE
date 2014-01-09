@@ -1,0 +1,101 @@
+---
+'11423610':
+  left_crispr_id: 6210830
+  right_crispr_id: 6210814
+  spacer: 6
+'11423654':
+  left_crispr_id: 6210877
+  right_crispr_id: 6210899
+  spacer: 25
+'11423784':
+  left_crispr_id: 6210908
+  right_crispr_id: 6210904
+  spacer: 20
+'11423786':
+  left_crispr_id: 6210932
+  right_crispr_id: 6210916
+  spacer: 17
+'11423842':
+  left_crispr_id: 6211018
+  right_crispr_id: 6211033
+  spacer: 28
+'11423982':
+  left_crispr_id: 6211087
+  right_crispr_id: 6211089
+  spacer: 1
+'11424021':
+  left_crispr_id: 6211153
+  right_crispr_id: 6211282
+  spacer: 3
+'18303754':
+  left_crispr_id: 10254392
+  right_crispr_id: 10254391
+  spacer: 22
+'18303757':
+  left_crispr_id: 10254488
+  right_crispr_id: 10254474
+  spacer: 24
+'18303852':
+  left_crispr_id: 10254502
+  right_crispr_id: 10254500
+  spacer: 18
+'18303855':
+  left_crispr_id: 10254503
+  right_crispr_id: 10254504
+  spacer: 6
+'18303856':
+  left_crispr_id: 10254511
+  right_crispr_id: 10254505
+  spacer: 25
+'18303867':
+  left_crispr_id: 10254522
+  right_crispr_id: 10254517
+  spacer: 27
+'18303880':
+  left_crispr_id: 10254565
+  right_crispr_id: 10254548
+  spacer: 26
+'18303999':
+  left_crispr_id: 10254574
+  right_crispr_id: 10254576
+  spacer: 5
+'19713173':
+  left_crispr_id: 11094149
+  right_crispr_id: 11094141
+  spacer: 29
+'19713439':
+  left_crispr_id: 11094213
+  right_crispr_id: 11094211
+  spacer: 27
+'19713454':
+  left_crispr_id: 11094231
+  right_crispr_id: 11094222
+  spacer: -10
+'19713476':
+  left_crispr_id: 11094239
+  right_crispr_id: 11094232
+  spacer: 17
+'19713484':
+  left_crispr_id: 11094280
+  right_crispr_id: 11094334
+  spacer: 4
+'2637746':
+  left_crispr_id: 1432533
+  right_crispr_id: 1432526
+  spacer: 29
+'2637787':
+  left_crispr_id: 1432571
+  right_crispr_id: 1432574
+  spacer: 24
+'2637881':
+  left_crispr_id: 1432615
+  right_crispr_id: 1432607
+  spacer: 19
+'2637944':
+  left_crispr_id: 1432647
+  right_crispr_id: 1432658
+  spacer: 22
+'2637985':
+  left_crispr_id: 1432630
+  right_crispr_id: 1432638
+  spacer: 23

@@ -1,0 +1,351 @@
+---
+'10254391':
+  chr_end: 108112584
+  chr_name: '3'
+  chr_start: 108112562
+  pam_right: 1
+  seq: ACTTTTTTCGTTCGGATCTTTGG
+  species_id: Mouse
+'10254392':
+  chr_end: 108112539
+  chr_name: '3'
+  chr_start: 108112517
+  pam_right: 0
+  seq: CCACACAAAAGATAATTGCTGTC
+  species_id: Mouse
+'10254474':
+  chr_end: 108107500
+  chr_name: '3'
+  chr_start: 108107478
+  pam_right: 1
+  seq: TATATTACAGAATACAACAAAGG
+  species_id: Mouse
+'10254488':
+  chr_end: 108107453
+  chr_name: '3'
+  chr_start: 108107431
+  pam_right: 0
+  seq: CCCAAAGTATAGAAAAATTATGA
+  species_id: Mouse
+'10254500':
+  chr_end: 108118451
+  chr_name: '3'
+  chr_start: 108118429
+  pam_right: 1
+  seq: AGCTAAAACAAATAACTGTCGGG
+  species_id: Mouse
+'10254502':
+  chr_end: 108118410
+  chr_name: '3'
+  chr_start: 108118388
+  pam_right: 0
+  seq: CCTGCTAGTTCTGAAGTCATGAC
+  species_id: Mouse
+'10254503':
+  chr_end: 108112057
+  chr_name: '3'
+  chr_start: 108112035
+  pam_right: 0
+  seq: CCATTTGTTGTTACAAATGCTGT
+  species_id: Mouse
+'10254504':
+  chr_end: 108112086
+  chr_name: '3'
+  chr_start: 108112064
+  pam_right: 1
+  seq: ATTTCATGCTTTCATGCATTCGG
+  species_id: Mouse
+'10254505':
+  chr_end: 108109501
+  chr_name: '3'
+  chr_start: 108109479
+  pam_right: 1
+  seq: AAAAACAAACTGCACATTTTTGG
+  species_id: Mouse
+'10254511':
+  chr_end: 108109453
+  chr_name: '3'
+  chr_start: 108109431
+  pam_right: 0
+  seq: CCCACATTCCTTTAAGTTGTTTT
+  species_id: Mouse
+'10254517':
+  chr_end: 108115848
+  chr_name: '3'
+  chr_start: 108115826
+  pam_right: 1
+  seq: CGAAGAACATCTTGCTGAGTTGG
+  species_id: Mouse
+'10254522':
+  chr_end: 108115798
+  chr_name: '3'
+  chr_start: 108115776
+  pam_right: 0
+  seq: CCTTGAAGGTGAAGTGGGTCTCC
+  species_id: Mouse
+'10254548':
+  chr_end: 108145986
+  chr_name: '3'
+  chr_start: 108145964
+  pam_right: 1
+  seq: CTCCACCGCCGCCTTGTCCTCGG
+  species_id: Mouse
+'10254565':
+  chr_end: 108145937
+  chr_name: '3'
+  chr_start: 108145915
+  pam_right: 0
+  seq: CCGCTTTCTCCCCGTCCTCCCGC
+  species_id: Mouse
+'10254574':
+  chr_end: 108123578
+  chr_name: '3'
+  chr_start: 108123556
+  pam_right: 0
+  seq: CCCCAAAATCAATCTTCAACCGT
+  species_id: Mouse
+'10254576':
+  chr_end: 108123606
+  chr_name: '3'
+  chr_start: 108123584
+  pam_right: 1
+  seq: GGCTCGTATGATTGCAATGATGG
+  species_id: Mouse
+'11094141':
+  chr_end: 78343564
+  chr_name: '11'
+  chr_start: 78343542
+  pam_right: 1
+  seq: CGAGGATCTGCGGCCCCGCGAGG
+  species_id: Mouse
+'11094149':
+  chr_end: 78343512
+  chr_name: '11'
+  chr_start: 78343490
+  pam_right: 0
+  seq: CCCCCTTCCCCTGGCTCCAGCCG
+  species_id: Mouse
+'11094211':
+  chr_end: 78347294
+  chr_name: '11'
+  chr_start: 78347272
+  pam_right: 1
+  seq: AGATCCGTGACATGGACTCAGGG
+  species_id: Mouse
+'11094213':
+  chr_end: 78347244
+  chr_name: '11'
+  chr_start: 78347222
+  pam_right: 0
+  seq: CCTGTGCTCCCCTGAGGAAAATA
+  species_id: Mouse
+'11094222':
+  chr_end: 78347840
+  chr_name: '11'
+  chr_start: 78347818
+  pam_right: 1
+  seq: GGGACCTGGACCCCAATGCAGGG
+  species_id: Mouse
+'11094231':
+  chr_end: 78347827
+  chr_name: '11'
+  chr_start: 78347805
+  pam_right: 0
+  seq: CCCATCAACCGGCGGGACCTGGA
+  species_id: Mouse
+'11094232':
+  chr_end: 78348188
+  chr_name: '11'
+  chr_start: 78348166
+  pam_right: 1
+  seq: AAAAGCTTCGACTTCCACTTTGG
+  species_id: Mouse
+'11094239':
+  chr_end: 78348148
+  chr_name: '11'
+  chr_start: 78348126
+  pam_right: 0
+  seq: CCGCATGATCGAGAGGCACTACT
+  species_id: Mouse
+'11094280':
+  chr_end: 78348572
+  chr_name: '11'
+  chr_start: 78348550
+  pam_right: 0
+  seq: CCCGTATGAGACCCAGTCTGACA
+  species_id: Mouse
+'11094334':
+  chr_end: 78348599
+  chr_name: '11'
+  chr_start: 78348577
+  pam_right: 1
+  seq: CTACTTCGTGGATGACCGGCTGG
+  species_id: Mouse
+'1432526':
+  chr_end: 33799114
+  chr_name: '9'
+  chr_start: 33799092
+  pam_right: 1
+  seq: TGTGCCTGGAAGAACAGGCCTGG
+  species_id: Human
+'1432533':
+  chr_end: 33799062
+  chr_name: '9'
+  chr_start: 33799040
+  pam_right: 0
+  seq: CCCTGTGGTCTGCAACGGACAGC
+  species_id: Human
+'1432571':
+  chr_end: 33750546
+  chr_name: '9'
+  chr_start: 33750524
+  pam_right: 0
+  seq: CCTGACGACAGATGCCCCGCACG
+  species_id: Human
+'1432574':
+  chr_end: 33750593
+  chr_name: '9'
+  chr_start: 33750571
+  pam_right: 1
+  seq: CAAGTGTGGAAAGGGTCTGGCGG
+  species_id: Human
+'1432607':
+  chr_end: 33797897
+  chr_name: '9'
+  chr_start: 33797875
+  pam_right: 1
+  seq: GAATGAGCAGTTCATCAATGCGG
+  species_id: Human
+'1432615':
+  chr_end: 33797855
+  chr_name: '9'
+  chr_start: 33797833
+  pam_right: 0
+  seq: CCAGGTGAGACTGGGAGAGCACA
+  species_id: Human
+'1432630':
+  chr_end: 33798513
+  chr_name: '9'
+  chr_start: 33798491
+  pam_right: 0
+  seq: CCCAGACGAGCTGAAGTGCCTGG
+  species_id: Human
+'1432638':
+  chr_end: 33798559
+  chr_name: '9'
+  chr_start: 33798537
+  pam_right: 1
+  seq: GAGTGTAAAGCCTCCTACCCTGG
+  species_id: Human
+'1432647':
+  chr_end: 33796670
+  chr_name: '9'
+  chr_start: 33796648
+  pam_right: 0
+  seq: CCCCTTTGACGATGATGACAAGA
+  species_id: Human
+'1432658':
+  chr_end: 33796715
+  chr_name: '9'
+  chr_start: 33796693
+  pam_right: 1
+  seq: GGAGAATTCTCTCCCCTACCAGG
+  species_id: Human
+'6210814':
+  chr_end: 170218954
+  chr_name: '3'
+  chr_start: 170218932
+  pam_right: 1
+  seq: CCAGCGGCTGATGGTGTGGTTGG
+  species_id: Human
+'6210830':
+  chr_end: 170218925
+  chr_name: '3'
+  chr_start: 170218903
+  pam_right: 0
+  seq: CCATTGAGGGTTCCCACGCTGTC
+  species_id: Human
+'6210877':
+  chr_end: 170244507
+  chr_name: '3'
+  chr_start: 170244485
+  pam_right: 0
+  seq: CCTTGGCCACCAGGCCAGAGACC
+  species_id: Human
+'6210899':
+  chr_end: 170244555
+  chr_name: '3'
+  chr_start: 170244533
+  pam_right: 1
+  seq: TGCCAACGCCAAGAGAGATGAGG
+  species_id: Human
+'6210904':
+  chr_end: 170204102
+  chr_name: '3'
+  chr_start: 170204080
+  pam_right: 1
+  seq: CTTGGCTTCCTCTCCAGTGGTGG
+  species_id: Human
+'6210908':
+  chr_end: 170204059
+  chr_name: '3'
+  chr_start: 170204037
+  pam_right: 0
+  seq: CCAGGGAGGCAGTGATAGCATAA
+  species_id: Human
+'6210916':
+  chr_end: 170216519
+  chr_name: '3'
+  chr_start: 170216497
+  pam_right: 1
+  seq: ATTTCCCATTGATGAAGAAGAGG
+  species_id: Human
+'6210932':
+  chr_end: 170216479
+  chr_name: '3'
+  chr_start: 170216457
+  pam_right: 0
+  seq: CCTGACCAGCCGTGGGGCAAGAA
+  species_id: Human
+'6211018':
+  chr_end: 170198110
+  chr_name: '3'
+  chr_start: 170198088
+  pam_right: 0
+  seq: CCAGACCGCAAACCGGATCCATG
+  species_id: Human
+'6211033':
+  chr_end: 170198161
+  chr_name: '3'
+  chr_start: 170198139
+  pam_right: 1
+  seq: GATGTTCACCAGCATGGCAAAGG
+  species_id: Human
+'6211087':
+  chr_end: 170201136
+  chr_name: '3'
+  chr_start: 170201114
+  pam_right: 0
+  seq: CCCGTCACCAGCCATGGCATAAA
+  species_id: Human
+'6211089':
+  chr_end: 170201160
+  chr_name: '3'
+  chr_start: 170201138
+  pam_right: 1
+  seq: GACCCTCGGCATCGGGAAGAGGG
+  species_id: Human
+'6211153':
+  chr_end: 170182471
+  chr_name: '3'
+  chr_start: 170182449
+  pam_right: 0
+  seq: CCTGAAATGAGAGTGCTTAATAG
+  species_id: Human
+'6211282':
+  chr_end: 170182497
+  chr_name: '3'
+  chr_start: 170182475
+  pam_right: 1
+  seq: CTGCATGAAGTCAACAGCAATGG
+  species_id: Human
