@@ -17,8 +17,7 @@ my ($CONNECT_INFO);
 
     my $config = Config::Any->load_files( { files => [$filename], use_ext => 1, flatten_to_hash => 1 } );
     my $db_config = $config->{$filename}->{ $ENV{WGE_DB} }
-        or confess "No db connection info found for ".$ENV{WGE_DB}." in $filename";
-    print Dumper($db_config);  
+        or confess "No db connection info found for ".$ENV{WGE_DB}." in $filename"; 
     $CONNECT_INFO = $db_config;
 }
      
