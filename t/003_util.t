@@ -1,12 +1,10 @@
-use Test::More tests => 6;
+use Test::More tests => 5;
 
 use strict;
 use warnings;
 
 use FindBin qw( $Bin );
 use lib "$Bin/lib"; #add the test lib
-
-use_ok 'WGE';
 
 {
     use_ok 'WGE::Util::EnsEMBL';

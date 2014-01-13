@@ -2,8 +2,9 @@ package Test::WGE;
 
 # Always use the test instance of the database
 BEGIN{
-	print "**** setting WGE_DB environment variable to WGE_TEST ****\n";
-	$ENV{WGE_DB} = "WGE_TEST";
+	my $test_db_profile = $ENV{WGE_TEST_DB} || "WGE_TEST";
+	print "** Using $test_db_profile database connection for tests **\n";
+	$ENV{WGE_DB} = $test_db_profile;
 }
 
 use Moose;

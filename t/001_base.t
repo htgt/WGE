@@ -6,8 +6,8 @@ use warnings;
 use FindBin qw( $Bin );
 use lib "$Bin/lib"; #add the test lib
 
+use_ok 'Test::WGE'; # Must use this before WGE to ensure test DB connection is used
 use_ok 'WGE';
-use_ok 'Test::WGE';
 
 my $test = Test::WGE->new;
 

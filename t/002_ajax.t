@@ -14,12 +14,6 @@ use Test::WGE;
 
 use Data::Dumper;
 
-#all this stuff is now within Test::WGE
-#use Dancer qw( :syntax :tests ); #for logging
-#use WGE;
-#use Test::WWW::Mechanize::Dancer;
-#use Dancer::Plugin::DBIC qw( schema );
-
 #move these tests to another file not requiring model stuff
 my $test = Test::WGE->new;
 $test->load_fixtures; #should be a test in itself
