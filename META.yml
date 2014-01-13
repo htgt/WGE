@@ -1,0 +1,60 @@
+---
+abstract: 'Catalyst based application'
+author:
+  - 'Wellcome Trust Sanger Institute'
+build_requires:
+  File::Find: 0
+  File::Temp: 0
+  JSON: 0
+  Test::More: 0.88
+  Test::WWW::Mechanize::Catalyst: 0
+  URI: 0
+  YAML: 0
+dynamic_config: 0
+generated_by: 'Dist::Zilla version 4.300014, CPAN::Meta::Converter version 2.120921'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: WGE
+requires:
+  Bio::EnsEMBL::Registry: 0
+  Bio::Perl: 0
+  Carp: 0
+  Catalyst: 0
+  Catalyst::Controller: 0
+  Catalyst::Devel: 0
+  Catalyst::Model::Adaptor: 0
+  Catalyst::Model::DBIC::Schema: 0
+  Catalyst::Plugin::Static::Simple: 0
+  Catalyst::Runtime: 5.80
+  Catalyst::View::JSON: 0
+  Catalyst::View::TT: 0
+  Config::Any: 0
+  DBIx::Class::Core: 0
+  DBIx::Class::ResultSet: 0
+  DBIx::Class::Schema: 0
+  DBIx::Class::Schema::Loader: 0
+  Data::Dumper: 0
+  DateTime::Format::Pg: 0
+  File::stat: 0
+  FindBin: 0
+  Getopt::Long: 0
+  LIMS2::Util::EnsEMBL: 0
+  Log::Log4perl::Catalyst: 0
+  Moose: 0
+  MooseX::ClassAttribute: 0
+  MooseX::MarkAsMethods: 0
+  MooseX::NonMoose: 0
+  Path::Class: 0
+  Pod::Usage: 0
+  Term::ReadPassword: 0
+  Try::Tiny: 0
+  YAML::Any: 0
+  base: 0
+  feature: 0
+  namespace::autoclean: 0
+  strict: 0
+  utf8: 0
+  warnings: 0
+version: 0.001

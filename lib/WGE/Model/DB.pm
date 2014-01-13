@@ -1,4 +1,10 @@
 package WGE::Model::DB;
+## no critic(RequireUseStrict,RequireUseWarnings)
+{
+    $WGE::Model::DB::VERSION = '0.001';
+}
+## use critic
+
 
 use Config::Any;
 use File::stat;
