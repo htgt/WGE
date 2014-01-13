@@ -1,1 +1,43 @@
-Run script/wge_server.pl to test the application.
+To use this app first create an empty postgres database, then:
+
+log in to your db:
+psql --host <host> --port <port> --user <username> <dbname>
+
+load the sql:
+begin;
+\i ~/WGE/ddl/1/wge_tables.sql
+commit;
+
+Add the database connection information to the config file specified by the LIMS2_DB_CONNECT environment variable:
+
+WGE:
+  schema_class: WGE::Model::Schema
+  dsn: mydsn
+  AutoCommit: 1
+  user: my
+  password: mypass
+  
+Set the WGE_DB environment variable to the name of the connection profile to use (e.g., "WGE" to use the above)
+
+Bring up the webapp to make sure everything is working:
+script/wge_server.pl --port 3030
+
+Now the webapp can see your db lets load some data. Note: Make sure ensembl is installed and in your PERL5LIB.
+
+We have included all the genes and exons (for mouse & human) from ensembl build 73, so load them:
+perl -I lib ./bin/load_genes.pl human_genes_73.yaml
+
+Or if you want to generate the yaml file:
+perl ./bin/get_all_genes.pl <species>
+
+To add all the crispr pairs to the db:
+perl -I lib ./bin/get_all_genes.pl
+
+If you make any changes to the db you can regenerate the DBIx::Class models with:
+perl ./bin/dump_schema.pl
+
+Create a separate test database before running tests.
+Test::WGE::load_fixtures will delete all database content!
+
+When you "use Test::WGE" the database connection profile named "WGE_TEST" will be used.
+To override this with your own test database set the WGE_TEST_DB environment variable to e.g., "MY_WGE_TEST"
