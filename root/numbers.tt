@@ -1,0 +1,6 @@
+<h1>Summary</h1>
+We have:<br/> 
+[% num_genes %] genes</br> 
+[% num_exons %] exons</br>
+[% num_crisprs %] crisprs</br>
+[% num_pairs %] pairs</br>
