@@ -1,4 +1,10 @@
 package WGE::Util::FindCrisprs;
+## no critic(RequireUseStrict,RequireUseWarnings)
+{
+    $WGE::Util::FindCrisprs::VERSION = '0.002';
+}
+## use critic
+
 
 use strict;
 use warnings;

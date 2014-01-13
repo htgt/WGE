@@ -1,5 +1,11 @@
 use utf8;
 package WGE::Model::Schema::ResultSet::CrisprPair;
+## no critic(RequireUseStrict,RequireUseWarnings)
+{
+    $WGE::Model::Schema::ResultSet::CrisprPair::VERSION = '0.002';
+}
+## use critic
+
 
 use base 'DBIx::Class::ResultSet';
 use Try::Tiny;

@@ -1,4 +1,10 @@
 package WGE::Model::DB;
+## no critic(RequireUseStrict,RequireUseWarnings)
+{
+    $WGE::Model::DB::VERSION = '0.002';
+}
+## use critic
+
 
 use Config::Any;
 use File::stat;
@@ -10,8 +16,8 @@ use base qw/Catalyst::Model::DBIC::Schema/;
 my ($CONNECT_INFO);
 
 {
-	my $filename = $ENV{LIMS2_DBCONNECT_CONFIG}
-        or confess "LIMS2_DBCONNECT_CONFIG environment variable not set";
+	my $filename = $ENV{WGE_DBCONNECT_CONFIG}
+        or confess "WGE_DBCONNECT_CONFIG environment variable not set";
     my $st = stat($filename)
         or confess "stat '$filename': $!";
 

@@ -1,4 +1,10 @@
 package WGE::Util::EnsEMBL;
+## no critic(RequireUseStrict,RequireUseWarnings)
+{
+    $WGE::Util::EnsEMBL::VERSION = '0.002';
+}
+## use critic
+
 
 #stolen straight from LIMS2-Utils so we don't have a dependency.
 

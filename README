@@ -8,7 +8,7 @@ begin;
 \i ~/WGE/ddl/1/wge_tables.sql
 commit;
 
-Add the database connection information to the config file specified by the LIMS2_DB_CONNECT environment variable:
+Add the database connection information to the config file specified by the WGE_DB_CONNECT environment variable:
 
 WGE:
   schema_class: WGE::Model::Schema
