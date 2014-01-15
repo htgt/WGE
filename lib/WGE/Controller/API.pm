@@ -85,6 +85,23 @@ sub pair_search :Local('pair_search') {
 	$c->forward('View::JSON');
 }
 
+sub pair_off_target_search :Local('pair_off_target_search') {
+	my ($self, $c) = @_;
+	my $params = $c->req->params;
+	
+	check_params_exist( $c, $params, [ 'pair_id[]' ]);
+	
+	my @data;
+	my $pair_id = $params->{ 'pair_id[]'};
+	my @pair_ids = ( ref $pair_id eq 'ARRAY' ) ? @{ $pair_id } : ( $pair_id );
+
+	foreach my $id ( @pair_ids ){
+		push @data, "Processing pair $id";
+	}
+	
+	$c->stash->{json_data} = \@data;
+	$c->forward('View::JSON');
+}
 #
 # should these go into a util module? (yes)
 #

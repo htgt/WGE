@@ -42,7 +42,7 @@
       $("#crispr_table").remove(); //we want to keep the headings tbh. fine for now
       var table = get_pairs();
     });
-
+    
     //if someone selects a species then remove the error class
     $("#crispr_search").find('input[type=radio]').click(function() { 
       strip_error( $(this) );
@@ -62,6 +62,10 @@
     return $("#exons").find('option:selected').map(function() { return this.value }).get();
   }
 
+  function get_selected_pairs() {
+    // this is not working
+    return $('input[name=pair]:checked').map(function() { return this.value }).get();
+  }
   function get_pairs() {
     //get all the selected exon ids
     var exons = get_selected_exons();
@@ -78,21 +82,48 @@
           //each exon has a list of crisprs
           $.each(crisprs, function(idx, pair) {
             $("<tr>")
+               .append( $("<td>").append( $("<input type='checkbox' name='pair'>").val(pair.id) ) )
                .append( get_crispr_row(exon_id, pair.left_crispr) )
                .append( $("<td>", { html: pair.spacer }) )
                .append( get_crispr_row(exon_id, pair.right_crispr) )
                .appendTo( table.find("tbody") );
           });
         });
-
         //change the loading button
         $("#search").button('reset');
-    })
+        
+        create_offtargets_button();
+      })
+    
      .fail(ajax_failed); //create error if its not successful
 
     return table;
   }
 
+  function create_offtargets_button(){
+    if( $("#offtargets").length ){
+      // Don't create it again
+      return;
+    }
+    
+    $("#fields").append($( "<button class='btn btn-default' id='offtargets'>").text("Find Off-Targets")  );
+    $("#offtargets").on("click", function() {
+      console.log("Off targets button clicked");
+          
+      //stop it from submitting the form
+      event.preventDefault();
+      
+      console.log("got here");
+      var selectedpairs = get_selected_pairs();
+      console.log(selectedpairs);
+      
+      $.get('api/pair_off_target_search', { species: get_species(), pair_id: selectedpairs }, 
+      function(data) { 
+        console.log(data);
+      });
+    });
+  }
+  
   //return whatever species is selected
   function get_species() {
     return $("input:radio[name=species]:checked").val();
@@ -155,7 +186,8 @@
                 .append( $("<tbody>") );
 
       //add headers
-      $("<tr>").append( get_crispr_header() )
+      $("<tr>").append( $("<th>" ) )
+               .append( get_crispr_header() )
                .append( $("<th>", { html: "Spacer" }) )
                .append( get_crispr_header() )
                .appendTo( table.find("thead") );
@@ -224,6 +256,7 @@
 
     return true; 
   }
+
 </script>
 
 <form role="form" id="crispr_search">
