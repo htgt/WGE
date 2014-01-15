@@ -163,7 +163,11 @@ sub pairs {
   my $self = shift;
 
   #should add a prefetch
-  return $self->crisprs->all_pairs;
+  my @pairs = $self->crisprs->all_pairs;
+
+  # Need to remove duplicate pairs
+  my %unique_pairs = map { $_->id => $_ } @pairs;
+  return sort { $a->left_crispr->chr_start <=> $b->left_crispr->chr_start } values %unique_pairs;
 }
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
