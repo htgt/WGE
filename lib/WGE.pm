@@ -20,6 +20,8 @@ use Catalyst qw/
     -Debug
     ConfigLoader
     Static::Simple
+    Authentication
+    Authorization::Roles
 /;
 
 use Log::Log4perl::Catalyst;
@@ -44,8 +46,36 @@ __PACKAGE__->config(
     # Disable deprecated behavior needed by old applications
     disable_component_resolution_regex_fallback => 1,
     enable_catalyst_header => 1, # Send X-Catalyst header
+    default_model => 'DB',
     default_view => 'Web',
     'View::JSON' => { expose_stash => 'json_data' },
+    authentication => {
+        use_session => 0,
+        default_realm => 'rest_client',
+        realms => {
+            rest_client => {
+                credential => {
+                    class => 'Password',
+                    password_field => 'password',
+                    password_type => 'salted_hash',
+                    password_salt_len => '4',
+                },
+                store => {
+                    class => 'Minimal',
+                    users => {
+                        rest_user => {
+                           password => "{SSHA}K5f/ygKbkRk/GonQzGCjv5gsSS4iuCX+",
+                           roles => [qw/read edit/],
+                        },
+                        guest => {
+                            password => "{SSHA}psAZrBkzjQcJIyDb4K5SpSjQLDdPiWU0",
+                            roles => [qw/read/],
+                        },
+                    }
+                }
+            }            
+        }
+    }
 );
 
 # Start the application
