@@ -1,4 +1,5 @@
 <script type="text/javascript">
+  var species;
   $(document).ready(function() {
     //add autocomplete to the gene box
     $('#gene').autocomplete( {
@@ -51,7 +52,18 @@
     $("#exons").click(function() {
       strip_error( $(this) );
     });
+
+    set_species();//set up the species hash
+
   });
+
+  function set_species() {
+    $.get('api/get_all_species', {}, 
+        function (data) {
+          species = data;
+        })
+      .fail(ajax_failed);
+  }
 
   //find parent div of whatever jquery object is passed
   function strip_error(item) {
@@ -117,9 +129,9 @@
 
   //return crispr data as html
   function get_crispr_row(exon_id, crispr) {
-    var location = crispr.chr_name + ':' + crispr.chr_start + '-' + crispr.chr_end;
+    var location = crispr.chr_name + ':' + crispr.chr_start + '-' + (crispr.chr_start+22);
     return [ 
-             $("<td>", { html: crispr.species }),
+             $("<td>", { html: species[crispr.species_id] }),
              $("<td>", { html: exon_id }),
              $("<td>").append( get_ensembl_link(location) ),
              $("<td>", { html: crispr.seq }) 

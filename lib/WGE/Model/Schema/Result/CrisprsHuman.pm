@@ -1,12 +1,12 @@
 use utf8;
-package WGE::Model::Schema::Result::Crispr;
+package WGE::Model::Schema::Result::CrisprsHuman;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-WGE::Model::Schema::Result::Crispr
+WGE::Model::Schema::Result::CrisprsHuman
 
 =cut
 
@@ -30,11 +30,11 @@ extends 'DBIx::Class::Core';
 
 __PACKAGE__->load_components("InflateColumn::DateTime");
 
-=head1 TABLE: C<crisprs>
+=head1 TABLE: C<crisprs_human>
 
 =cut
 
-__PACKAGE__->table("crisprs");
+__PACKAGE__->table("crisprs_human");
 
 =head1 ACCESSORS
 
@@ -106,29 +106,45 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 1 },
 );
 
+=head1 PRIMARY KEY
+
+=over 4
+
+=item * L</id>
+
+=back
+
+=cut
+
+__PACKAGE__->set_primary_key("id");
+
+=head1 UNIQUE CONSTRAINTS
+
+=head2 C<crispr_unique_loci>
+
+=over 4
+
+=item * L</chr_start>
+
+=item * L</chr_name>
+
+=item * L</pam_right>
+
+=item * L</species_id>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint(
+  "crispr_unique_loci",
+  ["chr_start", "chr_name", "pam_right", "species_id"],
+);
+
 
 # Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-15 14:36:19
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:lQn91kPgYO6mO+HVMHM0BA
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:m420tz1quxPmu8M1JY3hAA
 
-sub as_hash {
-  my $self = shift;
-
-  #should just do a map on $self->columns...
-  return {
-    chr_name  => $self->chr_name,
-    chr_start => $self->chr_start,
-    chr_end   => $self->chr_end,
-    seq       => $self->seq,
-    species   => $self->species_id,
-    pam_right => $self->pam_right,
-  };
-}
-
-sub pairs {
-  my $self = shift;
-
-  return ($self->pam_right) ? $self->crispr_pairs_right_crisprs : $self->crispr_pairs_left_crisprs;
-}
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;

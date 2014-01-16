@@ -40,12 +40,29 @@ __PACKAGE__->table("species");
 
 =head2 id
 
+  data_type: 'integer'
+  is_auto_increment: 1
+  is_nullable: 0
+  sequence: 'species_id_seq'
+
+=head2 name
+
   data_type: 'text'
   is_nullable: 0
 
 =cut
 
-__PACKAGE__->add_columns("id", { data_type => "text", is_nullable => 0 });
+__PACKAGE__->add_columns(
+  "id",
+  {
+    data_type         => "integer",
+    is_auto_increment => 1,
+    is_nullable       => 0,
+    sequence          => "species_id_seq",
+  },
+  "name",
+  { data_type => "text", is_nullable => 0 },
+);
 
 =head1 PRIMARY KEY
 
@@ -60,21 +77,6 @@ __PACKAGE__->add_columns("id", { data_type => "text", is_nullable => 0 });
 __PACKAGE__->set_primary_key("id");
 
 =head1 RELATIONS
-
-=head2 crisprs
-
-Type: has_many
-
-Related object: L<WGE::Model::Schema::Result::Crispr>
-
-=cut
-
-__PACKAGE__->has_many(
-  "crisprs",
-  "WGE::Model::Schema::Result::Crispr",
-  { "foreign.species_id" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
 
 =head2 genes
 
@@ -92,8 +94,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2013-11-06 19:53:23
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:5Bn7cq1MIxOl6CTJG3aW+A
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-15 14:36:19
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ZRCGMqajCON13ce+Ncvicw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
