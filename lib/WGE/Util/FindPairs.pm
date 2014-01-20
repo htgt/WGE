@@ -73,7 +73,14 @@ sub find_pairs {
         }
     }
 
-    return \@pairs;
+    # Remove duplicate pairs
+    # should probably do this during the search loop above
+    my %unique;
+    foreach my $pair (@pairs){
+        my $key = $pair->{left_crispr}->{id}.":".$pair->{right_crispr}->{id};
+        $unique{$key} = $pair;
+    }
+    return [ map { $unique{$_} } sort (keys %unique) ];
 }
 
 

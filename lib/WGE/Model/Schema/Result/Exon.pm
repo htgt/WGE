@@ -175,6 +175,7 @@ sub pairs {
   my $pairs = $pair_finder->find_pairs( \@crisprs, \@crisprs );
 
   return wantarray ? @{ $pairs } : $pairs;
+
 }
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

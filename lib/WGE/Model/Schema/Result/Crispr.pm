@@ -117,7 +117,6 @@ sub as_hash {
   return {
     chr_name  => $self->chr_name,
     chr_start => $self->chr_start,
-    chr_end   => $self->chr_end,
     seq       => $self->seq,
     species   => $self->species_id,
     pam_right => $self->pam_right,

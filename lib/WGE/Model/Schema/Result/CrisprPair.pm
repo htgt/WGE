@@ -154,6 +154,7 @@ sub as_hash {
     left_crispr  => $self->left_crispr->as_hash,
     right_crispr => $self->right_crispr->as_hash,
     spacer       => $self->spacer,
+    id           => $self->id,
   };
 }
 
