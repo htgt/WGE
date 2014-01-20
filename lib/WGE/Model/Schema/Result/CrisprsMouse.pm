@@ -1,12 +1,12 @@
 use utf8;
-package WGE::Model::Schema::Result::Crispr;
+package WGE::Model::Schema::Result::CrisprsMouse;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-WGE::Model::Schema::Result::Crispr
+WGE::Model::Schema::Result::CrisprsMouse
 
 =cut
 
@@ -30,11 +30,11 @@ extends 'DBIx::Class::Core';
 
 __PACKAGE__->load_components("InflateColumn::DateTime");
 
-=head1 TABLE: C<crisprs>
+=head1 TABLE: C<crisprs_mouse>
 
 =cut
 
-__PACKAGE__->table("crisprs");
+__PACKAGE__->table("crisprs_mouse");
 
 =head1 ACCESSORS
 
@@ -108,26 +108,8 @@ __PACKAGE__->add_columns(
 
 
 # Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-15 14:36:19
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:lQn91kPgYO6mO+HVMHM0BA
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:HwElrKUMyDOpx67LpxhFsg
 
-sub as_hash {
-  my $self = shift;
-
-  #should just do a map on $self->columns...
-  return {
-    chr_name  => $self->chr_name,
-    chr_start => $self->chr_start,
-    seq       => $self->seq,
-    species   => $self->species_id,
-    pam_right => $self->pam_right,
-  };
-}
-
-sub pairs {
-  my $self = shift;
-
-  return ($self->pam_right) ? $self->crispr_pairs_right_crisprs : $self->crispr_pairs_left_crisprs;
-}
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;

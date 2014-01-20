@@ -14,7 +14,7 @@ sub crispr_GET{
 
     $c->assert_user_roles('read');
 
-    my $crispr = $c->model('DB')->resultset('Crispr')->find($c->req->param('id'));
+    my $crispr = $c->model('DB')->resultset('Crispr')->find({ id => $c->req->param('id') });
 
     return $self->status_ok( $c, entity => $crispr->as_hash );
 }

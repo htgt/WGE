@@ -47,7 +47,7 @@ __PACKAGE__->table("genes");
 
 =head2 species_id
 
-  data_type: 'text'
+  data_type: 'integer'
   is_foreign_key: 1
   is_nullable: 0
 
@@ -97,7 +97,7 @@ __PACKAGE__->add_columns(
     sequence          => "genes_id_seq",
   },
   "species_id",
-  { data_type => "text", is_foreign_key => 1, is_nullable => 0 },
+  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "marker_symbol",
   { data_type => "text", is_nullable => 0 },
   "ensembl_gene_id",
@@ -190,8 +190,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2013-11-27 17:14:33
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:OPfOxFPOs7mDYEUoqfiNWQ
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-15 14:36:19
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:thaxf5XhZHU8H9fDqTTyxA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

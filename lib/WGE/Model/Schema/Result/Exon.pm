@@ -16,6 +16,7 @@ use warnings;
 use Moose;
 use MooseX::NonMoose;
 use MooseX::MarkAsMethods autoclean => 1;
+use WGE::Util::FindPairs;
 extends 'DBIx::Class::Core';
 
 =head1 COMPONENTS LOADED
@@ -74,7 +75,7 @@ __PACKAGE__->table("exons");
 =head2 rank
 
   data_type: 'integer'
-  is_nullable: 0
+  is_nullable: 1
 
 =cut
 
@@ -97,7 +98,7 @@ __PACKAGE__->add_columns(
   "chr_name",
   { data_type => "text", is_nullable => 0 },
   "rank",
-  { data_type => "integer", is_nullable => 0 },
+  { data_type => "integer", is_nullable => 1 },
 );
 
 =head1 PRIMARY KEY
@@ -144,30 +145,37 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2013-11-27 16:26:06
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:uMBFi2/DIBNQ2tnkYI/d7A
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-15 14:36:19
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:vrqfcGC2fduVJdrf0b50cQ
 
 sub crisprs {
-    my ( $self, $options ) = @_;
+  my ( $self ) = @_;
 
-    #if the user didn't specify an order, we should provide one
-    unless ( defined $options->{order_by} ) {
-      $options->{order_by} = { -asc => 'chr_start' };
-    }
+  #get the species id with just 1 db call
+  my $species = $self->result_source->schema->resultset('Gene')->find(
+    { id => $self->gene_id },
+    { prefetch => 'species' }
+  )->species;
 
-    #use custom resultset method to retrieve crisprs
-    return $self->result_source->schema->resultset('Crispr')->search_by_loci( $self, $options );
+  #find all crisprs for this exon
+  return $self->result_source->schema->resultset('CrisprByExon')->search(
+    {},
+    { bind => [ '{'.$self->ensembl_exon_id.'}', $species->id ] }
+  );
 }
 
 sub pairs {
   my $self = shift;
 
-  #should add a prefetch
-  my @pairs = $self->crisprs->all_pairs;
+  #get all the crisprs, then identify all the pairs
+  my @crisprs = $self->crisprs;
 
-  # Need to remove duplicate pairs
-  my %unique_pairs = map { $_->id => $_ } @pairs;
-  return sort { $a->left_crispr->chr_start <=> $b->left_crispr->chr_start } values %unique_pairs;
+  my $pair_finder = WGE::Util::FindPairs->new;
+  #check the list of crisprs against itself for pairs
+  my $pairs = $pair_finder->find_pairs( \@crisprs, \@crisprs );
+
+  return wantarray ? @{ $pairs } : $pairs;
+
 }
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

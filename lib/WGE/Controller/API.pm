@@ -1,4 +1,5 @@
 package WGE::Controller::API;
+
 use Moose;
 use namespace::autoclean;
 use Data::Dumper;
@@ -16,37 +17,51 @@ WGE::Controller::API - API Controller for WGE
 
 =cut
 
+#so we can species in js
+sub get_all_species :Local('get_all_species') {
+    my ( $self, $c ) = @_;
+
+    my @species = $c->model('DB')->resultset('Species')->all;
+
+    $c->stash->{json_data} = { 
+        map { $_->id => $_->name } @species
+    };
+    $c->forward('View::JSON');
+}
+
 sub gene_search :Local('gene_search') {
-	my ($self, $c) = @_;
-	my $params = $c->req->params;
-	
+    my ($self, $c) = @_;
+    my $params = $c->req->params;
+    
     check_params_exist( $c, $params, [ 'name', 'species' ] );
 
     $c->log->debug('Searching for marker symbol ' . $params->{name} . ' for ' . $params->{species});
+
+
 
     my @genes = $c->model('DB')->resultset('Gene')->search( 
         {
             #'marker_symbol' => { ilike => '%'.param("name").'%' },
             'UPPER(marker_symbol)' => { like => '%'.uc( $params->{name} ).'%' },
-            'species_id'           => $params->{species},
+            'species_id'           => _get_species_id( $c, $params->{species} ),
         }
     );
 
     #return a list of hashrefs with the matching gene data
     $c->stash->{json_data}  = [ sort map { $_->marker_symbol } @genes ];
-    $c->forward('View::JSON');	
+    $c->forward('View::JSON');
 }
 
 sub exon_search :Local('exon_search') {
-	my ($self, $c) = @_;
-	my $params = $c->req->params;
-	
-	check_params_exist( $c, $params, [ 'marker_symbol', 'species' ] );
-	
+    my ($self, $c) = @_;
+    my $params = $c->req->params;
+    
+    check_params_exist( $c, $params, [ 'marker_symbol', 'species' ] );
+    
     $c->log->debug('Finding exons for gene ' . $params->{marker_symbol});
 
     my $gene = $c->model('DB')->resultset('Gene')->find(
-        { marker_symbol => $params->{marker_symbol}, species_id => $params->{species} },
+        { marker_symbol => $params->{marker_symbol}, species_id => _get_species_id( $c, $params->{species} ) },
         { prefetch => 'exons', order_by => { -asc => 'ensembl_exon_id' } }
     );
 
@@ -66,23 +81,23 @@ sub exon_search :Local('exon_search') {
 }
 
 sub crispr_search :Local('crispr_search') {
-	my ($self, $c) = @_;
-	my $params = $c->req->params;
-	
-	check_params_exist( $c, $params, [ 'exon_id[]' ]);
-	
-	$c->stash->{json_data} = _get_exon_attribute( $c, "crisprs", $params->{ 'exon_id[]' } );
-	$c->forward('View::JSON');
+    my ($self, $c) = @_;
+    my $params = $c->req->params;
+    
+    check_params_exist( $c, $params, [ 'exon_id[]' ]);
+    
+    $c->stash->{json_data} = _get_exon_attribute( $c, "crisprs", $params->{ 'exon_id[]' } );
+    $c->forward('View::JSON');
 }
 
 sub pair_search :Local('pair_search') {
-	my ($self, $c) = @_;
-	my $params = $c->req->params;
-	
-	check_params_exist( $c, $params, [ 'exon_id[]' ]);
-	
-	$c->stash->{json_data} = _get_exon_attribute( $c, "pairs", $params->{ 'exon_id[]' } );
-	$c->forward('View::JSON');
+    my ($self, $c) = @_;
+    my $params = $c->req->params;
+    
+    check_params_exist( $c, $params, [ 'exon_id[]' ]);
+    
+    $c->stash->{json_data} = _get_exon_attribute( $c, "pairs", $params->{ 'exon_id[]' } );
+    $c->forward('View::JSON');
 }
 
 sub pair_off_target_search :Local('pair_off_target_search') {
@@ -131,13 +146,23 @@ sub _get_exon_attribute {
 
         $c->log->debug('Finding ' . $attr . ' for: ' . join( ", ", @exon_ids ));
 
+        my $vals = $exon->$attr;
+        _send_error($c, "None found!", 400) unless @{ $vals };
+
         #store each exons data as an arrayref of hashrefs
-        $data{$exon_id} = [ map { $_->as_hash } $exon->$attr ];
+        $data{$exon_id} = $vals;
     }
 
     return \%data;
 }
 
+sub _get_species_id {
+    my ( $c, $species ) = @_;
+
+    return $c->model('DB')->resultset('Species')->find(
+        { name => $species }
+    )->id;
+}
 
 #should use FormValidator::Simple or something later
 #takes a hashref and an arrayref of required options,
@@ -152,14 +177,14 @@ sub check_params_exist {
 }
 
 sub _send_error{
-	my ($c, $message, $status) = @_;
-	
-	$status ||= 400;
-	
-	$c->log->error($message);
-	$c->response->status($status);
-	$c->stash->{json_data} = { error => $message };
-	$c->detach('View::JSON');
+    my ($c, $message, $status) = @_;
+    
+    $status ||= 400;
+    
+    $c->log->error($message);
+    $c->response->status($status);
+    $c->stash->{json_data} = { error => $message };
+    $c->detach('View::JSON');
 }
 
 1;
