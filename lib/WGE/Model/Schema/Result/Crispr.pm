@@ -110,6 +110,8 @@ __PACKAGE__->add_columns(
 # Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-15 14:36:19
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:lQn91kPgYO6mO+HVMHM0BA
 
+__PACKAGE__->set_primary_key('id');
+
 sub as_hash {
   my $self = shift;
 

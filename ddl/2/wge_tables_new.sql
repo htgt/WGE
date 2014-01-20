@@ -51,8 +51,8 @@ CREATE TABLE crisprs (
 CREATE TABLE crisprs_human ( CHECK (species_id=1) ) inherits (crisprs);
 CREATE TABLE crisprs_mouse ( CHECK (species_id=2) ) inherits (crisprs);
 
-ALTER TABLE crisprs_human ADD CONSTRAINT crispr_unique_loci UNIQUE ( chr_start, chr_name, pam_right );
-ALTER TABLE crisprs_mouse ADD CONSTRAINT crispr_unique_loci UNIQUE ( chr_start, chr_name, pam_right );
+ALTER TABLE crisprs_human ADD CONSTRAINT crispr_human_unique_loci UNIQUE ( chr_start, chr_name, pam_right );
+ALTER TABLE crisprs_mouse ADD CONSTRAINT crispr_mouse_unique_loci UNIQUE ( chr_start, chr_name, pam_right );
 
 CREATE INDEX idx_crispr_human_loci ON crisprs_human (chr_name, chr_start);
 CREATE INDEX idx_crispr_mouse_loci ON crisprs_mouse (chr_name, chr_start);
@@ -84,8 +84,8 @@ CREATE TABLE crispr_pairs (
     spacer          INTEGER NOT NULL,
     left_ots        INTEGER[],
     right_ots       INTEGER[],
-    PRIMARY KEY(l_id, r_id)
+    PRIMARY KEY(left_id, right_id)
 );
 
-CREATE INDEX idx_crispr_pair_left ON crispr_pairs (l_id);
-CREATE INDEX idx_crispr_pair_right ON crispr_pairs (r_id);
+CREATE INDEX idx_crispr_pair_left ON crispr_pairs (left_id);
+CREATE INDEX idx_crispr_pair_right ON crispr_pairs (right_id);
