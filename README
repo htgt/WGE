@@ -5,7 +5,7 @@ psql --host <host> --port <port> --user <username> <dbname>
 
 load the sql:
 begin;
-\i ~/WGE/ddl/1/wge_tables.sql
+\i ~/WGE/ddl/2/wge_tables_new.sql
 commit;
 
 Add the database connection information to the config file specified by the WGE_DBCONNECT_CONFIG environment variable:
