@@ -43,7 +43,7 @@ sub _build_log {
 }
 
 #a and b are two arrayrefs of crisprs you want to check for pairs.
-#they can be a reference to the same list.
+#they can (and often will be) be a reference to the same list.
 sub find_pairs {
     my ( $self, $a, $b ) = @_;
 
