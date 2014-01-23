@@ -16,7 +16,6 @@ use warnings;
 use Moose;
 use MooseX::NonMoose;
 use MooseX::MarkAsMethods autoclean => 1;
-use WGE::Util::FindPairs;
 extends 'DBIx::Class::Core';
 
 =head1 COMPONENTS LOADED
@@ -147,6 +146,8 @@ __PACKAGE__->belongs_to(
 
 # Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-15 14:36:19
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:vrqfcGC2fduVJdrf0b50cQ
+
+use WGE::Util::FindPairs;
 
 sub crisprs {
   my ( $self ) = @_;
