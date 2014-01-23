@@ -53,10 +53,10 @@ CREATE TABLE crisprs_human ( CHECK (species_id=1) ) inherits (crisprs);
 CREATE TABLE crisprs_mouse ( CHECK (species_id=2) ) inherits (crisprs);
 
 ALTER TABLE crisprs_human ADD CONSTRAINT crispr_human_unique_loci UNIQUE ( chr_start, chr_name, pam_right );
-ALTER TABLE crisprs_human ADD CONSTRAINT crisprs_pkey PRIMARY KEY (id);
+ALTER TABLE crisprs_human ADD CONSTRAINT crisprs_human_pkey PRIMARY KEY (id);
 
 ALTER TABLE crisprs_mouse ADD CONSTRAINT crispr_mouse_unique_loci UNIQUE ( chr_start, chr_name, pam_right );
-ALTER TABLE crisprs_mouse ADD CONSTRAINT crisprs_pkey PRIMARY KEY (id);
+ALTER TABLE crisprs_mouse ADD CONSTRAINT crisprs_mouse_pkey PRIMARY KEY (id);
 
 CREATE INDEX idx_crispr_human_loci ON crisprs_human (chr_name, chr_start);
 CREATE INDEX idx_crispr_mouse_loci ON crisprs_mouse (chr_name, chr_start);
