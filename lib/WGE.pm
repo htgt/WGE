@@ -83,11 +83,6 @@ __PACKAGE__->config(
             }            
         }
     }
-    'View::HTML' => {
-        INCLUDE_PATH => [
-            $ENV{SHARED_WEBAPP_TT_DIR} || '/opt/t87/global/software/perl/lib/perl5/WebAppCommon/shared_templates',
-        ],
-    },
 );
 
 # Start the application

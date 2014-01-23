@@ -9,5 +9,7 @@ use namespace::autoclean;
 extends 'WebAppCommon::FormValidator';
 
 has '+model' => (
-    isa => 'WGE::Model',
+    isa => 'WGE::Model::DB',
 );
+
+1;

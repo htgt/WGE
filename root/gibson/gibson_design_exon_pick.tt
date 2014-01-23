@@ -11,7 +11,7 @@
 [% INCLUDE 'create_design/exon_pick_table.tt'
   exons = exons
   gene = gene
-  design_create_url = '/user/create_gibson_design'
+  design_create_url = '/create_gibson_design'
   show_current_designs = 1
 %]
 
@@ -19,7 +19,7 @@
 [% BLOCK design_links %]
 <td>
   [% FOR id IN exon.designs %]
-  <a href="[% c.uri_for( '/user/view_design', { design_id => id } ) %]" target="_blank">
+  <a href="[% c.uri_for( '/view_design', { design_id => id } ) %]" target="_blank">
   [% id %]
   </a>
   [% END %]

@@ -3,6 +3,7 @@ use Moose;
 use namespace::autoclean;
 use Data::Dumper;
 use Try::Tiny;
+use WGE::Util::CreateDesign;
 
 BEGIN { extends 'Catalyst::Controller' }
 
@@ -47,7 +48,7 @@ sub numbers :Path('/numbers') :Args(0){
     return;	
 }
 
-sub gibson_design_gene_pick :Path('/gibson') :Args(0){
+sub gibson_design_gene_pick :Path('/gibson_design_gene_pick') :Args(0){
     my ( $self, $c ) = @_;
 
     # Assert user role?
@@ -71,31 +72,68 @@ sub gibson_design_exon_pick :Path('/gibson_design_exon_pick') :Args(0){
 
     $c->log->debug("Pick exon targets for gene $gene_name");
     try {
-=head
-        my $create_design_util = LIMS2::Model::Util::CreateDesign->new(
+
+        my $create_design_util = WGE::Util::CreateDesign->new(
             catalyst => $c,
-            model    => $c->model('Golgi'),
+            model    => $c->model('DB'),
         );
         my ( $gene_data, $exon_data )= $create_design_util->exons_for_gene(
             $c->request->param('gene'),
             $c->request->param('show_exons'),
         );
-=cut
-        # Implement design creation using WebApp common module
-        my $exon_data = {};
-        my $gene_data = {};
-        my $assembly = "fixme";
 
         $c->stash(
             exons    => $exon_data,
             gene     => $gene_data,
-            assembly => $assembly,
+            assembly => $create_design_util->assembly_id,
         );
     }
     catch{
-        $c->stash( error_msg => "Problem finding gene: $_" );
+        my $message = "Problem finding gene: $_";
+        $c->log->error($message);
+        $c->stash( error_msg => $message );
         $c->go('gibson_design_gene_pick');
     };  
+
+    return;
+}
+
+sub create_gibson_design : Path( '/create_gibson_design' ) : Args(0) {
+    my ( $self, $c ) = @_;
+
+    # FIXME assert user role edit
+
+    if ( exists $c->request->params->{create_design} ) {
+        $c->log->info('Creating new design');
+
+        my $create_design_util = WGE::Util::CreateDesign->new(
+            catalyst => $c,
+            model    => $c->model('DB'),
+        );
+
+        my $design_attempt;
+        try {
+            $design_attempt = $create_design_util->create_gibson_design();
+        }
+        catch {
+            $c->log->error($_);
+            $c->stash( error_msg => "Error submitting Design Creation job: $_" );
+            $c->res->redirect( 'gibson_design_gene_pick' );
+            return;
+        };
+
+        $c->res->redirect( $c->uri_for('/user/design_attempt', $design_attempt->id , 'pending') );
+    }
+    elsif ( exists $c->request->params->{exon_pick} ) {
+        my $gene_id = $c->request->param('gene_id');
+        my $exon_id = $c->request->param('exon_id');
+        my $ensembl_gene_id = $c->request->param('ensembl_gene_id');
+        $c->stash(
+            exon_id         => $exon_id,
+            gene_id         => $gene_id,
+            ensembl_gene_id => $ensembl_gene_id,
+        );
+    }
 
     return;
 }
