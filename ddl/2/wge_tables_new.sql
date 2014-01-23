@@ -1,6 +1,7 @@
 CREATE TABLE species (
     numerical_id      SERIAL PRIMARY KEY,
     id                TEXT NOT NULL
+    UNIQUE ( id )
 );
 
 INSERT INTO species (numerical_id, id) VALUES (1, 'Human'), (2, 'Mouse');
@@ -37,8 +38,8 @@ CREATE INDEX idx_gene_id ON exons (gene_id);
 
 CREATE TABLE crisprs (
     id                 SERIAL PRIMARY KEY,
-    chr_start          INTEGER NOT NULL,
     chr_name           TEXT NOT NULL,
+    chr_start          INTEGER NOT NULL,
     seq                TEXT NOT NULL,
     pam_right          BOOLEAN NOT NULL,
     species_id         INTEGER NOT NULL,
@@ -52,7 +53,10 @@ CREATE TABLE crisprs_human ( CHECK (species_id=1) ) inherits (crisprs);
 CREATE TABLE crisprs_mouse ( CHECK (species_id=2) ) inherits (crisprs);
 
 ALTER TABLE crisprs_human ADD CONSTRAINT crispr_human_unique_loci UNIQUE ( chr_start, chr_name, pam_right );
+ALTER TABLE crisprs_human ADD CONSTRAINT crisprs_pkey PRIMARY KEY (id);
+
 ALTER TABLE crisprs_mouse ADD CONSTRAINT crispr_mouse_unique_loci UNIQUE ( chr_start, chr_name, pam_right );
+ALTER TABLE crisprs_mouse ADD CONSTRAINT crisprs_pkey PRIMARY KEY (id);
 
 CREATE INDEX idx_crispr_human_loci ON crisprs_human (chr_name, chr_start);
 CREATE INDEX idx_crispr_mouse_loci ON crisprs_mouse (chr_name, chr_start);

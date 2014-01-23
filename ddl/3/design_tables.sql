@@ -1,5 +1,3 @@
-ALTER TABLE species ADD CONSTRAINT unique_species_id UNIQUE (id);
-
 CREATE TABLE assemblies (
        id            TEXT PRIMARY KEY,
        species_id    TEXT NOT NULL REFERENCES species(id)

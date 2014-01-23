@@ -61,11 +61,6 @@ __PACKAGE__->table("genes");
   data_type: 'text'
   is_nullable: 0
 
-=head2 strand
-
-  data_type: 'integer'
-  is_nullable: 0
-
 =head2 chr_start
 
   data_type: 'integer'
@@ -79,6 +74,11 @@ __PACKAGE__->table("genes");
 =head2 chr_name
 
   data_type: 'text'
+  is_nullable: 0
+
+=head2 strand
+
+  data_type: 'integer'
   is_nullable: 0
 
 =head2 canonical_transcript
@@ -102,14 +102,14 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 0 },
   "ensembl_gene_id",
   { data_type => "text", is_nullable => 0 },
-  "strand",
-  { data_type => "integer", is_nullable => 0 },
   "chr_start",
   { data_type => "integer", is_nullable => 0 },
   "chr_end",
   { data_type => "integer", is_nullable => 0 },
   "chr_name",
   { data_type => "text", is_nullable => 0 },
+  "strand",
+  { data_type => "integer", is_nullable => 0 },
   "canonical_transcript",
   { data_type => "text", is_nullable => 0 },
 );
@@ -190,8 +190,9 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 10:56:49
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:2r6taR1/OoGhMqzjTQTyiw
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 14:04:00
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:jKvJeTq7zHZpN5Bmg0bFHw
+
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;

@@ -43,7 +43,7 @@ __PACKAGE__->table("species");
   data_type: 'integer'
   is_auto_increment: 1
   is_nullable: 0
-  sequence: 'species_numerical_id_seq'
+  sequence: 'species_id_seq'
 
 =head2 id
 
@@ -58,7 +58,7 @@ __PACKAGE__->add_columns(
     data_type         => "integer",
     is_auto_increment => 1,
     is_nullable       => 0,
-    sequence          => "species_numerical_id_seq",
+    sequence          => "species_id_seq",
   },
   "id",
   { data_type => "text", is_nullable => 0 },
@@ -78,7 +78,7 @@ __PACKAGE__->set_primary_key("numerical_id");
 
 =head1 UNIQUE CONSTRAINTS
 
-=head2 C<unique_species_id>
+=head2 C<unique_species>
 
 =over 4
 
@@ -88,7 +88,7 @@ __PACKAGE__->set_primary_key("numerical_id");
 
 =cut
 
-__PACKAGE__->add_unique_constraint("unique_species_id", ["id"]);
+__PACKAGE__->add_unique_constraint("unique_species", ["id"]);
 
 =head1 RELATIONS
 
@@ -182,8 +182,10 @@ __PACKAGE__->might_have(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 10:56:49
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:eghF5HSujUJoyTZ1QuvQPw
+
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 14:04:27
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:97MIJaAUTbIpKlMhnnmaLQ
+
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
