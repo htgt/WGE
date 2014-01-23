@@ -47,7 +47,7 @@ __PACKAGE__->table("genes");
 
 =head2 species_id
 
-  data_type: 'integer'
+  data_type: 'text'
   is_foreign_key: 1
   is_nullable: 0
 
@@ -97,7 +97,7 @@ __PACKAGE__->add_columns(
     sequence          => "genes_id_seq",
   },
   "species_id",
-  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
+  { data_type => "text", is_foreign_key => 1, is_nullable => 0 },
   "marker_symbol",
   { data_type => "text", is_nullable => 0 },
   "ensembl_gene_id",
@@ -185,13 +185,13 @@ Related object: L<WGE::Model::Schema::Result::Species>
 __PACKAGE__->belongs_to(
   "species",
   "WGE::Model::Schema::Result::Species",
-  { numerical_id => "species_id" },
+  { id => "species_id" },
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 09:47:15
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:kLtbTuiYZ1DL/doGR3lvPw
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 10:56:49
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:2r6taR1/OoGhMqzjTQTyiw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

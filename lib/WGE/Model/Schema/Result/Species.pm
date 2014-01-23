@@ -103,13 +103,13 @@ Related object: L<WGE::Model::Schema::Result::Gene>
 __PACKAGE__->has_many(
   "genes",
   "WGE::Model::Schema::Result::Gene",
-  { "foreign.species_id" => "self.numerical_id" },
+  { "foreign.species_id" => "self.id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 09:47:15
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Qq7AokIHpLjDzM+tXQn2vA
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 10:56:49
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:eghF5HSujUJoyTZ1QuvQPw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

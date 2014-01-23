@@ -7,7 +7,7 @@ INSERT INTO species (numerical_id, id) VALUES (1, 'Human'), (2, 'Mouse');
 
 CREATE TABLE genes (
     id                   SERIAL PRIMARY KEY,
-    species_id           INTEGER NOT NULL REFERENCES species(numerical_id),
+    species_id           INTEGER NOT NULL REFERENCES species(id),
     marker_symbol        TEXT NOT NULL,
     ensembl_gene_id      TEXT NOT NULL,
     strand               INTEGER NOT NULL,

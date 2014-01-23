@@ -161,7 +161,7 @@ sub crisprs {
   #find all crisprs for this exon
   return $self->result_source->schema->resultset('CrisprByExon')->search(
     {},
-    { bind => [ '{'.$self->ensembl_exon_id.'}', $species->id ] }
+    { bind => [ '{'.$self->ensembl_exon_id.'}', $species->numerical_id ] }
   );
 }
 

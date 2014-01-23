@@ -87,20 +87,26 @@
 
     //get the pairs and add them to the table
     $.get('api/pair_search', { exon_id: exons }, 
-      function(data) { 
-        //console.log(data);
-        //add each crispr to the table, its a hash of arrays.
-        $.each(data, function(exon_id, crisprs) {
-          //each exon has a list of crisprs
-          $.each(crisprs, function(idx, pair) {
-            $("<tr>")
-               //.append( $("<td>").append( $("<input type='checkbox' name='pair'>").val(pair.id) ) )
-               .append( get_crispr_row(exon_id, pair.left_crispr) )
-               .append( $("<td>", { html: pair.spacer }) )
-               .append( get_crispr_row(exon_id, pair.right_crispr) )
-               .appendTo( table.find("tbody") );
+      function(data) {
+        if (data.length == 0) {
+          var num_cols = t.find("th").length;
+          $("<tr>").append("<td colspan='"+num_cols+"'>None found!</td>" ).appendTo(table.find("tbody"));
+        }
+        else {
+          //console.log(data);
+          //add each crispr to the table, its a hash of arrays.
+          $.each(data, function(exon_id, crisprs) {
+            //each exon has a list of crisprs
+            $.each(crisprs, function(idx, pair) {
+              $("<tr>")
+                 //.append( $("<td>").append( $("<input type='checkbox' name='pair'>").val(pair.id) ) )
+                 .append( get_crispr_row(exon_id, pair.left_crispr) )
+                 .append( $("<td>", { html: pair.spacer }) )
+                 .append( get_crispr_row(exon_id, pair.right_crispr) )
+                 .appendTo( table.find("tbody") );
+            });
           });
-        });
+        }
         //change the loading button
         $("#search").button('reset');
         

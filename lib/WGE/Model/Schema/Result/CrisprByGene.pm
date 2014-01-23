@@ -3,7 +3,7 @@ package WGE::Model::Schema::Result::CrisprByGene;
 
 =head1 NAME
 
-WGE::Model::Schema::Result::CrisprByExon
+WGE::Model::Schema::Result::CrisprByGene
 
 =head1 DESCRIPTION
 
