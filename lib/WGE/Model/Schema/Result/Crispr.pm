@@ -45,14 +45,14 @@ __PACKAGE__->table("crisprs");
   is_nullable: 0
   sequence: 'crisprs_id_seq'
 
-=head2 chr_name
-
-  data_type: 'text'
-  is_nullable: 0
-
 =head2 chr_start
 
   data_type: 'integer'
+  is_nullable: 0
+
+=head2 chr_name
+
+  data_type: 'text'
   is_nullable: 0
 
 =head2 seq
@@ -90,10 +90,10 @@ __PACKAGE__->add_columns(
     is_nullable       => 0,
     sequence          => "crisprs_id_seq",
   },
-  "chr_name",
-  { data_type => "text", is_nullable => 0 },
   "chr_start",
   { data_type => "integer", is_nullable => 0 },
+  "chr_name",
+  { data_type => "text", is_nullable => 0 },
   "seq",
   { data_type => "text", is_nullable => 0 },
   "pam_right",
@@ -106,9 +106,74 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 1 },
 );
 
+=head1 PRIMARY KEY
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-15 14:36:19
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:lQn91kPgYO6mO+HVMHM0BA
+=over 4
+
+=item * L</id>
+
+=back
+
+=cut
+
+__PACKAGE__->set_primary_key("id");
+
+=head1 UNIQUE CONSTRAINTS
+
+=head2 C<crisprs_chr_start_chr_name_pam_right_key>
+
+=over 4
+
+=item * L</chr_start>
+
+=item * L</chr_name>
+
+=item * L</pam_right>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint(
+  "crisprs_chr_start_chr_name_pam_right_key",
+  ["chr_start", "chr_name", "pam_right"],
+);
+
+=head1 RELATIONS
+
+=head2 crispr_pairs_left
+
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::CrisprPair>
+
+=cut
+
+__PACKAGE__->has_many(
+  "crispr_pairs_left",
+  "WGE::Model::Schema::Result::CrisprPair",
+  { "foreign.left_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 crispr_pairs_rights
+
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::CrisprPair>
+
+=cut
+
+__PACKAGE__->has_many(
+  "crispr_pairs_rights",
+  "WGE::Model::Schema::Result::CrisprPair",
+  { "foreign.right_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 10:25:34
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:7nVjP5cu7bpVXQ+WEfmKFA
 
 __PACKAGE__->set_primary_key('id');
 

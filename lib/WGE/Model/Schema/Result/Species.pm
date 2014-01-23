@@ -43,7 +43,7 @@ __PACKAGE__->table("species");
   data_type: 'integer'
   is_auto_increment: 1
   is_nullable: 0
-  sequence: 'species_id_seq'
+  sequence: 'species_numerical_id_seq'
 
 =head2 id
 
@@ -58,7 +58,7 @@ __PACKAGE__->add_columns(
     data_type         => "integer",
     is_auto_increment => 1,
     is_nullable       => 0,
-    sequence          => "species_id_seq",
+    sequence          => "species_numerical_id_seq",
   },
   "id",
   { data_type => "text", is_nullable => 0 },
@@ -78,7 +78,7 @@ __PACKAGE__->set_primary_key("numerical_id");
 
 =head1 UNIQUE CONSTRAINTS
 
-=head2 C<unique_species>
+=head2 C<unique_species_id>
 
 =over 4
 
@@ -88,9 +88,69 @@ __PACKAGE__->set_primary_key("numerical_id");
 
 =cut
 
-__PACKAGE__->add_unique_constraint("unique_species", ["id"]);
+__PACKAGE__->add_unique_constraint("unique_species_id", ["id"]);
 
 =head1 RELATIONS
+
+=head2 assemblies
+
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::Assembly>
+
+=cut
+
+__PACKAGE__->has_many(
+  "assemblies",
+  "WGE::Model::Schema::Result::Assembly",
+  { "foreign.species_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 chromosomes
+
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::Chromosome>
+
+=cut
+
+__PACKAGE__->has_many(
+  "chromosomes",
+  "WGE::Model::Schema::Result::Chromosome",
+  { "foreign.species_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 design_attempts
+
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::DesignAttempt>
+
+=cut
+
+__PACKAGE__->has_many(
+  "design_attempts",
+  "WGE::Model::Schema::Result::DesignAttempt",
+  { "foreign.species_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 designs
+
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::Design>
+
+=cut
+
+__PACKAGE__->has_many(
+  "designs",
+  "WGE::Model::Schema::Result::Design",
+  { "foreign.species_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
 
 =head2 genes
 
@@ -107,10 +167,23 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+=head2 species_default_assembly
+
+Type: might_have
+
+Related object: L<WGE::Model::Schema::Result::SpeciesDefaultAssembly>
+
+=cut
+
+__PACKAGE__->might_have(
+  "species_default_assembly",
+  "WGE::Model::Schema::Result::SpeciesDefaultAssembly",
+  { "foreign.species_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
 
 # Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 10:56:49
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:eghF5HSujUJoyTZ1QuvQPw
-
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
