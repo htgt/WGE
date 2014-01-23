@@ -45,14 +45,14 @@ __PACKAGE__->table("crisprs_mouse");
   is_nullable: 0
   sequence: 'crisprs_id_seq'
 
-=head2 chr_name
-
-  data_type: 'text'
-  is_nullable: 0
-
 =head2 chr_start
 
   data_type: 'integer'
+  is_nullable: 0
+
+=head2 chr_name
+
+  data_type: 'text'
   is_nullable: 0
 
 =head2 seq
@@ -90,10 +90,10 @@ __PACKAGE__->add_columns(
     is_nullable       => 0,
     sequence          => "crisprs_id_seq",
   },
-  "chr_name",
-  { data_type => "text", is_nullable => 0 },
   "chr_start",
   { data_type => "integer", is_nullable => 0 },
+  "chr_name",
+  { data_type => "text", is_nullable => 0 },
   "seq",
   { data_type => "text", is_nullable => 0 },
   "pam_right",
@@ -106,9 +106,30 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 1 },
 );
 
+=head1 UNIQUE CONSTRAINTS
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-15 14:36:19
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:HwElrKUMyDOpx67LpxhFsg
+=head2 C<crispr_mouse_unique_loci>
+
+=over 4
+
+=item * L</chr_start>
+
+=item * L</chr_name>
+
+=item * L</pam_right>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint(
+  "crispr_mouse_unique_loci",
+  ["chr_start", "chr_name", "pam_right"],
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 10:25:34
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:GUKWnROw+rpDGCm/OArh5g
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
