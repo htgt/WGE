@@ -183,9 +183,8 @@ __PACKAGE__->might_have(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 10:25:35
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ZarTSbcWdyg00m39Ako0LQ
-
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 10:56:49
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:eghF5HSujUJoyTZ1QuvQPw
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
