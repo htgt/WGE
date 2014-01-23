@@ -130,20 +130,15 @@ __PACKAGE__->set_primary_key("id");
 
 =item * L</pam_right>
 
-=item * L</species_id>
-
 =back
 
 =cut
 
-__PACKAGE__->add_unique_constraint(
-  "crispr_unique_loci",
-  ["chr_start", "chr_name", "pam_right", "species_id"],
-);
+__PACKAGE__->add_unique_constraint("crispr_unique_loci", ["chr_start", "chr_name", "pam_right"]);
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-15 14:36:19
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:m420tz1quxPmu8M1JY3hAA
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 09:44:59
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:XbkNuiTentmPbKuOnssgwA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

@@ -38,14 +38,14 @@ __PACKAGE__->table("species");
 
 =head1 ACCESSORS
 
-=head2 id
+=head2 numerical_id
 
   data_type: 'integer'
   is_auto_increment: 1
   is_nullable: 0
   sequence: 'species_id_seq'
 
-=head2 name
+=head2 id
 
   data_type: 'text'
   is_nullable: 0
@@ -53,18 +53,32 @@ __PACKAGE__->table("species");
 =cut
 
 __PACKAGE__->add_columns(
-  "id",
+  "numerical_id",
   {
     data_type         => "integer",
     is_auto_increment => 1,
     is_nullable       => 0,
     sequence          => "species_id_seq",
   },
-  "name",
+  "id",
   { data_type => "text", is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
+
+=over 4
+
+=item * L</numerical_id>
+
+=back
+
+=cut
+
+__PACKAGE__->set_primary_key("numerical_id");
+
+=head1 UNIQUE CONSTRAINTS
+
+=head2 C<unique_species>
 
 =over 4
 
@@ -74,7 +88,7 @@ __PACKAGE__->add_columns(
 
 =cut
 
-__PACKAGE__->set_primary_key("id");
+__PACKAGE__->add_unique_constraint("unique_species", ["id"]);
 
 =head1 RELATIONS
 
@@ -89,13 +103,13 @@ Related object: L<WGE::Model::Schema::Result::Gene>
 __PACKAGE__->has_many(
   "genes",
   "WGE::Model::Schema::Result::Gene",
-  { "foreign.species_id" => "self.id" },
+  { "foreign.species_id" => "self.numerical_id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-15 14:36:19
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ZRCGMqajCON13ce+Ncvicw
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 09:47:15
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Qq7AokIHpLjDzM+tXQn2vA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

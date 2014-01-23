@@ -1,13 +1,13 @@
 CREATE TABLE species (
-    id                SERIAL PRIMARY KEY,
-    name              TEXT NOT NULL
+    numerical_id      SERIAL PRIMARY KEY,
+    id                TEXT NOT NULL
 );
 
-INSERT INTO species (name) VALUES ('Human'), ('Mouse');
+INSERT INTO species (numerical_id, id) VALUES (1, 'Human'), (2, 'Mouse');
 
 CREATE TABLE genes (
     id                   SERIAL PRIMARY KEY,
-    species_id           INTEGER NOT NULL REFERENCES species(id),
+    species_id           INTEGER NOT NULL REFERENCES species(numerical_id),
     marker_symbol        TEXT NOT NULL,
     ensembl_gene_id      TEXT NOT NULL,
     strand               INTEGER NOT NULL,
@@ -41,10 +41,10 @@ CREATE TABLE crisprs (
     chr_name           TEXT NOT NULL,
     seq                TEXT NOT NULL,
     pam_right          BOOLEAN NOT NULL,
-    species_id         INTEGER NOT NULL REFERENCES species(id),
+    species_id         INTEGER NOT NULL,
     off_targets        INTEGER[],
     off_target_summary TEXT,
-    UNIQUE ( chr_start, chr_name, pam_right, species_id )
+    UNIQUE ( chr_start, chr_name, pam_right )
 );
 
 -- create child tables that the data will actually be stored in

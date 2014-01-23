@@ -185,13 +185,13 @@ Related object: L<WGE::Model::Schema::Result::Species>
 __PACKAGE__->belongs_to(
   "species",
   "WGE::Model::Schema::Result::Species",
-  { id => "species_id" },
+  { numerical_id => "species_id" },
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-15 14:36:19
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:thaxf5XhZHU8H9fDqTTyxA
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 09:47:15
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:kLtbTuiYZ1DL/doGR3lvPw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
