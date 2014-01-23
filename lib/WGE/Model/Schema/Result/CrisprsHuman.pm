@@ -120,7 +120,7 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 UNIQUE CONSTRAINTS
 
-=head2 C<crispr_unique_loci>
+=head2 C<crisprs_human_unique_loci>
 
 =over 4
 
@@ -134,11 +134,14 @@ __PACKAGE__->set_primary_key("id");
 
 =cut
 
-__PACKAGE__->add_unique_constraint("crispr_unique_loci", ["chr_start", "chr_name", "pam_right"]);
+__PACKAGE__->add_unique_constraint(
+  "crisprs_human_unique_loci",
+  ["chr_start", "chr_name", "pam_right"],
+);
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 13:38:33
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:/bjRmLvpdoZ1MENrRIA/Jg
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 14:52:43
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:K8tm8FJmzZuR1pNUGabq5Q
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

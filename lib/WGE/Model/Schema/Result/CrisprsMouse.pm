@@ -106,9 +106,42 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 1 },
 );
 
+=head1 PRIMARY KEY
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 13:38:33
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:JRxR9x7mvNuAyUCWkkWYyw
+=over 4
+
+=item * L</id>
+
+=back
+
+=cut
+
+__PACKAGE__->set_primary_key("id");
+
+=head1 UNIQUE CONSTRAINTS
+
+=head2 C<crisprs_mouse_unique_loci>
+
+=over 4
+
+=item * L</chr_start>
+
+=item * L</chr_name>
+
+=item * L</pam_right>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint(
+  "crisprs_mouse_unique_loci",
+  ["chr_start", "chr_name", "pam_right"],
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 14:52:43
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:KyvOZNnxV/5p4/uVub5uiA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
