@@ -1,9 +1,11 @@
 package WGE::Model::DB;
 
+use Moose;
 use Config::Any;
 use File::stat;
 use Carp qw(confess);
 use Data::Dumper;
+require WGE::Model::FormValidator;
 
 use base qw/Catalyst::Model::DBIC::Schema/;
 
@@ -25,5 +27,24 @@ __PACKAGE__->config(
     schema_class => $CONNECT_INFO->{schema_class},
     connect_info =>  $CONNECT_INFO,
 );
+
+has form_validator => (
+    is         => 'ro',
+    isa        => 'WGE::Model::FormValidator',
+    lazy_build => 1,
+    handles    => ['check_params']
+);
+
+sub _build_form_validator {
+    my $self = shift;
+
+    return WGE::Model::FormValidator->new( model => $self );
+}
+
+sub schema{
+    my $self = shift;
+
+    return $self;
+}
  
 1;

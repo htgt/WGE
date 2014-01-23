@@ -2,6 +2,7 @@ package WGE::Controller::Root;
 use Moose;
 use namespace::autoclean;
 use Data::Dumper;
+use Try::Tiny;
 
 BEGIN { extends 'Catalyst::Controller' }
 
@@ -44,6 +45,59 @@ sub numbers :Path('/numbers') :Args(0){
     $c->stash->{num_pairs}   = $model->resultset('CrisprPair')->count,    
     
     return;	
+}
+
+sub gibson_design_gene_pick :Path('/gibson') :Args(0){
+    my ( $self, $c ) = @_;
+
+    # Assert user role?
+
+    return;
+}
+
+sub gibson_design_exon_pick :Path('/gibson_design_exon_pick') :Args(0){
+    my ( $self, $c ) = @_;
+
+    # Assert user role?
+
+    my $gene_name = $c->request->param('gene');
+
+    unless ( $gene_name ) {
+        # FIXME: make form display this
+        $c->stash( error_msg => "Please enter a gene name" );
+        
+        return $c->go('gibson_design_gene_pick');
+    }
+
+    $c->log->debug("Pick exon targets for gene $gene_name");
+    try {
+=head
+        my $create_design_util = LIMS2::Model::Util::CreateDesign->new(
+            catalyst => $c,
+            model    => $c->model('Golgi'),
+        );
+        my ( $gene_data, $exon_data )= $create_design_util->exons_for_gene(
+            $c->request->param('gene'),
+            $c->request->param('show_exons'),
+        );
+=cut
+        # Implement design creation using WebApp common module
+        my $exon_data = {};
+        my $gene_data = {};
+        my $assembly = "fixme";
+
+        $c->stash(
+            exons    => $exon_data,
+            gene     => $gene_data,
+            assembly => $assembly,
+        );
+    }
+    catch{
+        $c->stash( error_msg => "Problem finding gene: $_" );
+        $c->go('gibson_design_gene_pick');
+    };  
+
+    return;
 }
 
 sub about :Path('/about') :Args(0){

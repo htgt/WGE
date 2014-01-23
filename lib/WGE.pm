@@ -48,6 +48,13 @@ __PACKAGE__->config(
     enable_catalyst_header => 1, # Send X-Catalyst header
     default_model => 'DB',
     default_view => 'Web',
+    'View::Web' => {
+        INCLUDE_PATH => [
+            __PACKAGE__->path_to( 'root' ),
+            __PACKAGE__->path_to( 'root', 'gibson' ),            
+            $ENV{SHARED_WEBAPP_TT_DIR} || '/opt/t87/global/software/perl/lib/perl5/WebAppCommon/shared_templates',
+            ],
+    },
     'View::JSON' => { expose_stash => 'json_data' },
     authentication => {
         use_session => 0,

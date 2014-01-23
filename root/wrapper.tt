@@ -44,6 +44,7 @@
           </a>
           <ul class="nav">
             <li class="active"><a href="[% c.uri_for('/') %]">Home</a></li>
+            <li><a href="[% c.uri_for('/gibson') %]">Gibson Designs</a></li>
             <li><a href="[% c.uri_for('/about') %]">About</a></li>
             <li><a href="[% c.uri_for('/contact') %]">Contact</a></li>
           </ul>
