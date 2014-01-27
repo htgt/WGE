@@ -2,9 +2,19 @@
 <form method="POST" action="[% c.uri_for( '/gibson_design_exon_pick' ) %]" class="well">
   <fieldset>
     <legend>Gibson Design Gene Pick</legend>
-
+    
     <input type="text" class="input-xxlarge" name="gene" placeholder="gene name">
     <span class="help-block">Valid search terms: HGNC IDs, MGI IDs, Ensembl Gene IDs and Marker Symbols.</span>
+
+    <label><strong>Species</strong></label>
+    <label class="radio">
+      <input type="radio" name="species" value="Human" checked>
+      Human
+    </label>
+    <label class="radio">
+      <input type="radio" name="species" value="Mouse">
+      Mouse
+    </label>
 
     <label><strong>Show Exons</strong></label>
     <label class="radio">

@@ -22,6 +22,9 @@ use Catalyst qw/
     Static::Simple
     Authentication
     Authorization::Roles
+    Session
+    Session::Store::FastMmap
+    Session::State::Cookie    
 /;
 
 use Log::Log4perl::Catalyst;

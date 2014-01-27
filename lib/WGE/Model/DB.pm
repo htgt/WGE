@@ -24,11 +24,11 @@ my ($CONNECT_INFO, $FORM_VALIDATOR);
     $CONNECT_INFO = $db_config;
 }
 
-__PACKAGE__->config(
+__PACKAGE__->config({
     schema_class => $CONNECT_INFO->{schema_class},
     connect_info =>  $CONNECT_INFO,
-    traits => map { "+".$_ } Module::Pluggable::Object->new( search_path => [ 'WGE::Model::Plugin' ] )->plugins,
-);
+    traits => [ map { "+".$_ } Module::Pluggable::Object->new( search_path => [ 'WGE::Model::Plugin' ] )->plugins ],
+});
 
 
 sub check_params{
@@ -38,15 +38,6 @@ sub check_params{
     my $caller = ( caller(2) )[3];
     DEBUG "check_params caller: $caller";
     return $FORM_VALIDATOR->check_params(@args);
-}
-
-# FIXME. move to plugin
-
-sub user_id_for{
-    my ($self, $name) = @_;
-
-    my $user = $self->schema->resultset('User')->find({ name => $name});
-    return $user->id;
 }
 
 1;

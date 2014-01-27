@@ -64,7 +64,6 @@ sub gibson_design_exon_pick :Path('/gibson_design_exon_pick') :Args(0){
     my $gene_name = $c->request->param('gene');
 
     unless ( $gene_name ) {
-        # FIXME: make form display this
         $c->stash( error_msg => "Please enter a gene name" );
         
         return $c->go('gibson_design_gene_pick');
@@ -76,6 +75,7 @@ sub gibson_design_exon_pick :Path('/gibson_design_exon_pick') :Args(0){
         my $create_design_util = WGE::Util::CreateDesign->new(
             catalyst => $c,
             model    => $c->model('DB'),
+            species  => $c->request->param('species'),
         );
         my ( $gene_data, $exon_data )= $create_design_util->exons_for_gene(
             $c->request->param('gene'),
@@ -87,11 +87,15 @@ sub gibson_design_exon_pick :Path('/gibson_design_exon_pick') :Args(0){
             gene     => $gene_data,
             assembly => $create_design_util->assembly_id,
         );
+        
+        # Store this in the session because we need to know
+        # when we create the design
+        $c->session->{species} = $c->request->param('species');
     }
     catch{
         my $message = "Problem finding gene: $_";
         $c->log->error($message);
-        $c->stash( error_msg => $message );
+        $c->flash( error_msg => $message );
         $c->go('gibson_design_gene_pick');
     };  
 
@@ -109,6 +113,7 @@ sub create_gibson_design : Path( '/create_gibson_design' ) : Args(0) {
         my $create_design_util = WGE::Util::CreateDesign->new(
             catalyst => $c,
             model    => $c->model('DB'),
+            species  => $c->session->{species},
         );
 
         my $design_attempt;
@@ -117,7 +122,7 @@ sub create_gibson_design : Path( '/create_gibson_design' ) : Args(0) {
         }
         catch {
             $c->log->error($_);
-            $c->stash( error_msg => "Error submitting Design Creation job: $_" );
+            $c->flash( error_msg => "Error submitting Design Creation job: $_" );
             $c->res->redirect( 'gibson_design_gene_pick' );
             return;
         };

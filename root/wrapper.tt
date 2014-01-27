@@ -56,6 +56,28 @@
           <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
           <span></span>
         </div>
+
+        <!-- catalyst error message disply taken from LIMS2 -->
+        [% SET error = error_msg || c.flash.error_msg; IF error.length > 0 %]
+        <div class="alert alert-error">
+          <button class="close" data-dismiss="alert" href="#">&times;</button>
+          <p>[% error %]</p>
+        </div>
+        [% END %]
+        [% SET info = info_msg || c.flash.info_msg; IF info.length > 0 %]
+        <div class="alert alert-info">
+          <button class="close" data-dismiss="alert" href="#">&times;</button>
+          <p>[% info %]</p>
+        </div>
+        [% END %]
+        [% SET success = success_msg || c.flash.success_msg; IF success.length > 0 %]
+        <div class="alert alert-success">
+          <button class="close" data-dismiss="alert" href="#">&times;</button>
+          <p>[% success | none %]</p>
+        </div>
+        [% END %]
+
+
         [% content %]
     </div>
 </body>

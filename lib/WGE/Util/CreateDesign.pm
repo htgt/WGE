@@ -31,16 +31,8 @@ has catalyst => (
 has species => (
     is         => 'ro',
     isa        => 'Str',
-    lazy_build => 1,
+    required   => 1,
 );
-
-sub _build_species {
-    my $self = shift;
-
-    # FIXME
-    return "Human";
-    #return $self->catalyst->session->{selected_species};
-}
 
 has ensembl_util => (
     is         => 'ro',
@@ -90,9 +82,13 @@ has build_id => (
 sub _build_build_id {
     my $self = shift;
 
-    # FIXME
-    return "fixme";
-    #return $DEFAULT_SPECIES_BUILD{ lc($self->species) };
+    # Should we get this from LIMS2 Contants.pm?
+    my %default_build = (
+            Human => 73,
+            Mouse => 73,
+        );
+
+    return $default_build{ $self->species };
 }
 
 has base_design_dir => (
