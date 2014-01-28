@@ -16,7 +16,6 @@ use warnings;
 use Moose;
 use MooseX::NonMoose;
 use MooseX::MarkAsMethods autoclean => 1;
-use WGE::Util::FindPairs;
 extends 'DBIx::Class::Core';
 
 =head1 COMPONENTS LOADED
@@ -75,7 +74,7 @@ __PACKAGE__->table("exons");
 =head2 rank
 
   data_type: 'integer'
-  is_nullable: 1
+  is_nullable: 0
 
 =cut
 
@@ -98,7 +97,7 @@ __PACKAGE__->add_columns(
   "chr_name",
   { data_type => "text", is_nullable => 0 },
   "rank",
-  { data_type => "integer", is_nullable => 1 },
+  { data_type => "integer", is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -145,8 +144,10 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-15 14:36:19
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:vrqfcGC2fduVJdrf0b50cQ
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 13:58:10
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:frJ+3S6bI8G0wy8BJUenaQ
+
+use WGE::Util::FindPairs;
 
 sub crisprs {
   my ( $self ) = @_;
@@ -161,7 +162,7 @@ sub crisprs {
   #maybe we should change CrisprByExon to not take a list
   return $self->result_source->schema->resultset('CrisprByExon')->search(
     {},
-    { bind => [ '{'.$self->ensembl_exon_id.'}', $species->id ] }
+    { bind => [ '{'.$self->ensembl_exon_id.'}', $species->numerical_id ] }
   );
 }
 
@@ -176,6 +177,7 @@ sub pairs {
   my $pairs = $pair_finder->find_pairs( \@crisprs, \@crisprs );
 
   return wantarray ? @{ $pairs } : $pairs;
+
 }
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

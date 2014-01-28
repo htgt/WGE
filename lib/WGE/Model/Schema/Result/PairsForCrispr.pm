@@ -3,11 +3,11 @@ package WGE::Model::Schema::Result::PairsForCrispr;
 
 =head1 NAME
 
-WGE::Model::Schema::Result::CrisprByExon
+WGE::Model::Schema::Result::PairsForCrispr
 
 =head1 DESCRIPTION
 
-Custom view that selects all crisprs given a list of exons
+Custom view that returns all off targets for two crisprs
 
 =cut
 

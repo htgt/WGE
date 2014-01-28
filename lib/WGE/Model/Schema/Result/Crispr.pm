@@ -107,8 +107,10 @@ __PACKAGE__->add_columns(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-15 14:36:19
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:lQn91kPgYO6mO+HVMHM0BA
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 13:38:33
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:wLHvebrG7xdYBAZ3/3PcGw
+
+__PACKAGE__->set_primary_key('id');
 
 sub as_hash {
   my $self = shift;
@@ -117,7 +119,6 @@ sub as_hash {
   return {
     chr_name  => $self->chr_name,
     chr_start => $self->chr_start,
-    chr_end   => $self->chr_end,
     seq       => $self->seq,
     species   => $self->species_id,
     pam_right => $self->pam_right,

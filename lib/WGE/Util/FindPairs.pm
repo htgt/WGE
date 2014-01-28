@@ -74,7 +74,14 @@ sub find_pairs {
         }
     }
 
-    return \@pairs;
+    # Remove duplicate pairs
+    # should probably do this during the search loop above
+    my %unique;
+    foreach my $pair (@pairs){
+        my $key = $pair->{left_crispr}->{id}.":".$pair->{right_crispr}->{id};
+        $unique{$key} = $pair;
+    }
+    return [ map { $unique{$_} } sort (keys %unique) ];
 }
 
 
@@ -97,7 +104,9 @@ sub _check_valid_pair {
 
 
     #22 to be from the end, 1k for distance
-    my $distance = $second->chr_start - ($first->chr_start+22);
+    # subtract 1 to get he number of bases between end
+    # of first crispr and start of second crispr
+    my $distance = $second->chr_start - ($first->chr_start+22) - 1;
     return if $distance > $self->max_spacer || $distance < $self->min_spacer;
 
     return {

@@ -24,7 +24,7 @@ sub get_all_species :Local('get_all_species') {
     my @species = $c->model('DB')->resultset('Species')->all;
 
     $c->stash->{json_data} = { 
-        map { $_->id => $_->name } @species
+        map { $_->numerical_id => $_->id } @species
     };
     $c->forward('View::JSON');
 }
@@ -43,7 +43,7 @@ sub gene_search :Local('gene_search') {
         {
             #'marker_symbol' => { ilike => '%'.param("name").'%' },
             'UPPER(marker_symbol)' => { like => '%'.uc( $params->{name} ).'%' },
-            'species_id'           => _get_species_id( $c, $params->{species} ),
+            'species_id'           => $params->{species},
         }
     );
 
@@ -61,7 +61,7 @@ sub exon_search :Local('exon_search') {
     $c->log->debug('Finding exons for gene ' . $params->{marker_symbol});
 
     my $gene = $c->model('DB')->resultset('Gene')->find(
-        { marker_symbol => $params->{marker_symbol}, species_id => _get_species_id( $c, $params->{species} ) },
+        { marker_symbol => $params->{marker_symbol}, species_id => $params->{species} },
         { prefetch => 'exons', order_by => { -asc => 'ensembl_exon_id' } }
     );
 
@@ -100,6 +100,23 @@ sub pair_search :Local('pair_search') {
     $c->forward('View::JSON');
 }
 
+sub pair_off_target_search :Local('pair_off_target_search') {
+	my ($self, $c) = @_;
+	my $params = $c->req->params;
+	
+	check_params_exist( $c, $params, [ 'pair_id[]' ]);
+	
+	my @data;
+	my $pair_id = $params->{ 'pair_id[]'};
+	my @pair_ids = ( ref $pair_id eq 'ARRAY' ) ? @{ $pair_id } : ( $pair_id );
+
+	foreach my $id ( @pair_ids ){
+		push @data, "Processing pair $id";
+	}
+	
+	$c->stash->{json_data} = \@data;
+	$c->forward('View::JSON');
+}
 #
 # should these go into a util module? (yes)
 #
@@ -143,8 +160,8 @@ sub _get_species_id {
     my ( $c, $species ) = @_;
 
     return $c->model('DB')->resultset('Species')->find(
-        { name => $species }
-    )->id;
+        { id => $species }
+    )->numerical_id;
 }
 
 #should use FormValidator::Simple or something later
