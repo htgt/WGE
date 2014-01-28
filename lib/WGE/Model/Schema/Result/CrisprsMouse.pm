@@ -70,7 +70,7 @@ __PACKAGE__->table("crisprs_mouse");
   data_type: 'integer'
   is_nullable: 0
 
-=head2 off_targets
+=head2 off_target_ids
 
   data_type: 'integer[]'
   is_nullable: 1
@@ -100,7 +100,7 @@ __PACKAGE__->add_columns(
   { data_type => "boolean", is_nullable => 0 },
   "species_id",
   { data_type => "integer", is_nullable => 0 },
-  "off_targets",
+  "off_target_ids",
   { data_type => "integer[]", is_nullable => 1 },
   "off_target_summary",
   { data_type => "text", is_nullable => 1 },
@@ -140,8 +140,8 @@ __PACKAGE__->add_unique_constraint(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 14:52:43
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:KyvOZNnxV/5p4/uVub5uiA
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-28 11:39:32
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:GHiPD0kmDjpN7Jb/XZlLpA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

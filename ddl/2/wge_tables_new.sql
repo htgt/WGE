@@ -70,6 +70,29 @@ CREATE TABLE chromosomes (
 
 
 --
+-- Name: crispr_pair_statuses; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE TABLE crispr_pair_statuses (
+    id integer NOT NULL,
+    status text NOT NULL
+);
+
+
+--
+-- Name: crispr_pairs; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE TABLE crispr_pairs (
+    left_id integer NOT NULL,
+    right_id integer NOT NULL,
+    spacer integer NOT NULL,
+    off_target_ids integer[],
+    status integer DEFAULT 0
+);
+
+
+--
 -- Name: crisprs; Type: TABLE; Schema: public; Owner: -; Tablespace: 
 --
 
@@ -80,7 +103,7 @@ CREATE TABLE crisprs (
     seq text NOT NULL,
     pam_right boolean NOT NULL,
     species_id integer NOT NULL,
-    off_targets integer[],
+    off_target_ids integer[],
     off_target_summary text
 );
 
@@ -96,7 +119,7 @@ CREATE TABLE crisprs_human (
     seq text,
     pam_right boolean,
     species_id integer,
-    off_targets integer[],
+    off_target_ids integer[],
     off_target_summary text,
     CONSTRAINT crisprs_human_species_id_check CHECK ((species_id = 1))
 )
@@ -463,7 +486,6 @@ CREATE TABLE species (
     id text NOT NULL
 );
 
-INSERT INTO species (numerical_id, id) VALUES (1, 'Human'), (2, 'Mouse');
 
 --
 -- Name: species_default_assembly; Type: TABLE; Schema: public; Owner: -; Tablespace: 
@@ -626,6 +648,22 @@ ALTER TABLE ONLY chromosomes
 
 
 --
+-- Name: crispr_pair_statuses_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY crispr_pair_statuses
+    ADD CONSTRAINT crispr_pair_statuses_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: crispr_pairs_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY crispr_pairs
+    ADD CONSTRAINT crispr_pairs_pkey PRIMARY KEY (left_id, right_id);
+
+
+--
 -- Name: crisprs_human_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
 --
 
@@ -655,6 +693,14 @@ ALTER TABLE ONLY crisprs_mouse
 
 ALTER TABLE ONLY crisprs_mouse
     ADD CONSTRAINT crisprs_mouse_unique_loci UNIQUE (chr_start, chr_name, pam_right);
+
+
+--
+-- Name: crisprs_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY crisprs
+    ADD CONSTRAINT crisprs_pkey PRIMARY KEY (id);
 
 
 --
@@ -890,6 +936,30 @@ ALTER TABLE ONLY assemblies
 
 ALTER TABLE ONLY chromosomes
     ADD CONSTRAINT chromosomes_species_id_fkey FOREIGN KEY (species_id) REFERENCES species(id);
+
+
+--
+-- Name: crispr_pairs_left_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY crispr_pairs
+    ADD CONSTRAINT crispr_pairs_left_id_fkey FOREIGN KEY (left_id) REFERENCES crisprs(id);
+
+
+--
+-- Name: crispr_pairs_right_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY crispr_pairs
+    ADD CONSTRAINT crispr_pairs_right_id_fkey FOREIGN KEY (right_id) REFERENCES crisprs(id);
+
+
+--
+-- Name: crispr_pairs_status_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY crispr_pairs
+    ADD CONSTRAINT crispr_pairs_status_fkey FOREIGN KEY (status) REFERENCES crispr_pair_statuses(id);
 
 
 --

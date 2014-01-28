@@ -70,7 +70,7 @@ __PACKAGE__->table("crisprs");
   data_type: 'integer'
   is_nullable: 0
 
-=head2 off_targets
+=head2 off_target_ids
 
   data_type: 'integer[]'
   is_nullable: 1
@@ -100,15 +100,59 @@ __PACKAGE__->add_columns(
   { data_type => "boolean", is_nullable => 0 },
   "species_id",
   { data_type => "integer", is_nullable => 0 },
-  "off_targets",
+  "off_target_ids",
   { data_type => "integer[]", is_nullable => 1 },
   "off_target_summary",
   { data_type => "text", is_nullable => 1 },
 );
 
+=head1 PRIMARY KEY
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 13:38:33
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:wLHvebrG7xdYBAZ3/3PcGw
+=over 4
+
+=item * L</id>
+
+=back
+
+=cut
+
+__PACKAGE__->set_primary_key("id");
+
+=head1 RELATIONS
+
+=head2 crispr_pairs_left
+
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::CrisprPair>
+
+=cut
+
+__PACKAGE__->has_many(
+  "crispr_pairs_left",
+  "WGE::Model::Schema::Result::CrisprPair",
+  { "foreign.left_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 crispr_pairs_rights
+
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::CrisprPair>
+
+=cut
+
+__PACKAGE__->has_many(
+  "crispr_pairs_rights",
+  "WGE::Model::Schema::Result::CrisprPair",
+  { "foreign.right_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-28 11:39:32
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:nKvhG/qH0R9OGT5Q+PFjDA
 
 __PACKAGE__->set_primary_key('id');
 
@@ -128,10 +172,10 @@ sub as_hash {
 sub pairs {
   my $self = shift;
 
-  return ($self->pam_right) ? $self->crispr_pairs_right_crisprs : $self->crispr_pairs_left_crisprs;
+  return ($self->pam_right) ? $self->crispr_pairs_right : $self->crispr_pairs_left;
 }
 
-sub off_target_rows {
+sub off_targets {
   my $self = shift;
 
   return $self->result_source->schema->resultset('CrisprOffTargets')->search(

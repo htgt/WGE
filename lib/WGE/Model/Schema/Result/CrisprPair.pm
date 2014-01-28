@@ -55,14 +55,16 @@ __PACKAGE__->table("crispr_pairs");
   data_type: 'integer'
   is_nullable: 0
 
-=head2 left_ots
+=head2 off_target_ids
 
   data_type: 'integer[]'
   is_nullable: 1
 
-=head2 right_ots
+=head2 status
 
-  data_type: 'integer[]'
+  data_type: 'integer'
+  default_value: 0
+  is_foreign_key: 1
   is_nullable: 1
 
 =cut
@@ -74,10 +76,15 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "spacer",
   { data_type => "integer", is_nullable => 0 },
-  "left_ots",
+  "off_target_ids",
   { data_type => "integer[]", is_nullable => 1 },
-  "right_ots",
-  { data_type => "integer[]", is_nullable => 1 },
+  "status",
+  {
+    data_type      => "integer",
+    default_value  => 0,
+    is_foreign_key => 1,
+    is_nullable    => 1,
+  },
 );
 
 =head1 PRIMARY KEY
@@ -126,9 +133,29 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
+=head2 status
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 10:25:34
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:WKC59kcP2AgFVfyhActHdQ
+Type: belongs_to
+
+Related object: L<WGE::Model::Schema::Result::CrisprPairStatus>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "status",
+  "WGE::Model::Schema::Result::CrisprPairStatus",
+  { id => "status" },
+  {
+    is_deferrable => 1,
+    join_type     => "LEFT",
+    on_delete     => "CASCADE",
+    on_update     => "CASCADE",
+  },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-28 11:39:32
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:1WrkAjQEeBmzCuekTyxPOA
 
 sub as_hash {
   my $self = shift;
