@@ -1,12 +1,12 @@
 use utf8;
-package WGE::Model::Schema::Result::CrisprPair;
+package WGE::Model::Schema::Result::CrisprPairsMouse;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-WGE::Model::Schema::Result::CrisprPair
+WGE::Model::Schema::Result::CrisprPairsMouse
 
 =cut
 
@@ -30,11 +30,11 @@ extends 'DBIx::Class::Core';
 
 __PACKAGE__->load_components("InflateColumn::DateTime");
 
-=head1 TABLE: C<crispr_pairs>
+=head1 TABLE: C<crispr_pairs_mouse>
 
 =cut
 
-__PACKAGE__->table("crispr_pairs");
+__PACKAGE__->table("crispr_pairs_mouse");
 
 =head1 ACCESSORS
 
@@ -121,13 +121,13 @@ __PACKAGE__->set_primary_key("left_id", "right_id");
 
 Type: belongs_to
 
-Related object: L<WGE::Model::Schema::Result::Crispr>
+Related object: L<WGE::Model::Schema::Result::CrisprsMouse>
 
 =cut
 
 __PACKAGE__->belongs_to(
   "left",
-  "WGE::Model::Schema::Result::Crispr",
+  "WGE::Model::Schema::Result::CrisprsMouse",
   { id => "left_id" },
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
@@ -136,13 +136,13 @@ __PACKAGE__->belongs_to(
 
 Type: belongs_to
 
-Related object: L<WGE::Model::Schema::Result::Crispr>
+Related object: L<WGE::Model::Schema::Result::CrisprsMouse>
 
 =cut
 
 __PACKAGE__->belongs_to(
   "right",
-  "WGE::Model::Schema::Result::Crispr",
+  "WGE::Model::Schema::Result::CrisprsMouse",
   { id => "right_id" },
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
@@ -169,18 +169,8 @@ __PACKAGE__->belongs_to(
 
 
 # Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-28 16:41:34
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:1coLGCBIqwPxJR2UxRVLtw
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ED2lXq23I3X8LnrG4M4VAg
 
-sub as_hash {
-  my $self = shift;
-
-  return {
-    left_crispr  => $self->left_crispr->as_hash,
-    right_crispr => $self->right_crispr->as_hash,
-    spacer       => $self->spacer,
-    id           => $self->id,
-  };
-}
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;

@@ -50,38 +50,37 @@ sub find_pairs {
 
     $self->log->debug( "Finding pairs: ", scalar(@{$a}), ", ", scalar(@{$b}) );
 
-    my @pairs;
+    my %pairs; #use a hash to avoid duplicates
     for my $first ( @{ $a } ) {
         for my $second ( @{ $b } ) {
             my $valid_pair;
 
             #make sure the earlier pam site is treated as first
+            #this is duplicated, but this is less confusing than swapping the vars i think
             if ( $first->pam_start < $second->pam_start ) {
+                next if defined $pairs{ $first->id . ":" . $second->id };
                 $valid_pair = $self->_check_valid_pair( $first, $second );
             }
             elsif ( $first->pam_start > $second->pam_start ) {
+                #we have to swap the keys around here, because we always store them
+                #in the unique hash as left:right.
+                next if defined $pairs{ $second->id . ":" . $first->id };
                 $valid_pair = $self->_check_valid_pair( $second, $first );
             }
-            #if its the same we skip it.
+            #if its the same it will be skipped.
 
             #wasn't a valid pairing, regardless of distance
             next unless defined $valid_pair;
 
-            #if we have sorted lists we can uncomment this
-            # last if $distance > $self->max_spacer;
+            my $key = $valid_pair->{left_crispr}{id} . ":" . $valid_pair->{right_crispr}{id};
+            $pairs{ $key } = $valid_pair;
 
-            push @pairs, $valid_pair;
+            #if we have sorted lists we can maybe uncomment this for faster processing
+            # last if $distance > $self->max_spacer;
         }
     }
 
-    # Remove duplicate pairs
-    # should probably do this during the search loop above
-    my %unique;
-    foreach my $pair (@pairs){
-        my $key = $pair->{left_crispr}->{id}.":".$pair->{right_crispr}->{id};
-        $unique{$key} = $pair;
-    }
-    return [ map { $unique{$_} } sort (keys %unique) ];
+    return [ values %pairs ];
 }
 
 

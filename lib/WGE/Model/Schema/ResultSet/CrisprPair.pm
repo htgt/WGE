@@ -4,6 +4,10 @@ package WGE::Model::Schema::ResultSet::CrisprPair;
 use base 'DBIx::Class::ResultSet';
 use Try::Tiny;
 use feature qw( say );
+use Log::Log4perl qw( :easy );
+use Data::Dumper;
+
+my $DISTANCE = 1000;
 
 #note: this needs re-writing
 sub load_from_hash {
@@ -34,6 +38,8 @@ sub load_from_hash {
 sub calculate_off_targets {
     my ( $self, $species, $l_crispr_id, $r_crispr_id, $spacer ) = @_;
 
+    INFO "Finding crispr off targets for $l_crispr_id and $r_crispr_id";
+
     my $schema = $self->result_source->schema;
     #get all off targets
 
@@ -41,10 +47,12 @@ sub calculate_off_targets {
         { id => $species }
       )->numerical_id;
 
-    my @crisprs = $schema->resultset('PairsForCrispr')->search(
+    my @crisprs = $schema->resultset('PairOffTargets')->search(
         {},
-        { bind => [ "{$l_crispr_id,$r_crispr_id}", $species_id ] }
+        { bind => [ $species_id, $l_crispr_id, $r_crispr_id ] }
     );
+
+    INFO "Found " . scalar( @crisprs ) . " crispr off targets";
 
     #group the crisprs by chr_name for quicker comparison
 
@@ -54,46 +62,51 @@ sub calculate_off_targets {
         push @{ $data{ $crispr->chr_name } }, $crispr;
     }
 
+    INFO "Finding pairs";
+
     #get instance of FindPairs with off target settings
     my $pair_finder = WGE::Util::FindPairs->new(
-        max_spacer  => 1000,
+        max_spacer  => $DISTANCE,
         include_h2h => 1
     );
 
     #find_pairs on $all{chr_name}, $all{chr_name}
 
-    my @pairs; 
+    my @all_offs; 
     while ( my ( $chr_name, $crisprs ) = each %data ) {
-        #just throw them all onto one array for now, we'll process after
-        push @pairs, $pair_finder->find_pairs( $crisprs, $crisprs );
+        #just throw all the ids onto one array,
+        #when processing you will take 2 off at a time.
+        push @all_offs, 
+            map { $_->{left_crispr}{id}, $_->{right_crispr}{id} } 
+                @{ $pair_finder->find_pairs( $crisprs, $crisprs ) };
     }
 
+    die "Uneven number of pair ids!" unless @all_offs % 2 == 0;
+
+    INFO "Parsing pairs";
+
     #
-    # TODO: make crispr pair table.
-    #   it doesnt exist apparently. find it in the git history of 2.sql
-    #   add CHECK( array_length(off_targets) % 2 = 0 )
+    # TODO:
+    #   add CHECK( array_length(off_targets) % 2 = 0 ) maybe?
     #   write the summary.
+    #   set status to error (-1) on failure
     #
 
-    my $total = scalar( @pairs );
-    my $summary = q/{"total in 1k":"$total"}/;
-    #pull out ids, update or create into self->find
-    my @all_offs;
-    for my $pair ( @pairs ) {
-        #find shortest to add to summary, get orientation etc
+    my $total = scalar( @all_offs );
+    my $summary = qq/{"total in $DISTANCE":"$total"}/;
 
-        #add the ids
-        push @all_offs, $pair->left_crispr->id, $pair->right_crispr->id;
-    }
+    INFO "Persisting pair";
 
     $self->update_or_create(
         {
-            left_crispr_id  => $l_crispr_id,
-            right_crispr_id => $r_crispr_id,
+            left_id         => $l_crispr_id,
+            right_id        => $r_crispr_id,
             off_target_ids  => \@all_offs,
-            spacer          => $spacer
+            spacer          => $spacer,
+            species_id      => $species_id,
+            status          => 5, #complete
         },
-        { key => 'crispr_pairs_left_crispr_id_right_crispr_id_key' }
+        { key => 'primary' }
     );
 }
 

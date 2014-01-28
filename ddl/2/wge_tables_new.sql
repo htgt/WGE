@@ -44,6 +44,26 @@ END;
 $$;
 
 
+--
+-- Name: crispr_pairs_insert_trigger(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION crispr_pairs_insert_trigger() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    IF ( NEW.SPECIES_ID = 1 ) THEN 
+        INSERT INTO crispr_pairs_human VALUES (NEW.*);
+    ELSIF ( NEW.SPECIES_ID = 2 ) THEN
+        INSERT INTO crispr_pairs_mouse VALUES (NEW.*);
+    ELSE
+        RAISE EXCEPTION 'Invalid species_id given to crispr_pairs_insert_trigger()';
+    END IF;
+    RETURN NULL;
+END;
+$$;
+
+
 SET default_tablespace = '';
 
 SET default_with_oids = false;
@@ -88,8 +108,30 @@ CREATE TABLE crispr_pairs (
     right_id integer NOT NULL,
     spacer integer NOT NULL,
     off_target_ids integer[],
-    status integer DEFAULT 0
+    status integer DEFAULT 0,
+    species_id integer NOT NULL,
+    off_target_summary text
 );
+
+
+--
+-- Name: crispr_pairs_human; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE TABLE crispr_pairs_human (
+    CONSTRAINT crispr_pairs_human_species_id_check CHECK ((species_id = 1))
+)
+INHERITS (crispr_pairs);
+
+
+--
+-- Name: crispr_pairs_mouse; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE TABLE crispr_pairs_mouse (
+    CONSTRAINT crispr_pairs_mouse_species_id_check CHECK ((species_id = 2))
+)
+INHERITS (crispr_pairs);
 
 
 --
@@ -548,6 +590,20 @@ ALTER SEQUENCE users_id_seq OWNED BY users.id;
 
 
 --
+-- Name: status; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY crispr_pairs_human ALTER COLUMN status SET DEFAULT 0;
+
+
+--
+-- Name: status; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY crispr_pairs_mouse ALTER COLUMN status SET DEFAULT 0;
+
+
+--
 -- Name: id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -653,6 +709,22 @@ ALTER TABLE ONLY chromosomes
 
 ALTER TABLE ONLY crispr_pair_statuses
     ADD CONSTRAINT crispr_pair_statuses_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: crispr_pairs_human_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY crispr_pairs_human
+    ADD CONSTRAINT crispr_pairs_human_pkey PRIMARY KEY (left_id, right_id);
+
+
+--
+-- Name: crispr_pairs_mouse_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY crispr_pairs_mouse
+    ADD CONSTRAINT crispr_pairs_mouse_pkey PRIMARY KEY (left_id, right_id);
 
 
 --
@@ -923,6 +995,20 @@ CREATE INDEX idx_gene_loci ON genes USING btree (chr_name, chr_start, chr_end, s
 
 
 --
+-- Name: insert_crispr_pairs_trigger; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER insert_crispr_pairs_trigger BEFORE INSERT ON crispr_pairs FOR EACH ROW EXECUTE PROCEDURE crispr_pairs_insert_trigger();
+
+
+--
+-- Name: insert_crisprs_trigger; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER insert_crisprs_trigger BEFORE INSERT ON crisprs FOR EACH ROW EXECUTE PROCEDURE crispr_insert_trigger();
+
+
+--
 -- Name: assemblies_species_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -939,11 +1025,43 @@ ALTER TABLE ONLY chromosomes
 
 
 --
+-- Name: crispr_pairs_human_left_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY crispr_pairs_human
+    ADD CONSTRAINT crispr_pairs_human_left_id_fkey FOREIGN KEY (left_id) REFERENCES crisprs_human(id);
+
+
+--
+-- Name: crispr_pairs_human_right_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY crispr_pairs_human
+    ADD CONSTRAINT crispr_pairs_human_right_id_fkey FOREIGN KEY (right_id) REFERENCES crisprs_human(id);
+
+
+--
 -- Name: crispr_pairs_left_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY crispr_pairs
     ADD CONSTRAINT crispr_pairs_left_id_fkey FOREIGN KEY (left_id) REFERENCES crisprs(id);
+
+
+--
+-- Name: crispr_pairs_mouse_left_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY crispr_pairs_mouse
+    ADD CONSTRAINT crispr_pairs_mouse_left_id_fkey FOREIGN KEY (left_id) REFERENCES crisprs_mouse(id);
+
+
+--
+-- Name: crispr_pairs_mouse_right_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY crispr_pairs_mouse
+    ADD CONSTRAINT crispr_pairs_mouse_right_id_fkey FOREIGN KEY (right_id) REFERENCES crisprs_mouse(id);
 
 
 --
@@ -959,6 +1077,22 @@ ALTER TABLE ONLY crispr_pairs
 --
 
 ALTER TABLE ONLY crispr_pairs
+    ADD CONSTRAINT crispr_pairs_status_fkey FOREIGN KEY (status) REFERENCES crispr_pair_statuses(id);
+
+
+--
+-- Name: crispr_pairs_status_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY crispr_pairs_human
+    ADD CONSTRAINT crispr_pairs_status_fkey FOREIGN KEY (status) REFERENCES crispr_pair_statuses(id);
+
+
+--
+-- Name: crispr_pairs_status_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY crispr_pairs_mouse
     ADD CONSTRAINT crispr_pairs_status_fkey FOREIGN KEY (status) REFERENCES crispr_pair_statuses(id);
 
 

@@ -139,9 +139,41 @@ __PACKAGE__->add_unique_constraint(
   ["chr_start", "chr_name", "pam_right"],
 );
 
+=head1 RELATIONS
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-28 11:39:32
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:GMbU92PBupUirBikG5kz5w
+=head2 crispr_pairs_human_lefts
+
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::CrisprPairsHuman>
+
+=cut
+
+__PACKAGE__->has_many(
+  "crispr_pairs_human_lefts",
+  "WGE::Model::Schema::Result::CrisprPairsHuman",
+  { "foreign.left_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 crispr_pairs_human_rights
+
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::CrisprPairsHuman>
+
+=cut
+
+__PACKAGE__->has_many(
+  "crispr_pairs_human_rights",
+  "WGE::Model::Schema::Result::CrisprPairsHuman",
+  { "foreign.right_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-28 16:41:34
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Sb5JeyY+TcPgTpm5sFCP9w
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

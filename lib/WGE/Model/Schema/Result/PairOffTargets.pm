@@ -1,5 +1,5 @@
 use utf8;
-package WGE::Model::Schema::Result::PairsForCrispr;
+package WGE::Model::Schema::Result::PairOffTargets;
 
 =head1 NAME
 
@@ -26,17 +26,18 @@ __PACKAGE__->result_source_instance->is_virtual(1);
 #can maybe be sped up by doing a join instead of IN, see CrisprByExon
 __PACKAGE__->result_source_instance->view_definition( <<'EOT' );
 with ots as (
-    select id as crispr_id, unnest(off_target_ids) as ot_id from crisprs 
-    where id=? or id=?
+    select id as crispr_id, unnest(off_target_ids) as ot_id, species_id 
+    from crisprs 
+    where species_id=? and (id=? or id=?)
 )
 select 
+    ots.ot_id as id, 
     ots.crispr_id as crispr_id,
-    ots.ot_id as ot_id, 
     c.chr_name as chr_name, 
     c.chr_start as chr_start, 
     c.pam_right as pam_right
 from ots
-join crisprs c on c.id=ots.ot_id
+join crisprs c on c.id=ots.ot_id and c.species_id=ots.species_id
 order by ots.crispr_id, c.chr_name, c.chr_start
 EOT
 
@@ -63,7 +64,7 @@ __PACKAGE__->add_columns(
     qw(
         crispr_id
         chr_name
-        ot_id
+        id
         chr_start
         pam_right
     )
@@ -79,6 +80,18 @@ sub pam_start {
 
 sub pam_left {
     return ! shift->pam_right;
+}
+
+sub as_hash {
+    my $self = shift;
+
+    return {
+        id        => $self->id,
+        crispr_id => $self->crispr_id, #this is the original crispr the ot belongs to
+        chr_name  => $self->chr_name,
+        chr_start => $self->chr_start,
+        pam_right => $self->pam_right,
+    }
 }
 
 

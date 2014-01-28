@@ -86,9 +86,39 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+=head2 crispr_pairs_humans
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-28 11:39:32
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:uxyiQ0UDGKAE932u5pJwtw
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::CrisprPairsHuman>
+
+=cut
+
+__PACKAGE__->has_many(
+  "crispr_pairs_humans",
+  "WGE::Model::Schema::Result::CrisprPairsHuman",
+  { "foreign.status" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 crispr_pairs_mice
+
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::CrisprPairsMouse>
+
+=cut
+
+__PACKAGE__->has_many(
+  "crispr_pairs_mice",
+  "WGE::Model::Schema::Result::CrisprPairsMouse",
+  { "foreign.status" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-28 16:41:34
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:utHYb64xTIi9HM7AbIaGcg
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
