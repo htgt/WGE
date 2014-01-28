@@ -47,7 +47,7 @@ __PACKAGE__->add_columns(
         seq 
         pam_right
         species_id
-        off_targets
+        off_target_ids
         off_target_summary
     )
 );
@@ -71,7 +71,7 @@ sub as_hash {
         seq 
         pam_right
         species_id
-        off_targets
+        off_target_ids
     );
 
     return { map { $_ => $self->$_ } @cols };

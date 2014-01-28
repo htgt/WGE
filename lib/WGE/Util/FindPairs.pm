@@ -14,6 +14,7 @@ has min_spacer => (
     default  => '-10'
 );
 
+# you'll want to set this to around 1000 to find offs
 has max_spacer => (
     is       => 'rw',
     isa      => 'Int',
@@ -67,7 +68,7 @@ sub find_pairs {
             next unless defined $valid_pair;
 
             #if we have sorted lists we can uncomment this
-            # last if $distance > 1000;
+            # last if $distance > $self->max_spacer;
 
             push @pairs, $valid_pair;
         }

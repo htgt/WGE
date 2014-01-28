@@ -26,8 +26,8 @@ __PACKAGE__->result_source_instance->is_virtual(1);
 #can maybe be sped up by doing a join instead of IN, see CrisprByExon
 __PACKAGE__->result_source_instance->view_definition( <<'EOT' );
 with ots as (
-    select id as crispr_id, unnest(off_targets) as ot_id from crisprs 
-    where id IN (?, ?)
+    select id as crispr_id, unnest(off_target_ids) as ot_id from crisprs 
+    where id=? or id=?
 )
 select 
     ots.crispr_id as crispr_id,
@@ -44,7 +44,7 @@ EOT
 #also it takes about 10 minutes.
 # <<'EOT'
 # with ots as (
-#     select c.id as crispr_id, unnest(off_targets) as ot_id from exons e
+#     select c.id as crispr_id, unnest(off_target_ids) as ot_id from exons e
 #     join crisprs c on c.chr_name=e.chr_name AND c.chr_start>=(e.chr_start-22) AND c.chr_start<=e.chr_end
 #     where exons.ensembl_exon_id=? and species_id=?
 # )

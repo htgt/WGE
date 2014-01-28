@@ -158,6 +158,7 @@ sub crisprs {
   )->species;
 
   #find all crisprs for this exon
+  #maybe we should change CrisprByExon to not take a list
   return $self->result_source->schema->resultset('CrisprByExon')->search(
     {},
     { bind => [ '{'.$self->ensembl_exon_id.'}', $species->id ] }

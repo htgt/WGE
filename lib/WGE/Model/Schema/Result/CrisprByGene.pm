@@ -48,7 +48,7 @@ __PACKAGE__->add_columns(
         seq 
         pam_right
         species_id
-        off_targets
+        off_target_ids
         off_target_summary
     )
 );
