@@ -1,4 +1,4 @@
-INSERT INTO species (name) VALUES ('Human'), ('Mouse');
+INSERT INTO species (id) VALUES ('Human'), ('Mouse');
 
 INSERT INTO crispr_pair_statuses VALUES
     (-1, 'error'),
