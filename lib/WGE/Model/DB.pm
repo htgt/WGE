@@ -7,6 +7,7 @@ use Data::Dumper;
 require WGE::Model::FormValidator;
 use Log::Log4perl qw( :easy );
 use Module::Pluggable::Object;
+use Data::Dump qw( pp );
 
 use base qw/Catalyst::Model::DBIC::Schema/;
 
@@ -27,9 +28,15 @@ my ($CONNECT_INFO, $FORM_VALIDATOR);
 __PACKAGE__->config({
     schema_class => $CONNECT_INFO->{schema_class},
     connect_info =>  $CONNECT_INFO,
-    traits => [ map { "+".$_ } Module::Pluggable::Object->new( search_path => [ 'WGE::Model::Plugin' ] )->plugins ],
+    traits => [ '+MooseX::Log::Log4perl', '+LIMS2::Model::Plugin::Design',
+       map { "+".$_ } Module::Pluggable::Object->new( search_path => [ 'WGE::Model::Plugin' ] )->plugins ],
 });
 
+sub txn_do {
+    my ( $self, $code_ref, @args ) = @_;
+
+    return $self->schema->txn_do( $code_ref, $self, @args );
+}
 
 sub check_params{
     my ($self, @args) = @_;
@@ -38,6 +45,56 @@ sub check_params{
     my $caller = ( caller(2) )[3];
     DEBUG "check_params caller: $caller";
     return $FORM_VALIDATOR->check_params(@args);
+}
+
+## no critic(RequireFinalReturn)
+sub retrieve {
+    my ( $self, $entity_class, $search_params, $search_opts ) = @_;
+
+    $search_opts ||= {};
+
+    my @objects = $self->schema->resultset($entity_class)->search( $search_params, $search_opts );
+
+    if ( @objects == 1 ) {
+        return $objects[0];
+    }
+    elsif ( @objects == 0 ) {
+        $self->throw( NotFound => { entity_class => $entity_class, search_params => $search_params } );
+    }
+    else {
+        $self->throw( Implementation => "Retrieval of $entity_class returned " . @objects . " objects" );
+    }
+}
+## use critic
+
+## no critic(RequireFinalReturn)
+sub throw {
+    my ( $self, $error_class, $args ) = @_;
+
+    if ( $error_class !~ /::/ ) {
+        $error_class = 'LIMS2::Exception::' . $error_class;
+    }
+
+    eval "require $error_class"
+        or confess "Load $error_class: $!";
+
+    my $err = $error_class->new($args);
+
+    $self->log->error( $err->as_string );
+
+    $err->throw;
+}
+## use critic
+
+sub trace {
+    my ( $self, @args ) = @_;
+
+    if ( $self->log->is_trace ) {
+        my $mesg = join "\n", map { ref $_ ? pp( $_ ) : $_ } @args;
+        $self->log->trace( $mesg );
+    }
+
+    return;
 }
 
 1;
