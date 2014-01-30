@@ -49,7 +49,7 @@ sub calculate_off_targets {
 
     my @crisprs = $schema->resultset('CrisprOffTargets')->search(
         {},
-        { bind => [ '{$l_crispr_id,$r_crispr_id]}', $species_id, $species_id  ] }
+        { bind => [ '{$l_crispr_id,$r_crispr_id}', $species_id, $species_id  ] }
     );
 
     INFO "Found " . scalar( @crisprs ) . " crispr off targets";
