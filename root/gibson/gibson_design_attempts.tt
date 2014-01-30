@@ -1,0 +1,62 @@
+<div class="page-header">
+  <h1>
+    Design Attempts
+    <small>Last 50</small>
+  </h1>
+</div>
+
+<div class="row">
+  <div class="span12" >
+    <table class="table table-bordered table-condensed">
+
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Gene ID(s)</th>
+          <th>Exon ID(s)</th>
+          <th>Species</th>
+          <th>Status</th>
+          <th>Design ID(s)</th>
+          <th>Errors</th>
+          <th>Created By</th>
+          <th>Created At</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        [%- FOR da IN das %]
+          <tr [% IF da.status == 'success' %]
+                class="success"
+              [% ELSIF da.status == 'fail' %]
+                class="warning"
+              [% ELSIF da.status == 'error' %]
+                class="error"
+              [% ELSIF da.status == 'started' %]
+                class="info"
+              [% END %]
+          >
+            <td>
+              <a href="[% c.uri_for( '/design_attempt', da.id, 'view' ) %]">
+                [% da.id %]
+              </a>
+            </td>
+            <td>[% da.gene_id %]</td>
+            <td>[% da.design_parameters.five_prime_exon %]</td>
+            <td>[% da.species %]</td>
+            <td>[% da.status %]</td>
+            <td>
+              [% FOR id IN da.design_ids %]
+                <a href="[% c.uri_for( '/view_gibson_design', { design_id => id } ) %]">[% id %]</a>
+              [% END %]
+            </td>
+            <td>[% da.error %]</td>
+            <td>[% da.created_by %]</td>
+            <td>[% da.created_at %]</td>
+          </tr>
+        [% END %]
+      </tbody>
+
+    </table>
+
+  </div>
+</div>

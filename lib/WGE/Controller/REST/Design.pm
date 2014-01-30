@@ -14,7 +14,7 @@ sub design_GET{
 
      my $design = $c->model->resultset('Design')->find({ id => $c->req->param('id') });
 
-     return $self->status_ok( $c, entity => $design->as_hash );
+     return $self->status_ok( $c, entity => $design->as_hash(1) );
 }
 
 sub design_POST{
@@ -31,7 +31,7 @@ sub design_POST{
     return $self->status_created(
         $c,
         location => $c->uri_for( '/api/design', { id => $design->id } ),
-        entity   => $design
+        entity   => $design->as_hash(1)
     );
 }
 

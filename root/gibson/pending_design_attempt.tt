@@ -1,0 +1,85 @@
+
+<div class="page-header">
+  <h1>
+    Design Attempt Progress
+    <small>[% id %]</small>
+  </h1>
+</div>
+
+<div id="design_pending">
+  <p>
+    <h5 id="progress_status">pending</h5>
+  </p>
+  <div class="progress progress-striped active">
+    <div id="progress_bar" class="bar" style="width: 1%;"></div>
+  </div>
+</div>
+
+<div id="design_success" class="alert alert-success hide">
+  <p>Design Successful: </p>
+  <div id="design_links"></div>
+  <br>
+  <a href="[% c.uri_for( '/user/design_target_report' gene_id, { 'crispr_types' => 'single' } ) %]" target="_blank" class="btn btn-info">
+          single crispr report for [% gene_id %]</a>
+  <a href="[% c.uri_for( '/user/design_target_report' gene_id, { 'crispr_types' => 'pair' } ) %]" target="_blank" class="btn btn-info">
+          crispr pair report for [% gene_id %]</a>
+</div>
+
+<div id="design_fail" class="alert alert-error hide">
+  <p>Failed to create design:
+      <a href="[% c.uri_for( '/user/design_attempt', id, 'view' ) %]"> details </a>
+  </p>
+</div>
+
+<script type="text/javascript">
+  $.smartPoller( 250, function(retry){
+    $.getJSON( "[% c.uri_for( '/api/design_attempt_status', id ) %]", function(response){
+      if( response.status == "success" ) {
+         $('#design_links').html( response.designs );
+         $("#design_success").show();
+         $("#design_pending").hide();
+      }
+      else if ( response.status == "fail" ) {
+         $("#design_fail").show();
+         $("#design_pending").hide();
+      }
+      else if ( response.status == "error" ) {
+         $("#design_fail").show();
+         $("#design_pending").hide();
+      }
+      else if ( response.status == "pending" ) {
+        $('#progress_bar').css('width', '1%');
+        $('#progress_status').html( response.status );
+        retry();
+      }
+      else if ( response.status == "started" ) {
+        $('#progress_bar').css('width', '10%');
+        $('#progress_status').html( response.status );
+        retry();
+      }
+      else if ( response.status == "coordinates_calculated" ) {
+        $('#progress_bar').css('width', '15%');
+        $('#progress_status').html( response.status );
+        retry();
+      }
+      else if ( response.status == "oligos_found" ) {
+        $('#progress_bar').css('width', '30%');
+        $('#progress_status').html( response.status );
+        retry();
+      }
+      else if ( response.status == "oligos_validated" ) {
+        $('#progress_bar').css('width', '80%');
+        $('#progress_status').html( response.status );
+        retry();
+      }
+      else if ( response.status == "design_data_consolidated" ) {
+        $('#progress_bar').css('width', '90%');
+        $('#progress_status').html( response.status );
+        retry();
+      }
+      else {
+        retry();
+      }
+    });
+  });
+</script>

@@ -97,4 +97,23 @@ sub trace {
     return;
 }
 
+sub _chr_id_for {
+    my ( $self, $assembly_id, $chr_name ) = @_;
+
+    my $chr = $self->schema->resultset('Chromosome')->find(
+        {
+            'me.name'       => $chr_name,
+            'assemblies.id' => $assembly_id
+        },
+        {
+            join => { 'species' => 'assemblies' }
+        }
+    );
+
+    if ( ! defined $chr ) {
+        $self->throw( Validation => "No chromosome $chr_name found for assembly $assembly_id" );
+    }
+
+    return $chr->id;
+}
 1;

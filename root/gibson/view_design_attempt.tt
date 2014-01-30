@@ -1,0 +1,80 @@
+[% META title = "Design Attempts"; META tab_name = "Designs" %]
+
+<div class="page-header">
+  <h1>Design Attempt
+  <small>[% da.id %]</small>
+  </h1>
+</div>
+
+<div class="row">
+  <div class="span12" >
+    <table class="table table-bordered table-condensed">
+
+      <tbody>
+        <tr>
+          <th>Gene ID(s)</th>
+          <td>[% da.gene_id %]</td>
+        </tr>
+        <tr [% IF da.status == 'success' %]
+              class="success"
+            [% ELSIF da.status == 'fail' %]
+              class="warning"
+            [% ELSIF da.status == 'error' %]
+              class="error"
+            [% ELSIF da.status == 'started' %]
+              class="info"
+            [% END %]
+        >
+          <th>Status</th>
+          <td>[% da.status %]</td>
+        </tr>
+        <tr>
+          <th>Design ID(s)</th>
+          <td>
+            [% FOR id IN da.design_ids %]
+              <a href="[% c.uri_for( '/user/view_design', { design_id => id } ) %]">[% id %]</a>
+            [% END %]
+          </td>
+        </tr>
+        <tr>
+          <th>Species</th>
+          <td>[% da.species %]</td>
+        </tr>
+        <tr>
+          <th>Created By</th>
+          <td>[% da.created_by %]</td>
+        </tr>
+        <tr>
+          <th>Created At</th>
+          <td>[% da.created_at %]</td>
+        </tr>
+        <tr>
+          <th>Comment</th>
+          <td>[% da.comment %]</td>
+        </tr>
+      </tbody>
+
+    </table>
+  </div>
+</div>
+
+  <a href="[% c.uri_for( '/user/design_target_report' da.gene_id, { 'crispr_types' => 'single' } ) %]" target="_blank" class="btn btn-info">
+          single crispr report for [% da.gene_id %]</a>
+  <a href="[% c.uri_for( '/user/design_target_report' da.gene_id, { 'crispr_types' => 'pair' } ) %]" target="_blank" class="btn btn-info">
+          crispr pair report for [% da.gene_id %]</a>
+
+<div class="row">
+  <div class="span6">
+    <h5>Design Parameters</h5>
+    <pre>[% da.design_parameters %]</pre>
+  </div>
+  <div class="span6">
+    [% IF da.fail %]
+      <h5>Fail Reasons</h5>
+      <pre>[% da.fail %]</pre>
+    [% ELSIF da.error %]
+      <h5>Fail Reasons</h5>
+      <pre>[% da.error %]</pre>
+    [% END %]
+  </div>
+</div>

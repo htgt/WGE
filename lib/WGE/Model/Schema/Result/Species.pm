@@ -188,5 +188,19 @@ __PACKAGE__->might_have(
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+
+sub check_assembly_belongs {
+    my ( $self, $assembly ) = @_;
+
+    unless ( $self->assemblies->find({ id => $assembly }) ) {
+        require LIMS2::Exception::InvalidState;
+        LIMS2::Exception::InvalidState->throw(
+            "Assembly $assembly does not belong to species " . $self->id
+        );
+    }
+
+    return 1;
+}
+
 __PACKAGE__->meta->make_immutable;
 1;
