@@ -21,56 +21,53 @@ __PACKAGE__->table( 'exon_crisprs' );
 
 __PACKAGE__->result_source_instance->is_virtual(1);
 
-#given two crispr ids find any paired off targets.
-#we are assuming they are a pair
-#can maybe be sped up by doing a join instead of IN, see CrisprByExon
+#the with returns a list of off target ids and their original order.
+#technically this is undefined behaviour, and the behaviour for running
+#over with no order by could change. Pg 9.4 will introduce WITH ORDINALITY,
+#which will do exactly this. So don't upgrade pg until 9.4 is out or things 
+#might break. when we have 9.4 change to use WITH ORDINALITY
 __PACKAGE__->result_source_instance->view_definition( <<'EOT' );
 with ots as (
-    select id as crispr_id, unnest(off_target_ids) as ot_id, species_id 
-    from crisprs 
-    where species_id=? and (id=? or id=?)
+    select *, row_number() over() from ( 
+        select unnest(off_target_ids) as ot_id 
+        from crispr_pairs 
+        where left_id=? and right_id=? and species_id=?
+    ) ids
 )
-select 
-    ots.ot_id as id, 
-    ots.crispr_id as crispr_id,
-    c.chr_name as chr_name, 
-    c.chr_start as chr_start, 
-    c.pam_right as pam_right
+select c.*
 from ots
-join crisprs c on c.id=ots.ot_id and c.species_id=ots.species_id
-order by ots.crispr_id, c.chr_name, c.chr_start
+join crisprs c on c.id=ots.ot_id and c.species_id=?
+order by ots.row_number
 EOT
 
-#something like this for an exon? we still dont know which ones are pairs though...
-#also it takes about 10 minutes.
-# <<'EOT'
-# with ots as (
-#     select c.id as crispr_id, unnest(off_target_ids) as ot_id from exons e
-#     join crisprs c on c.chr_name=e.chr_name AND c.chr_start>=(e.chr_start-22) AND c.chr_start<=e.chr_end
-#     where exons.ensembl_exon_id=? and species_id=?
-# )
-# select 
-#     ots.crispr_id, 
-#     c.chr_name as chr_name, 
-#     array_agg(ots.ot_id) as ot_id, 
-#     array_agg(c.chr_start) as chr_start, 
-#     array_agg(c.pam_right) as pam_right
-# from ots
-# join crisprs c on c.id=ots.ot_id
-# group by ots.crispr_id, c.chr_name;
-# EOT
+
+
+#this will be to check if db entries exist
+<<EOT;
+with s as (
+    select left_id, right_id from (
+        select unnest(?::int[]) as left_id, unnest(?::int[]) as right_id
+    ) x
+)
+select cp.* from s
+join crispr_pairs cp on cp.left_id=s.left_id and cp.right_id=s.right_id
+where species_id=?
+EOT
 
 __PACKAGE__->add_columns(
     qw(
-        crispr_id
-        chr_name
         id
+        chr_name
         chr_start
+        seq 
         pam_right
+        species_id
+        off_target_ids
+        off_target_summary
     )
 );
 
-__PACKAGE__->set_primary_key( "crispr_id" );
+__PACKAGE__->set_primary_key( "id" );
 
 #CHECK THESE NUMBERS. we want either the start or end of sgrna
 sub pam_start {

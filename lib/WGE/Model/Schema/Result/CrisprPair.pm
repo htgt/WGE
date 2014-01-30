@@ -175,11 +175,33 @@ sub as_hash {
   my $self = shift;
 
   return {
-    left_crispr  => $self->left_crispr->as_hash,
-    right_crispr => $self->right_crispr->as_hash,
-    spacer       => $self->spacer,
-    id           => $self->id,
+    left_crispr        => $self->left->as_hash,
+    right_crispr       => $self->right->as_hash,
+    spacer             => $self->spacer,
+    species_id         => $self->species_id,
+    off_target_ids     => $self->off_target_ids,
+    off_target_summary => $self->off_target_summary,
   };
+}
+
+sub off_targets {
+  my $self = shift;
+
+  #this resultset returns a list, where every even element is the left element
+  #in a paired off target, and every odd element is the right.
+  my @paired_offs = $self->result_source->schema->resultset('PairOffTargets')->search(
+      {},
+      { bind => [ $self->left_id, $self->right_id, $self->species_id, $self->species_id ] }
+  );
+
+  my @pairs;
+
+  # get 2 entries at a time from the list
+  while ( my ($left, $right) = splice( @paired_offs, 0, 2 ) ) {
+    push @pairs, { left_crispr => $left, right_crispr => $right };
+  }
+
+  return wantarray ? @pairs : \@pairs;
 }
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

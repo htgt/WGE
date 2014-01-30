@@ -180,7 +180,7 @@ sub off_targets {
 
   return $self->result_source->schema->resultset('CrisprOffTargets')->search(
     {},
-    { bind => [ $self->id, $self->species_id ] }
+    { bind => [ "{" . $self->id . "}", $self->species_id, $self->species_id ] }
   );
 }
 
