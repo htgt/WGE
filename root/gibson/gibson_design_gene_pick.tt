@@ -1,3 +1,4 @@
+[% META title = "Gibson Design"; META tab_name = "Gibson" %]
 
 <form method="POST" action="[% c.uri_for( '/gibson_design_exon_pick' ) %]" class="well">
   <fieldset>

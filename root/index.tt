@@ -1,3 +1,5 @@
+[% META title = "WGE"; META tab_name = "Home" %]
+
 <script type="text/javascript">
   var species;
   $(document).ready(function() {

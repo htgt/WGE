@@ -4,7 +4,7 @@
 <head>
     <meta http-equiv="Content-type" content="text/html; charset=[% settings.charset %]" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WGE</title>
+    <title>[% template.title || "WGE" %]</title>
 
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/2.1.1/css/bootstrap.min.css">  
     <link rel="stylesheet" href="static/css/jquery-ui-1.9.2.custom.min.css" />
@@ -43,10 +43,17 @@
               [%- END -%]
           </a>
           <ul class="nav">
-            <li class="active"><a href="[% c.uri_for('/') %]">Home</a></li>
-            <li><a href="[% c.uri_for('/gibson_design_gene_pick') %]">Gibson Designs</a></li>
-            <li><a href="[% c.uri_for('/about') %]">About</a></li>
-            <li><a href="[% c.uri_for('/contact') %]">Contact</a></li>
+            <li [% IF (template.tab_name == 'Home' OR template.tab_name == undef) %] class="active" [% END %]>
+            <a href="[% c.uri_for('/') %]">Home</a></li>
+
+            <li [% IF template.tab_name == 'Gibson' %] class="active" [% END %]>
+            <a href="[% c.uri_for('/gibson_design_gene_pick') %]">Gibson Designs</a></li>
+            
+            <li [% IF template.tab_name == 'About' %] class="active" [% END %]>
+            <a href="[% c.uri_for('/about') %]">About</a></li>
+
+            <li [% IF template.tab_name == 'Contact' %] class="active" [% END %]>
+            <a href="[% c.uri_for('/contact') %]">Contact</a></li>
           </ul>
         </div>
     </div>
