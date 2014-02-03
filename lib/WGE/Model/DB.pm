@@ -25,11 +25,16 @@ my ($CONNECT_INFO, $FORM_VALIDATOR);
     $CONNECT_INFO = $db_config;
 }
 
+# Traits are Moose roles
+# use any role modules found in the WebAppCommon Plugin dir
+# or the WGE Model Plugin dir
 __PACKAGE__->config({
     schema_class => $CONNECT_INFO->{schema_class},
     connect_info =>  $CONNECT_INFO,
-    traits => [ '+MooseX::Log::Log4perl', '+LIMS2::Model::Plugin::Design',
-       map { "+".$_ } Module::Pluggable::Object->new( search_path => [ 'WGE::Model::Plugin' ] )->plugins ],
+    traits => [ '+MooseX::Log::Log4perl',
+       ( map { "+".$_ } Module::Pluggable::Object->new( search_path => [ 'WebAppCommon::Plugin' ] )->plugins ),       
+       ( map { "+".$_ } Module::Pluggable::Object->new( search_path => [ 'WGE::Model::Plugin' ] )->plugins  ),
+    ],
 });
 
 sub txn_do {

@@ -18,7 +18,8 @@ has model => (
     required => 1,
     handles  => {
         check_params          => 'check_params',
-        create_design_attempt => 'create_design_attempt',
+        create_design_attempt => 'c_create_design_attempt',
+        c_create_design_attempt => 'c_create_design_attempt',
     }
 );
 
@@ -121,7 +122,9 @@ sub exons_for_gene {
     my $gene_data = $self->c_build_gene_data( $gene );
 
     my $exon_data = $self->c_build_gene_exon_data( $gene, $gene_data->{gene_id}, $exon_types );
-    $self->designs_for_exons( $exon_data, $gene_data->{gene_id} );
+    
+    # Do we want to do this in WGE??
+    #$self->designs_for_exons( $exon_data, $gene_data->{gene_id} );
 
     return ( $gene_data, $exon_data );
 }
@@ -150,8 +153,10 @@ sub designs_for_exons {
         my @matching_designs;
 
         for my $design ( @designs ) {
+
             my $oligo_data = prebuild_oligos( $design, $assembly );
             # if no oligo data then design does not have oligos on assembly
+            # FIXME -  don't use LIMS2::Model
             next unless $oligo_data;
             my $di = LIMS2::Model::Util::DesignInfo->new(
                 design => $design,
@@ -167,7 +172,6 @@ sub designs_for_exons {
         $exon->{designs} = [ map { $_->id } @matching_designs ]
             if @matching_designs;
     }
-
     return;
 }
 
@@ -190,6 +194,35 @@ sub create_gibson_design {
     return $design_attempt;
 }
 
+=head2 prebuild_oligos
+
+Copied from LIMS2::Model::Util::DesignTargets
+Pre-build oligo hash for design from pre-fetched data to feed into design info object.
+This stops the design info object making its own database queries and speeds up the
+overall data retrieval.
+
+=cut
+sub prebuild_oligos {
+    my ( $design, $default_assembly ) = @_;
+
+    my %design_oligos_data;
+    for my $oligo ( $design->oligos ) {
+        my ( $locus ) = grep{ $_->assembly_id eq $default_assembly } $oligo->loci;
+        return unless $locus;
+
+        my %oligo_data = (
+            start      => $locus->chr_start,
+            end        => $locus->chr_end,
+            chromosome => $locus->chr->name,
+            strand     => $locus->chr_strand,
+        );
+        $oligo_data{seq} = $oligo->seq;
+
+        $design_oligos_data{ $oligo->design_oligo_type_id } = \%oligo_data;
+    }
+
+    return \%design_oligos_data;
+}
 
 __PACKAGE__->meta->make_immutable;
 

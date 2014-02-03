@@ -7,6 +7,9 @@ use Data::Dumper;
 
 BEGIN { extends 'Catalyst::Controller::REST' }
 
+# Design and DesignAttempt create/update methods
+# are defined in WebAppCommon::Plugin::Design
+
 sub design : Path( '/api/design' ) : Args(0) :ActionClass( 'REST' ) {}
 
 sub design_GET{
@@ -24,7 +27,7 @@ sub design_POST{
 
     my $design = $c->model->txn_do(
         sub {
-            shift->create_design( $c->request->data );
+            shift->c_create_design( $c->request->data );
         }
     );
 
@@ -48,7 +51,7 @@ sub design_attempt_GET {
 
     $c->assert_user_roles('read');
 
-    my $design_attempt = $c->model->retrieve_design_attempt({id => $c->req->param('id')});
+    my $design_attempt = $c->model->c_retrieve_design_attempt({id => $c->req->param('id')});
 
     return $self->status_ok( $c, entity => $design_attempt->as_hash({ json_as_hash => 1 }) );
 }
@@ -65,7 +68,7 @@ sub design_attempt_POST {
 
     my $design_attempt = $c->model->txn_do(
         sub {
-            shift->create_design_attempt( $c->request->data );
+            shift->c_create_design_attempt( $c->request->data );
         }
     );
 
@@ -88,7 +91,7 @@ sub design_attempt_PUT {
 
     my $design_attempt = $c->model->txn_do(
         sub {
-            shift->update_design_attempt( $c->request->data );
+            shift->c_update_design_attempt( $c->request->data );
         }
     );
 

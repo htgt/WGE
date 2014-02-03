@@ -63,8 +63,8 @@ sub gibson_design_exon_pick :Path('/gibson_design_exon_pick') :Args(0){
         # when we create the design
         $c->session->{species} = $c->request->param('species');
     }
-    catch{
-        my $message = "Problem finding gene: $_";
+    catch($e){
+        my $message = "Problem finding gene: $e";
         $c->log->error($message);
         $c->flash( error_msg => $message );
         $c->go('gibson_design_gene_pick');
@@ -91,9 +91,9 @@ sub create_gibson_design : Path( '/create_gibson_design' ) : Args(0) {
         try {
             $design_attempt = $create_design_util->create_gibson_design();
         }
-        catch {
-            $c->log->error($_);
-            $c->flash( error_msg => "Error submitting Design Creation job: $_" );
+        catch($e) {
+            $c->log->error($e);
+            $c->flash( error_msg => "Error submitting Design Creation job: $e" );
             $c->res->redirect( 'gibson_design_gene_pick' );
             return;
         };
@@ -122,7 +122,7 @@ sub design_attempt : PathPart('design_attempt') Chained('/') CaptureArgs(1) {
     my $design_attempt;
     try {
         $design_attempt = $c->model
-            ->retrieve_design_attempt( { id => $design_attempt_id } );
+            ->c_retrieve_design_attempt( { id => $design_attempt_id } );
     }
     catch( LIMS2::Exception::Validation $e ) {
         $c->stash( error_msg => "Please enter a valid design attempt id" );
