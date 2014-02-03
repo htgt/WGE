@@ -189,6 +189,12 @@ __PACKAGE__->might_have(
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 
+sub name{
+  my ($self) = @_;
+
+  return $self->id;
+}
+
 sub check_assembly_belongs {
     my ( $self, $assembly ) = @_;
 
