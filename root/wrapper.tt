@@ -46,8 +46,13 @@
             <li [% IF (template.tab_name == 'Home' OR template.tab_name == undef) %] class="active" [% END %]>
             <a href="[% c.uri_for('/') %]">Home</a></li>
 
-            <li [% IF template.tab_name == 'Gibson' %] class="active" [% END %]>
-            <a href="[% c.uri_for('/gibson_design_gene_pick') %]">Gibson Designs</a></li>
+            <li class="dropdown [% IF template.tab_name == 'Gibson' %] active[% END %]" >
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Gibson Designs<b class="caret"></b></a>
+              <ul class="dropdown-menu">            
+                <li><a href="[% c.uri_for('/gibson_design_gene_pick') %]">Create Design</a></li>
+                <li><a href="[% c.uri_for('/gibson_design_attempts') %]">Design Attempts</a></li>
+              </ul>
+            </li>
             
             <li [% IF template.tab_name == 'About' %] class="active" [% END %]>
             <a href="[% c.uri_for('/about') %]">About</a></li>
