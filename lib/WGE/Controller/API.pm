@@ -134,7 +134,7 @@ sub design_attempt_status :Chained('/') PathPart('design_attempt_status') Args(1
     if ( $status eq 'success' ) {
         my @design_ids = split( ' ', $da->design_ids );
         for my $design_id ( @design_ids ) {
-            my $link = $c->uri_for('view_design', { design_id => $design_id } )->as_string;
+            my $link = $c->uri_for('view_gibson_design', { design_id => $design_id } )->as_string;
             $design_links .= '<a href="' . $link . '">'. $design_id .'</a><br>';
         }
     }

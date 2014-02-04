@@ -54,6 +54,7 @@
               <ul class="dropdown-menu">            
                 <li><a href="[% c.uri_for('/gibson_design_gene_pick') %]">Create Design</a></li>
                 <li><a href="[% c.uri_for('/gibson_design_attempts') %]">Design Attempts</a></li>
+                <li><a href="[% c.uri_for('/view_gibson_designs') %]">View Designs</a></li>
               </ul>
             </li>
             

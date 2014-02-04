@@ -1,0 +1,66 @@
+[% META title="View Design"; META tab_name = 'Designs' %]
+
+<p>
+  <a href="[% c.uri_for( '/view_gibson_designs' ) %]" class="btn btn-primary">
+    <i class="icon-hand-left icon-white"></i>
+    Back to search
+  </a>
+</p>
+
+<div class="page-header">
+  <h1>Design <small> [% design.id %]</small></h1>
+</div>
+
+<table class="table table-bordered">
+  [%- FOR r IN display_design %]
+  [%- SET title=r.0; SET accessor = r.1 -%]
+  <tr>
+    <th>[% title %]</th> <td>[% design.$accessor %]</td>
+  </tr>
+  [%- END %]
+</table>
+
+
+<h2>Oligos</h2>
+[% IF design.oligos.size > 0 %]
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Chromosome</th>
+        <th>Strand</th>
+        <th>Start</th>
+        <th>End</th>
+        <th>Sequence</th>
+      </tr>
+    </thead>
+    <tbody>
+    [%- FOR oligo IN design.oligos %]
+      <tr>
+        <td>[% oligo.type             %]</td>
+        <td>[% oligo.locus.chr_name   %]</td>
+        <td>[% oligo.locus.chr_strand %]</td>
+        <td>[% oligo.locus.chr_start  %]</td>
+        <td>[% oligo.locus.chr_end    %]</td>
+        <td>[% oligo.seq              %]</td>
+      </tr>
+    [%- END %]
+    </tbody>
+  </table>
+  [% IF design.oligos_fasta %]
+  <form id="UCSC_BLAT" enctype="multipart/form-data" method="post" action="http://genome.ucsc.edu/cgi-bin/hgBlat" name="UCSC_BLAT" target="_blank">
+    <input type="hidden" name="org" value="[% species %]" />
+    <input type="hidden" name="db" value="[% ucsc_db %]" />
+    <input type="hidden" name="type" value="DNA" />
+    <input type="hidden" name="sort" value="query,score" />
+    <input type="hidden" name="output" value="hyperlink" />
+    <input type="hidden" name="userSeq" value="[% design.oligos_fasta %]"/>
+    <input type="hidden" name="Lucky" value="I'm feeling lucky" />
+    <input type="submit" class="btn btn-primary" value="UCSC BLAT" name="Lucky"/>
+   </form>
+   [% END %]
+[% ELSE %]
+  <p><em>No oligos for this design</em></p>
+[% END %]
+
+

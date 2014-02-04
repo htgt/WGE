@@ -8,7 +8,6 @@
 </div>
 
 [% INCLUDE 'create_design/pending_design_attempt.tt'
-    design_target_report_url = '/design_target_report'
     design_attempt_url = '/design_attempt'
     design_attempt_status_url = '/design_attempt_status'
 %]

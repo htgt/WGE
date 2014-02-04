@@ -56,9 +56,8 @@ has user => (
 sub _build_user {
     my $self = shift;
 
-    # FIXME
-    return "dummy";
-    #return $self->catalyst->user->name;
+    # We will add user login later
+    return "guest";
 }
 
 has assembly_id => (

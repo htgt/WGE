@@ -182,3 +182,94 @@ sub pending_design_attempt : PathPart('pending') Chained('design_attempt') : Arg
     );
     return;
 }
+
+my @DISPLAY_DESIGN = (
+    [ 'Design id'               => 'id' ],
+    [ 'Type'                    => 'type' ],
+    [ 'Assigned to gene(s)'     => 'assigned_genes' ],
+    [ 'Created by'              => 'created_by' ],
+    [ 'Created at'              => 'created_at' ]
+);
+
+sub view_design :Path( '/view_gibson_design' ) : Args(0) {
+    my ( $self, $c ) = @_;
+
+    #$c->assert_user_roles( 'read' );
+
+    my $design_id  = $c->request->param('design_id');
+
+    my $design;
+    try {
+        $design = $c->model->c_retrieve_design( { id => $design_id } );
+    }
+    catch( LIMS2::Exception::Validation $e ) {
+        $c->stash( error_msg => "Please enter a valid design id" );
+        return $c->go('index');
+    } catch( LIMS2::Exception::NotFound $e ) {
+        $c->stash( error_msg => "Design $design_id not found" );
+        return $c->go('index');
+    }
+
+    my $design_data = $design->as_hash;
+    $design_data->{assigned_genes} = join q{, }, @{ $design_data->{assigned_genes} || [] };
+
+    my $species_id = $design_data->{species};
+
+    $c->log->debug( "Design: " .Dumper($design_data) );
+
+    $c->stash(
+        design         => $design_data,
+        display_design => \@DISPLAY_DESIGN,
+        species        => $species_id,
+    );
+
+    return;    
+}
+
+sub view_gibson_designs :Path( '/view_gibson_designs' ) : Args(0) {
+    my ($self, $c) = @_;
+
+    # assert user roles
+
+    my $action = $c->request->param('action');
+
+    return unless $action;
+
+    if ($action eq "View Design"){
+        my $design_id = $c->request->param('design_id');
+        
+        unless ($design_id){
+            $c->stash( error_msg => "Please provide a design id");
+            return;
+        }
+
+        unless ($c->model->resultset('Design')->find({ id => $design_id })){
+            $c->stash( error_msg => "Design id $design_id not found");
+            return;            
+        }
+        
+        $c->stash->{template} = 'view_design.tt';
+        $c->detach('view_design', [ design_id => $design_id ] );
+    }
+    elsif ($action eq "View Design Attempt"){
+        my $attempt_id = $c->request->param('design_attempt_id');
+        
+        unless ($attempt_id){
+            $c->stash( error_msg => "Please provide a design attempt id");
+            return;
+        }
+
+        unless ($c->model->resultset('DesignAttempt')->find({ id => $attempt_id })){
+            $c->stash( error_msg => "Design Attempt id $attempt_id not found");
+            return;            
+        }
+
+        $c->stash->{template} = 'view_design_attempt.tt';
+        my $view_uri = $c->uri_for_action('view_design_attempt', [ $attempt_id ]);
+        $c->log->debug( "redirecting to: $view_uri" );
+        $c->response->redirect( $view_uri );
+        $c->detach;
+    }
+
+    return;
+}
