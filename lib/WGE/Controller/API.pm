@@ -13,7 +13,10 @@ WGE::Controller::API - API Controller for WGE
 
 =head1 DESCRIPTION
 
-[enter your description here]
+Contains methods which provide data to javascript requests
+and do not require user authentication.
+
+Authenticated requests should use the REST API
 
 =cut
 
@@ -116,6 +119,28 @@ sub pair_off_target_search :Local('pair_off_target_search') {
 	
 	$c->stash->{json_data} = \@data;
 	$c->forward('View::JSON');
+}
+
+sub design_attempt_status :Chained('/') PathPart('design_attempt_status') Args(1) {
+    my ( $self, $c, $da_id ) = @_;
+ 
+    # require authenticated user for this request?
+    
+    $c->log->debug("Getting status for design attempt $da_id");
+
+    my $da = $c->model->c_retrieve_design_attempt( { id => $da_id } );
+    my $status = $da->status;
+    my $design_links;
+    if ( $status eq 'success' ) {
+        my @design_ids = split( ' ', $da->design_ids );
+        for my $design_id ( @design_ids ) {
+            my $link = $c->uri_for('view_design', { design_id => $design_id } )->as_string;
+            $design_links .= '<a href="' . $link . '">'. $design_id .'</a><br>';
+        }
+    }
+
+    $c->stash->{json_data} = { status => $status, designs => $design_links };
+    $c->forward('View::JSON');
 }
 #
 # should these go into a util module? (yes)

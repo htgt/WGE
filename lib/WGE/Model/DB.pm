@@ -32,8 +32,8 @@ __PACKAGE__->config({
     schema_class => $CONNECT_INFO->{schema_class},
     connect_info =>  $CONNECT_INFO,
     traits => [ '+MooseX::Log::Log4perl',
-       ( map { "+".$_ } Module::Pluggable::Object->new( search_path => [ 'WebAppCommon::Plugin' ] )->plugins ),       
-       ( map { "+".$_ } Module::Pluggable::Object->new( search_path => [ 'WGE::Model::Plugin' ] )->plugins  ),
+       map { "+".$_ } Module::Pluggable::Object->new( 
+        search_path => [ 'WebAppCommon::Plugin', 'WGE::Model::Plugin' ] )->plugins,       
     ],
 });
 
