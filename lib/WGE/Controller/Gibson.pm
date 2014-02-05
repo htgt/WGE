@@ -3,6 +3,7 @@ use Moose;
 use namespace::autoclean;
 use Data::Dumper;
 use TryCatch;
+use IO::File;
 use WGE::Util::CreateDesign;
 
 BEGIN { extends 'Catalyst::Controller' }
@@ -196,31 +197,17 @@ sub view_design :Path( '/view_gibson_design' ) : Args(0) {
 
     #$c->assert_user_roles( 'read' );
 
-    my $design_id  = $c->request->param('design_id');
-
-    my $design;
-    try {
-        $design = $c->model->c_retrieve_design( { id => $design_id } );
-    }
-    catch( LIMS2::Exception::Validation $e ) {
-        $c->stash( error_msg => "Please enter a valid design id" );
-        return $c->go('index');
-    } catch( LIMS2::Exception::NotFound $e ) {
-        $c->stash( error_msg => "Design $design_id not found" );
-        return $c->go('index');
-    }
-
-    my $design_data = $design->as_hash;
-    $design_data->{assigned_genes} = join q{, }, @{ $design_data->{assigned_genes} || [] };
+    my $design_data = $self->_fetch_design_data($c);
 
     my $species_id = $design_data->{species};
 
-    $c->log->debug( "Design: " .Dumper($design_data) );
+    my $download_link = $c->uri_for('/download_design',{ design_id => $design_data->{id}});
 
     $c->stash(
         design         => $design_data,
         display_design => \@DISPLAY_DESIGN,
         species        => $species_id,
+        download_link  => $download_link,
     );
 
     return;    
@@ -272,4 +259,106 @@ sub view_gibson_designs :Path( '/view_gibson_designs' ) : Args(0) {
     }
 
     return;
+}
+
+sub download_design :Path( '/download_design' ) : Args(0) {
+    my ( $self, $c ) = @_;
+
+    #$c->assert_user_roles( 'read' );
+
+    my $design_data = $self->_fetch_design_data($c);
+
+    my $filename = "WGE_design_".$design_data->{id}.".csv";
+
+    # FIXME: print design data as csv...
+    $c->response->status( 200 );
+    $c->response->content_type( 'text/csv' );
+    $c->response->header( 'Content-Disposition' => "attachment; filename=$filename" );
+    $c->response->body( Dumper($design_data) );
+
+    return;    
+}
+
+sub genoverse_browse_view :Path( '/genoverse_browse') : Args(0){
+    my ($self, $c) = @_;
+
+    my @required = qw(genome chromosome browse_start browse_end);
+    my @missing_params = grep { not defined $c->request->params->{$_ } } @required;
+
+    if (@missing_params){
+        # get info for initial display from design oligos...
+        my $design_data = $self->_fetch_design_data($c);
+    
+        my ($start, $end, $chromosome, $genome);
+        foreach my $oligo (@{ $design_data->{oligos} || [] }){
+            $chromosome ||= $oligo->{locus}->{chr_name};
+            $genome   ||= $oligo->{locus}->{assembly};
+            my $oligo_start = $oligo->{locus}->{chr_start};
+            my $oligo_end = $oligo->{locus}->{chr_end};
+
+            if ($oligo_start > $oligo_end){
+                die "Was not expecting oligo start to be after oligo end";
+            }
+
+            if (not defined $start or $start > $oligo_start){
+                $start = $oligo_start;
+            }
+
+            if (not defined $end or $end < $oligo_end){
+                $end = $oligo_end;
+            }
+        }
+
+        $c->stash(
+            'genome'        => $genome,
+            'chromosome'    => $chromosome,
+            'browse_start'  => $start,
+            'browse_end'    => $end,
+            'view_single'   => $c->request->params->{'view_single'},
+            'view_paired'   => $c->request->params->{'view_paired'},
+            'design_id'     => $design_data->{id},
+            'genes'         => $design_data->{assigned_genes},
+        );
+    }
+    else{
+
+        # genome coords have already been provided, e.g. when
+        # we adjust the view_single/view_paired params
+        $c->stash(
+            'genome'        => $c->request->params->{'genome'},
+            'chromosome'    => $c->request->params->{'chromosome'},
+            'browse_start'  => $c->request->params->{'browse_start'},
+            'browse_end'    => $c->request->params->{'browse_end'},
+            'view_single'   => $c->request->params->{'view_single'},
+            'view_paired'   => $c->request->params->{'view_paired'},
+            'design_id'     => $c->request->params->{'design_id'},
+            'genes'         => $c->request->params->{'genes'}
+        );
+    }
+    return;
+}
+
+sub _fetch_design_data{
+    my ($self, $c) = @_;
+
+    my $design_id  = $c->request->param('design_id');
+
+    my $design;
+    try {
+        $design = $c->model->c_retrieve_design( { id => $design_id } );
+    }
+    catch( LIMS2::Exception::Validation $e ) {
+        $c->stash( error_msg => "Please provide a valid design id" );
+        return $c->go('index');
+    } catch( LIMS2::Exception::NotFound $e ) {
+        $c->stash( error_msg => "Design $design_id not found" );
+        return $c->go('index');
+    }
+
+    my $design_data = $design->as_hash;
+    $design_data->{assigned_genes} = join q{, }, @{ $design_data->{assigned_genes} || [] };
+
+    $c->log->debug( "Design: " .Dumper($design_data) );
+
+    return $design_data;    
 }

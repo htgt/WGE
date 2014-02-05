@@ -1,6 +1,7 @@
 package WGE::Controller::API;
 
 use Moose;
+use WGE::Util::GenomeBrowser qw(gibson_designs_for_region design_oligos_to_gff);
 use namespace::autoclean;
 use Data::Dumper;
 
@@ -141,6 +142,28 @@ sub design_attempt_status :Chained('/') PathPart('design_attempt_status') Args(1
 
     $c->stash->{json_data} = { status => $status, designs => $design_links };
     $c->forward('View::JSON');
+}
+
+sub designs_in_region :Local('designs_in_region') Args(0){
+    my ($self, $c) = @_;
+
+    my $schema = $c->model->schema;
+    my $params = {
+        assembly_id          => $c->request->params->{assembly},
+        chromosome_number    => $c->request->params->{chr},
+        start_coord          => $c->request->params->{start},
+        end_coord            => $c->request->params->{end},
+    };
+    # FIXME: generate gff for all design oligos in specified region
+    my $oligos = gibson_designs_for_region (
+         $schema,
+         $params,
+    );
+
+    my $gibson_gff = design_oligos_to_gff( $oligos, $params );
+    $c->response->content_type( 'text/plain' );
+    my $body = join "\n", @{$gibson_gff};
+    return $c->response->body( $body );
 }
 #
 # should these go into a util module? (yes)
