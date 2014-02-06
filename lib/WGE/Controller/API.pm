@@ -1,7 +1,7 @@
 package WGE::Controller::API;
 
 use Moose;
-use WGE::Util::GenomeBrowser qw(gibson_designs_for_region design_oligos_to_gff);
+use WGE::Util::GenomeBrowser qw(gibson_designs_for_region design_oligos_to_gff crisprs_for_region crisprs_to_gff);
 use namespace::autoclean;
 use Data::Dumper;
 
@@ -244,6 +244,24 @@ sub designs_in_region :Local('designs_in_region') Args(0){
 #
 # should these go into a util module? (yes)
 #
+sub crisprs_in_region :Local('crisprs_in_region') Args(0){
+    my ($self, $c) = @_;
+    
+    my $schema = $c->model->schema;
+    my $params = { 
+        start_coord       => $c->request->params->{start},
+        end_coord         => $c->request->params->{end},
+        chromosome_number => $c->request->params->{chr},
+        assembly_id       => $c->request->params->{assembly},
+    };
+    
+    my $crisprs = crisprs_for_region($schema, $params);
+
+    my $crispr_gff = crisprs_to_gff( $crisprs, $params);
+    $c->response->content_type( 'text/plain' );
+    my $body = join "\n", @{$crispr_gff};
+    return $c->response->body( $body );    
+}
 
 #used to retrieve pairs or crisprs from an arrayref of exons
 sub _get_exon_attribute {

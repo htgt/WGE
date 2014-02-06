@@ -99,7 +99,7 @@
 [% IF view_single %]
           Genoverse.Track.extend({
             name      : 'Crisprs',
-            url       : "[% c.uri_for('/api/crispr')%]" + "?chr=__CHR__&start=__START__&end=__END__" ,
+            url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]" ,
             model     : Genoverse.Track.Model.Transcript.GFF3,
             view      : Genoverse.Track.View.Transcript,
             resizable : 'auto',

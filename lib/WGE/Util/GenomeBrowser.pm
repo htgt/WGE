@@ -42,12 +42,15 @@ sub crisprs_for_region {
     my $params = shift;
 
     # Chromosome number is looked up in the chromosomes table to get the chromosome_id
-    $params->{chromosome_id} = retrieve_chromosome_id( $schema, $params->{species}, $params->{chromosome_number} );
+    my $species = $schema->resultset('Assembly')->find({ id => $params->{assembly_id} })->species;
 
-    my $crisprs_rs = $schema->resultset('CrisprLocus')->search(
+    # Store species name for gff output
+    $params->{species} = $species->id;
+
+    my $crisprs_rs = $schema->resultset('Crispr')->search(
         {
-            'assembly_id' => $params->{assembly_id},
-            'chr_id'      => $params->{chromosome_id},
+            'species_id'  => $species->numerical_id,
+            'chr_name'    => $params->{chromosome_number} ,
             # need all the crisprs starting with values >= start_coord
             # and whose start values are <= end_coord
             'chr_start'   => { -between => [
@@ -163,21 +166,21 @@ sub crisprs_to_gff {
                 'source' => 'LIMS2',
                 'type' => 'Crispr',
                 'start' => $crispr_r->chr_start,
-                'end' => $crispr_r->chr_end,
+                'end' => $crispr_r->chr_start + 22,
                 'score' => '.',
                 'strand' => '+' ,
 #                'strand' => '.',
                 'phase' => '.',
                 'attributes' => 'ID='
-                    . 'C_' . $crispr_r->crispr_id . ';'
-                    . 'Name=' . 'LIMS2' . '-' . $crispr_r->crispr_id
+                    . 'C_' . $crispr_r->id . ';'
+                    . 'Name=' . 'LIMS2' . '-' . $crispr_r->id
                 );
             my $crispr_parent_datum = prep_gff_datum( \%crispr_format_hash );
             $crispr_format_hash{'type'} = 'CDS';
             $crispr_format_hash{'attributes'} =     'ID='
-                    . $crispr_r->crispr_id . ';'
-                    . 'Parent=C_' . $crispr_r->crispr_id . ';'
-                    . 'Name=' . 'LIMS2' . '-' . $crispr_r->crispr_id . ';'
+                    . $crispr_r->id . ';'
+                    . 'Parent=C_' . $crispr_r->id . ';'
+                    . 'Name=' . 'LIMS2' . '-' . $crispr_r->id . ';'
                     . 'color=#45A825'; # greenish
             my $crispr_child_datum = prep_gff_datum( \%crispr_format_hash );
             push @crisprs_gff, $crispr_parent_datum, $crispr_child_datum ;
