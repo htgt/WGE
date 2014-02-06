@@ -66,10 +66,7 @@ sub crisprs_for_region {
 
 =head crispr_pairs_for_region
 
-Returns a resultset containing the paired Crisprs for the region defined by params.
-
-Individual crisprs for a region on a chromosome must be looked up in the CrisprPair table.
-This is done by a join pulling back all the pairs in one go.
+Identifies pairs within the list of crisprs for the region
 
 =cut
 
@@ -77,22 +74,13 @@ sub crispr_pairs_for_region {
     my $schema = shift;
     my $params = shift;
 
+    my @crisprs = crisprs_for_region($schema, $params)->all;
 
-    $params->{chromosome_id} = retrieve_chromosome_id( $schema, $params->{species}, $params->{chromosome_number} );
+    # Find pairs amongst crisprs
+    my $pair_finder = WGE::Util::FindPairs->new;
+    my $pairs = $pair_finder->find_pairs( \@crisprs, \@crisprs );
 
-    my $crisprs_rs = $schema->resultset('CrisprBrowserPairs')->search( {},
-        {
-            bind => [
-                $params->{start_coord},
-                $params->{end_coord},
-                $params->{chromosome_id},
-                $params->{assembly_id},
-            ],
-        }
-    );
-
-
-    return $crisprs_rs;
+    return $pairs;
 }
 
 
@@ -200,7 +188,7 @@ concatenation to produce a GFF3 format file.
 =cut
 
 sub crispr_pairs_to_gff {
-    my $crisprs_rs = shift;
+    my $crispr_pairs = shift;
     my $params = shift;
 
     my @crisprs_gff;
@@ -221,39 +209,48 @@ sub crispr_pairs_to_gff {
         . '-'
         . $params->{'end_coord'} ;
 
-        while ( my $crispr_r = $crisprs_rs->next ) {
+        foreach my $crispr_pair (@{ $crispr_pairs || [] } ) {
+
+            my $right = $crispr_pair->{right_crispr};
+            my $left = $crispr_pair->{left_crispr};
+            my $id = $left->{id}.":".$right->{id};
+
             my %crispr_format_hash = (
                 'seqid' => $params->{'chromosome_number'},
                 'source' => 'LIMS2',
                 'type' => 'crispr_pair',
-                'start' => $crispr_r->left_crispr_start,
-                'end' => $crispr_r->right_crispr_end,
+                'start' => $left->{chr_start},
+                'end' => $right->{chr_start}+22,
                 'score' => '.',
                 'strand' => '+' ,
 #                'strand' => '.',
                 'phase' => '.',
                 'attributes' => 'ID='
-                    . $crispr_r->pair_id . ';'
-                    . 'Name=' . 'LIMS2' . '-' . $crispr_r->pair_id
+                    . $id . ';'
+                    . 'Name=' . 'LIMS2' . '-' . $id
                 );
+
             my $crispr_pair_parent_datum = prep_gff_datum( \%crispr_format_hash );
+            
             $crispr_format_hash{'type'} = 'CDS';
-            $crispr_format_hash{'end'} = $crispr_r->left_crispr_end;
+            $crispr_format_hash{'end'} = $left->{chr_start}+22;
             $crispr_format_hash{'attributes'} =     'ID='
-                    . $crispr_r->left_crispr_id . ';'
-                    . 'Parent=' . $crispr_r->pair_id . ';'
-                    . 'Name=' . 'LIMS2' . '-' . $crispr_r->left_crispr_id . ';'
+                    . $left->{id} . ';'
+                    . 'Parent=' . $id . ';'
+                    . 'Name=' . 'LIMS2' . '-' . $left->{id} . ';'
                     . 'color=#AA2424'; # reddish
             my $crispr_left_datum = prep_gff_datum( \%crispr_format_hash );
-            $crispr_format_hash{'start'} = $crispr_r->right_crispr_start;
-            $crispr_format_hash{'end'} = $crispr_r->right_crispr_end;
+
+            $crispr_format_hash{'start'} = $right->{chr_start};
+            $crispr_format_hash{'end'} = $right->{chr_start}+22;
             $crispr_format_hash{'attributes'} =     'ID='
-                    . $crispr_r->right_crispr_id . ';'
-                    . 'Parent=' . $crispr_r->pair_id . ';'
-                    . 'Name=' . 'LIMS2' . '-' . $crispr_r->right_crispr_id . ';'
+                    . $right->{id} . ';'
+                    . 'Parent=' . $id . ';'
+                    . 'Name=' . 'LIMS2' . '-' . $right->{id} . ';'
                     . 'color=#1A8599'; # blueish
 #            $crispr_format_hash{'attributes'} = $crispr_r->pair_id;
             my $crispr_right_datum = prep_gff_datum( \%crispr_format_hash );
+            
             push @crisprs_gff, $crispr_pair_parent_datum, $crispr_left_datum, $crispr_right_datum ;
         }
 
