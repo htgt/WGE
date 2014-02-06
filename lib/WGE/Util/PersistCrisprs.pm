@@ -15,7 +15,7 @@ has '+configfile' => (
                '/nfs/team87/farm3_lims2_vms/conf/wge-live-rest-client.conf',
 );
 
-has [ qw( dbi_str species username password ) ] => ( 
+has [ qw( dbi_str species db_user db_pass ) ] => ( 
     is       => 'ro',
     isa      => 'Str',
     required => 1
@@ -53,8 +53,8 @@ sub _build_dbh {
     # read $self->username and password that we got from configfile
     my $dbh = DBI->connect( 
         $self->dbi_str, 
-        $self->username, 
-        $self->password, 
+        $self->db_user, 
+        $self->db_pass, 
         { AutoCommit => 0, RaiseError => 1, HandleError => \&handle_error } 
     ) or die "Couldn't connect to db:" . DBI->errstr;
 
@@ -292,6 +292,7 @@ Note: not an object method (doesn't need $self)
 sub handle_error {
     my ( $error, $dbh ) = @_;
 
+    #if this is a DBI::dr then it didn't connect properly
     $dbh->rollback;
     $dbh->disconnect;
 

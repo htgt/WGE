@@ -4,7 +4,21 @@ use Moose;
 use namespace::autoclean;
 use Data::Dumper;
 
+use WGE::Util::FindPairs;
+
 BEGIN { extends 'Catalyst::Controller' }
+
+has pair_finder => (
+    is         => 'ro',
+    isa        => 'WGE::Util::FindPairs',
+    lazy_build => 1,
+);
+
+sub _build_pair_finder {
+    my $self = shift;
+
+    return WGE::Util::FindPairs->new;
+}
 
 
 =head1 NAME
@@ -101,22 +115,81 @@ sub pair_search :Local('pair_search') {
 }
 
 sub pair_off_target_search :Local('pair_off_target_search') {
-	my ($self, $c) = @_;
-	my $params = $c->req->params;
-	
-	check_params_exist( $c, $params, [ 'pair_id[]' ]);
-	
-	my @data;
-	my $pair_id = $params->{ 'pair_id[]'};
-	my @pair_ids = ( ref $pair_id eq 'ARRAY' ) ? @{ $pair_id } : ( $pair_id );
+    my ( $self, $c ) = @_;
 
-	foreach my $id ( @pair_ids ){
-		push @data, "Processing pair $id";
-	}
-	
-	$c->stash->{json_data} = \@data;
-	$c->forward('View::JSON');
+    my $params = $c->req->params;
+
+    check_params_exist( $c, $params, [ qw( species left_id right_id ) ] );
+
+    #for now we will trust that what we got was a valid pair.
+    #we will need to verify or someone can send any old crap.
+    #we need to get the spacer AGAIN here, ugh
+    
+    # also need to make extra sure someone can't put '24576 || rm -rf *' or something
+
+    my $species_id = $c->model('DB')->resultset('Species')->find(
+        { id       => $params->{species} }
+    )->numerical_id;
+
+
+    my $pair = $c->model('DB')->resultset('CrisprPair')->find( 
+        { 
+            left_id    => $params->{left_id}, 
+            right_id   => $params->{right_id},
+            species_id => $species_id,
+        }
+    );
+
+    #if the pair doesn't exist create it, note that this is subject to a race condition
+    unless ( $pair ) {
+        #find the crispr entries so we can check they are a valid pair
+        my @crisprs = $c->model('DB')->resultset('Crispr')->search( 
+            {  
+                id         => { -IN => [ $params->{left_id}, $params->{right_id} ] },
+                species_id => $species_id
+            }
+        );
+
+        #identify if the chosen crisprs are valid by
+        #checking the list of crisprs against itself for pairs
+        my $pairs = $self->pair_finder->find_pairs( \@crisprs, \@crisprs );
+
+        die "Found more than one pair??" if @{ $pairs } > 1;
+
+        $pair = $c->model('DB')->resultset('CrisprPair')->create( 
+            {
+                left_id    => $pairs->[0]{left_crispr}{id},
+                right_id   => $pairs->[0]{right_crispr}{id},
+                spacer     => $pairs->[0]{spacer},
+                species_id => $species_id,
+
+            },
+            { key => 'primary' }
+        );
+
+    }
+
+    $c->stash->{json_data} = { 'success' => 1 };
+    $c->forward('View::JSON');
 }
+
+# sub pair_off_target_search :Local('pair_off_target_search') {
+# 	my ($self, $c) = @_;
+# 	my $params = $c->req->params;
+	
+# 	check_params_exist( $c, $params, [ 'pair_id[]' ]);
+	
+# 	my @data;
+# 	my $pair_id = $params->{ 'pair_id[]'};
+# 	my @pair_ids = ( ref $pair_id eq 'ARRAY' ) ? @{ $pair_id } : ( $pair_id );
+
+# 	foreach my $id ( @pair_ids ){
+# 		push @data, "Processing pair $id";
+# 	}
+	
+# 	$c->stash->{json_data} = \@data;
+# 	$c->forward('View::JSON');
+# }
 #
 # should these go into a util module? (yes)
 #

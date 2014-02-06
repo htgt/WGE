@@ -64,6 +64,21 @@ END;
 $$;
 
 
+--
+-- Name: crispr_pairs_update_trigger(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION crispr_pairs_update_trigger() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    NEW.last_modified = NOW();
+    NEW.pair_id = NEW.left_id || '_' || NEW.right_id;
+    RETURN NEW;
+END;
+$$;
+
+
 SET default_tablespace = '';
 
 SET default_with_oids = false;
@@ -110,7 +125,9 @@ CREATE TABLE crispr_pairs (
     off_target_ids integer[],
     status integer DEFAULT 0,
     species_id integer NOT NULL,
-    off_target_summary text
+    off_target_summary text,
+    last_modified timestamp without time zone DEFAULT now(),
+    pair_id text NOT NULL
 );
 
 
@@ -597,10 +614,24 @@ ALTER TABLE ONLY crispr_pairs_human ALTER COLUMN status SET DEFAULT 0;
 
 
 --
+-- Name: last_modified; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY crispr_pairs_human ALTER COLUMN last_modified SET DEFAULT now();
+
+
+--
 -- Name: status; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY crispr_pairs_mouse ALTER COLUMN status SET DEFAULT 0;
+
+
+--
+-- Name: last_modified; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY crispr_pairs_mouse ALTER COLUMN last_modified SET DEFAULT now();
 
 
 --
@@ -936,6 +967,30 @@ ALTER TABLE ONLY species
 
 
 --
+-- Name: unique_human_pair_id; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY crispr_pairs_human
+    ADD CONSTRAINT unique_human_pair_id UNIQUE (pair_id);
+
+
+--
+-- Name: unique_mouse_pair_id; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY crispr_pairs_mouse
+    ADD CONSTRAINT unique_mouse_pair_id UNIQUE (pair_id);
+
+
+--
+-- Name: unique_pair_id; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY crispr_pairs
+    ADD CONSTRAINT unique_pair_id UNIQUE (pair_id);
+
+
+--
 -- Name: unique_species; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
 --
 
@@ -992,6 +1047,27 @@ CREATE INDEX idx_exon_loci ON exons USING btree (chr_name, chr_start, chr_end);
 --
 
 CREATE INDEX idx_gene_loci ON genes USING btree (chr_name, chr_start, chr_end, species_id);
+
+
+--
+-- Name: crispr_pairs_human_update_time; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER crispr_pairs_human_update_time BEFORE UPDATE ON crispr_pairs_human FOR EACH ROW EXECUTE PROCEDURE crispr_pairs_update_trigger();
+
+
+--
+-- Name: crispr_pairs_mouse_update_time; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER crispr_pairs_mouse_update_time BEFORE UPDATE ON crispr_pairs_mouse FOR EACH ROW EXECUTE PROCEDURE crispr_pairs_update_trigger();
+
+
+--
+-- Name: crispr_pairs_update_time; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER crispr_pairs_update_time BEFORE UPDATE ON crispr_pairs FOR EACH ROW EXECUTE PROCEDURE crispr_pairs_update_trigger();
 
 
 --

@@ -33,6 +33,9 @@ sub load_from_hash {
 
 }
 
+#TODO:
+#delete this method, it is now on the Result
+
 #should really be a util method, then we have
 #a calc_off_targets on the result that will call the util method with self->l_crispr etc.
 sub calculate_off_targets {
@@ -46,6 +49,10 @@ sub calculate_off_targets {
     my $species_id = $schema->resultset('Species')->find(
         { id => $species }
       )->numerical_id;
+
+    #
+    #TODO: dynamic calculation of spacer so we don't have to do it here
+    #
 
     my @crisprs = $schema->resultset('CrisprOffTargets')->search(
         {},
@@ -108,6 +115,8 @@ sub calculate_off_targets {
         },
         { key => 'primary' }
     );
+
+    return scalar( @all_offs ) / 2;
 }
 
 1;

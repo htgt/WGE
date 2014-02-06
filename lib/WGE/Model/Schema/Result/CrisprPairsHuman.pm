@@ -77,6 +77,18 @@ __PACKAGE__->table("crispr_pairs_human");
   data_type: 'text'
   is_nullable: 1
 
+=head2 last_modified
+
+  data_type: 'timestamp'
+  default_value: current_timestamp
+  is_nullable: 1
+  original: {default_value => \"now()"}
+
+=head2 pair_id
+
+  data_type: 'text'
+  is_nullable: 0
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -99,6 +111,15 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_nullable => 0 },
   "off_target_summary",
   { data_type => "text", is_nullable => 1 },
+  "last_modified",
+  {
+    data_type     => "timestamp",
+    default_value => \"current_timestamp",
+    is_nullable   => 1,
+    original      => { default_value => \"now()" },
+  },
+  "pair_id",
+  { data_type => "text", is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -114,6 +135,20 @@ __PACKAGE__->add_columns(
 =cut
 
 __PACKAGE__->set_primary_key("left_id", "right_id");
+
+=head1 UNIQUE CONSTRAINTS
+
+=head2 C<unique_human_pair_id>
+
+=over 4
+
+=item * L</pair_id>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint("unique_human_pair_id", ["pair_id"]);
 
 =head1 RELATIONS
 
@@ -168,8 +203,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-28 16:41:34
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:sBuk1Ohk1SMdZo21RgkNkQ
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-02-06 10:35:46
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:FuNgJ4uXf/1TWgI4mRYe4w
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
