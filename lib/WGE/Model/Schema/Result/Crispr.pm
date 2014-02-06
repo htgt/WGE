@@ -45,14 +45,14 @@ __PACKAGE__->table("crisprs");
   is_nullable: 0
   sequence: 'crisprs_id_seq'
 
-=head2 chr_start
-
-  data_type: 'integer'
-  is_nullable: 0
-
 =head2 chr_name
 
   data_type: 'text'
+  is_nullable: 0
+
+=head2 chr_start
+
+  data_type: 'integer'
   is_nullable: 0
 
 =head2 seq
@@ -70,7 +70,7 @@ __PACKAGE__->table("crisprs");
   data_type: 'integer'
   is_nullable: 0
 
-=head2 off_targets
+=head2 off_target_ids
 
   data_type: 'integer[]'
   is_nullable: 1
@@ -90,17 +90,17 @@ __PACKAGE__->add_columns(
     is_nullable       => 0,
     sequence          => "crisprs_id_seq",
   },
-  "chr_start",
-  { data_type => "integer", is_nullable => 0 },
   "chr_name",
   { data_type => "text", is_nullable => 0 },
+  "chr_start",
+  { data_type => "integer", is_nullable => 0 },
   "seq",
   { data_type => "text", is_nullable => 0 },
   "pam_right",
   { data_type => "boolean", is_nullable => 0 },
   "species_id",
   { data_type => "integer", is_nullable => 0 },
-  "off_targets",
+  "off_target_ids",
   { data_type => "integer[]", is_nullable => 1 },
   "off_target_summary",
   { data_type => "text", is_nullable => 1 },
@@ -117,27 +117,6 @@ __PACKAGE__->add_columns(
 =cut
 
 __PACKAGE__->set_primary_key("id");
-
-=head1 UNIQUE CONSTRAINTS
-
-=head2 C<crisprs_chr_start_chr_name_pam_right_key>
-
-=over 4
-
-=item * L</chr_start>
-
-=item * L</chr_name>
-
-=item * L</pam_right>
-
-=back
-
-=cut
-
-__PACKAGE__->add_unique_constraint(
-  "crisprs_chr_start_chr_name_pam_right_key",
-  ["chr_start", "chr_name", "pam_right"],
-);
 
 =head1 RELATIONS
 
@@ -172,16 +151,19 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 10:25:34
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:7nVjP5cu7bpVXQ+WEfmKFA
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-28 11:39:32
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:nKvhG/qH0R9OGT5Q+PFjDA
 
 __PACKAGE__->set_primary_key('id');
+
+with 'WGE::Util::CrisprRole';
 
 sub as_hash {
   my $self = shift;
 
   #should just do a map on $self->columns...
   return {
+    id        => $self->id,
     chr_name  => $self->chr_name,
     chr_start => $self->chr_start,
     seq       => $self->seq,
@@ -193,7 +175,16 @@ sub as_hash {
 sub pairs {
   my $self = shift;
 
-  return ($self->pam_right) ? $self->crispr_pairs_right_crisprs : $self->crispr_pairs_left_crisprs;
+  return ($self->pam_right) ? $self->crispr_pairs_right : $self->crispr_pairs_left;
+}
+
+sub off_targets {
+  my $self = shift;
+
+  return $self->result_source->schema->resultset('CrisprOffTargets')->search(
+    {},
+    { bind => [ "{" . $self->id . "}", $self->species_id, $self->species_id ] }
+  );
 }
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

@@ -47,7 +47,7 @@ __PACKAGE__->add_columns(
         seq 
         pam_right
         species_id
-        off_targets
+        off_target_ids
         off_target_summary
     )
 );
@@ -57,7 +57,7 @@ __PACKAGE__->set_primary_key( "id" );
 __PACKAGE__->belongs_to(
     "species",
     "WGE::Model::Schema::Result::Species",
-    { id => "species_id" },
+    { id => "numerical_id" },
 );
 
 sub as_hash {
@@ -71,20 +71,13 @@ sub as_hash {
         seq 
         pam_right
         species_id
-        off_targets
+        off_target_ids
     );
 
     return { map { $_ => $self->$_ } @cols };
 }
 
-sub pam_start {
-    my $self = shift;
-    return $self->chr_start + ($self->pam_right ? 19 : 2)
-}
-
-sub pam_left {
-    return ! shift->pam_right;
-}
+with 'WGE::Util::CrisprRole';
 
 
 __PACKAGE__->meta->make_immutable;

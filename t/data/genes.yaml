@@ -1,5 +1,5 @@
 ---
-2:
+Mouse:
   ENSMUSG00000000001:
     canonical_transcript: ENSMUST00000000001
     chr_end: 108146146
@@ -86,7 +86,7 @@
         rank: 2
     marker_symbol: Unc119
     strand: 1
-1:
+Human:
   ENSG00000010438:
     canonical_transcript: ENST00000361005
     chr_end: 33799230

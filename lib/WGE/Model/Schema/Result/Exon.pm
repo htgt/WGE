@@ -144,8 +144,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 10:25:34
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:9zIj39A59gLVfUrG8eWbCQ
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 13:58:10
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:frJ+3S6bI8G0wy8BJUenaQ
 
 use WGE::Util::FindPairs;
 
@@ -159,9 +159,10 @@ sub crisprs {
   )->species;
 
   #find all crisprs for this exon
+  #maybe we should change CrisprByExon to not take a list
   return $self->result_source->schema->resultset('CrisprByExon')->search(
     {},
-    { bind => [ '{'.$self->ensembl_exon_id.'}', $species->id ] }
+    { bind => [ '{'.$self->ensembl_exon_id.'}', $species->numerical_id ] }
   );
 }
 

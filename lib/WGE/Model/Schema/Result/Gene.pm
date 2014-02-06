@@ -47,7 +47,7 @@ __PACKAGE__->table("genes");
 
 =head2 species_id
 
-  data_type: 'integer'
+  data_type: 'text'
   is_foreign_key: 1
   is_nullable: 0
 
@@ -59,11 +59,6 @@ __PACKAGE__->table("genes");
 =head2 ensembl_gene_id
 
   data_type: 'text'
-  is_nullable: 0
-
-=head2 strand
-
-  data_type: 'integer'
   is_nullable: 0
 
 =head2 chr_start
@@ -79,6 +74,11 @@ __PACKAGE__->table("genes");
 =head2 chr_name
 
   data_type: 'text'
+  is_nullable: 0
+
+=head2 strand
+
+  data_type: 'integer'
   is_nullable: 0
 
 =head2 canonical_transcript
@@ -97,19 +97,19 @@ __PACKAGE__->add_columns(
     sequence          => "genes_id_seq",
   },
   "species_id",
-  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
+  { data_type => "text", is_foreign_key => 1, is_nullable => 0 },
   "marker_symbol",
   { data_type => "text", is_nullable => 0 },
   "ensembl_gene_id",
   { data_type => "text", is_nullable => 0 },
-  "strand",
-  { data_type => "integer", is_nullable => 0 },
   "chr_start",
   { data_type => "integer", is_nullable => 0 },
   "chr_end",
   { data_type => "integer", is_nullable => 0 },
   "chr_name",
   { data_type => "text", is_nullable => 0 },
+  "strand",
+  { data_type => "integer", is_nullable => 0 },
   "canonical_transcript",
   { data_type => "text", is_nullable => 0 },
 );
@@ -185,13 +185,13 @@ Related object: L<WGE::Model::Schema::Result::Species>
 __PACKAGE__->belongs_to(
   "species",
   "WGE::Model::Schema::Result::Species",
-  { numerical_id => "species_id" },
+  { id => "species_id" },
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 10:25:34
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:yZsyCCmTftVK9+ZFFkxj3A
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 14:04:00
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:jKvJeTq7zHZpN5Bmg0bFHw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

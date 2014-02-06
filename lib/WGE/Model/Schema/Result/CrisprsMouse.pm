@@ -45,14 +45,14 @@ __PACKAGE__->table("crisprs_mouse");
   is_nullable: 0
   sequence: 'crisprs_id_seq'
 
-=head2 chr_start
-
-  data_type: 'integer'
-  is_nullable: 0
-
 =head2 chr_name
 
   data_type: 'text'
+  is_nullable: 0
+
+=head2 chr_start
+
+  data_type: 'integer'
   is_nullable: 0
 
 =head2 seq
@@ -70,7 +70,7 @@ __PACKAGE__->table("crisprs_mouse");
   data_type: 'integer'
   is_nullable: 0
 
-=head2 off_targets
+=head2 off_target_ids
 
   data_type: 'integer[]'
   is_nullable: 1
@@ -90,25 +90,37 @@ __PACKAGE__->add_columns(
     is_nullable       => 0,
     sequence          => "crisprs_id_seq",
   },
-  "chr_start",
-  { data_type => "integer", is_nullable => 0 },
   "chr_name",
   { data_type => "text", is_nullable => 0 },
+  "chr_start",
+  { data_type => "integer", is_nullable => 0 },
   "seq",
   { data_type => "text", is_nullable => 0 },
   "pam_right",
   { data_type => "boolean", is_nullable => 0 },
   "species_id",
   { data_type => "integer", is_nullable => 0 },
-  "off_targets",
+  "off_target_ids",
   { data_type => "integer[]", is_nullable => 1 },
   "off_target_summary",
   { data_type => "text", is_nullable => 1 },
 );
 
+=head1 PRIMARY KEY
+
+=over 4
+
+=item * L</id>
+
+=back
+
+=cut
+
+__PACKAGE__->set_primary_key("id");
+
 =head1 UNIQUE CONSTRAINTS
 
-=head2 C<crispr_mouse_unique_loci>
+=head2 C<crisprs_mouse_unique_loci>
 
 =over 4
 
@@ -123,13 +135,45 @@ __PACKAGE__->add_columns(
 =cut
 
 __PACKAGE__->add_unique_constraint(
-  "crispr_mouse_unique_loci",
+  "crisprs_mouse_unique_loci",
   ["chr_start", "chr_name", "pam_right"],
 );
 
+=head1 RELATIONS
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 10:25:34
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:GUKWnROw+rpDGCm/OArh5g
+=head2 crispr_pairs_mice_left
+
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::CrisprPairsMouse>
+
+=cut
+
+__PACKAGE__->has_many(
+  "crispr_pairs_mice_left",
+  "WGE::Model::Schema::Result::CrisprPairsMouse",
+  { "foreign.left_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 crispr_pairs_mouse_rights
+
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::CrisprPairsMouse>
+
+=cut
+
+__PACKAGE__->has_many(
+  "crispr_pairs_mouse_rights",
+  "WGE::Model::Schema::Result::CrisprPairsMouse",
+  { "foreign.right_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-28 16:41:34
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:eqNLXqfzQWfzdUE7AQOCeg
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

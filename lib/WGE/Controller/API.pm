@@ -5,7 +5,21 @@ use WGE::Util::GenomeBrowser qw(gibson_designs_for_region design_oligos_to_gff);
 use namespace::autoclean;
 use Data::Dumper;
 
+use WGE::Util::FindPairs;
+
 BEGIN { extends 'Catalyst::Controller' }
+
+has pair_finder => (
+    is         => 'ro',
+    isa        => 'WGE::Util::FindPairs',
+    lazy_build => 1,
+);
+
+sub _build_pair_finder {
+    my $self = shift;
+
+    return WGE::Util::FindPairs->new;
+}
 
 
 =head1 NAME
@@ -28,7 +42,7 @@ sub get_all_species :Local('get_all_species') {
     my @species = $c->model('DB')->resultset('Species')->all;
 
     $c->stash->{json_data} = { 
-        map { $_->id => $_->name } @species
+        map { $_->numerical_id => $_->id } @species
     };
     $c->forward('View::JSON');
 }
@@ -47,7 +61,7 @@ sub gene_search :Local('gene_search') {
         {
             #'marker_symbol' => { ilike => '%'.param("name").'%' },
             'UPPER(marker_symbol)' => { like => '%'.uc( $params->{name} ).'%' },
-            'species_id'           => _get_species_id( $c, $params->{species} ),
+            'species_id'           => $params->{species},
         }
     );
 
@@ -65,7 +79,7 @@ sub exon_search :Local('exon_search') {
     $c->log->debug('Finding exons for gene ' . $params->{marker_symbol});
 
     my $gene = $c->model('DB')->resultset('Gene')->find(
-        { marker_symbol => $params->{marker_symbol}, species_id => _get_species_id( $c, $params->{species} ) },
+        { marker_symbol => $params->{marker_symbol}, species_id => $params->{species} },
         { prefetch => 'exons', order_by => { -asc => 'ensembl_exon_id' } }
     );
 
@@ -105,22 +119,82 @@ sub pair_search :Local('pair_search') {
 }
 
 sub pair_off_target_search :Local('pair_off_target_search') {
-	my ($self, $c) = @_;
-	my $params = $c->req->params;
-	
-	check_params_exist( $c, $params, [ 'pair_id[]' ]);
-	
-	my @data;
-	my $pair_id = $params->{ 'pair_id[]'};
-	my @pair_ids = ( ref $pair_id eq 'ARRAY' ) ? @{ $pair_id } : ( $pair_id );
+    my ( $self, $c ) = @_;
 
-	foreach my $id ( @pair_ids ){
-		push @data, "Processing pair $id";
-	}
-	
-	$c->stash->{json_data} = \@data;
-	$c->forward('View::JSON');
+    my $params = $c->req->params;
+
+    check_params_exist( $c, $params, [ qw( species left_id right_id ) ] );
+
+    #for now we will trust that what we got was a valid pair.
+    #we will need to verify or someone can send any old crap.
+    #we need to get the spacer AGAIN here, ugh
+    
+    # also need to make extra sure someone can't put '24576 || rm -rf *' or something
+
+    my $species_id = $c->model('DB')->resultset('Species')->find(
+        { id       => $params->{species} }
+    )->numerical_id;
+
+
+    my $pair = $c->model('DB')->resultset('CrisprPair')->find( 
+        { 
+            left_id    => $params->{left_id}, 
+            right_id   => $params->{right_id},
+            species_id => $species_id,
+        }
+    );
+
+    #if the pair doesn't exist create it, note that this is subject to a race condition,
+    #we should add locks to the table (david said it's part of select syntax)
+    unless ( $pair ) {
+        #find the crispr entries so we can check they are a valid pair
+        my @crisprs = $c->model('DB')->resultset('Crispr')->search( 
+            {  
+                id         => { -IN => [ $params->{left_id}, $params->{right_id} ] },
+                species_id => $species_id
+            }
+        );
+
+        #identify if the chosen crisprs are valid by
+        #checking the list of crisprs against itself for pairs
+        my $pairs = $self->pair_finder->find_pairs( \@crisprs, \@crisprs );
+
+        die "Found more than one pair??" if @{ $pairs } > 1;
+
+        $pair = $c->model('DB')->resultset('CrisprPair')->create( 
+            {
+                left_id    => $pairs->[0]{left_crispr}{id},
+                right_id   => $pairs->[0]{right_crispr}{id},
+                spacer     => $pairs->[0]{spacer},
+                species_id => $species_id,
+
+            },
+            { key => 'primary' }
+        );
+
+    }
+
+    $c->stash->{json_data} = { 'success' => 1 };
+    $c->forward('View::JSON');
 }
+
+# sub pair_off_target_search :Local('pair_off_target_search') {
+# 	my ($self, $c) = @_;
+# 	my $params = $c->req->params;
+	
+# 	check_params_exist( $c, $params, [ 'pair_id[]' ]);
+	
+# 	my @data;
+# 	my $pair_id = $params->{ 'pair_id[]'};
+# 	my @pair_ids = ( ref $pair_id eq 'ARRAY' ) ? @{ $pair_id } : ( $pair_id );
+
+# 	foreach my $id ( @pair_ids ){
+# 		push @data, "Processing pair $id";
+# 	}
+#   $c->stash->{json_data} = \@data;
+#   $c->forward('View::JSON');
+# }	
+
 
 sub design_attempt_status :Chained('/') PathPart('design_attempt_status') Args(1) {
     my ( $self, $c, $da_id ) = @_;
@@ -135,7 +209,7 @@ sub design_attempt_status :Chained('/') PathPart('design_attempt_status') Args(1
     if ( $status eq 'success' ) {
         my @design_ids = split( ' ', $da->design_ids );
         for my $design_id ( @design_ids ) {
-            my $link = $c->uri_for('view_gibson_design', { design_id => $design_id } )->as_string;
+            my $link = $c->uri_for('/view_gibson_design', { design_id => $design_id } )->as_string;
             $design_links .= '<a href="' . $link . '">'. $design_id .'</a><br>';
         }
     }
@@ -165,6 +239,8 @@ sub designs_in_region :Local('designs_in_region') Args(0){
     my $body = join "\n", @{$gibson_gff};
     return $c->response->body( $body );
 }
+
+
 #
 # should these go into a util module? (yes)
 #
@@ -208,8 +284,8 @@ sub _get_species_id {
     my ( $c, $species ) = @_;
 
     return $c->model('DB')->resultset('Species')->find(
-        { name => $species }
-    )->id;
+        { id => $species }
+    )->numerical_id;
 }
 
 #should use FormValidator::Simple or something later
