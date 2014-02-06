@@ -140,7 +140,8 @@ sub pair_off_target_search :Local('pair_off_target_search') {
         }
     );
 
-    #if the pair doesn't exist create it, note that this is subject to a race condition
+    #if the pair doesn't exist create it, note that this is subject to a race condition,
+    #we should add locks to the table (david said it's part of select syntax)
     unless ( $pair ) {
         #find the crispr entries so we can check they are a valid pair
         my @crisprs = $c->model('DB')->resultset('Crispr')->search( 

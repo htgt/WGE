@@ -52,7 +52,8 @@ CREATE FUNCTION crispr_pairs_insert_trigger() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 BEGIN
-    IF ( NEW.SPECIES_ID = 1 ) THEN 
+    NEW.pair_id = NEW.left_id || '_' || NEW.right_id;
+    IF ( NEW.SPECIES_ID = 1 ) THEN
         INSERT INTO crispr_pairs_human VALUES (NEW.*);
     ELSIF ( NEW.SPECIES_ID = 2 ) THEN
         INSERT INTO crispr_pairs_mouse VALUES (NEW.*);
