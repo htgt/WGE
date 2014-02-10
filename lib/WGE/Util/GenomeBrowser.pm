@@ -1,6 +1,7 @@
 package WGE::Util::GenomeBrowser;
 use strict;
 use Data::Dumper;
+use TryCatch;
 use warnings FATAL => 'all';
 
 
@@ -16,6 +17,8 @@ Copied and adapted from LIMS2
 
 use Sub::Exporter -setup => {
     exports => [ qw(
+        get_region_from_params
+        fetch_design_data
         crisprs_for_region
         crisprs_to_gff
         crispr_pairs_for_region
@@ -26,6 +29,116 @@ use Sub::Exporter -setup => {
 };
 
 use Log::Log4perl qw( :easy );
+
+=head2 get_region_from_params
+
+Takes schema and hashref of params (usually from catalyst request) and returns hashref
+containing chromosome name and coordinates
+
+Input params can be coordinates etc, WGE design id or exon id
+
+af11
+
+=cut
+sub get_region_from_params{
+    my $schema = shift;
+    my $params = shift;
+    
+    my @required = qw(genome chromosome browse_start browse_end);
+    my @missing_params = grep { not defined $params->{$_ } } @required;
+
+    if (@missing_params){
+        if ($params->{'design_id'}){
+            # get info for initial display from design oligos...
+            my $design_data = fetch_design_data($schema, $params);
+    
+            my ($start, $end, $chromosome, $genome);
+            foreach my $oligo (@{ $design_data->{oligos} || [] }){
+                $chromosome ||= $oligo->{locus}->{chr_name};
+                $genome   ||= $oligo->{locus}->{assembly};
+                my $oligo_start = $oligo->{locus}->{chr_start};
+                my $oligo_end = $oligo->{locus}->{chr_end};
+
+                if ($oligo_start > $oligo_end){
+                    die "Was not expecting oligo start to be after oligo end";
+                }
+
+                if (not defined $start or $start > $oligo_start){
+                    $start = $oligo_start;
+                }
+
+                if (not defined $end or $end < $oligo_end){
+                    $end = $oligo_end;
+                }
+            }
+
+            return {
+                'genome'        => $genome,
+                'chromosome'    => $chromosome,
+                'browse_start'  => $start,
+                'browse_end'    => $end,
+                'design_id'     => $design_data->{id},
+                'genes'         => $design_data->{assigned_genes},
+            };
+        }
+        elsif (my $exon_id = $params->{'exon_id'}){
+            my $exon = $schema->resultset('Exon')->find({ ensembl_exon_id => $exon_id })
+                or die "Could not find exon $exon_id in WGE database";
+
+            my $genome = $exon->gene->species->default_assembly->assembly_id;
+
+            return {
+                'genes'        => $exon_id,
+                'genome'       => $genome,
+                'chromosome'   => $exon->chr_name,
+                'browse_start' => $exon->chr_start,
+                'browse_end'   => $exon->chr_end
+            };
+        }
+    }
+    else{
+        # All region params provided, we just return them
+        my %region = map { $_ => $params->{$_} } @required;
+        if ($params->{'genes'}){
+            $region{'genes'} = $params->{'genes'};
+        }
+        return \%region;
+    }
+    
+    die "No region parameters, design_id or exon_id provided";
+}
+
+=head fetch_design_data
+
+Takes schema and input params
+Attempts to retrieve design_id and returns it as hash
+
+af11
+
+=cut
+sub fetch_design_data{
+    my ($schema, $params) = @_;
+
+    my $design_id  = $params->{'design_id'};
+
+    my $design;
+    try {
+        $design = $schema->c_retrieve_design( { id => $design_id } );
+    }
+    catch( LIMS2::Exception::Validation $e ) {
+        die "Please provide a valid design id";
+    } 
+    catch( LIMS2::Exception::NotFound $e ) {
+        die "Design $design_id not found" ;
+    }
+
+    my $design_data = $design->as_hash;
+    $design_data->{assigned_genes} = join q{, }, @{ $design_data->{assigned_genes} || [] };
+
+    DEBUG( "Design: " .Dumper($design_data) );
+
+    return $design_data;    
+}
 
 =head2 crisprs_for_region 
 

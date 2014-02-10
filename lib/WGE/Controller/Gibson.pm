@@ -5,6 +5,7 @@ use Data::Dumper;
 use TryCatch;
 use IO::File;
 use WGE::Util::CreateDesign;
+use WGE::Util::GenomeBrowser qw(fetch_design_data get_region_from_params);
 
 BEGIN { extends 'Catalyst::Controller' }
 
@@ -197,7 +198,7 @@ sub view_design :Path( '/view_gibson_design' ) : Args(0) {
 
     #$c->assert_user_roles( 'read' );
 
-    my $design_data = $self->_fetch_design_data($c);
+    my $design_data = fetch_design_data($c->model, $c->request->params);
 
     my $species_id = $design_data->{species};
 
@@ -236,7 +237,10 @@ sub view_gibson_designs :Path( '/view_gibson_designs' ) : Args(0) {
         }
         
         $c->stash->{template} = 'view_design.tt';
-        $c->detach('view_design', [ design_id => $design_id ] );
+
+        my $view_uri = $c->uri_for('view_gibson_design', {design_id => $design_id});
+        $c->response->redirect( $view_uri );
+        $c->detach;
     }
     elsif ($action eq "View Design Attempt"){
         my $attempt_id = $c->request->param('design_attempt_id');
@@ -266,7 +270,7 @@ sub download_design :Path( '/download_design' ) : Args(0) {
 
     #$c->assert_user_roles( 'read' );
 
-    my $design_data = $self->_fetch_design_data($c);
+    my $design_data = fetch_design_data($c->model, $c->request_params);
 
     my $filename = "WGE_design_".$design_data->{id}.".csv";
 
@@ -282,83 +286,29 @@ sub download_design :Path( '/download_design' ) : Args(0) {
 sub genoverse_browse_view :Path( '/genoverse_browse') : Args(0){
     my ($self, $c) = @_;
 
-    my @required = qw(genome chromosome browse_start browse_end);
-    my @missing_params = grep { not defined $c->request->params->{$_ } } @required;
-
-    if (@missing_params){
-        # get info for initial display from design oligos...
-        my $design_data = $self->_fetch_design_data($c);
-    
-        my ($start, $end, $chromosome, $genome);
-        foreach my $oligo (@{ $design_data->{oligos} || [] }){
-            $chromosome ||= $oligo->{locus}->{chr_name};
-            $genome   ||= $oligo->{locus}->{assembly};
-            my $oligo_start = $oligo->{locus}->{chr_start};
-            my $oligo_end = $oligo->{locus}->{chr_end};
-
-            if ($oligo_start > $oligo_end){
-                die "Was not expecting oligo start to be after oligo end";
-            }
-
-            if (not defined $start or $start > $oligo_start){
-                $start = $oligo_start;
-            }
-
-            if (not defined $end or $end < $oligo_end){
-                $end = $oligo_end;
-            }
-        }
-
-        $c->stash(
-            'genome'        => $genome,
-            'chromosome'    => $chromosome,
-            'browse_start'  => $start,
-            'browse_end'    => $end,
-            'view_single'   => $c->request->params->{'view_single'},
-            'view_paired'   => $c->request->params->{'view_paired'},
-            'design_id'     => $design_data->{id},
-            'genes'         => $design_data->{assigned_genes},
-        );
+    my $region;
+    try{
+        $region = get_region_from_params($c->model, $c->request->params);
     }
-    else{
-
-        # genome coords have already been provided, e.g. when
-        # we adjust the view_single/view_paired params
-        $c->stash(
-            'genome'        => $c->request->params->{'genome'},
-            'chromosome'    => $c->request->params->{'chromosome'},
-            'browse_start'  => $c->request->params->{'browse_start'},
-            'browse_end'    => $c->request->params->{'browse_end'},
-            'view_single'   => $c->request->params->{'view_single'},
-            'view_paired'   => $c->request->params->{'view_paired'},
-            'design_id'     => $c->request->params->{'design_id'},
-            'genes'         => $c->request->params->{'genes'}
-        );
+    catch ($e){
+        $c->stash( error_msg => "Could not display genome browser: $e" );
+        return;
     }
+
+    $c->log->debug('Displaying region: '.Dumper($region));
+
+    $c->stash(
+        'genome'        => $region->{'genome'},
+        'chromosome'    => $region->{'chromosome'},
+        'browse_start'  => $region->{'browse_start'},
+        'browse_end'    => $region->{'browse_end'},
+        'design_id'     => $region->{'design_id'},
+        'genes'         => $region->{'genes'},        
+        'view_single'   => $c->request->params->{'view_single'},
+        'view_paired'   => $c->request->params->{'view_paired'},
+    );
+
     return;
 }
 
-sub _fetch_design_data{
-    my ($self, $c) = @_;
-
-    my $design_id  = $c->request->param('design_id');
-
-    my $design;
-    try {
-        $design = $c->model->c_retrieve_design( { id => $design_id } );
-    }
-    catch( LIMS2::Exception::Validation $e ) {
-        $c->stash( error_msg => "Please provide a valid design id" );
-        return $c->go('index');
-    } catch( LIMS2::Exception::NotFound $e ) {
-        $c->stash( error_msg => "Design $design_id not found" );
-        return $c->go('index');
-    }
-
-    my $design_data = $design->as_hash;
-    $design_data->{assigned_genes} = join q{, }, @{ $design_data->{assigned_genes} || [] };
-
-    $c->log->debug( "Design: " .Dumper($design_data) );
-
-    return $design_data;    
-}
+1;

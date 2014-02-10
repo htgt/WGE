@@ -1,7 +1,7 @@
 [% META title="Browse Crisprs"; META tab_name = 'Designs' %]
 <div class="page-header">
   <h1>[%- genes -%] 
-  <small>design: <strong>[%design_id%]</strong>
+  <small>[% IF design_id %]design: <strong>[%design_id%]</strong>[% END %]
   chr: [%- chromosome -%]
   assembly: [%- genome -%]</small>
   </h1>
