@@ -81,7 +81,10 @@ sub get_region_from_params{
                 'genes'         => $design_data->{assigned_genes},
             };
         }
-        elsif (my $exon_id = $params->{'exon_id'}){
+        elsif (my $exon_id_list = $params->{'exon_id'}){
+            # FIXME: crispr search form can have multiple exons selected
+            # just use on of these for now
+            my ($exon_id) = split ",", $exon_id_list;
             my $exon = $schema->resultset('Exon')->find({ ensembl_exon_id => $exon_id })
                 or die "Could not find exon $exon_id in WGE database";
 
