@@ -175,6 +175,9 @@ sub crisprs_for_region {
                 ],
             },
         },
+        {
+            columns => [qw/id pam_right chr_start/],
+        }
     );
 
     return $crisprs_rs;

@@ -76,8 +76,8 @@
         [% USE String(genome) %]
         genome    : '[% String.lower() %]', // see js/genomes/
         chr       : '[% chromosome %]',
-        start     : [% browse_start %] - 2000,  // 2Kb context
-        end       : [% browse_end %] + 2000,
+        start     : [% browse_start %] - 200,
+        end       : [% browse_end %] + 200,
         plugins   : [ 'controlPanel', 'karyotype', 'trackControls', 'resizer', 'fileDrop' ],
         tracks    : [
           Genoverse.Track.Scalebar,
