@@ -304,8 +304,8 @@ sub genoverse_browse_view :Path( '/genoverse_browse') : Args(0){
         'chromosome'    => $region->{'chromosome'},
         'browse_start'  => $region->{'browse_start'},
         'browse_end'    => $region->{'browse_end'},
-        'design_id'     => $region->{'design_id'},
-        'genes'         => $region->{'genes'},        
+        'genes'         => $region->{'genes'},
+        'design_id'     => $c->request->params->{'design_id'},           
         'view_single'   => $c->request->params->{'view_single'},
         'view_paired'   => $c->request->params->{'view_paired'},
     );

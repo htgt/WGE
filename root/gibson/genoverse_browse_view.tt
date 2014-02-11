@@ -9,7 +9,7 @@
 
 <div>
   <p style="font-size:25px">
-    <b>Displaying: Gibson designs</b>
+    [% IF design_id %]<b>Displaying: Gibson designs</b>[% END %]
       [% IF view_single %]
         <a href="[% c.uri_for( '/genoverse_browse',
             { genome => genome,

@@ -11,7 +11,7 @@ VALUES ('guest','guest'),
 
 INSERT INTO design_types (id)
 VALUES ('gibson'),
-       ('gibson_deletion');
+       ('gibson-deletion');
 
 INSERT INTO design_oligo_types (id)
 VALUES ('G5'),('U5'),('U3'),('D5'),('D3'),('G3'),('5F'),('5R'),('EF'),('ER'),('3F'),('3R');
