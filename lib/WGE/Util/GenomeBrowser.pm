@@ -193,12 +193,11 @@ sub crispr_pairs_for_region {
     my $schema = shift;
     my $params = shift;
 
-    my @crisprs = crisprs_for_region($schema, $params)->all;
-
+    my $crisprs_rs = crisprs_for_region($schema, $params);
+    
     # Find pairs amongst crisprs
     my $pair_finder = WGE::Util::FindPairs->new;
-    my $pairs = $pair_finder->find_pairs( \@crisprs, \@crisprs );
-
+    my $pairs = $pair_finder->window_find_pairs($params->{start_coord}, $params->{end_coord}, $crisprs_rs);
     return $pairs;
 }
 

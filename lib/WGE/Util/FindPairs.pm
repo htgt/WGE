@@ -43,6 +43,26 @@ sub _build_log {
     return Log::Log4perl->get_logger("WGE");
 }
 
+# Faster pair finding for pairs in a large region, e.g. for genoverse browser
+sub window_find_pairs{
+    my ($self, $start, $end, $pairs) = @_;
+    my $window_size = 400;
+    my $max_pair_span = 23 + $self->max_spacer + 23;
+    my $shift = $window_size - $max_pair_span;
+
+    my @all_pairs;
+    while ($start + $window_size < $end + $shift){
+        $self->log->debug("pair window start: $start");
+        my $pair_rs = $pairs->search({ 'chr_start' => { -between => [ $start, $start + $window_size ]} });
+        my @crisprs = $pair_rs->all;
+        push @all_pairs, @{ $self->find_pairs(\@crisprs,\@crisprs) || [] };
+        $start+=$shift;
+    }
+
+    my %unique = map { $_->{left_crispr}{id} . ":" . $_->{right_crispr}{id} => $_ } @all_pairs;
+    return [ values %unique ];
+}
+
 #a and b are two arrayrefs of crisprs you want to check for pairs.
 #they can (and often will be) be a reference to the same list.
 sub find_pairs {
