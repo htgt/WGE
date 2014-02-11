@@ -6,6 +6,7 @@ use TryCatch;
 use IO::File;
 use WGE::Util::CreateDesign;
 use WGE::Util::GenomeBrowser qw(fetch_design_data get_region_from_params);
+use WGE::Util::ExportCSV qw(write_design_data_csv);
 
 BEGIN { extends 'Catalyst::Controller' }
 
@@ -270,15 +271,16 @@ sub download_design :Path( '/download_design' ) : Args(0) {
 
     #$c->assert_user_roles( 'read' );
 
-    my $design_data = fetch_design_data($c->model, $c->request_params);
+    my $design_data = fetch_design_data($c->model, $c->request->params);
 
     my $filename = "WGE_design_".$design_data->{id}.".csv";
 
-    # FIXME: print design data as csv...
+    my $content = write_design_data_csv($design_data, \@DISPLAY_DESIGN);
+
     $c->response->status( 200 );
     $c->response->content_type( 'text/csv' );
     $c->response->header( 'Content-Disposition' => "attachment; filename=$filename" );
-    $c->response->body( Dumper($design_data) );
+    $c->response->body( $content );
 
     return;    
 }
