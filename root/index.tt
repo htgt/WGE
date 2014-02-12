@@ -129,7 +129,7 @@
   }
 
   function create_genoverse_button(){
-    if( $("genoverse").length){
+    if( $("#genoverse").length){
       // Don't create it again
       return;
     }
