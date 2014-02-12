@@ -118,7 +118,8 @@
 [% END %]
           Genoverse.Track.extend({
             name   : 'Genes',
-            [% IF c.session.selected_species == 'Mouse' %]
+            //FIXME: should pass species to this template so we do not rely on assembly
+            [% IF genome == 'GRCm38' %]
             url    : 'http://beta.rest.ensembl.org/feature/region/mouse/__CHR__:__START__-__END__?feature=gene;content-type=application/json',
             [% END %]
             height : 200,
