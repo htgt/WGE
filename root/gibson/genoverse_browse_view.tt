@@ -103,7 +103,16 @@
             model     : Genoverse.Track.Model.Transcript.GFF3,
             view      : Genoverse.Track.View.Transcript,
             resizable : 'auto',
-            height    : 150
+            height    : 150,
+
+            populateMenu : function (feature) {
+              return {
+                Start  : feature.start,
+                End    : feature.end,
+                Name   : feature.name
+              };
+            }
+
           }),
 [% END %]
 [% IF view_paired %]
@@ -113,7 +122,16 @@
             model     : Genoverse.Track.Model.Transcript.GFF3,
             view      : Genoverse.Track.View.Transcript,
             resizable : 'auto',
-            height    : 150
+            height    : 150,
+
+            populateMenu : function (feature) {
+              return {
+                Start  : feature.start,
+                End    : feature.end,
+                Spacer : feature.spacer,
+                Name   : feature.name
+              };
+            }
           }),
 [% END %]
           Genoverse.Track.extend({

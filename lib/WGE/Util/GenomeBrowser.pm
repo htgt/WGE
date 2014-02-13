@@ -269,7 +269,7 @@ sub crisprs_to_gff {
         while ( my $crispr_r = $crisprs_rs->next ) {
             my %crispr_format_hash = (
                 'seqid' => $params->{'chromosome_number'},
-                'source' => 'LIMS2',
+                'source' => 'WGE',
                 'type' => 'Crispr',
                 'start' => $crispr_r->chr_start,
                 'end' => $crispr_r->chr_start + 22,
@@ -279,14 +279,14 @@ sub crisprs_to_gff {
                 'phase' => '.',
                 'attributes' => 'ID='
                     . 'C_' . $crispr_r->id . ';'
-                    . 'Name=' . 'LIMS2' . '-' . $crispr_r->id
+                    . 'Name=' . 'WGE' . '-' . $crispr_r->id
                 );
             my $crispr_parent_datum = prep_gff_datum( \%crispr_format_hash );
             $crispr_format_hash{'type'} = 'CDS';
             $crispr_format_hash{'attributes'} =     'ID='
                     . $crispr_r->id . ';'
                     . 'Parent=C_' . $crispr_r->id . ';'
-                    . 'Name=' . 'LIMS2' . '-' . $crispr_r->id . ';'
+                    . 'Name=' . 'WGE' . '-' . $crispr_r->id . ';'
                     . 'color=#45A825'; # greenish
             my $crispr_child_datum = prep_gff_datum( \%crispr_format_hash );
             push @crisprs_gff, $crispr_parent_datum, $crispr_child_datum ;
@@ -335,7 +335,7 @@ sub crispr_pairs_to_gff {
 
             my %crispr_format_hash = (
                 'seqid' => $params->{'chromosome_number'},
-                'source' => 'LIMS2',
+                'source' => 'WGE',
                 'type' => 'crispr_pair',
                 'start' => $left->{chr_start},
                 'end' => $right->{chr_start}+22,
@@ -345,7 +345,8 @@ sub crispr_pairs_to_gff {
                 'phase' => '.',
                 'attributes' => 'ID='
                     . $id . ';'
-                    . 'Name=' . 'LIMS2' . '-' . $id
+                    . 'Name=' . 'WGE' . '-' . $id .';'
+                    . 'Spacer=' . $crispr_pair->{spacer}
                 );
 
             my $crispr_pair_parent_datum = prep_gff_datum( \%crispr_format_hash );
@@ -355,7 +356,7 @@ sub crispr_pairs_to_gff {
             $crispr_format_hash{'attributes'} =     'ID='
                     . $left->{id} . ';'
                     . 'Parent=' . $id . ';'
-                    . 'Name=' . 'LIMS2' . '-' . $left->{id} . ';'
+                    . 'Name=' . 'WGE' . '-' . $left->{id} . ';'
                     . 'color=#AA2424'; # reddish
             my $crispr_left_datum = prep_gff_datum( \%crispr_format_hash );
 
@@ -364,7 +365,7 @@ sub crispr_pairs_to_gff {
             $crispr_format_hash{'attributes'} =     'ID='
                     . $right->{id} . ';'
                     . 'Parent=' . $id . ';'
-                    . 'Name=' . 'LIMS2' . '-' . $right->{id} . ';'
+                    . 'Name=' . 'WGE' . '-' . $right->{id} . ';'
                     . 'color=#1A8599'; # blueish
 #            $crispr_format_hash{'attributes'} = $crispr_r->pair_id;
             my $crispr_right_datum = prep_gff_datum( \%crispr_format_hash );
@@ -459,7 +460,7 @@ sub design_oligos_to_gff {
         foreach my $design_data ( keys %$design_meta_data ) {
             my %oligo_format_hash = (
                 'seqid' => $params->{'chromosome_number'},
-                'source' => 'LIMS2',
+                'source' => 'WGE',
                 'type' =>  $design_meta_data->{$design_data}->{'design_type'},
                 'start' => $design_meta_data->{$design_data}->{'design_start'},
                 'end' => $design_meta_data->{$design_data}->{'design_end'},
