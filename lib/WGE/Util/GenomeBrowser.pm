@@ -250,6 +250,9 @@ sub crisprs_to_gff {
 
     my @crisprs_gff;
 
+    # FIXME: add off targets summary to 'attributes' when this info
+    # is available in db
+    
     push @crisprs_gff, "##gff-version 3";
     push @crisprs_gff, '##sequence-region lims2-region '
         . $params->{'start_coord'}
@@ -310,6 +313,9 @@ sub crispr_pairs_to_gff {
     my $params = shift;
 
     my @crisprs_gff;
+
+    # FIXME: add off targets summary to 'attributes' when this info
+    # is available in db
 
     push @crisprs_gff, "##gff-version 3";
     push @crisprs_gff, '##sequence-region lims2-region '
