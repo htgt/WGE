@@ -252,7 +252,7 @@ sub crisprs_to_gff {
 
     # FIXME: add off targets summary to 'attributes' when this info
     # is available in db
-    
+
     push @crisprs_gff, "##gff-version 3";
     push @crisprs_gff, '##sequence-region lims2-region '
         . $params->{'start_coord'}
@@ -286,11 +286,20 @@ sub crisprs_to_gff {
                 );
             my $crispr_parent_datum = prep_gff_datum( \%crispr_format_hash );
             $crispr_format_hash{'type'} = 'CDS';
+            my $colour = '#45A825'; # greenish
+            
+            if ( defined $params->{'design_start'} ){
+                if ($crispr_r->chr_start > $params->{'design_start'} 
+                    and $crispr_r->chr_start < $params->{'design_end'}){
+                    $colour = '#DF3A01'; # reddish
+                }
+            }
+
             $crispr_format_hash{'attributes'} =     'ID='
                     . $crispr_r->id . ';'
                     . 'Parent=C_' . $crispr_r->id . ';'
                     . 'Name=' . 'WGE' . '-' . $crispr_r->id . ';'
-                    . 'color=#45A825'; # greenish
+                    . 'color=' . $colour;
             my $crispr_child_datum = prep_gff_datum( \%crispr_format_hash );
             push @crisprs_gff, $crispr_parent_datum, $crispr_child_datum ;
         }

@@ -263,6 +263,14 @@ sub crisprs_in_region :Local('crisprs_in_region') Args(0){
     };
     
     my $crisprs = crisprs_for_region($schema, $params);
+$c->log->debug(Dumper($c->request->params));
+    if(my $design_id = $c->request->params->{design_id}){
+        my $five_f = $c->model->c_retrieve_design_oligo({ design_id => $design_id, oligo_type => '5F' });
+        my $three_r = $c->model->c_retrieve_design_oligo({ design_id => $design_id, oligo_type => '3R'});
+        $params->{design_start} = $five_f->locus->chr_start;
+        $params->{design_end} = $three_r->locus->chr_end;
+        $c->log->debug(Dumper($params));
+    }
 
     my $crispr_gff = crisprs_to_gff( $crisprs, $params);
     $c->response->content_type( 'text/plain' );

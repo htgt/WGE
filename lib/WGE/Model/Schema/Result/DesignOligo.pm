@@ -176,17 +176,22 @@ __PACKAGE__->has_many(
 sub as_hash {
     my $self = shift;
 
-    my $locus;
-    if ( my $default_assembly = $self->design->species->default_assembly ) {
-        $locus = $self->search_related( 'loci', { assembly_id => $default_assembly->assembly_id } )->first;
-    }
-
     return {
         id    => $self->id,
         type  => $self->design_oligo_type_id,
         seq   => $self->seq,
-        locus => $locus ? $locus->as_hash : undef
+        locus => $self->locus ? $self->locus->as_hash : undef
     };
+}
+
+sub locus {
+    my $self = shift;
+
+    my $locus;
+    if ( my $default_assembly = $self->design->species->default_assembly ) {
+        $locus = $self->search_related( 'loci', { assembly_id => $default_assembly->assembly_id } )->first;
+    }
+    return $locus;
 }
 
 __PACKAGE__->meta->make_immutable;
