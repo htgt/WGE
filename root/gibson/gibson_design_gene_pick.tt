@@ -31,3 +31,7 @@
     <input type="submit" name="action" class="btn btn-primary" value="Find Exons" />
   </fieldset>
 </form>
+
+<div class="well">
+Alternatively, if you know the exact coordinates of your target click <a href="[% c.uri_for('create_custom_target_gibson_design') %]">here</a>.
+</div>
