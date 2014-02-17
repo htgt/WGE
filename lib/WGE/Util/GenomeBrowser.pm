@@ -365,14 +365,35 @@ sub crispr_pairs_to_gff {
                 );
 
             my $crispr_pair_parent_datum = prep_gff_datum( \%crispr_format_hash );
+
+            my %colours = (
+                left  => '#45A825', # greenish
+                right => '#1A8599', # blueish
+                left_in_design  => '#AA2424', # reddish
+                right_in_design => '#FE9A2E', # orange
+            );
             
+            my $left_colour = $colours{left};
+            my $right_colour = $colours{right};
+
+            if ( defined $params->{'design_start'} ){
+                if ($left->{chr_start} > $params->{'design_start'} 
+                    and $left->{chr_start} < $params->{'design_end'}){
+                    $left_colour = $colours{left_in_design};
+                }
+                if ($right->{chr_start} > $params->{'design_start'} 
+                    and $right->{chr_start} < $params->{'design_end'}){
+                    $right_colour = $colours{right_in_design};
+                }
+            }
+
             $crispr_format_hash{'type'} = 'CDS';
             $crispr_format_hash{'end'} = $left->{chr_start}+22;
             $crispr_format_hash{'attributes'} =     'ID='
                     . $left->{id} . ';'
                     . 'Parent=' . $id . ';'
                     . 'Name=' . 'WGE' . '-' . $left->{id} . ';'
-                    . 'color=#AA2424'; # reddish
+                    . 'color=' . $left_colour;
             my $crispr_left_datum = prep_gff_datum( \%crispr_format_hash );
 
             $crispr_format_hash{'start'} = $right->{chr_start};
@@ -381,7 +402,7 @@ sub crispr_pairs_to_gff {
                     . $right->{id} . ';'
                     . 'Parent=' . $id . ';'
                     . 'Name=' . 'WGE' . '-' . $right->{id} . ';'
-                    . 'color=#1A8599'; # blueish
+                    . 'color=' . $right_colour;
 #            $crispr_format_hash{'attributes'} = $crispr_r->pair_id;
             my $crispr_right_datum = prep_gff_datum( \%crispr_format_hash );
             

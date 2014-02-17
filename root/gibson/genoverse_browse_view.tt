@@ -118,7 +118,18 @@
             model     : Genoverse.Track.Model.Transcript.GFF3,
             view      : Genoverse.Track.View.Transcript,
             resizable : 'auto',
-            height    : 150
+            height    : 150,
+
+            populateMenu : function (feature) {            
+              var atts = {
+                ID     : feature.id,
+                Type   : feature.type,
+                Start  : feature.start,
+                End    : feature.end,
+                Strand : feature.strand
+              };
+              return atts;
+            }            
           }),
 [% IF view_single %]
           Genoverse.Track.extend({
@@ -149,7 +160,7 @@
 [% IF view_paired %]
           Genoverse.Track.extend({
             name      : 'Crispr_pairs',
-            url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]" ,
+            url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]" ,
             model     : Genoverse.Track.Model.Transcript.GFF3,
             view      : Genoverse.Track.View.Transcript,
             resizable : 'auto',
