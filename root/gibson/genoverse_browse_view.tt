@@ -19,7 +19,8 @@
               genes => genes,
               design_id => design_id,
               view_single => 0,
-              view_paired => view_paired }
+              view_paired => view_paired,
+              exonic_only => exonic_only }
               )
               %]" class="btn btn-info" align="right">
           Hide single crisprs</a>
@@ -32,7 +33,8 @@
               genes => genes,
               design_id => design_id,
               view_single => 1,
-              view_paired => view_paired }
+              view_paired => view_paired,
+              exonic_only => exonic_only }
               )
               %]" class="btn btn-info" align="right">
           Show single crisprs</a>
@@ -46,7 +48,8 @@
               genes => genes,
               design_id => design_id,
               view_single => view_single,
-              view_paired => 0 }
+              view_paired => 0,
+              exonic_only => exonic_only }
               )
               %]" class="btn btn-info" align="right">
           Hide paired crisprs</a>
@@ -59,11 +62,45 @@
               genes => genes,
               design_id => design_id,
               view_single => view_single,
-              view_paired => 1 }
+              view_paired => 1,
+              exonic_only => exonic_only }
               )
               %]" class="btn btn-info" align="right">
           Show paired crisprs</a>
       [% END %]
+      [% IF view_paired or view_single %]
+       [% IF exonic_only %]
+        <a href="[% c.uri_for( '/genoverse_browse',
+            { genome => genome,
+              chromosome => chromosome,
+              browse_start => browse_start,
+              browse_end => browse_end,
+              genes => genes,
+              design_id => design_id,
+              view_single => view_single,
+              view_paired => view_paired,
+              exonic_only => 0,
+              }
+              )
+              %]" class="btn btn-info" align="right">
+          Show All Crisprs</a>
+       [% ELSE %]
+        <a href="[% c.uri_for( '/genoverse_browse',
+            { genome => genome,
+              chromosome => chromosome,
+              browse_start => browse_start,
+              browse_end => browse_end,
+              genes => genes,
+              design_id => design_id,
+              view_single => view_single,
+              view_paired => view_paired,
+              exonic_only => 1, 
+              }
+              )
+              %]" class="btn btn-info" align="right">
+          Exon Crisprs Only</a>
+       [% END %]
+      [% END %]   
   </p>
 </div>
 
@@ -134,7 +171,7 @@
 [% IF view_single %]
           Genoverse.Track.extend({
             name      : 'Crisprs',
-            url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]" ,
+            url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&exonic_only=[%exonic_only%]" ,
             model     : Genoverse.Track.Model.Transcript.GFF3,
             view      : Genoverse.Track.View.Transcript,
             resizable : 'auto',
@@ -160,7 +197,7 @@
 [% IF view_paired %]
           Genoverse.Track.extend({
             name      : 'Crispr_pairs',
-            url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]" ,
+            url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&exonic_only=[%exonic_only%]" ,
             model     : Genoverse.Track.Model.Transcript.GFF3,
             view      : Genoverse.Track.View.Transcript,
             resizable : 'auto',

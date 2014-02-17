@@ -163,6 +163,26 @@ sub crisprs_for_region {
     # Store species name for gff output
     $params->{species} = $species->id;
 
+    if ($params->{exonic_only}){
+        my $genes = $schema->resultset('Gene')->search(
+            { 
+                'species_id' => $species->id,
+                'chr_name' => $params->{chromosome_number},
+                -or => [
+                    'chr_start' => { -between => [ $params->{start_coord}, $params->{end_coord} ] },
+                    'chr_end' => { -between => [ $params->{start_coord}, $params->{end_coord} ] },
+                ],
+            },
+        );
+        my @exons = map { $_->exons } $genes->all;
+        my @exon_ids = map { $_->ensembl_exon_id } @exons;
+        my $exon_crisprs_rs = $schema->resultset('CrisprByExon')->search(
+            {},
+            { bind => [ '{' . join( ",", @exon_ids ) . '}', $species->numerical_id ] }
+        );
+        return $exon_crisprs_rs;
+    }
+
     my $crisprs_rs = $schema->resultset('Crispr')->search(
         {
             'species_id'  => $species->numerical_id,
@@ -177,7 +197,7 @@ sub crisprs_for_region {
         },
         {
             columns => [qw/id pam_right chr_start/],
-        }
+        },
     );
 
     return $crisprs_rs;
