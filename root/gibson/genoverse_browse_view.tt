@@ -178,10 +178,13 @@
             height    : 150,
 
             populateMenu : function (feature) {
+              var report_link = "<a href='[%c.uri_for('/crispr_report')%]/" + feature.name 
+                                + "'><font color='#00FFFF'>Crispr Report</font></a>";
               var atts = {
                 Start  : feature.start,
                 End    : feature.end,
-                Name   : feature.name
+                Name   : feature.name,
+                URL : report_link
               };
               if (feature.ot_summary){
                 atts['Off-Targets'] = feature.ot_summary;
@@ -204,11 +207,14 @@
             height    : 150,
 
             populateMenu : function (feature) {
+              var report_link = "<a href='[%c.uri_for('/crispr_pair_report')%]/" + feature.name 
+                                + "'><font color='#00FFFF'>Crispr Pair Report</font></a>";              
               var atts = {
                 Start  : feature.start,
                 End    : feature.end,
                 Spacer : feature.spacer,
-                Name   : feature.name
+                Name   : feature.name,
+                URL : report_link
               };
               if (feature.ot_summary){
                 atts['Off-Targets'] = feature.ot_summary;

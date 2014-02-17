@@ -166,9 +166,11 @@ sub as_hash {
     id        => $self->id,
     chr_name  => $self->chr_name,
     chr_start => $self->chr_start,
+    chr_end   => $self->chr_start+22,
     seq       => $self->seq,
     species   => $self->species_id,
     pam_right => $self->pam_right,
+    seq  => $self->seq,
   };
 }
 

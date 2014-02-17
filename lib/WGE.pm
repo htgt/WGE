@@ -54,7 +54,8 @@ __PACKAGE__->config(
     'View::Web' => {
         INCLUDE_PATH => [
             __PACKAGE__->path_to( 'root' ),
-            __PACKAGE__->path_to( 'root', 'gibson' ),            
+            __PACKAGE__->path_to( 'root', 'gibson' ),
+            __PACKAGE__->path_to( 'root', 'site' ),          
             $ENV{SHARED_WEBAPP_TT_DIR} || '/opt/t87/global/software/perl/lib/perl5/WebAppCommon/shared_templates',
             ],
     },
