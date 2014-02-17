@@ -164,13 +164,16 @@ sub crisprs_for_region {
     $params->{species} = $species->id;
 
     if ($params->{exonic_only}){
+        # Horrible SQL::Abstract syntax
+        # Query is to find any genes which overlap with the region specified
+        # i.e. find genes which the browse region start or end (or both) fall within 
         my $genes = $schema->resultset('Gene')->search(
             { 
                 'species_id' => $species->id,
                 'chr_name' => $params->{chromosome_number},
                 -or => [
-                    'chr_start' => { -between => [ $params->{start_coord}, $params->{end_coord} ] },
-                    'chr_end' => { -between => [ $params->{start_coord}, $params->{end_coord} ] },
+                    -and => [ 'chr_start' => { '<' => $params->{start_coord}}, 'chr_end' => {'>' => $params->{start_coord} }],
+                    -and => [ 'chr_start' => { '<' => $params->{end_coord}}, 'chr_end' => {'>' => $params->{end_coord} }],
                 ],
             },
         );
