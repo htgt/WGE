@@ -51,7 +51,7 @@ sub window_find_pairs{
     my $shift = $window_size - $max_pair_span;
 
     my @all_pairs;
-    while ($start + $window_size < $end + $shift){
+    while ($start < $end ){
         $self->log->debug("pair window start: $start");
         my $pair_rs = $pairs->search({ 'chr_start' => { -between => [ $start, $start + $window_size ]} });
         my @crisprs = $pair_rs->all;

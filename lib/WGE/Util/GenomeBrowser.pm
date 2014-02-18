@@ -271,10 +271,13 @@ sub crisprs_to_gff {
     my $crisprs_rs = shift;
     my $params = shift;
 
+DEBUG('Crisprs to gff params: ',Dumper($params));
     my @crisprs_gff;
 
     # FIXME: add off targets summary to 'attributes' when this info
     # is available in db
+
+    my $design_range = _generate_design_range($params);
 
     push @crisprs_gff, "##gff-version 3";
     push @crisprs_gff, '##sequence-region lims2-region '
@@ -311,9 +314,10 @@ sub crisprs_to_gff {
             $crispr_format_hash{'type'} = 'CDS';
             my $colour = '#45A825'; # greenish
             
-            if ( defined $params->{'design_start'} ){
-                if ($crispr_r->chr_start > $params->{'design_start'} 
-                    and $crispr_r->chr_start < $params->{'design_end'}){
+            if ( defined $design_range ){
+                #if ($crispr_r->chr_start > $params->{'design_start'} 
+                #    and $crispr_r->chr_start < $params->{'design_end'}){
+                if ( $crispr_r->chr_start ~~ $design_range){
                     $colour = '#DF3A01'; # reddish
                 }
             }
@@ -345,6 +349,8 @@ sub crispr_pairs_to_gff {
     my $params = shift;
 
     my @crisprs_gff;
+
+    my $design_range = _generate_design_range($params);
 
     # FIXME: add off targets summary to 'attributes' when this info
     # is available in db
@@ -399,13 +405,11 @@ sub crispr_pairs_to_gff {
             my $left_colour = $colours{left};
             my $right_colour = $colours{right};
 
-            if ( defined $params->{'design_start'} ){
-                if ($left->{chr_start} > $params->{'design_start'} 
-                    and $left->{chr_start} < $params->{'design_end'}){
+            if ( defined $design_range ){
+                if ($left->{chr_start} ~~ $design_range){
                     $left_colour = $colours{left_in_design};
                 }
-                if ($right->{chr_start} > $params->{'design_start'} 
-                    and $right->{chr_start} < $params->{'design_end'}){
+                if ($right->{chr_start} ~~ $design_range){
                     $right_colour = $colours{right_in_design};
                 }
             }
@@ -660,5 +664,22 @@ sub get_chromosome_id{
     
     my $chromosome = $schema->resultset('Chromosome')->find({ name => $params->{chromosome_number}, species_id => $species });
     return $chromosome->id;
+}
+
+sub _generate_design_range{
+    my $params = shift;
+
+    my $design_range = undef;
+
+    if (defined $params->{design_start}){
+        if ($params->{design_start} < $params->{design_end}){
+            $design_range = [$params->{design_start}..$params->{design_end}];
+        }
+        else{
+            $design_range = [$params->{design_end}..$params->{design_start}];
+        }
+    }
+
+    return $design_range;
 }
 1;

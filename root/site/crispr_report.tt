@@ -1,5 +1,11 @@
 [% META title="Crispr Report" %]
 
+<div class="page-header">
+  <h1>Crispr
+  <small>[% crispr.id %]</small>
+  </h1>
+</div>
+
 <table class="table table-bordered">
   [%- FOR r IN display_items %]
   [%- SET title=r.0; SET accessor = r.1 -%]

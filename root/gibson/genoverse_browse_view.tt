@@ -176,6 +176,7 @@
             view      : Genoverse.Track.View.Transcript,
             resizable : 'auto',
             height    : 150,
+            labels    : false,
 
             populateMenu : function (feature) {
               var report_link = "<a href='[%c.uri_for('/crispr_report')%]/" + feature.name 
@@ -205,9 +206,12 @@
             view      : Genoverse.Track.View.Transcript,
             resizable : 'auto',
             height    : 150,
+            labels    : false,
 
             populateMenu : function (feature) {
-              var report_link = "<a href='[%c.uri_for('/crispr_pair_report')%]/" + feature.name 
+              var report_link = "<a href='[%c.uri_for('/crispr_pair_report')%]/" 
+                                + feature.name 
+                                + "?spacer=" + feature.spacer
                                 + "'><font color='#00FFFF'>Crispr Pair Report</font></a>";              
               var atts = {
                 Start  : feature.start,
