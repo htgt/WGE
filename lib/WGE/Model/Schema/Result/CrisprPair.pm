@@ -60,7 +60,7 @@ __PACKAGE__->table("crispr_pairs");
   data_type: 'integer[]'
   is_nullable: 1
 
-=head2 status
+=head2 status_id
 
   data_type: 'integer'
   default_value: 0
@@ -84,7 +84,7 @@ __PACKAGE__->table("crispr_pairs");
   is_nullable: 1
   original: {default_value => \"now()"}
 
-=head2 pair_id
+=head2 id
 
   data_type: 'text'
   is_nullable: 0
@@ -100,7 +100,7 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_nullable => 0 },
   "off_target_ids",
   { data_type => "integer[]", is_nullable => 1 },
-  "status",
+  "status_id",
   {
     data_type      => "integer",
     default_value  => 0,
@@ -118,7 +118,7 @@ __PACKAGE__->add_columns(
     is_nullable   => 1,
     original      => { default_value => \"now()" },
   },
-  "pair_id",
+  "id",
   { data_type => "text", is_nullable => 0 },
 );
 
@@ -142,13 +142,13 @@ __PACKAGE__->set_primary_key("left_id", "right_id");
 
 =over 4
 
-=item * L</pair_id>
+=item * L</id>
 
 =back
 
 =cut
 
-__PACKAGE__->add_unique_constraint("unique_pair_id", ["pair_id"]);
+__PACKAGE__->add_unique_constraint("unique_pair_id", ["id"]);
 
 =head1 RELATIONS
 
@@ -193,7 +193,7 @@ Related object: L<WGE::Model::Schema::Result::CrisprPairStatus>
 __PACKAGE__->belongs_to(
   "status",
   "WGE::Model::Schema::Result::CrisprPairStatus",
-  { id => "status" },
+  { id => "status_id" },
   {
     is_deferrable => 1,
     join_type     => "LEFT",
@@ -203,8 +203,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-02-06 10:35:46
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:lWyY+9m/B7RCJphS01pnUg
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-02-18 14:32:58
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:hd1bRXCDGxXNRC0d4BJnlA
 
 use Try::Tiny;
 
