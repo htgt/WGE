@@ -1,0 +1,61 @@
+<legend>Crispr Off-target List</legend>
+
+
+<script type="text/javascript">
+  String.prototype.match_str = function(q) {
+    if (q.length != this.length) return { "str": "error - size mismatch", "total": -1 };
+  
+    var result = "";
+    var total = 0;
+  
+    for (var i = 0; i < this.length; i++) {
+      if (this.charCodeAt(i) ^ q.charCodeAt(i)) {
+          result += "<b>" + q.charAt(i) + "</b>";
+          total++;
+      }
+      else {
+          result += q.charAt(i)
+      }
+    }
+  
+    return { "str": result, "total": total };
+  }
+  var original_seq = "[% crispr_seq %]";
+</script>
+
+
+crispr target sequence: <tt style="font-size:15px">[% crispr_seq %]</tt>
+<br />
+crispr off-target count is [% off_target_count %]
+<br />
+
+<table class='table table-bordered .table-hover' id='offtarget_table'>
+  <tr>
+    <th colspan="4">Crispr</th>
+  </tr>
+  <tr>
+    <td></td>
+    <td><tt style="font-size:15px">[% crispr_seq %]</tt></td>
+    <td></td>
+    <td></td>
+  </tr>
+
+  <tr>
+    <th>Location</th>
+    <th>Sequence</th>
+    <th>Mismatches</th>
+    <th>pam right</th>
+  </tr>
+[% FOREACH crispr IN off_targets %]
+  <tr>
+    <td><a href="http://www.ensembl.org/[% crispr.species %]/psychic?q=[% crispr.location %]">[% crispr.location %]</a></td>
+    <td><tt style="font-size:15px"><script>document.write(original_seq.match_str("[% crispr.seq %]").str);</script></tt></td>
+    <td><script>document.write(original_seq.match_str("[% crispr.seq %]").total);</script></td>
+    <td>[% crispr.pam_right %]</td>
+
+  </tr>
+[% END %]
+</table>
+
+
+
