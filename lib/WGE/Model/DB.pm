@@ -19,6 +19,7 @@ my ($CONNECT_INFO);
     my $db_config = $config->{$filename}->{ $ENV{WGE_DB} }
         or confess "No db connection info found for ".$ENV{WGE_DB}." in $filename"; 
     $CONNECT_INFO = $db_config;
+
 }
      
 __PACKAGE__->config(

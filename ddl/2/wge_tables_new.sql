@@ -52,7 +52,7 @@ CREATE FUNCTION crispr_pairs_insert_trigger() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 BEGIN
-    NEW.pair_id = NEW.left_id || '_' || NEW.right_id;
+    NEW.id = NEW.left_id || '_' || NEW.right_id;
     IF ( NEW.SPECIES_ID = 1 ) THEN
         INSERT INTO crispr_pairs_human VALUES (NEW.*);
     ELSIF ( NEW.SPECIES_ID = 2 ) THEN
@@ -74,7 +74,7 @@ CREATE FUNCTION crispr_pairs_update_trigger() RETURNS trigger
     AS $$
 BEGIN
     NEW.last_modified = NOW();
-    NEW.pair_id = NEW.left_id || '_' || NEW.right_id;
+    NEW.id = NEW.left_id || '_' || NEW.right_id;
     RETURN NEW;
 END;
 $$;
@@ -124,11 +124,11 @@ CREATE TABLE crispr_pairs (
     right_id integer NOT NULL,
     spacer integer NOT NULL,
     off_target_ids integer[],
-    status integer DEFAULT 0,
+    status_id integer DEFAULT 0,
     species_id integer NOT NULL,
     off_target_summary text,
     last_modified timestamp without time zone DEFAULT now(),
-    pair_id text NOT NULL
+    id text NOT NULL
 );
 
 
@@ -608,10 +608,10 @@ ALTER SEQUENCE users_id_seq OWNED BY users.id;
 
 
 --
--- Name: status; Type: DEFAULT; Schema: public; Owner: -
+-- Name: status_id; Type: DEFAULT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY crispr_pairs_human ALTER COLUMN status SET DEFAULT 0;
+ALTER TABLE ONLY crispr_pairs_human ALTER COLUMN status_id SET DEFAULT 0;
 
 
 --
@@ -622,10 +622,10 @@ ALTER TABLE ONLY crispr_pairs_human ALTER COLUMN last_modified SET DEFAULT now()
 
 
 --
--- Name: status; Type: DEFAULT; Schema: public; Owner: -
+-- Name: status_id; Type: DEFAULT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY crispr_pairs_mouse ALTER COLUMN status SET DEFAULT 0;
+ALTER TABLE ONLY crispr_pairs_mouse ALTER COLUMN status_id SET DEFAULT 0;
 
 
 --
@@ -972,7 +972,7 @@ ALTER TABLE ONLY species
 --
 
 ALTER TABLE ONLY crispr_pairs_human
-    ADD CONSTRAINT unique_human_pair_id UNIQUE (pair_id);
+    ADD CONSTRAINT unique_human_pair_id UNIQUE (id);
 
 
 --
@@ -980,7 +980,7 @@ ALTER TABLE ONLY crispr_pairs_human
 --
 
 ALTER TABLE ONLY crispr_pairs_mouse
-    ADD CONSTRAINT unique_mouse_pair_id UNIQUE (pair_id);
+    ADD CONSTRAINT unique_mouse_pair_id UNIQUE (id);
 
 
 --
@@ -988,7 +988,7 @@ ALTER TABLE ONLY crispr_pairs_mouse
 --
 
 ALTER TABLE ONLY crispr_pairs
-    ADD CONSTRAINT unique_pair_id UNIQUE (pair_id);
+    ADD CONSTRAINT unique_pair_id UNIQUE (id);
 
 
 --
@@ -1154,7 +1154,7 @@ ALTER TABLE ONLY crispr_pairs
 --
 
 ALTER TABLE ONLY crispr_pairs
-    ADD CONSTRAINT crispr_pairs_status_fkey FOREIGN KEY (status) REFERENCES crispr_pair_statuses(id);
+    ADD CONSTRAINT crispr_pairs_status_fkey FOREIGN KEY (status_id) REFERENCES crispr_pair_statuses(id);
 
 
 --
@@ -1162,7 +1162,7 @@ ALTER TABLE ONLY crispr_pairs
 --
 
 ALTER TABLE ONLY crispr_pairs_human
-    ADD CONSTRAINT crispr_pairs_status_fkey FOREIGN KEY (status) REFERENCES crispr_pair_statuses(id);
+    ADD CONSTRAINT crispr_pairs_status_fkey FOREIGN KEY (status_id) REFERENCES crispr_pair_statuses(id);
 
 
 --
@@ -1170,7 +1170,7 @@ ALTER TABLE ONLY crispr_pairs_human
 --
 
 ALTER TABLE ONLY crispr_pairs_mouse
-    ADD CONSTRAINT crispr_pairs_status_fkey FOREIGN KEY (status) REFERENCES crispr_pair_statuses(id);
+    ADD CONSTRAINT crispr_pairs_status_fkey FOREIGN KEY (status_id) REFERENCES crispr_pair_statuses(id);
 
 
 --

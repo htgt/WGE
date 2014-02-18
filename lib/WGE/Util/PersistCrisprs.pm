@@ -128,6 +128,7 @@ sub create_temp_tables {
             $self->log->warn( "$id has " . $total_offs . " off targets, skipping." ); 
         }
         else {
+            $self->log->debug( "$id has " . $total_offs . " off targets." ); 
             $ots_tsv .= join( "\n", @{ $ots->{all} } ) . "\n";
         }
 
@@ -190,6 +191,7 @@ sub _process_bed {
             unless defined $db_id and exists $crispr_yaml->{ $exon_id }{ $db_id };
 
         $cols[0] =~ s/^Chr//;
+        $cols[1]++; #we use ensembl numbering in the db
         
         #first column is chromosome, second is start
         #yes we duplicate the db_id but we need it all in a string and this
@@ -208,6 +210,8 @@ sub _process_bed {
     die "No data found in bed file." unless %crisprs;
 
     $self->log->info( "Total lines: $count" );
+    $self->log->info( "Total crisprs: " . scalar( keys %crisprs ) );
+    $self->log->info( "Crisprs found: " . join( ", ", keys %crisprs ) );
 
     return \%crisprs;
 }

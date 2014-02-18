@@ -57,6 +57,22 @@ __PACKAGE__->add_columns(
 
 with 'WGE::Util::CrisprRole';
 
+sub as_hash {
+    my $self = shift;
+
+    return {
+        id                 => $self->id,
+        crispr_id          => $self->parent_id, #this is the original crispr the ot belongs to
+        chr_name           => $self->chr_name,
+        chr_start          => $self->chr_start,
+        seq                => $self->seq,
+        pam_right          => $self->pam_right,
+        species_id         => $self->species_id,
+        off_target_ids     => $self->off_target_ids,
+        off_target_summary => $self->off_target_summary,
+    }
+}
+
 __PACKAGE__->set_primary_key( "id" );
 
 

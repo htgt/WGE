@@ -1,6 +1,7 @@
 INSERT INTO species (id) VALUES ('Human'), ('Mouse');
 
 INSERT INTO crispr_pair_statuses VALUES
+    (-2, 'bad crispr in pair'),
     (-1, 'error'),
     (0, 'not started'),
     (1, 'pending'),
