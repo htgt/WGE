@@ -259,6 +259,10 @@ sub crispr_pairs_for_region {
     my $pair_finder = WGE::Util::FindPairs->new;
     my $pairs = $pair_finder->window_find_pairs($params->{start_coord}, $params->{end_coord}, $crisprs_rs);
     return $pairs;
+
+    # FIXME: if we want to display off target summaries for pair in genoverse
+    # we will need to look up each pair in CrisprPairs table to see if this has
+    # been computed
 }
 
 
@@ -347,6 +351,11 @@ DEBUG('Crisprs to gff params: ',Dumper($params));
                     . 'C_' . $crispr_r->id . ';'
                     . 'Name=' . 'WGE' . '-' . $crispr_r->id
                 );
+            
+            if(my $ot_summary = $crispr_r->off_target_summary){
+                $crispr_format_hash{attributes}.='OT_Summary='.$ot_summary;
+            }
+
             my $crispr_parent_datum = prep_gff_datum( \%crispr_format_hash );
             $crispr_format_hash{'type'} = 'CDS';
             my $colour = '#45A825'; # greenish
@@ -429,6 +438,10 @@ sub crispr_pairs_to_gff {
                     . 'Name=' . 'WGE' . '-' . $id .';'
                     . 'Spacer=' . $crispr_pair->{spacer}
                 );
+
+            if(my $ot_summary = $crispr_pair->{off_target_summary}){
+                $crispr_format_hash{attributes}.='OT_Summary='.$ot_summary;
+            }
 
             my $crispr_pair_parent_datum = prep_gff_datum( \%crispr_format_hash );
 
