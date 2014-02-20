@@ -308,7 +308,7 @@ sub genoverse_browse_view :Path( '/genoverse_browse') : Args(0){
         'design_id'     => $c->request->params->{'design_id'},           
         'view_single'   => $c->request->params->{'view_single'},
         'view_paired'   => $c->request->params->{'view_paired'},
-        'exonic_only'   => $c->request->params->{'exonic_only'},
+        'crispr_filter' => $c->request->params->{'crispr_filter'},
     );
 
     return;

@@ -163,29 +163,44 @@ sub crisprs_for_region {
     # Store species name for gff output
     $params->{species} = $species->id;
 
-    if ($params->{exonic_only}){
-        # Horrible SQL::Abstract syntax
-        # Query is to find any genes which overlap with the region specified
-        # i.e. find genes which the browse region start or end (or both) fall within 
-        my $genes = $schema->resultset('Gene')->search(
-            { 
-                'species_id' => $species->id,
-                'chr_name' => $params->{chromosome_number},
-                -or => [
-                    -and => [ 'chr_start' => { '<' => $params->{start_coord}}, 'chr_end' => {'>' => $params->{start_coord} }],
-                    -and => [ 'chr_start' => { '<' => $params->{end_coord}}, 'chr_end' => {'>' => $params->{end_coord} }],
-                ],
-            },
-        );
+    unless($params->{crispr_filter}){ $params->{crispr_filter} = 'all' }
+
+    if ($params->{crispr_filter} eq 'exonic'){
+        
+        my $genes = _genes_for_region($schema, $params, $species);
+
         my @exons = map { $_->exons } $genes->all;
         my @exon_ids = map { $_->ensembl_exon_id } @exons;
+
+        DEBUG("Finding crisprs in exons ".(join ", ", @exon_ids));
+        
         my $exon_crisprs_rs = $schema->resultset('CrisprByExon')->search(
             {},
             { bind => [ '{' . join( ",", @exon_ids ) . '}', $species->numerical_id ] }
         );
         return $exon_crisprs_rs;
     }
+    elsif ($params->{crispr_filter} eq 'exon_flanking'){
+        
+        my $genes = _genes_for_region($schema, $params, $species);
 
+        my @exons = map { $_->exons } $genes->all;
+        my @region_conditions;
+        foreach my $exon (@exons){
+             push @region_conditions, { -between => [ $exon->chr_start - 100, $exon->chr_start] };
+             push @region_conditions, { -between => [ $exon->chr_end, $exon->chr_end + 100] };
+        }
+        my $flanking_crisprs_rs = $schema->resultset('Crispr')->search(
+            {
+                'species_id' => $species->numerical_id,
+                'chr_name'   => $params->{chromosome_number},
+                'chr_start'  => [ @region_conditions ]
+            }
+        );
+        return $flanking_crisprs_rs;
+    }
+
+    # Or default to getting all crisprs in region
     my $crisprs_rs = $schema->resultset('Crispr')->search(
         {
             'species_id'  => $species->numerical_id,
@@ -204,6 +219,28 @@ sub crisprs_for_region {
     );
 
     return $crisprs_rs;
+}
+
+sub _genes_for_region {
+    my $schema = shift;
+    my $params = shift;
+    my $species = shift;
+
+    # Horrible SQL::Abstract syntax
+    # Query is to find any genes which overlap with the region specified
+    # i.e. find genes which the browse region start or end (or both) fall within 
+    my $genes = $schema->resultset('Gene')->search(
+        { 
+            'species_id' => $species->id,
+            'chr_name' => $params->{chromosome_number},
+            -or => [
+                -and => [ 'chr_start' => { '<' => $params->{start_coord}}, 'chr_end' => {'>' => $params->{start_coord} }],
+                -and => [ 'chr_start' => { '<' => $params->{end_coord}}, 'chr_end' => {'>' => $params->{end_coord} }],
+            ],
+        },
+    );
+
+    return $genes;
 }
 
 =head crispr_pairs_for_region

@@ -7,102 +7,49 @@
   </h1>
 </div>
 
-<div>
-  <p style="font-size:25px">
-    [% IF design_id %]<b>Displaying: Gibson designs</b>[% END %]
-      [% IF view_single %]
-        <a href="[% c.uri_for( '/genoverse_browse',
-            { genome => genome,
-              chromosome => chromosome,
-              browse_start => browse_start,
-              browse_end => browse_end,
-              genes => genes,
-              design_id => design_id,
-              view_single => 0,
-              view_paired => view_paired,
-              exonic_only => exonic_only }
-              )
-              %]" class="btn btn-info" align="right">
-          Hide single crisprs</a>
-      [% ELSE %]
-        <a href="[% c.uri_for( '/genoverse_browse',
-            { genome => genome,
-              chromosome => chromosome,
-              browse_start => browse_start,
-              browse_end => browse_end,
-              genes => genes,
-              design_id => design_id,
-              view_single => 1,
-              view_paired => view_paired,
-              exonic_only => exonic_only }
-              )
-              %]" class="btn btn-info" align="right">
-          Show single crisprs</a>
-      [% END %]
-      [% IF view_paired %]
-        <a href="[% c.uri_for( '/genoverse_browse',
-            { genome => genome,
-              chromosome => chromosome,
-              browse_start => browse_start,
-              browse_end => browse_end,
-              genes => genes,
-              design_id => design_id,
-              view_single => view_single,
-              view_paired => 0,
-              exonic_only => exonic_only }
-              )
-              %]" class="btn btn-info" align="right">
-          Hide paired crisprs</a>
-      [% ELSE %]
-        <a href="[% c.uri_for( '/genoverse_browse',
-            { genome => genome,
-              chromosome => chromosome,
-              browse_start => browse_start,
-              browse_end => browse_end,
-              genes => genes,
-              design_id => design_id,
-              view_single => view_single,
-              view_paired => 1,
-              exonic_only => exonic_only }
-              )
-              %]" class="btn btn-info" align="right">
-          Show paired crisprs</a>
-      [% END %]
-      [% IF view_paired or view_single %]
-       [% IF exonic_only %]
-        <a href="[% c.uri_for( '/genoverse_browse',
-            { genome => genome,
-              chromosome => chromosome,
-              browse_start => browse_start,
-              browse_end => browse_end,
-              genes => genes,
-              design_id => design_id,
-              view_single => view_single,
-              view_paired => view_paired,
-              exonic_only => 0,
-              }
-              )
-              %]" class="btn btn-info" align="right">
-          Show All Crisprs</a>
-       [% ELSE %]
-        <a href="[% c.uri_for( '/genoverse_browse',
-            { genome => genome,
-              chromosome => chromosome,
-              browse_start => browse_start,
-              browse_end => browse_end,
-              genes => genes,
-              design_id => design_id,
-              view_single => view_single,
-              view_paired => view_paired,
-              exonic_only => 1, 
-              }
-              )
-              %]" class="btn btn-info" align="right">
-          Exon Crisprs Only</a>
-       [% END %]
-      [% END %]   
-  </p>
-</div>
+<form action="[% c.uri_for( '/genoverse_browse' ) %]" class="well">
+  <input type="hidden" name="genome" value=[%genome%] />
+  <input type="hidden" name="chromosome" value=[%chromosome%] />
+  <input type="hidden" name="browse_start" value=[%browse_start%] />
+  <input type="hidden" name="browse_end" value=[%browse_end%] />
+  <input type="hidden" name="genes" value=[%genes%] />
+  <input type="hidden" name="design_id" value=[%design_id%] />
+
+  <table class='table'>
+   <thead>
+    <tr>
+     <th>Single Crisprs</th><th>Paired Crisprs</th>
+     <th>[% UNLESS view_single OR view_paired %]<p class="muted">[% END %]Crispr Filters</th>
+    </tr>
+   </thead>
+   <tbody>
+    <tr>
+      <td>
+        <input type="radio" name="view_single" value="1" onclick="this.form.submit();" [% IF view_single %]checked[% END %]>
+        Show</input>
+        <input type="radio" name="view_single" value="0" onclick="this.form.submit();" [% IF view_single == 0 %]checked[% END %]>
+        Hide</input>
+      </td>
+      <td>
+        <input type="radio" name="view_paired" value="1" onclick="this.form.submit();" [% IF view_paired %]checked[% END %]>
+        Show</input>
+        <input type="radio" name="view_paired" value="0" onclick="this.form.submit();" [% IF view_paired == 0 %]checked[% END %]>
+        Hide</input>
+      </td>
+      <td>
+       <fieldset [% UNLESS view_paired OR view_single %]disabled[% END %]>
+        <input type="radio" name="crispr_filter" value="all" onclick="this.form.submit();" [% IF crispr_filter == 'all'  or not crispr_filter %]checked[% END %]>
+        Show All</input>
+        <input type="radio" name="crispr_filter" value="exonic" onclick="this.form.submit();" [% IF crispr_filter == 'exonic' %]checked[% END %]>
+        Exon Only</input>
+        <input type="radio" name="crispr_filter" value="exon_flanking" onclick="this.form.submit();" [% IF crispr_filter == 'exon_flanking' %]checked[% END %]>
+        Exon Flanking Only</input>
+       </fieldset>
+      </td>
+    </tr>
+  </tbody>
+  </table>
+</form>      
 
 
     <script type="text/javascript" src="[% c.uri_for('/static/genoverse/js/genoverse.wtsi.js')%]">
@@ -171,7 +118,7 @@
 [% IF view_single %]
           Genoverse.Track.extend({
             name      : 'Crisprs',
-            url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&exonic_only=[%exonic_only%]" ,
+            url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]" ,
             model     : Genoverse.Track.Model.Transcript.GFF3,
             view      : Genoverse.Track.View.Transcript,
             resizable : 'auto',
@@ -201,7 +148,7 @@
 [% IF view_paired %]
           Genoverse.Track.extend({
             name      : 'Crispr_pairs',
-            url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&exonic_only=[%exonic_only%]" ,
+            url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]" ,
             model     : Genoverse.Track.Model.Transcript.GFF3,
             view      : Genoverse.Track.View.Transcript,
             resizable : 'auto',
@@ -234,5 +181,4 @@
         ]
       }
     </script>
-
     <div id="genoverse"></div>

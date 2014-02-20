@@ -260,7 +260,7 @@ sub crisprs_in_region :Local('crisprs_in_region') Args(0){
         end_coord         => $c->request->params->{end},
         chromosome_number => $c->request->params->{chr},
         assembly_id       => $c->request->params->{assembly},
-        exonic_only       => $c->request->params->{exonic_only},       
+        crispr_filter     => $c->request->params->{crispr_filter},       
     };
     
     my $crisprs = crisprs_for_region($schema, $params);
@@ -288,7 +288,7 @@ sub crispr_pairs_in_region :Local('crispr_pairs_in_region') Args(0){
         end_coord         => $c->request->params->{end},
         chromosome_number => $c->request->params->{chr},
         assembly_id       => $c->request->params->{assembly},
-        exonic_only       => $c->request->params->{exonic_only},
+        crispr_filter     => $c->request->params->{crispr_filter},
     };
     
     my $pairs = crispr_pairs_for_region($schema, $params);
