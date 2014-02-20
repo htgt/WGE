@@ -158,7 +158,7 @@ sub _get_unique_crisprs {
 #this method should only be called after the crisprs have been inserted into the db so they
 #have a db id
 sub get_pairs {
-    my ( $self, $pairs_by_exon ) = @_;
+    my ( $self, $pairs_by_exon, $species_numerical_id ) = @_;
 
     #we only want the pair information so we need to strip it out.
     #remember that pair_data is a hash whose keys point to an arrayref of hashrefs, e.g.:
@@ -174,9 +174,10 @@ sub get_pairs {
             }
 
             push @db_pairs, {
-                left_crispr_id  => $pair->{first_crispr}{db_id},
-                right_crispr_id => $pair->{second_crispr}{db_id},
+                left_id  => $pair->{first_crispr}{db_id},
+                right_id => $pair->{second_crispr}{db_id},
                 spacer          => $pair->{spacer_length},
+                species_id => $species_numerical_id,
             };
 
         }
@@ -201,7 +202,7 @@ sub get_matches {
 
         my $data = {
             chr_start => $slice->start + ((pos $seq) - length( $crispr_seq )), #is this right? i hope so
-            chr_end   => $slice->start + ((pos $seq) - 1), #need to subtract 1 or we get 24bp sequence back
+
             chr_name  => $slice->seq_region_name, #the same for all of them but we need it for the db
             id        => $id++, #used to identify crisprs to add off targets later
             seq       => $crispr_seq,
@@ -262,7 +263,7 @@ sub _get_pairs {
     for my $l ( @{ $pam_left } ) {
         for my $r ( @{ $pam_right } ) {
             #take one off because we want the distance BETWEEN the two only.
-            my $distance = ($r->{ chr_start } - $l->{ chr_end }) - 1;
+            my $distance = ( $r->{ chr_start } - ($l->{ chr_start }+22) ) - 1;
             #if ( $distance <= $self->max_spacer && $distance >= $self->min_spacer ) {
             if ( $distance == 30 ) { #temp
                 push @pairs, {

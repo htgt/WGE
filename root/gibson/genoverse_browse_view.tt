@@ -1,0 +1,194 @@
+[% META title="Browse Crisprs"; META tab_name = 'Designs' %]
+<div class="page-header">
+  <h1>[%- genes -%] 
+  <small>[% IF design_id %]design: <strong>[%design_id%]</strong>[% END %]
+  chr: [%- chromosome -%]
+  assembly: [%- genome -%]</small>
+  </h1>
+</div>
+
+<form action="[% c.uri_for( '/genoverse_browse' ) %]" class="well">
+  <input type="hidden" name="genome" value=[%genome%] />
+  <input type="hidden" name="chromosome" value=[%chromosome%] />
+  <input type="hidden" name="browse_start" value=[%browse_start%] />
+  <input type="hidden" name="browse_end" value=[%browse_end%] />
+  <input type="hidden" name="genes" value=[%genes%] />
+  [% IF design_id %]<input type="hidden" name="design_id" value=[%design_id%] />[% END %]
+
+  <table class='table'>
+   <thead>
+    <tr>
+     <th>Single Crisprs</th><th>Paired Crisprs</th>
+     <th>[% UNLESS view_single OR view_paired %]<p class="muted">[% END %]Crispr Filters</th>
+    </tr>
+   </thead>
+   <tbody>
+    <tr>
+      <td>
+        <input type="radio" name="view_single" value="1" onclick="this.form.submit();" [% IF view_single %]checked[% END %]>
+        Show</input>
+        <br />
+        <input type="radio" name="view_single" value="0" onclick="this.form.submit();" [% IF view_single == 0 %]checked[% END %]>
+        Hide</input>
+      </td>
+      <td>
+        <input type="radio" name="view_paired" value="1" onclick="this.form.submit();" [% IF view_paired %]checked[% END %]>
+        Show</input>
+        <br />
+        <input type="radio" name="view_paired" value="0" onclick="this.form.submit();" [% IF view_paired == 0 %]checked[% END %]>
+        Hide</input>
+      </td>
+      <td>
+       <fieldset [% UNLESS view_paired OR view_single %]disabled[% END %]>
+        <input type="radio" name="crispr_filter" value="all" onclick="this.form.submit();" [% IF crispr_filter == 'all'  or not crispr_filter %]checked[% END %]>
+        Show All</input>
+        <br />
+        <input type="radio" name="crispr_filter" value="exonic" onclick="this.form.submit();" [% IF crispr_filter == 'exonic' %]checked[% END %]>
+        Exon Only</input>
+        <br />
+        <input type="radio" name="crispr_filter" value="exon_flanking" onclick="this.form.submit();" [% IF crispr_filter == 'exon_flanking' %]checked[% END %]>
+        Exon Flanking Only</input>
+        <br />
+        Flanking region: <input type="number" name="flank_size" value="[% flank_size OR 100 %]" min="1" max="1000" keypress="this.form.submit()"/>
+       </fieldset>
+      </td>
+    </tr>
+  </tbody>
+  </table>
+</form>      
+
+
+    <script type="text/javascript" src="[% c.uri_for('/static/genoverse/js/genoverse.wtsi.js')%]">
+       {
+        container : '#genoverse', // Where to inject Genoverse (css/jQuery selector)
+        // If no genome supplied, it must have at least chromosomeSize, e.g.:
+        // chromosomeSize : 249250621, // chromosome 1, human
+        [% USE String(genome) %]
+        genome    : '[% String.lower() %]', // see js/genomes/
+        chr       : '[% chromosome %]',
+        start     : [% browse_start %] - 200,
+        end       : [% browse_end %] + 200,
+        plugins   : [ 'controlPanel', 'karyotype', 'trackControls', 'resizer', 'fileDrop' ],
+        tracks    : [
+          Genoverse.Track.Scalebar,
+          Genoverse.Track.extend({
+            name      : 'Sequence',
+            model     : Genoverse.Track.Model.Sequence.Ensembl,
+            view      : Genoverse.Track.View.Sequence,
+            resizable : 'auto',
+            100000    : false
+          }),
+          Genoverse.Track.extend({
+            name   : 'Genes',
+            //FIXME: should pass species to this template so we do not rely on assembly
+            [% IF genome == 'GRCm38' %]
+            url    : 'http://beta.rest.ensembl.org/feature/region/mouse/__CHR__:__START__-__END__?feature=gene;content-type=application/json',
+            [% END %]
+            height : 200,
+            info   : 'Ensembl API genes & transcripts, see <a href="http://beta.rest.ensembl.org/" target="_blank">beta.rest.ensembl.org</a> for more details',
+            
+            // Different settings for different zoom level
+            2000000: { // This one applies when > 2M base-pairs per screen
+              labels : false
+            },
+            100000: { // more than 100K but less then 2M
+              labels : true,
+              model  : Genoverse.Track.Model.Gene.Ensembl,
+              view   : Genoverse.Track.View.Gene.Ensembl
+            },
+            1: { // > 1 base-pair, but less then 100K
+              labels : true,
+              model  : Genoverse.Track.Model.Transcript.Ensembl,
+              view   : Genoverse.Track.View.Transcript.Ensembl
+            }
+          }),          
+          Genoverse.Track.extend({
+            name      : 'Designs',
+            url       : "[% c.uri_for('/api/designs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]" ,
+            model     : Genoverse.Track.Model.Transcript.GFF3,
+            view      : Genoverse.Track.View.Transcript,
+            resizable : 'auto',
+            height    : 150,
+
+            populateMenu : function (feature) {            
+              var atts = {
+                ID     : feature.id,
+                Type   : feature.type,
+                Start  : feature.start,
+                End    : feature.end,
+                Strand : feature.strand
+              };
+              return atts;
+            }            
+          }),
+[% IF view_single %]
+          Genoverse.Track.extend({
+            name      : 'Crisprs',
+            url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]" ,
+            model     : Genoverse.Track.Model.Transcript.GFF3,
+            view      : Genoverse.Track.View.Transcript,
+            resizable : 'true',
+            height    : 150,
+            labels    : false,
+            threshold : 25000,
+            messages  : { threshold : 'Crisprs not displayed for regions larger than ' },
+
+            populateMenu : function (feature) {
+              var report_link = "<a href='[%c.uri_for('/crispr')%]/" + feature.name 
+                                + "'><font color='#00FFFF'>Crispr Report</font></a>";
+              var atts = {
+                Start  : feature.start,
+                End    : feature.end,
+                Name   : feature.name,
+                URL : report_link
+              };
+              if (feature.ot_summary){
+                atts['Off-Targets'] = feature.ot_summary;
+              }
+              else {
+                atts['Off-Targets'] = 'not computed';
+              }
+              return atts;
+            }
+
+          }),
+[% END %]
+[% IF view_paired %]
+          Genoverse.Track.extend({
+            name      : 'Crispr_pairs',
+            url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]" ,
+            model     : Genoverse.Track.Model.Transcript.GFF3,
+            view      : Genoverse.Track.View.Transcript,
+            resizable : 'true',
+            height    : 150,
+            labels    : false,
+            threshold : 12000,
+            messages  : { threshold : 'Crispr pairs not displayed for regions larger than ' },
+
+            populateMenu : function (feature) {
+              var report_link = "<a href='[%c.uri_for('/crispr_pair')%]/" 
+                                + feature.name 
+                                + "?spacer=" + feature.spacer
+                                + "'><font color='#00FFFF'>Crispr Pair Report</font></a>";              
+              var atts = {
+                Start  : feature.start,
+                End    : feature.end,
+                Spacer : feature.spacer,
+                Name   : feature.name,
+                URL : report_link
+              };
+              if (feature.ot_summary){
+                atts['Off-Targets'] = feature.ot_summary;
+              }
+              else {
+                atts['Off-Targets'] = 'not computed';
+              }
+              return atts;              
+            }
+          }),
+[% END %]
+          Genoverse.Track.Scaleline
+        ]
+      }
+    </script>
+    <div id="genoverse"></div>

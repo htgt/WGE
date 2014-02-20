@@ -5,6 +5,7 @@ use namespace::autoclean;
 use Data::Dumper;
 use Try::Tiny;
 use Bio::Perl qw( revcom_as_string );
+use WGE::Util::CreateDesign;
 
 BEGIN { extends 'Catalyst::Controller' }
 

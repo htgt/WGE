@@ -203,12 +203,12 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-02-06 12:31:03
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:r40ABdbh3WypvF7wNwX4JQ
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-02-18 14:32:58
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:hd1bRXCDGxXNRC0d4BJnlA
 
 #TODO: integrate lot into schema instead of result
 use Try::Tiny;
-with qw( MooseX::Log::Log4perl );
+#with qw( MooseX::Log::Log4perl );
 
 sub as_hash {
   my $self = shift;

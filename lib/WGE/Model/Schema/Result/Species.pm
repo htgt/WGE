@@ -188,5 +188,32 @@ __PACKAGE__->might_have(
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+
+__PACKAGE__->might_have(
+  "default_assembly",
+  "WGE::Model::Schema::Result::SpeciesDefaultAssembly",
+  { "foreign.species_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+sub name{
+  my ($self) = @_;
+
+  return $self->id;
+}
+
+sub check_assembly_belongs {
+    my ( $self, $assembly ) = @_;
+
+    unless ( $self->assemblies->find({ id => $assembly }) ) {
+        require LIMS2::Exception::InvalidState;
+        LIMS2::Exception::InvalidState->throw(
+            "Assembly $assembly does not belong to species " . $self->id
+        );
+    }
+
+    return 1;
+}
+
 __PACKAGE__->meta->make_immutable;
 1;

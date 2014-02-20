@@ -164,5 +164,35 @@ __PACKAGE__->belongs_to(
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+
+__PACKAGE__->has_many(
+  "loci",
+  "WGE::Model::Schema::Result::DesignOligoLoci",
+  { "foreign.design_oligo_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+sub as_hash {
+    my $self = shift;
+
+    return {
+        id    => $self->id,
+        type  => $self->design_oligo_type_id,
+        seq   => $self->seq,
+        locus => $self->locus ? $self->locus->as_hash : undef
+    };
+}
+
+sub locus {
+    my $self = shift;
+
+    my $locus;
+    if ( my $default_assembly = $self->design->species->default_assembly ) {
+        $locus = $self->search_related( 'loci', { assembly_id => $default_assembly->assembly_id } )->first;
+    }
+    return $locus;
+}
+
 __PACKAGE__->meta->make_immutable;
 1;

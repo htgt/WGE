@@ -1,6 +1,14 @@
 package WGE::Controller::API;
 
 use Moose;
+use WGE::Util::GenomeBrowser qw(
+    gibson_designs_for_region 
+    design_oligos_to_gff 
+    crisprs_for_region 
+    crisprs_to_gff
+    crispr_pairs_for_region
+    crispr_pairs_to_gff
+    );
 use namespace::autoclean;
 use Data::Dumper;
 use Path::Class;
@@ -31,7 +39,10 @@ WGE::Controller::API - API Controller for WGE
 
 =head1 DESCRIPTION
 
-[enter your description here]
+Contains methods which provide data to javascript requests
+and do not require user authentication.
+
+Authenticated requests should use the REST API
 
 =cut
 
@@ -272,14 +283,116 @@ sub pair_off_target_search :Local('pair_off_target_search') {
 # 	foreach my $id ( @pair_ids ){
 # 		push @data, "Processing pair $id";
 # 	}
-	
-# 	$c->stash->{json_data} = \@data;
-# 	$c->forward('View::JSON');
-# }
+#   $c->stash->{json_data} = \@data;
+#   $c->forward('View::JSON');
+# }	
+
+
+sub design_attempt_status :Chained('/') PathPart('design_attempt_status') Args(1) {
+    my ( $self, $c, $da_id ) = @_;
+ 
+    # require authenticated user for this request?
+    
+    $c->log->debug("Getting status for design attempt $da_id");
+
+    my $da = $c->model->c_retrieve_design_attempt( { id => $da_id } );
+    my $status = $da->status;
+    my $design_links;
+    if ( $status eq 'success' ) {
+        my @design_ids = split( ' ', $da->design_ids );
+        for my $design_id ( @design_ids ) {
+            my $link = $c->uri_for('/view_gibson_design', { design_id => $design_id } )->as_string;
+            $design_links .= '<a href="' . $link . '">'. $design_id .'</a><br>';
+        }
+    }
+
+    $c->stash->{json_data} = { status => $status, designs => $design_links };
+    $c->forward('View::JSON');
+}
+
+sub designs_in_region :Local('designs_in_region') Args(0){
+    my ($self, $c) = @_;
+
+    my $schema = $c->model->schema;
+    my $params = {
+        assembly_id          => $c->request->params->{assembly},
+        chromosome_number    => $c->request->params->{chr},
+        start_coord          => $c->request->params->{start},
+        end_coord            => $c->request->params->{end},
+    };
+    # FIXME: generate gff for all design oligos in specified region
+    my $oligos = gibson_designs_for_region (
+         $schema,
+         $params,
+    );
+
+    my $gibson_gff = design_oligos_to_gff( $oligos, $params );
+    $c->response->content_type( 'text/plain' );
+    my $body = join "\n", @{$gibson_gff};
+    return $c->response->body( $body );
+}
 
 #
 # should these go into a util module? (yes)
 #
+sub crisprs_in_region :Local('crisprs_in_region') Args(0){
+    my ($self, $c) = @_;
+    
+    my $schema = $c->model->schema;
+    my $params = { 
+        start_coord       => $c->request->params->{start},
+        end_coord         => $c->request->params->{end},
+        chromosome_number => $c->request->params->{chr},
+        assembly_id       => $c->request->params->{assembly},
+        crispr_filter     => $c->request->params->{crispr_filter},
+        flank_size        => $c->request->params->{flank_size},    
+    };
+    
+    my $crisprs = crisprs_for_region($schema, $params);
+
+    if(my $design_id = $c->request->params->{design_id}){
+        my $five_f = $c->model->c_retrieve_design_oligo({ design_id => $design_id, oligo_type => '5F' });
+        my $three_r = $c->model->c_retrieve_design_oligo({ design_id => $design_id, oligo_type => '3R'});
+        $params->{design_start} = $five_f->locus->chr_start;
+        $params->{design_end} = $three_r->locus->chr_end;
+        $c->log->debug(Dumper($params));
+    }
+
+    my $crispr_gff = crisprs_to_gff( $crisprs, $params);
+    $c->response->content_type( 'text/plain' );
+    my $body = join "\n", @{$crispr_gff};
+    return $c->response->body( $body );    
+}
+
+sub crispr_pairs_in_region :Local('crispr_pairs_in_region') Args(0){
+    my ($self, $c) = @_;
+    
+    my $schema = $c->model->schema;
+    my $params = { 
+        start_coord       => $c->request->params->{start},
+        end_coord         => $c->request->params->{end},
+        chromosome_number => $c->request->params->{chr},
+        assembly_id       => $c->request->params->{assembly},
+        crispr_filter     => $c->request->params->{crispr_filter},
+        flank_size        => $c->request->params->{flank_size},        
+    };
+    
+    my $pairs = crispr_pairs_for_region($schema, $params);
+
+    if(my $design_id = $c->request->params->{design_id}){
+        my $five_f = $c->model->c_retrieve_design_oligo({ design_id => $design_id, oligo_type => '5F' });
+        my $three_r = $c->model->c_retrieve_design_oligo({ design_id => $design_id, oligo_type => '3R'});
+        $params->{design_start} = $five_f->locus->chr_start;
+        $params->{design_end} = $three_r->locus->chr_end;
+        $c->log->debug(Dumper($params));
+    }
+
+    my $pairs_gff = crispr_pairs_to_gff( $pairs, $params);
+    $c->response->content_type( 'text/plain' );
+    my $body = join "\n", @{$pairs_gff};
+    return $c->response->body( $body );    
+}
+
 
 #used to retrieve pairs or crisprs from an arrayref of exons
 sub _get_exon_attribute {

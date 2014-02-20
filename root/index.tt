@@ -1,3 +1,5 @@
+[% META title = "WGE"; META tab_name = "Home" %]
+
 <script type="text/javascript">
   $(document).ready(function() {
     //add autocomplete to the gene box
@@ -140,7 +142,8 @@
         $("#search").button('reset');
         
         //todo: change this to be an entire exon search button
-        create_offtargets_button();
+        create_genoverse_button();
+        //create_offtargets_button();
       })
     
      .fail(ajax_failed); //create error if its not successful
@@ -150,6 +153,24 @@
 
   function get_pair_checkbox(pair_id) {
     return $("<td>").append( $("<input type='checkbox' name='pair'>").val(pair_id) ); 
+  }
+
+  function create_genoverse_button(){
+    if( $("#genoverse").length){
+      // Don't create it again
+      return;
+    }
+    $("#fields").append($( "<button class='btn btn-default' id='genoverse'>").text("View in Genome Broswer") );
+    $("#genoverse").click(function(event) {
+        
+        event.preventDefault();
+
+        var url = "[% c.uri_for('/genoverse_browse') %]";
+        var exon = get_selected_exons();
+        var full_url = url.concat("?view_paired=1&exon_id=",exon);
+        console.log(full_url);
+        window.location.href=full_url;
+    });
   }
 
   function create_offtargets_button(){
