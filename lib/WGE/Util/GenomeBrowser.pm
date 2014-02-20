@@ -182,13 +182,15 @@ sub crisprs_for_region {
     }
     elsif ($params->{crispr_filter} eq 'exon_flanking'){
         
-        my $genes = _genes_for_region($schema, $params, $species);
+        # default to 100 bp
+        my $flank_size = $params->{flank_size} || 100;
 
+        my $genes = _genes_for_region($schema, $params, $species);
         my @exons = map { $_->exons } $genes->all;
         my @region_conditions;
         foreach my $exon (@exons){
-             push @region_conditions, { -between => [ $exon->chr_start - 100, $exon->chr_start] };
-             push @region_conditions, { -between => [ $exon->chr_end, $exon->chr_end + 100] };
+             push @region_conditions, { -between => [ $exon->chr_start - $flank_size, $exon->chr_start] };
+             push @region_conditions, { -between => [ $exon->chr_end, $exon->chr_end + $flank_size] };
         }
         my $flanking_crisprs_rs = $schema->resultset('Crispr')->search(
             {

@@ -374,6 +374,7 @@ sub genoverse_browse_view :Path( '/genoverse_browse') : Args(0){
         'view_single'   => $c->request->params->{'view_single'},
         'view_paired'   => $c->request->params->{'view_paired'},
         'crispr_filter' => $c->request->params->{'crispr_filter'},
+        'flank_size'    => $c->request->params->{'flank_size'},
     );
 
     return;
