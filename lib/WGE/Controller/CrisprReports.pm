@@ -51,7 +51,7 @@ sub crispr_report :Path('/crispr_report') :Args(1){
     return;
 }
 
-sub crispr_pair_report :Path('/crispr_pair_report') :Args(1){
+sub crispr_pair_report :Path('/crispr_pair') :Args(1){
     my ( $self, $c, $id ) = @_;
 
     my $display_items = [

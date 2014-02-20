@@ -349,7 +349,7 @@ DEBUG('Crisprs to gff params: ',Dumper($params));
                 'phase' => '.',
                 'attributes' => 'ID='
                     . 'C_' . $crispr_r->id . ';'
-                    . 'Name=' . 'WGE' . '-' . $crispr_r->id
+                    . 'Name=' . $crispr_r->id
                 );
             
             if(my $ot_summary = $crispr_r->off_target_summary){
@@ -371,7 +371,7 @@ DEBUG('Crisprs to gff params: ',Dumper($params));
             $crispr_format_hash{'attributes'} =     'ID='
                     . $crispr_r->id . ';'
                     . 'Parent=C_' . $crispr_r->id . ';'
-                    . 'Name=' . 'WGE' . '-' . $crispr_r->id . ';'
+                    . 'Name=' . $crispr_r->id . ';'
                     . 'color=' . $colour;
             my $crispr_child_datum = prep_gff_datum( \%crispr_format_hash );
             push @crisprs_gff, $crispr_parent_datum, $crispr_child_datum ;
@@ -421,7 +421,7 @@ sub crispr_pairs_to_gff {
 
             my $right = $crispr_pair->{right_crispr};
             my $left = $crispr_pair->{left_crispr};
-            my $id = $left->{id}.":".$right->{id};
+            my $id = $left->{id}."_".$right->{id};
 
             my %crispr_format_hash = (
                 'seqid' => $params->{'chromosome_number'},
@@ -435,7 +435,7 @@ sub crispr_pairs_to_gff {
                 'phase' => '.',
                 'attributes' => 'ID='
                     . $id . ';'
-                    . 'Name=' . 'WGE' . '-' . $id .';'
+                    . 'Name=' . $id .';'
                     . 'Spacer=' . $crispr_pair->{spacer}
                 );
 
@@ -469,7 +469,7 @@ sub crispr_pairs_to_gff {
             $crispr_format_hash{'attributes'} =     'ID='
                     . $left->{id} . ';'
                     . 'Parent=' . $id . ';'
-                    . 'Name=' . 'WGE' . '-' . $left->{id} . ';'
+                    . 'Name=' . $left->{id} . ';'
                     . 'color=' . $left_colour;
             my $crispr_left_datum = prep_gff_datum( \%crispr_format_hash );
 
@@ -478,7 +478,7 @@ sub crispr_pairs_to_gff {
             $crispr_format_hash{'attributes'} =     'ID='
                     . $right->{id} . ';'
                     . 'Parent=' . $id . ';'
-                    . 'Name=' . 'WGE' . '-' . $right->{id} . ';'
+                    . 'Name=' . $right->{id} . ';'
                     . 'color=' . $right_colour;
 #            $crispr_format_hash{'attributes'} = $crispr_r->pair_id;
             my $crispr_right_datum = prep_gff_datum( \%crispr_format_hash );
