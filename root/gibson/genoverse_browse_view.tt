@@ -13,7 +13,7 @@
   <input type="hidden" name="browse_start" value=[%browse_start%] />
   <input type="hidden" name="browse_end" value=[%browse_end%] />
   <input type="hidden" name="genes" value=[%genes%] />
-  <input type="hidden" name="design_id" value=[%design_id%] />
+  [% IF design_id %]<input type="hidden" name="design_id" value=[%design_id%] />[% END %]
 
   <table class='table'>
    <thead>

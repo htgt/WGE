@@ -22,13 +22,32 @@ WGE::Controller::Gibson - Controller for Gibson related pages in WGE
 
 =cut
 
-sub gibson_design_gene_pick :Path('/gibson_design_gene_pick') :Args(0){
+sub gibson_design_gene_pick :Regex('gibson_design_gene_pick/(.*)'){
     my ( $self, $c ) = @_;
 
+    my ($species) = @{ $c->req->captures };
     # Assert user role?
+    $c->log->debug("Species: $species");
+
+    # Allow species to be missing if session species already set
+    if ($species){
+        unless($species eq "Human" or $species eq "Mouse"){
+            $c->stash( error_msg => "Species $species not supported by WGE");
+            return;
+        }
+        $c->session->{species} = $species;
+    }
+    else{
+        unless($c->session->{species}){
+            $c->stash( error_msg => "No species provided");
+        }
+    }
+
+    $c->log->debug("Session species: ".$c->session->{species});
 
     return;
 }
+
 
 sub gibson_design_exon_pick :Path('/gibson_design_exon_pick') :Args(0){
     my ( $self, $c ) = @_;
@@ -49,7 +68,7 @@ sub gibson_design_exon_pick :Path('/gibson_design_exon_pick') :Args(0){
         my $create_design_util = WGE::Util::CreateDesign->new(
             catalyst => $c,
             model    => $c->model('DB'),
-            species  => $c->request->param('species'),
+            species  => $c->session->{species},
         );
         my ( $gene_data, $exon_data )= $create_design_util->exons_for_gene(
             $c->request->param('gene'),
@@ -61,10 +80,6 @@ sub gibson_design_exon_pick :Path('/gibson_design_exon_pick') :Args(0){
             gene     => $gene_data,
             assembly => $create_design_util->assembly_id,
         );
-        
-        # Store this in the session because we need to know
-        # when we create the design
-        $c->session->{species} = $c->request->param('species');
     }
     catch($e){
         my $message = "Problem finding gene: $e";
