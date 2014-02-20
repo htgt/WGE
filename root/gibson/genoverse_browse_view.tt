@@ -121,9 +121,11 @@
             url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]" ,
             model     : Genoverse.Track.Model.Transcript.GFF3,
             view      : Genoverse.Track.View.Transcript,
-            resizable : 'auto',
+            resizable : 'true',
             height    : 150,
             labels    : false,
+            threshold : 25000,
+            messages  : { threshold : 'Crisprs not displayed for regions larger than ' },
 
             populateMenu : function (feature) {
               var report_link = "<a href='[%c.uri_for('/crispr')%]/" + feature.name 
@@ -151,9 +153,11 @@
             url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]" ,
             model     : Genoverse.Track.Model.Transcript.GFF3,
             view      : Genoverse.Track.View.Transcript,
-            resizable : 'auto',
+            resizable : 'true',
             height    : 150,
             labels    : false,
+            threshold : 12000,
+            messages  : { threshold : 'Crispr pairs not displayed for regions larger than ' },
 
             populateMenu : function (feature) {
               var report_link = "<a href='[%c.uri_for('/crispr_pair')%]/" 
