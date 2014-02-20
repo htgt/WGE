@@ -150,13 +150,17 @@ __PACKAGE__->belongs_to(
 use WGE::Util::FindPairs;
 
 sub crisprs {
-  my ( $self ) = @_;
+  my ( $self, $species ) = @_;
 
-  #get the species id with just 1 db call
-  my $species = $self->result_source->schema->resultset('Gene')->find(
-    { id => $self->gene_id },
-    { prefetch => 'species' }
-  )->species;
+  #species is optional in case the caller already had it lying around,
+  #if they didn't then just get it from the gene
+  unless ( $species ) {
+    #get the species id with just 1 db call
+    $species = $self->result_source->schema->resultset('Gene')->find(
+      { id => $self->gene_id },
+      { prefetch => 'species' }
+    )->species;
+  }
 
   #find all crisprs for this exon
   #maybe we should change CrisprByExon to not take a list
@@ -169,12 +173,26 @@ sub crisprs {
 sub pairs {
   my $self = shift;
 
-  #get all the crisprs, then identify all the pairs
-  my @crisprs = $self->crisprs;
+  #get the species id with just 1 db call
+  my $species = $self->result_source->schema->resultset('Gene')->find(
+    { id => $self->gene_id },
+    { prefetch => 'species' }
+  )->species;
 
-  my $pair_finder = WGE::Util::FindPairs->new;
-  #check the list of crisprs against itself for pairs
-  my $pairs = $pair_finder->find_pairs( \@crisprs, \@crisprs );
+  #get all the crisprs, then identify all the pairs
+  my @crisprs = $self->crisprs( $species );
+
+  my $pair_finder = WGE::Util::FindPairs->new(
+    schema => $self->result_source->schema,
+  );
+
+  #check the list of crisprs against itself for pairs,
+  #also include database data by default
+  my $pairs = $pair_finder->find_pairs( 
+    \@crisprs, 
+    \@crisprs, 
+    { get_db_data => 1, species_id => $species->numerical_id } 
+  );
 
   return wantarray ? @{ $pairs } : $pairs;
 

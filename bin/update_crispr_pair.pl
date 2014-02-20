@@ -16,16 +16,6 @@ use Bio::Perl qw( revcom );
 
 Log::Log4perl->easy_init( $DEBUG );
 
-#
-# TODO:
-#   the first thing this script will do is just update the status of a crispr pair,
-#   so we can easily call it between steps
-#
-#   it must then call the calculate_off_targets method after establishing which pairs
-#   are valid. we can do this with FindPairs i think? will have to pull all the crisprs
-#   down first. ugh
-#
-
 my ( $left_id, $right_id, $species, @pair_ids );
 my $status = "";
 my $update_offs = 0;

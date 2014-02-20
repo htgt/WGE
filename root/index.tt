@@ -1,5 +1,4 @@
 <script type="text/javascript">
-  var species;
   $(document).ready(function() {
     //add autocomplete to the gene box
     $('#gene').autocomplete( {
@@ -53,17 +52,7 @@
       strip_error( $(this) );
     });
 
-    set_species();//set up the species hash
-
   });
-
-  function set_species() {
-    $.get('api/get_all_species', {}, 
-        function (data) {
-          species = data;
-        })
-      .fail(ajax_failed);
-  }
 
   //find parent div of whatever jquery object is passed
   function strip_error(item) {
@@ -92,7 +81,7 @@
     $.get('api/pair_search', { exon_id: exons }, 
       function(data) {
         if (data.length == 0) {
-          var num_cols = t.find("th").length;
+          var num_cols = table.find("thead tr:nth-child(2) th").length;
           $("<tr>").append("<td colspan='"+num_cols+"'>None found!</td>" ).appendTo(table.find("tbody"));
         }
         else {
@@ -101,18 +90,56 @@
           $.each(data, function(exon_id, crisprs) {
             //each exon has a list of crisprs
             $.each(crisprs, function(idx, pair) {
-              $("<tr>")
-                 .append( get_pair_checkbox( pair.left_crispr.id + "_" + pair.right_crispr.id ) )
-                 .append( get_crispr_row(exon_id, pair.left_crispr) )
+              var pair_id = pair.left_crispr.id + "_" + pair.right_crispr.id;
+              var status;
+              if( pair.db_data && pair.db_data["status_id"] != 0 ) {
+                var text = pair.db_data["status"].toString().capitalise();
+
+                status = $("<a>", { href: "[% c.uri_for('/crispr_pair') %]/"+pair_id, text: text });
+              }
+              else {
+                //if it has no off target data add a button to get it
+                status = $("<button>", {
+                  "class": 'btn btn-mini btn-block ots-button',
+                  value: pair_id, 
+                  text: "Find off targets" 
+                });
+                status.click( function(event) {          
+                    //stop it from submitting the form
+                    event.preventDefault();
+
+                    //should define this function elsewhere instead of each time...
+
+                    //create a link to view the pair and hide the submit button
+                    var a = $("<a>", { href: "[% c.uri_for('/crispr_pair') %]/"+pair_id, text: "Pending" });
+                    $(this).after(a).hide();
+
+                    var ids = this.value.split("_");
+                    var data = find_off_targets_for_pair(ids[0], ids[1]);
+
+                    console.log( data );
+                });
+              }
+
+              var row = 
+                $("<tr>", { style: "font-size: 13px"})
                  .append( $("<td>", { html: pair.spacer }) )
-                 .append( get_crispr_row(exon_id, pair.right_crispr) )
+                 .append( $("<td>", { html: status } ) )
+                 .append( get_crispr_row(pair.left_crispr) )
+                 .append( get_crispr_row(pair.right_crispr) )
                  .appendTo( table.find("tbody") );
+
+              //add a column to the left of each group
+              if ( idx == 0 ) {
+                row.prepend( $("<td>", { html: exon_id, rowspan: crisprs.length }) );
+              }
             });
           });
         }
         //change the loading button
         $("#search").button('reset');
         
+        //todo: change this to be an entire exon search button
         create_offtargets_button();
       })
     
@@ -157,49 +184,46 @@
     return $("input:radio[name=species]:checked").val();
   }
 
-  function get_ensembl_link(location) {
-    //get ensembl species name
-    var species;
-    switch( get_species() ) {
-      case "Mouse":
-        species = "Mus_Musculus";
-        break;
-      case "Human":
-        species = "Homo_sapiens";
-        break;
-      default:
-        console.log("Invalid species");
+  //return crispr data as html
+  function get_crispr_row(crispr) {
+    var location = crispr.chr_name + ':' + crispr.chr_start + '-' + (crispr.chr_end);
+    var id_link  = $("<a>", { href: "[% c.uri_for('/crispr') %]/" + crispr.id, html: crispr.id });
+    var summary = "";
+
+    if ( crispr.off_target_summary !== null && crispr.off_target_summary.length > 0 ) {
+      for ( var i = 0; i < crispr.off_target_summary.length; i++ ) {
+        summary += i + ": " + crispr.off_target_summary[i] + "<br/>";
+      }
+    }
+    else {
+      summary = "No data";
     }
 
-    return $("<a>", { href: "http://www.ensembl.org/" + species + "/psychic?q=" + location, html: location });
-  }
-
-  //return crispr data as html
-  function get_crispr_row(exon_id, crispr) {
-    var location = crispr.chr_name + ':' + crispr.chr_start + '-' + (crispr.chr_start+22);
     return [ 
-             $("<td>", { html: species[crispr.species_id] }),
-             $("<td>", { html: exon_id }),
-             $("<td>").append( get_ensembl_link(location) ),
-             $("<td>", { html: crispr.seq }) 
+             $("<td>").append( id_link ),
+             $("<td>").append( get_ensembl_link(location, get_species()) ),
+             $("<td>", { html: crispr.seq }),
+             $("<td>", { html: summary } ) 
     ];
   }
 
   function get_crispr_header() {
     //return table headers for a crispr.
-    //should make this dynamic by populating a list of attrs maybe?
-    return [
-      $("<th>", { html: "Species" }),
-      $("<th>", { html: "Exon ID" }),
-      $("<th>", { html: "Location" }),
-      $("<th>", { html: "Seq" })
-    ];
+    var fields = [ "ID", "Location", "Seq", "Off targets" ];
+
+    //return a list of th elements
+    return $.map(fields, function (name) { return $("<th>", { "html": name }); });
   }
 
-  function ajax_failed(data) {
-    create_alert(data.responseJSON.error);
-    $("#search").button('reset');
-  }
+  /*
+    change the table to show pairs separately,
+    add summary data for pair and crispr
+    need a link to individual page,
+    and one to pair page.
+    need to find pairs that already have off target data using id,
+    change checkbox to button
+    individual crisprs?
+  */
 
   function get_table() {
     //make a table if it doesn't exist
@@ -209,18 +233,26 @@
     }
     else {
       //create table
-      table = $("<table>", { class: 'table table-bordered .table-hover', id: 'pair_table' })
+      table = $("<table>", { "class": 'table table-bordered table-condensed table-hover', style: "max-width: none;", id: 'pair_table' })
                 .append( $("<thead>") )
                 .append( $("<tbody>") );
 
+      //grouping
+      $("<tr>")
+        .append($("<th>", { html: "Pair", colspan: 3, "class": "group-header" }))
+        .append($("<th>", { html: "Left Crispr", colspan: 4, "class": "group-header" }))
+        .append($("<th>", { html: "Right Crispr", colspan: 4, "class": "group-header" }))
+        .appendTo( table.find("thead") );
+
       //add headers
       //$("<tr>").append( $("<th>" ) )
-               $("<tr>")
-               .append( $("<th>") )
-               .append( get_crispr_header() )
-               .append( $("<th>", { html: "Spacer" }) )
-               .append( get_crispr_header() )
-               .appendTo( table.find("thead") );
+     $("<tr>")
+     .append( $("<th>", { text: "Exon ID" }) )
+     .append( $("<th>", { text: "Spacer" }) )
+     .append( $("<th>", { text: "Status" }) )
+     .append( get_crispr_header() )
+     .append( get_crispr_header() )
+     .appendTo( table.find("thead") );
 
       //insert the table into the dom
       //should make this function accept an object to add the table to maybe
@@ -237,9 +269,8 @@
     var exons = $("#exons").find('option:selected').map(function() { return this.value });
 
     //make a table. this should only be done once -- stupid
-    var table = $("<table>", { class: 'table table-bordered .table-hover', id: 'crispr_table' });
+    var table = $("<table>", { "class": 'table table-bordered .table-hover', id: 'crispr_table' });
     var header = $("<tr>").appendTo( $("<thead>") )
-                          .append( $("<th>", { html: "Species" }) )
                           .append( $("<th>", { html: "Exon ID" }) )
                           .append( $("<th>", { html: "Location" }) )
                           .append( $("<th>", { html: "Seq" }) )
@@ -254,8 +285,7 @@
           //each exon has a list of crisprs
           $.each(crisprs, function(idx, crispr) {
             var location = crispr.chr_name + ':' + crispr.chr_start + '-' + crispr.chr_end;
-            var row = $("<tr>").append( $("<td>", { html: crispr.species }) )
-                               .append( $("<td>", { html: exon_id }) )
+            var row = $("<tr>").append( $("<td>", { html: exon_id }) )
                                .append( $("<td>", { html: location }) )
                                .append( $("<td>", { html: crispr.seq }) )
                                .appendTo( table );
@@ -286,35 +316,48 @@
 
     return true; 
   }
-
 </script>
 
-<form role="form" id="crispr_search">
-  <fieldset id="fields">
-    <legend>Paired Crispr Search</legend>
-    <div class="form-group" id="species">
-      <label class="control-label">Species</label>
-      <label class="radio">
-        <input type="radio" name="species" id="radio_mouse" value="Mouse" />Mouse
-      </label>
-      <label class="radio">
-        <input type="radio" name="species" id="radio_human" value="Human" />Human
-      </label>
-    </div>
-    <br/>
-    <div>
-      <div class="form-group" id="marker_symbol">
-        <label class="control-label">Marker Symbol</label>
-        <input type="text" class="form-control span4" id="gene" placeholder="Enter gene" autocomplete="off" />
-      </div>
+<style type="text/css">
+th.group-header {
+  text-align: center;
+  vertical-align: middle;
+  background: #EFEFEF;
+}
+</style>
+
+<div class="row">
+  <div class="span12">
+
+    <form role="form" id="crispr_search">
+      <fieldset id="fields">
+        <legend>Paired Crispr Search</legend>
+        <div class="form-group" id="species">
+          <label class="control-label">Species</label>
+          <label class="radio">
+            <input type="radio" name="species" id="radio_mouse" value="Mouse" />Mouse
+          </label>
+          <label class="radio">
+            <input type="radio" name="species" id="radio_human" value="Human" />Human
+          </label>
+        </div>
+        <br/>
+        <div>
+          <div class="form-group" id="marker_symbol">
+            <label class="control-label">Marker Symbol</label>
+            <input type="text" class="form-control span4" id="gene" placeholder="Enter gene" autocomplete="off" />
+          </div>
+          <br/>
+          <div class="form-group" id="exon_id">
+            <label class="control-label" id="exon_label">Exons</label>
+            <select multiple="multiple" class="form-control span4" name="exons" id="exons" autocomplete="off"></select>
+          </div>
+          <br/>
+          <button class="btn btn-default" id="search" autocomplete="off">Find paired crisprs</button>
+        </div>
+      </fieldset>
       <br/>
-      <div class="form-group" id="exon_id">
-        <label class="control-label" id="exon_label">Exons</label>
-        <select multiple="multiple" class="form-control span4" name="exons" id="exons" autocomplete="off"></select>
-      </div>
-      <br/>
-      <button class="btn btn-default" id="search" autocomplete="off">Find paired crisprs</button>
-    </div>
-  </fieldset>
-  <br/>
-</form>
+    </form>
+
+  </div>
+</div>

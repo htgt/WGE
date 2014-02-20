@@ -1,7 +1,10 @@
 package WGE::Controller::Root;
+
 use Moose;
 use namespace::autoclean;
 use Data::Dumper;
+use Try::Tiny;
+use Bio::Perl qw( revcom_as_string );
 
 BEGIN { extends 'Catalyst::Controller' }
 
@@ -77,117 +80,132 @@ Crispr data page
 
 =cut
 
-sub crispr_data :Path('/crispr_data') :Args(1){
+sub crispr_data :Path('/crispr') :Args(1){
     my ( $self, $c, $crispr_id ) = @_;
 
-    my $crispr = $c->model('DB')->resultset('Crispr')->find({ id => "$crispr_id" });
-    my $crispr_seq = $crispr->seq;
+    $c->log->info( "Finding crispr $crispr_id" );
 
-    $c->stash->{crispr_seq} = $crispr_seq;
-    $c->stash->{off_target_count} = scalar $crispr->off_targets->all;
+    my $crispr;
+    #do in a try in case an sql error/dbi is raised
+    try {
+        $crispr = $c->model('DB')->resultset('Crispr')->find( 
+            { id => $crispr_id } 
+        );
+    }
+    catch {
+        $c->log->warn( $_ );
+    };
 
-    my @off_targets = $crispr->off_targets->all;
-
-    my @table;
-    foreach my $crispr (@off_targets) {
-
-        my $species;
-        if ($crispr->species_id == 1) {
-            $species = "Homo_sapiens";
-        }
-        elsif ($crispr->species_id == 2) {
-            $species = "Mus_Musculus";
-        }
-        my $start = $crispr->chr_start;
-        my $end = $crispr->chr_start + 22;
-        my $location = $crispr->chr_name . ":$start-$end";
-
-        push (@table, {
-            location  => $location,
-            seq       => $crispr->seq,
-            species   => $species,
-            pam_right => $crispr->pam_right,
-            chr_start => $crispr->chr_start,
-            chr_name  => $crispr->chr_name,
-          });
-        
+    unless ( $crispr ) {
+        $c->log->info( "Couldn't find crispr $crispr_id!" );
+        $c->stash( error_msg => "$crispr_id is not a valid crispr ID" );
+        return;
     }
 
-    $c->stash->{off_targets} = \@table;
+    $c->log->info( "Stashing off target data" );
+
+    my $crispr_hash = $crispr->as_hash( { with_offs => 1, always_pam_right => 1 } );
+    my $fwd_seq = $crispr_hash->{pam_right} ? $crispr_hash->{seq} : revcom_as_string( $crispr_hash->{seq} );
+
+    $c->stash(
+        crispr         => $crispr_hash,
+        crispr_fwd_seq => $fwd_seq,
+        species        => $crispr->get_species,
+    );
 
     return; 
 }
 
-sub paired_crispr_data :Path('/paired_crispr_data') :Args(2){
-    my ( $self, $c, $l_crispr_id, $r_crispr_id ) = @_;
+# sub paired_crispr_data :Path('/crispr_pair') :Args(1) {
+#     my ( $self, $c, $pair_id ) = @_;
 
+#     my ( $l_crispr_id, $r_crispr_id ) = split '_', $pair_id;
 
- # $w->resultset("CrisprPair")->find({left_id=>1, right_id=>2})
-    my $pair = $c->model('DB')->resultset("CrisprPair")->find({left_id=>$l_crispr_id, right_id=>$r_crispr_id});
+#     my $pair;
+#     #do in a try in case an sql error/dbi is raised
+#     try {
+#         $pair = $c->model('DB')->resultset('CrisprPair')->find( 
+#             { left_id => $l_crispr_id, right_id => $r_crispr_id } 
+#         );
+#     }
+#     catch {
+#         $c->log->warn( $_ );
+#     };
 
-    my $l_crispr = $c->model('DB')->resultset('Crispr')->find({ id => "$l_crispr_id" });
-    my $r_crispr = $c->model('DB')->resultset('Crispr')->find({ id => "$r_crispr_id" });
-    $c->stash->{l_crispr_seq} = $l_crispr->seq;
-    $c->stash->{r_crispr_seq} = $r_crispr->seq;
-    $c->stash->{off_target_count} = scalar( @{ $pair->off_targets } );
+#     $c->stash(
+#         pair => $pair,
+        
+#     );
+# }
 
-    $c->stash->{spacer} = $r_crispr->chr_start - ($l_crispr->chr_start+22) - 1;
+# sub paired_crispr_data :Path('/crispr_pair') :Args(2){
+#     my ( $self, $c, $l_crispr_id, $r_crispr_id ) = @_;
+
+#     my $pair = $c->model('DB')->resultset("CrisprPair")->find({left_id=>$l_crispr_id, right_id=>$r_crispr_id});
+
+#     my $l_crispr = $c->model('DB')->resultset('Crispr')->find({ id => "$l_crispr_id" });
+#     my $r_crispr = $c->model('DB')->resultset('Crispr')->find({ id => "$r_crispr_id" });
+#     $c->stash->{l_crispr_seq} = $l_crispr->seq;
+#     $c->stash->{r_crispr_seq} = $r_crispr->seq;
+#     $c->stash->{off_target_count} = scalar( @{ $pair->off_targets } );
+
+#     $c->stash->{spacer} = $r_crispr->chr_start - ($l_crispr->chr_start+22) - 1;
     
-    # my $crispr_seq = $crispr->seq;
+#     # my $crispr_seq = $crispr->seq;
 
-# my $right_crispr = $crispr->right_crispr;
-# my $left_crispr = $crispr->left_crispr;
-
-
-    my @off_targets = $pair->off_targets;
-
-use Smart::Comments;
-## @off_targets 
+# # my $right_crispr = $crispr->right_crispr;
+# # my $left_crispr = $crispr->left_crispr;
 
 
-    my @table;
-    foreach my $crispr (@off_targets) {
+#     my @off_targets = $pair->off_targets;
 
-        print $crispr->{left_crispr}->seq;
+# use Smart::Comments;
+# ## @off_targets 
 
 
-        my $species;
-        if ($crispr->{left_crispr}->species_id == 1 && $crispr->{right_crispr}->species_id == 1) {
-            $species = "Homo_sapiens";
-        }
-        elsif ($crispr->{left_crispr}->species_id == 2 && $crispr->{right_crispr}->species_id == 2) {
-            $species = "Mus_Musculus";
-        }
+#     my @table;
+#     foreach my $crispr (@off_targets) {
 
-        my $l_start = $crispr->{left_crispr}->chr_start;
-        my $l_end = $crispr->{left_crispr}->chr_start + 22;
-        my $l_location = $crispr->{left_crispr}->chr_name . ":$l_start-$l_end";
+#         print $crispr->{left_crispr}->seq;
 
-        my $spacer = $crispr->{right_crispr}->chr_start - ($crispr->{left_crispr}->chr_start+22) - 1;
 
-        my $r_start = $crispr->{right_crispr}->chr_start;
-        my $r_end = $crispr->{right_crispr}->chr_start + 22;
-        my $r_location = $crispr->{right_crispr}->chr_name . ":$r_start-$r_end";
+#         my $species;
+#         if ($crispr->{left_crispr}->species_id == 1 && $crispr->{right_crispr}->species_id == 1) {
+#             $species = "Homo_sapiens";
+#         }
+#         elsif ($crispr->{left_crispr}->species_id == 2 && $crispr->{right_crispr}->species_id == 2) {
+#             $species = "Mus_Musculus";
+#         }
 
-        push (@table, {
-            l_location  => $l_location,
-            r_location  => $r_location,
-            spacer      => $spacer,
-            l_seq       => $crispr->{left_crispr}->seq,
-            r_seq       => $crispr->{right_crispr}->seq,
-            species     => $species,
-            l_pam_right => $crispr->{left_crispr}->pam_right,
-            r_pam_right => $crispr->{right_crispr}->pam_right,
-        });
+#         my $l_start = $crispr->{left_crispr}->chr_start;
+#         my $l_end = $crispr->{left_crispr}->chr_start + 22;
+#         my $l_location = $crispr->{left_crispr}->chr_name . ":$l_start-$l_end";
+
+#         my $spacer = $crispr->{right_crispr}->chr_start - ($crispr->{left_crispr}->chr_start+22) - 1;
+
+#         my $r_start = $crispr->{right_crispr}->chr_start;
+#         my $r_end = $crispr->{right_crispr}->chr_start + 22;
+#         my $r_location = $crispr->{right_crispr}->chr_name . ":$r_start-$r_end";
+
+#         push (@table, {
+#             l_location  => $l_location,
+#             r_location  => $r_location,
+#             spacer      => $spacer,
+#             l_seq       => $crispr->{left_crispr}->seq,
+#             r_seq       => $crispr->{right_crispr}->seq,
+#             species     => $species,
+#             l_pam_right => $crispr->{left_crispr}->pam_right,
+#             r_pam_right => $crispr->{right_crispr}->pam_right,
+#         });
         
-    }
+#     }
 
-    ### @table
+#     ### @table
 
-    $c->stash->{off_targets} = \@table;
+#     $c->stash->{off_targets} = \@table;
 
-    return; 
-}
+#     return; 
+# }
 
 
 

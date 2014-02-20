@@ -378,7 +378,7 @@ sub _data_missing {
   #crisprs resultset must have total_offs selected (see below)
 
   #this status has already been calculated, so just return it as is
-  return if $self->status_id == -2 or $self->status_id > 0;
+  return if $self->status_id == -2 or $self->status_id == 5;
 
   unless ( defined $crisprs ) {
     $self->log->warn( "No crisprs provided, searching crispr table" );

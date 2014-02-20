@@ -32,6 +32,14 @@ has include_h2h => (
     default  => 0
 );
 
+#an optional schema can be provided if
+#the user wants db data with their pairs
+has schema => (
+    is       => 'ro',
+    isa      => 'WGE::Model::Schema',
+    required => 0
+);
+
 has log => (
     is         => 'rw',
     isa        => 'Log::Log4perl::Logger',
@@ -46,7 +54,16 @@ sub _build_log {
 #a and b are two arrayrefs of crisprs you want to check for pairs.
 #they can (and often will be) be a reference to the same list.
 sub find_pairs {
-    my ( $self, $a, $b ) = @_;
+    my ( $self, $a, $b, $options ) = @_;
+
+    #make sure we get a species and schema if we are getting db data
+    if ( $options->{get_db_data} ) {
+        die "You must provide a species id if you want db data" 
+            unless defined $options->{species_id};
+
+        die "You must provide a schema if you want db data" 
+            unless defined $self->schema;
+    }
 
     $self->log->debug( "Finding pairs: ", scalar(@{$a}), ", ", scalar(@{$b}) );
 
@@ -72,7 +89,7 @@ sub find_pairs {
             #wasn't a valid pairing, regardless of distance
             next unless defined $valid_pair;
 
-            my $key = $valid_pair->{left_crispr}{id} . ":" . $valid_pair->{right_crispr}{id};
+            my $key = $valid_pair->{left_crispr}{id} . "_" . $valid_pair->{right_crispr}{id};
             $pairs{ $key } = $valid_pair;
 
             #if we have sorted lists we can maybe uncomment this for faster processing
@@ -80,9 +97,24 @@ sub find_pairs {
         }
     }
 
+    #if the user wants database data then now is the time to retrieve it
+    if ( $options->{get_db_data} ) {
+        $self->log->warn("Retrieving DB pair data");
+        my $db_data = $self->schema->resultset('CrisprPair')->fast_search_by_ids( {
+            ids        => [ keys %pairs ], 
+            species_id => $options->{species_id}
+        } );
+
+        $self->log->debug("Found " . scalar( keys %{ $db_data } ) . " pairs");
+
+        #now insert anything we found into the original pairs hash
+        while ( my ( $pair_id, $data ) = each %{ $db_data } ) {
+            $pairs{$pair_id}->{db_data} = $data;
+        }
+    }
+
     return [ values %pairs ];
 }
-
 
 sub _check_valid_pair {
     my ( $self, $first, $second ) = @_;
@@ -113,6 +145,7 @@ sub _check_valid_pair {
         orientation  => $orientation,
         left_crispr  => $first->as_hash,
         right_crispr => $second->as_hash,
+        db_data      => undef,#optionally populated later
     }
 }
 

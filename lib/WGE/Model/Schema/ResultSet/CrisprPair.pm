@@ -33,4 +33,36 @@ sub load_from_hash {
 
 }
 
+=head1
+
+Quickly retrieve a hashref of pair data given some pair ids.
+Input is a species and an arrayref of ids, output is a hashref
+
+=cut
+sub fast_search_by_ids {
+    my ( $self, $options ) = @_;
+
+    my $schema = $self->result_source->schema;
+
+    my $ids = "{" . join( ",", @{ $options->{ids} } ) . "}";
+
+    #skip actual off targets because you shouldn't need to get them in bulk
+    my $query = <<EOT;
+with ids as (
+    select unnest(?::text[]) as id
+)
+select cp.id, cp.off_target_summary, cp.status_id, status, cp.last_modified from ids 
+join crispr_pairs cp on ids.id=cp.id and species_id=?
+join crispr_pair_statuses status on cp.status_id=status.id;
+EOT
+
+    return $schema->storage->dbh_do(
+        sub {
+            my ( $storage, $dbh ) = @_;
+
+            return $dbh->selectall_hashref( $query, 'id', undef, $ids, $options->{species_id} );
+        }
+    );
+}
+
 1;
