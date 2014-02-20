@@ -60,6 +60,15 @@ __PACKAGE__->config(
             ],
     },
     'View::JSON' => { expose_stash => 'json_data' },
+    'static' => {
+        include_path => [
+            $ENV{SHARED_WEBAPP_STATIC_DIR} || '/opt/t87/global/software/perl/lib/perl5/WebAppCommon/shared_static',
+            __PACKAGE__->path_to( 'root' ),
+        ],
+    },
+    'Plugin::Session' => {
+        storage => $ENV{WGE_SESSION_STORE} || '/tmp/wge',
+    },
     authentication => {
         use_session => 0,
         default_realm => 'rest_client',

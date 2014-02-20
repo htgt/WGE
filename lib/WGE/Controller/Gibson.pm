@@ -90,9 +90,9 @@ sub create_gibson_design : Path( '/create_gibson_design' ) : Args(0) {
             species  => $c->session->{species},
         );
 
-        my $design_attempt;
+        my ($design_attempt, $job_id);
         try {
-            $design_attempt = $create_design_util->create_gibson_design();
+            ( $design_attempt, $job_id ) = $create_design_util->create_exon_target_gibson_design();
         }
         catch($e) {
             $c->log->error($e);
@@ -100,6 +100,12 @@ sub create_gibson_design : Path( '/create_gibson_design' ) : Args(0) {
             $c->res->redirect( 'gibson_design_gene_pick' );
             return;
         };
+
+        unless ( $job_id ) {
+            $c->flash( error_msg => "Unable to submit Design Creation job" );
+            $c->res->redirect( 'gibson_design_gene_pick' );
+            return;
+        }
 
         $c->res->redirect( $c->uri_for('/design_attempt', $design_attempt->id , 'pending') );
     }
@@ -111,6 +117,50 @@ sub create_gibson_design : Path( '/create_gibson_design' ) : Args(0) {
             exon_id         => $exon_id,
             gene_id         => $gene_id,
             ensembl_gene_id => $ensembl_gene_id,
+        );
+    }
+
+    return;
+}
+
+sub create_custom_target_gibson_design : Path( '/create_custom_target_gibson_design' ) : Args(0) {
+    my ( $self, $c ) = @_;
+
+    # FIXME assert user role edit
+
+    my $create_design_util = WGE::Util::CreateDesign->new(
+        catalyst => $c,
+        model    => $c->model('DB'),
+        species  => $c->session->{species},
+    );
+
+    if ( exists $c->request->params->{create_design} ) {
+        $c->log->info('Creating new design');
+
+
+        my ($design_attempt, $job_id);
+        try {
+            ( $design_attempt, $job_id ) = $create_design_util->create_custom_target_gibson_design();
+        }
+        catch ($e) {
+            $c->log->error($e);
+            $c->flash( error_msg => "Error submitting Design Creation job: $e" );
+            $c->res->redirect( 'gibson_design_gene_pick' );
+            return;
+        }
+
+        unless ( $job_id ) {
+            $c->flash( error_msg => "Unable to submit Design Creation job" );
+            $c->res->redirect( 'gibson_design_gene_pick' );
+            return;
+        }
+
+        $c->res->redirect( $c->uri_for('/design_attempt', $design_attempt->id , 'pending') );
+    }
+    elsif ( exists $c->request->params->{target_from_exons} ) {
+        my $target_data = $create_design_util->target_params_from_exons;
+        $c->stash(
+            target => $target_data,
         );
     }
 

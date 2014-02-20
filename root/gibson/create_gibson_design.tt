@@ -1,23 +1,28 @@
-[% META title = "Create Design"; META tab_name = "Gibson" %]
+[% META title = "Create Exon Target Gibson Design"; META tab_name = "Gibson" %]
 
-<link href="[% c.uri_for( '/static/css/jquery.qtip.min.css' ) %]" rel="stylesheet">
-<script type="text/javascript" src="[% c.uri_for( '/static/js/raphael-min.js' ) %]"></script>
-<script type="text/javascript" src="[% c.uri_for( '/static/js/jquery.qtip.min.js' ) %]"></script>
-
-<!-- move below js file into WebApp::Common ? -->
-<script type="text/javascript" src="[% c.uri_for( '/static/js/diagram.builder.js' ) %]"></script>
-
-[% INCLUDE 'create_design/gibson_parameter_diagram.tt' %]
+[% INCLUDE 'create_design/exon_target_gibson_parameter_diagram.tt' %]
 
 [%  gene_id_label = 'Gene ID'; %]
 
-
 <form method="POST" action="[% c.uri_for( '/create_gibson_design' ) %]" class="well">
+  [% INCLUDE 'create_design/diagram_placeholder.tt' %]
+  [% INCLUDE 'create_design/exon_target_specific_parameters.tt'
+    exon_id         = exon_id
+  %]
   [% INCLUDE 'create_design/common_gibson_form_parameters.tt'
-    gene_id_label    = gene_id_label
-    gene_id          = gene_id
-    exon_id          = exon_id
-    ensembl_gene_id  = ensembl_gene_id
-    extra_parameters = ''
+    gene_id_label   = gene_id_label
+    gene_id         = gene_id
+    ensembl_gene_id = ensembl_gene_id
   %]
 </form>
+
+<div class="well">
+  <p>
+    <a href="[% c.uri_for( '/create_custom_target_gibson_design' , { 'five_prime_exon' => exon_id, 'three_prime_exon' => '', 'gene_id' => gene_id, 'ensembl_gene_id' => ensembl_gene_id 'target_from_exons' => '1' } ) %]" class="btn btn-info">
+    Modify Target</a>
+  </p>
+  <p>
+    This enables you to easily modify the target coordinates for these exon(s).<br>
+    For example if you only want to target a subsection of a exon.
+  </p>
+</div>

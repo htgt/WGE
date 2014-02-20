@@ -8,8 +8,7 @@ use namespace::autoclean;
 
 use warnings FATAL => 'all';
 
-
-const my $DEFAULT_DESIGNS_DIR =>  $ENV{ DEFAULT_DESIGNS_DIR } //
+const my $DEFAULT_DESIGNS_DIR => $ENV{DEFAULT_DESIGNS_DIR} //
                                     '/lustre/scratch109/sanger/team87/wge_designs';
 
 has model => (
@@ -17,8 +16,8 @@ has model => (
     isa      => 'WGE::Model::DB',
     required => 1,
     handles  => {
-        check_params          => 'check_params',
-        create_design_attempt => 'c_create_design_attempt',
+        check_params            => 'check_params',
+        create_design_attempt   => 'c_create_design_attempt',
         c_create_design_attempt => 'c_create_design_attempt',
     }
 );
@@ -128,7 +127,6 @@ sub exons_for_gene {
     return ( $gene_data, $exon_data );
 }
 
-
 =head2 designs_for_exons
 
 Grab any existing designs for the exons.
@@ -174,23 +172,49 @@ sub designs_for_exons {
     return;
 }
 
+=head2 target_params_from_exons
 
-=head2 create_gibson_design
-
-Wrapper for all the seperate subroutines we need to run to
-initiate the creation of a gibson design
+Given target exons return target coordinates
 
 =cut
-sub create_gibson_design {
+sub target_params_from_exons {
     my ( $self ) = @_;
 
-    
-    my $params         = $self->c_parse_and_validate_gibson_params();
+    return $self->c_target_params_from_exons();
+}
+
+=head2 create_exon_target_gibson_design
+
+Wrapper for all the seperate subroutines we need to run to
+initiate the creation of a gibson design with a exon target.
+
+=cut
+sub create_exon_target_gibson_design {
+    my ( $self ) = @_;
+
+    my $params         = $self->c_parse_and_validate_exon_target_gibson_params();
     my $design_attempt = $self->c_initiate_design_attempt( $params );
     my $cmd            = $self->c_generate_gibson_design_cmd( $params );
     my $job_id         = $self->c_run_design_create_cmd( $cmd, $params );
 
-    return $design_attempt;
+    return ( $design_attempt, $job_id );
+}
+
+=head2 create_custom_target_gibson_design
+
+Wrapper for all the seperate subroutines we need to run to
+initiate the creation of a gibson design with a custom target.
+
+=cut
+sub create_custom_target_gibson_design {
+    my ( $self ) = @_;
+
+    my $params         = $self->c_parse_and_validate_custom_target_gibson_params();
+    my $design_attempt = $self->c_initiate_design_attempt( $params );
+    my $cmd            = $self->c_generate_gibson_design_cmd( $params );
+    my $job_id         = $self->c_run_design_create_cmd( $cmd, $params );
+
+    return ( $design_attempt, $job_id );
 }
 
 =head2 prebuild_oligos
