@@ -186,5 +186,55 @@ __PACKAGE__->belongs_to(
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+sub as_hash {
+    my ( $self, $opts ) = @_;
+
+    # updates design object with latest information from database
+    # if not done then the created_at value which can default to the current
+    # timestamp does not seem to be set and a error is thrown
+    $self->discard_changes;
+
+    use JSON;
+    use Try::Tiny;
+
+    my ( $design_params, $fail_reason );
+    if ( $opts->{pretty_print_json} ) {
+        my $json = JSON->new;
+        $design_params
+            = $self->design_parameters
+            ? try { $json->pretty->encode( $json->decode( $self->design_parameters ) ) }
+            : '';
+        $fail_reason
+            = $self->fail ? try { $json->pretty->encode( $json->decode( $self->fail ) ) } : '';
+    }
+    elsif ( $opts->{json_as_hash} ) {
+        my $json = JSON->new;
+        $design_params
+            = $self->design_parameters ? try { $json->decode( $self->design_parameters ) } : {};
+        $fail_reason = $self->fail ? try { $json->decode( $self->fail_reason ) } : {};
+    }
+    else {
+        $design_params = $self->design_parameters;
+        $fail_reason = $self->fail;
+    }
+    my @design_ids = $self->design_ids ? split( ' ', $self->design_ids ) : ();
+
+    my %h = (
+        id                => $self->id,
+        design_parameters => $design_params,
+        gene_id           => $self->gene_id,
+        status            => $self->status,
+        fail              => $fail_reason,
+        error             => $self->error,
+        design_ids        => \@design_ids,
+        species           => $self->species_id,
+        created_at        => $self->created_at->iso8601,
+        created_by        => $self->created_by->name,
+        comment           => $self->comment,
+    );
+
+    return \%h;
+}
+
 __PACKAGE__->meta->make_immutable;
 1;

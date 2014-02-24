@@ -4,10 +4,14 @@ use Config::Any;
 use File::stat;
 use Carp qw(confess);
 use Data::Dumper;
+require WGE::Model::FormValidator;
+use Log::Log4perl qw( :easy );
+use Module::Pluggable::Object;
+use Data::Dump qw( pp );
 
 use base qw/Catalyst::Model::DBIC::Schema/;
 
-my ($CONNECT_INFO);
+my ($CONNECT_INFO, $FORM_VALIDATOR);
 
 {
 	my $filename = $ENV{WGE_DBCONNECT_CONFIG}
@@ -20,10 +24,101 @@ my ($CONNECT_INFO);
         or confess "No db connection info found for ".$ENV{WGE_DB}." in $filename"; 
     $CONNECT_INFO = $db_config;
 }
-     
-__PACKAGE__->config(
+
+# Traits are Moose roles
+# use any role modules found in the WebAppCommon Plugin dir
+# or the WGE Model Plugin dir
+__PACKAGE__->config({
     schema_class => $CONNECT_INFO->{schema_class},
     connect_info =>  $CONNECT_INFO,
-);
- 
+    traits => [ '+MooseX::Log::Log4perl',
+       map { "+".$_ } Module::Pluggable::Object->new( 
+        search_path => [ 'WebAppCommon::Plugin', 'WGE::Model::Plugin' ] )->plugins,       
+    ],
+});
+
+sub txn_do {
+    my ( $self, $code_ref, @args ) = @_;
+
+    return $self->schema->txn_do( $code_ref, $self, @args );
+}
+
+sub check_params{
+    my ($self, @args) = @_;
+
+    $FORM_VALIDATOR ||= WGE::Model::FormValidator->new({model => $self});
+    my $caller = ( caller(2) )[3];
+    DEBUG "check_params caller: $caller";
+    return $FORM_VALIDATOR->check_params(@args);
+}
+
+## no critic(RequireFinalReturn)
+sub retrieve {
+    my ( $self, $entity_class, $search_params, $search_opts ) = @_;
+
+    $search_opts ||= {};
+
+    my @objects = $self->schema->resultset($entity_class)->search( $search_params, $search_opts );
+
+    if ( @objects == 1 ) {
+        return $objects[0];
+    }
+    elsif ( @objects == 0 ) {
+        $self->throw( NotFound => { entity_class => $entity_class, search_params => $search_params } );
+    }
+    else {
+        $self->throw( Implementation => "Retrieval of $entity_class returned " . @objects . " objects" );
+    }
+}
+## use critic
+
+## no critic(RequireFinalReturn)
+sub throw {
+    my ( $self, $error_class, $args ) = @_;
+
+    if ( $error_class !~ /::/ ) {
+        $error_class = 'LIMS2::Exception::' . $error_class;
+    }
+
+    eval "require $error_class"
+        or confess "Load $error_class: $!";
+
+    my $err = $error_class->new($args);
+
+    $self->log->error( $err->as_string );
+
+    $err->throw;
+}
+## use critic
+
+sub trace {
+    my ( $self, @args ) = @_;
+
+    if ( $self->log->is_trace ) {
+        my $mesg = join "\n", map { ref $_ ? pp( $_ ) : $_ } @args;
+        $self->log->trace( $mesg );
+    }
+
+    return;
+}
+
+sub _chr_id_for {
+    my ( $self, $assembly_id, $chr_name ) = @_;
+
+    my $chr = $self->schema->resultset('Chromosome')->find(
+        {
+            'me.name'       => $chr_name,
+            'assemblies.id' => $assembly_id
+        },
+        {
+            join => { 'species' => 'assemblies' }
+        }
+    );
+
+    if ( ! defined $chr ) {
+        $self->throw( Validation => "No chromosome $chr_name found for assembly $assembly_id" );
+    }
+
+    return $chr->id;
+}
 1;

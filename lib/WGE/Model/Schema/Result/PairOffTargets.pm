@@ -69,15 +69,7 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key( "id" );
 
-#CHECK THESE NUMBERS. we want either the start or end of sgrna
-sub pam_start {
-    my $self = shift;
-    return $self->chr_start + ($self->pam_right ? 19 : 2)
-}
-
-sub pam_left {
-    return ! shift->pam_right;
-}
+with 'WGE::Util::CrisprRole';
 
 sub as_hash {
     my $self = shift;

@@ -2,6 +2,8 @@ package WGE::Controller::Root;
 use Moose;
 use namespace::autoclean;
 use Data::Dumper;
+use Try::Tiny;
+use WGE::Util::CreateDesign;
 
 BEGIN { extends 'Catalyst::Controller' }
 

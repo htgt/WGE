@@ -1,0 +1,49 @@
+.track_container div.track_controls {
+  display: block;
+  white-space: nowrap;
+  position: relative;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 0 0 0 2px;
+  color: white;
+  float: right;
+  text-align: right;
+  font-family: Verdana;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 5px 0;
+  z-index: 5;  
+}
+
+.track_container div.track_controls:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.track_container div.track_controls > * {
+  display: inline-block;
+  width: 20px;
+  text-align: center;
+}
+
+.track_container div.track_controls a {
+  color: white;
+}
+
+.track_container div.track_controls a:hover {
+  text-decoration: underline;
+}
+
+.track_container:hover>div.track_controls {
+  display: block;
+}
+
+.track_container div.track_controls a.hidden {
+  display: none!important;
+}
+
+.track_container div.track_controls a.height_toggle {
+  background: url(../i/auto_height.png) center 1px no-repeat;
+}
+
+.track_container div.track_controls a.height_toggle.auto_height {
+  background-position: center -17px;
+}

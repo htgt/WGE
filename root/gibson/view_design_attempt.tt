@@ -1,0 +1,11 @@
+[% META title = "Design Attempts"; META tab_name = "Gibson" %]
+
+<div class="page-header">
+  <h1>Design Attempt
+  <small>[% da.id %]</small>
+  </h1>
+</div>
+
+[% INCLUDE 'create_design/view_design_attempt.tt'
+    view_design_url = '/view_gibson_design'
+%]

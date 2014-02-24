@@ -1,3 +1,5 @@
+[% META title = "WGE"; META tab_name = "Home" %]
+
 <script type="text/javascript">
   var species;
   $(document).ready(function() {
@@ -75,9 +77,12 @@
   }
 
   function get_selected_pairs() {
-    // this is not working
-    return $('input[name=pair]:checked').map(function() { return this.value }).get();
+    return $('input[name=pair]:checked').map( function() { 
+      var spl = this.value.split("_");
+      return { left_id: spl[0], right_id: spl[1] };
+    } );
   }
+
   function get_pairs() {
     //get all the selected exon ids
     var exons = get_selected_exons();
@@ -99,7 +104,7 @@
             //each exon has a list of crisprs
             $.each(crisprs, function(idx, pair) {
               $("<tr>")
-                 //.append( $("<td>").append( $("<input type='checkbox' name='pair'>").val(pair.id) ) )
+                 .append( get_pair_checkbox( pair.left_crispr.id + "_" + pair.right_crispr.id ) )
                  .append( get_crispr_row(exon_id, pair.left_crispr) )
                  .append( $("<td>", { html: pair.spacer }) )
                  .append( get_crispr_row(exon_id, pair.right_crispr) )
@@ -110,12 +115,35 @@
         //change the loading button
         $("#search").button('reset');
         
-        //create_offtargets_button();
+        create_genoverse_button();
+        create_offtargets_button();
       })
     
      .fail(ajax_failed); //create error if its not successful
 
     return table;
+  }
+
+  function get_pair_checkbox(pair_id) {
+    return $("<td>").append( $("<input type='checkbox' name='pair'>").val(pair_id) ); 
+  }
+
+  function create_genoverse_button(){
+    if( $("#genoverse").length){
+      // Don't create it again
+      return;
+    }
+    $("#fields").append($( "<button class='btn btn-default' id='genoverse'>").text("View in Genome Broswer") );
+    $("#genoverse").click(function(event) {
+        
+        event.preventDefault();
+
+        var url = "[% c.uri_for('/genoverse_browse') %]";
+        var exon = get_selected_exons();
+        var full_url = url.concat("?view_paired=1&exon_id=",exon);
+        console.log(full_url);
+        window.location.href=full_url;
+    });
   }
 
   function create_offtargets_button(){
@@ -125,17 +153,20 @@
     }
     
     $("#fields").append($( "<button class='btn btn-default' id='offtargets'>").text("Find Off-Targets")  );
-    $("#offtargets").on("click", function() {
-      console.log("Off targets button clicked");
-          
+    $("#offtargets").click(function(event) {          
       //stop it from submitting the form
       event.preventDefault();
       
-      console.log("got here");
       var selectedpairs = get_selected_pairs();
-      console.log(selectedpairs);
+
+      if ( selectedpairs.length == 0 )
+        return;
+
+      //for now just take the top pair as we only care about one for now
+      var temp = selectedpairs[0];
+      temp.species = get_species();
       
-      $.get('api/pair_off_target_search', { species: get_species(), pair_id: selectedpairs }, 
+      $.get('api/pair_off_target_search', temp, 
       function(data) { 
         console.log(data);
       });
@@ -205,7 +236,9 @@
 
       //add headers
       //$("<tr>").append( $("<th>" ) )
-               $("<tr>").append( get_crispr_header() )
+               $("<tr>")
+               .append( $("<th>") )
+               .append( get_crispr_header() )
                .append( $("<th>", { html: "Spacer" }) )
                .append( get_crispr_header() )
                .appendTo( table.find("thead") );

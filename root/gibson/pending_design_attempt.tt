@@ -1,0 +1,13 @@
+[% META title = "Gibson Design"; META tab_name = "Gibson" %]
+
+<div class="page-header">
+  <h1>
+    Design Attempt Progress
+    <small>[% id %]</small>
+  </h1>
+</div>
+
+[% INCLUDE 'create_design/pending_design_attempt.tt'
+    design_attempt_url = '/design_attempt'
+    design_attempt_status_url = '/design_attempt_status'
+%]

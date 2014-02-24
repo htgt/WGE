@@ -22,6 +22,9 @@ use Catalyst qw/
     Static::Simple
     Authentication
     Authorization::Roles
+    Session
+    Session::Store::FastMmap
+    Session::State::Cookie    
 /;
 
 use Log::Log4perl::Catalyst;
@@ -48,7 +51,24 @@ __PACKAGE__->config(
     enable_catalyst_header => 1, # Send X-Catalyst header
     default_model => 'DB',
     default_view => 'Web',
+    'View::Web' => {
+        INCLUDE_PATH => [
+            __PACKAGE__->path_to( 'root' ),
+            __PACKAGE__->path_to( 'root', 'gibson' ),
+            __PACKAGE__->path_to( 'root', 'site' ),          
+            $ENV{SHARED_WEBAPP_TT_DIR} || '/opt/t87/global/software/perl/lib/perl5/WebAppCommon/shared_templates',
+            ],
+    },
     'View::JSON' => { expose_stash => 'json_data' },
+    'static' => {
+        include_path => [
+            $ENV{SHARED_WEBAPP_STATIC_DIR} || '/opt/t87/global/software/perl/lib/perl5/WebAppCommon/shared_static',
+            __PACKAGE__->path_to( 'root' ),
+        ],
+    },
+    'Plugin::Session' => {
+        storage => $ENV{WGE_SESSION_STORE} || '/tmp/wge',
+    },
     authentication => {
         use_session => 0,
         default_realm => 'rest_client',
@@ -75,12 +95,7 @@ __PACKAGE__->config(
                 }
             }            
         }
-    },
-    'View::HTML' => {
-        INCLUDE_PATH => [
-            $ENV{SHARED_WEBAPP_TT_DIR} || '/opt/t87/global/software/perl/lib/perl5/WebAppCommon/shared_templates',
-        ],
-    },
+    }
 );
 
 # Start the application

@@ -82,7 +82,7 @@ Related object: L<WGE::Model::Schema::Result::CrisprPair>
 __PACKAGE__->has_many(
   "crispr_pairs",
   "WGE::Model::Schema::Result::CrisprPair",
-  { "foreign.status" => "self.id" },
+  { "foreign.status_id" => "self.id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
@@ -97,7 +97,7 @@ Related object: L<WGE::Model::Schema::Result::CrisprPairsHuman>
 __PACKAGE__->has_many(
   "crispr_pairs_humans",
   "WGE::Model::Schema::Result::CrisprPairsHuman",
-  { "foreign.status" => "self.id" },
+  { "foreign.status_id" => "self.id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
@@ -112,13 +112,13 @@ Related object: L<WGE::Model::Schema::Result::CrisprPairsMouse>
 __PACKAGE__->has_many(
   "crispr_pairs_mice",
   "WGE::Model::Schema::Result::CrisprPairsMouse",
-  { "foreign.status" => "self.id" },
+  { "foreign.status_id" => "self.id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-28 16:41:34
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:utHYb64xTIi9HM7AbIaGcg
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-02-18 14:32:58
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:aciMkUHuNbMMsbpoQfmN8A
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

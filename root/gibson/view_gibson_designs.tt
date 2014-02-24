@@ -1,0 +1,21 @@
+[% META title = "View Designs"; META tab_name = "Gibson" %]
+
+<div class="page-header">
+  <h1>View Designs
+  </h1>
+</div>
+
+<form method="POST" action="[% c.uri_for( 'view_gibson_designs' ) %]" class="well">
+  <fieldset>
+    <legend>View Design</legend>
+    <input type="text" name="design_id" placeholder="Design id" value="[% design_id %]" />
+    <input type="submit" name="action" class="btn btn-primary" value="View Design" />
+  </fieldset>
+</form>
+<form method="POST" action="[% c.uri_for( 'view_gibson_designs' ) %]" class="well">
+  <fieldset>
+    <legend>View Design Attempt</legend>
+    <input type="text" name="design_attempt_id" placeholder="Design Attempt id" value="[% design_attempt_id %]" />
+    <input type="submit" name="action" class="btn btn-primary" value="View Design Attempt" />
+  </fieldset>
+</form>

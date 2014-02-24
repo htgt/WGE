@@ -263,5 +263,89 @@ __PACKAGE__->belongs_to(
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+
+# Add some relationship names which do not follow the usual conventions
+__PACKAGE__->has_many(
+  "genes",
+  "WGE::Model::Schema::Result::GeneDesign",
+  { "foreign.design_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+__PACKAGE__->has_many(
+  "oligos",
+  "WGE::Model::Schema::Result::DesignOligo",
+  { "foreign.design_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+sub as_hash {
+    my ( $self, $suppress_relations ) = @_;
+
+    # updates design object with latest information from database
+    # if not done then the created_at value which can default to the current
+    # timestamp does not seem to be set and a error is thrown
+    $self->discard_changes;
+
+    my %h = (
+        id                      => $self->id,
+        name                    => $self->name,
+        type                    => $self->design_type_id,
+        created_at              => $self->created_at->iso8601,
+        created_by              => $self->created_by->name,
+        phase                   => $self->phase,
+        validated_by_annotation => $self->validated_by_annotation,
+        target_transcript       => $self->target_transcript,
+        species                 => $self->species_id,
+        assigned_genes          => [ map { $_->gene_id } $self->genes ],
+        cassette_first          => $self->cassette_first,
+    );
+
+    if ( ! $suppress_relations ) {
+        my $oligos = $self->_sort_oligos;
+        $h{comments}           = [ map { $_->as_hash } $self->design_comments ];
+        $h{oligos}             = $oligos;
+        $h{oligos_fasta}       = $self->_oligos_fasta( $oligos );
+        $h{genotyping_primers} = [ sort { $a->{type} cmp $b->{type} } map { $_->as_hash } $self->genotyping_primers ];
+    }
+
+    return \%h;
+}
+
+sub _sort_oligos {
+    my $self = shift;
+
+    my @oligos = map { $_->[0] }
+        sort { $a->[1] <=> $b->[1] }
+            map { [ $_, $_->{locus} ? $_->{locus}{chr_start} : -1 ] }
+                map { $_->as_hash } $self->oligos;
+
+    return \@oligos;
+}
+
+sub _oligos_fasta {
+    my ( $self, $oligos ) = @_;
+
+    return unless @{$oligos};
+
+    my $strand = $oligos->[0]{locus}{chr_strand};
+    return unless $strand;
+
+    require Bio::Seq;
+    require Bio::SeqIO;
+    require IO::String;
+
+    my $fasta;
+    my $seq_io = Bio::SeqIO->new( -format => 'fasta', -fh => IO::String->new( $fasta ) );
+
+    my $seq = Bio::Seq->new( -display_id => 'design_' . $self->id,
+                             -alphabet   => 'dna',
+                             -seq        => join '', map { $_->{seq} } @{ $oligos } );
+
+    $seq_io->write_seq( $strand == 1 ? $seq : $seq->revcom );
+
+    return $fasta;
+}
+
 __PACKAGE__->meta->make_immutable;
 1;

@@ -60,7 +60,7 @@ __PACKAGE__->table("crispr_pairs_mouse");
   data_type: 'integer[]'
   is_nullable: 1
 
-=head2 status
+=head2 status_id
 
   data_type: 'integer'
   default_value: 0
@@ -77,6 +77,18 @@ __PACKAGE__->table("crispr_pairs_mouse");
   data_type: 'text'
   is_nullable: 1
 
+=head2 last_modified
+
+  data_type: 'timestamp'
+  default_value: current_timestamp
+  is_nullable: 1
+  original: {default_value => \"now()"}
+
+=head2 id
+
+  data_type: 'text'
+  is_nullable: 0
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -88,7 +100,7 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_nullable => 0 },
   "off_target_ids",
   { data_type => "integer[]", is_nullable => 1 },
-  "status",
+  "status_id",
   {
     data_type      => "integer",
     default_value  => 0,
@@ -99,6 +111,15 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_nullable => 0 },
   "off_target_summary",
   { data_type => "text", is_nullable => 1 },
+  "last_modified",
+  {
+    data_type     => "timestamp",
+    default_value => \"current_timestamp",
+    is_nullable   => 1,
+    original      => { default_value => \"now()" },
+  },
+  "id",
+  { data_type => "text", is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -114,6 +135,20 @@ __PACKAGE__->add_columns(
 =cut
 
 __PACKAGE__->set_primary_key("left_id", "right_id");
+
+=head1 UNIQUE CONSTRAINTS
+
+=head2 C<unique_mouse_pair_id>
+
+=over 4
+
+=item * L</id>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint("unique_mouse_pair_id", ["id"]);
 
 =head1 RELATIONS
 
@@ -158,7 +193,7 @@ Related object: L<WGE::Model::Schema::Result::CrisprPairStatus>
 __PACKAGE__->belongs_to(
   "status",
   "WGE::Model::Schema::Result::CrisprPairStatus",
-  { id => "status" },
+  { id => "status_id" },
   {
     is_deferrable => 1,
     join_type     => "LEFT",
@@ -168,8 +203,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-28 16:41:34
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ED2lXq23I3X8LnrG4M4VAg
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-02-18 14:32:58
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:/J4hVosGXhr58pzbKfC/8A
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

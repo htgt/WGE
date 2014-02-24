@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 use strict;
 use warnings;
@@ -41,8 +41,6 @@ Log::Log4perl->easy_init( $log_level );
 INFO "Maximum allowed off targets is $db_cutoff";
 INFO "Note: not committing data (dry run)" unless $commit;
 
-die "Commit is: $commit";
-
 #remove this later obviously
 $ENV{WGE_REST_CLIENT_CONFIG} ||= '/nfs/team87/farm3_lims2_vms/conf/wge-live-rest-client.conf';
 
@@ -62,7 +60,7 @@ __END__
 
 =head1 NAME
 
-persist_wge.pl - add off target information to crisprs in wge
+persist_crisprs.pl - add off target information to crisprs in wge
 
 =head1 SYNOPSIS
 

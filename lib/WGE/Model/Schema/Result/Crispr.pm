@@ -156,16 +156,21 @@ __PACKAGE__->has_many(
 
 __PACKAGE__->set_primary_key('id');
 
+with 'WGE::Util::CrisprRole';
+
 sub as_hash {
   my $self = shift;
 
   #should just do a map on $self->columns...
   return {
+    id        => $self->id,
     chr_name  => $self->chr_name,
     chr_start => $self->chr_start,
+    chr_end   => $self->chr_start+22,
     seq       => $self->seq,
     species   => $self->species_id,
     pam_right => $self->pam_right,
+    seq  => $self->seq,
   };
 }
 

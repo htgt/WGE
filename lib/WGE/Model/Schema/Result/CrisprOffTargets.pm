@@ -55,6 +55,8 @@ __PACKAGE__->add_columns(
     )
 );
 
+with 'WGE::Util::CrisprRole';
+
 __PACKAGE__->set_primary_key( "id" );
 
 

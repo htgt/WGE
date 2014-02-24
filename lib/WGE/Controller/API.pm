@@ -1,10 +1,32 @@
 package WGE::Controller::API;
 
 use Moose;
+use WGE::Util::GenomeBrowser qw(
+    gibson_designs_for_region 
+    design_oligos_to_gff 
+    crisprs_for_region 
+    crisprs_to_gff
+    crispr_pairs_for_region
+    crispr_pairs_to_gff
+    );
 use namespace::autoclean;
 use Data::Dumper;
 
+use WGE::Util::FindPairs;
+
 BEGIN { extends 'Catalyst::Controller' }
+
+has pair_finder => (
+    is         => 'ro',
+    isa        => 'WGE::Util::FindPairs',
+    lazy_build => 1,
+);
+
+sub _build_pair_finder {
+    my $self = shift;
+
+    return WGE::Util::FindPairs->new;
+}
 
 
 =head1 NAME
@@ -13,7 +35,10 @@ WGE::Controller::API - API Controller for WGE
 
 =head1 DESCRIPTION
 
-[enter your description here]
+Contains methods which provide data to javascript requests
+and do not require user authentication.
+
+Authenticated requests should use the REST API
 
 =cut
 
@@ -101,25 +126,189 @@ sub pair_search :Local('pair_search') {
 }
 
 sub pair_off_target_search :Local('pair_off_target_search') {
-	my ($self, $c) = @_;
-	my $params = $c->req->params;
-	
-	check_params_exist( $c, $params, [ 'pair_id[]' ]);
-	
-	my @data;
-	my $pair_id = $params->{ 'pair_id[]'};
-	my @pair_ids = ( ref $pair_id eq 'ARRAY' ) ? @{ $pair_id } : ( $pair_id );
+    my ( $self, $c ) = @_;
 
-	foreach my $id ( @pair_ids ){
-		push @data, "Processing pair $id";
-	}
-	
-	$c->stash->{json_data} = \@data;
-	$c->forward('View::JSON');
+    my $params = $c->req->params;
+
+    check_params_exist( $c, $params, [ qw( species left_id right_id ) ] );
+
+    #for now we will trust that what we got was a valid pair.
+    #we will need to verify or someone can send any old crap.
+    #we need to get the spacer AGAIN here, ugh
+    
+    # also need to make extra sure someone can't put '24576 || rm -rf *' or something
+
+    my $species_id = $c->model('DB')->resultset('Species')->find(
+        { id       => $params->{species} }
+    )->numerical_id;
+
+
+    my $pair = $c->model('DB')->resultset('CrisprPair')->find( 
+        { 
+            left_id    => $params->{left_id}, 
+            right_id   => $params->{right_id},
+            species_id => $species_id,
+        }
+    );
+
+    #if the pair doesn't exist create it, note that this is subject to a race condition,
+    #we should add locks to the table (david said it's part of select syntax)
+    unless ( $pair ) {
+        #find the crispr entries so we can check they are a valid pair
+        my @crisprs = $c->model('DB')->resultset('Crispr')->search( 
+            {  
+                id         => { -IN => [ $params->{left_id}, $params->{right_id} ] },
+                species_id => $species_id
+            }
+        );
+
+        #identify if the chosen crisprs are valid by
+        #checking the list of crisprs against itself for pairs
+        my $pairs = $self->pair_finder->find_pairs( \@crisprs, \@crisprs );
+
+        die "Found more than one pair??" if @{ $pairs } > 1;
+
+        $pair = $c->model('DB')->resultset('CrisprPair')->create( 
+            {
+                left_id    => $pairs->[0]{left_crispr}{id},
+                right_id   => $pairs->[0]{right_crispr}{id},
+                spacer     => $pairs->[0]{spacer},
+                species_id => $species_id,
+
+            },
+            { key => 'primary' }
+        );
+
+    }
+
+    $c->stash->{json_data} = { 'success' => 1 };
+    $c->forward('View::JSON');
 }
+
+# sub pair_off_target_search :Local('pair_off_target_search') {
+# 	my ($self, $c) = @_;
+# 	my $params = $c->req->params;
+	
+# 	check_params_exist( $c, $params, [ 'pair_id[]' ]);
+	
+# 	my @data;
+# 	my $pair_id = $params->{ 'pair_id[]'};
+# 	my @pair_ids = ( ref $pair_id eq 'ARRAY' ) ? @{ $pair_id } : ( $pair_id );
+
+# 	foreach my $id ( @pair_ids ){
+# 		push @data, "Processing pair $id";
+# 	}
+#   $c->stash->{json_data} = \@data;
+#   $c->forward('View::JSON');
+# }	
+
+
+sub design_attempt_status :Chained('/') PathPart('design_attempt_status') Args(1) {
+    my ( $self, $c, $da_id ) = @_;
+ 
+    # require authenticated user for this request?
+    
+    $c->log->debug("Getting status for design attempt $da_id");
+
+    my $da = $c->model->c_retrieve_design_attempt( { id => $da_id } );
+    my $status = $da->status;
+    my $design_links;
+    if ( $status eq 'success' ) {
+        my @design_ids = split( ' ', $da->design_ids );
+        for my $design_id ( @design_ids ) {
+            my $link = $c->uri_for('/view_gibson_design', { design_id => $design_id } )->as_string;
+            $design_links .= '<a href="' . $link . '">'. $design_id .'</a><br>';
+        }
+    }
+
+    $c->stash->{json_data} = { status => $status, designs => $design_links };
+    $c->forward('View::JSON');
+}
+
+sub designs_in_region :Local('designs_in_region') Args(0){
+    my ($self, $c) = @_;
+
+    my $schema = $c->model->schema;
+    my $params = {
+        assembly_id          => $c->request->params->{assembly},
+        chromosome_number    => $c->request->params->{chr},
+        start_coord          => $c->request->params->{start},
+        end_coord            => $c->request->params->{end},
+    };
+    # FIXME: generate gff for all design oligos in specified region
+    my $oligos = gibson_designs_for_region (
+         $schema,
+         $params,
+    );
+
+    my $gibson_gff = design_oligos_to_gff( $oligos, $params );
+    $c->response->content_type( 'text/plain' );
+    my $body = join "\n", @{$gibson_gff};
+    return $c->response->body( $body );
+}
+
+
 #
 # should these go into a util module? (yes)
 #
+sub crisprs_in_region :Local('crisprs_in_region') Args(0){
+    my ($self, $c) = @_;
+    
+    my $schema = $c->model->schema;
+    my $params = { 
+        start_coord       => $c->request->params->{start},
+        end_coord         => $c->request->params->{end},
+        chromosome_number => $c->request->params->{chr},
+        assembly_id       => $c->request->params->{assembly},
+        crispr_filter     => $c->request->params->{crispr_filter},
+        flank_size        => $c->request->params->{flank_size},    
+    };
+    
+    my $crisprs = crisprs_for_region($schema, $params);
+
+    if(my $design_id = $c->request->params->{design_id}){
+        my $five_f = $c->model->c_retrieve_design_oligo({ design_id => $design_id, oligo_type => '5F' });
+        my $three_r = $c->model->c_retrieve_design_oligo({ design_id => $design_id, oligo_type => '3R'});
+        $params->{design_start} = $five_f->locus->chr_start;
+        $params->{design_end} = $three_r->locus->chr_end;
+        $c->log->debug(Dumper($params));
+    }
+
+    my $crispr_gff = crisprs_to_gff( $crisprs, $params);
+    $c->response->content_type( 'text/plain' );
+    my $body = join "\n", @{$crispr_gff};
+    return $c->response->body( $body );    
+}
+
+sub crispr_pairs_in_region :Local('crispr_pairs_in_region') Args(0){
+    my ($self, $c) = @_;
+    
+    my $schema = $c->model->schema;
+    my $params = { 
+        start_coord       => $c->request->params->{start},
+        end_coord         => $c->request->params->{end},
+        chromosome_number => $c->request->params->{chr},
+        assembly_id       => $c->request->params->{assembly},
+        crispr_filter     => $c->request->params->{crispr_filter},
+        flank_size        => $c->request->params->{flank_size},        
+    };
+    
+    my $pairs = crispr_pairs_for_region($schema, $params);
+
+    if(my $design_id = $c->request->params->{design_id}){
+        my $five_f = $c->model->c_retrieve_design_oligo({ design_id => $design_id, oligo_type => '5F' });
+        my $three_r = $c->model->c_retrieve_design_oligo({ design_id => $design_id, oligo_type => '3R'});
+        $params->{design_start} = $five_f->locus->chr_start;
+        $params->{design_end} = $three_r->locus->chr_end;
+        $c->log->debug(Dumper($params));
+    }
+
+    my $pairs_gff = crispr_pairs_to_gff( $pairs, $params);
+    $c->response->content_type( 'text/plain' );
+    my $body = join "\n", @{$pairs_gff};
+    return $c->response->body( $body );    
+}
+
 
 #used to retrieve pairs or crisprs from an arrayref of exons
 sub _get_exon_attribute {
