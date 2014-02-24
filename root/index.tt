@@ -339,14 +339,6 @@
   }
 </script>
 
-<style type="text/css">
-th.group-header {
-  text-align: center;
-  vertical-align: middle;
-  background: #EFEFEF;
-}
-</style>
-
 <div class="row">
   <div class="span12">
 

@@ -40,20 +40,6 @@ join crisprs c on c.id=ots.ot_id and c.species_id=?
 order by ots.row_number
 EOT
 
-
-
-#this will be to check if db entries exist
-<<EOT;
-with s as (
-    select left_id, right_id from (
-        select unnest(?::int[]) as left_id, unnest(?::int[]) as right_id
-    ) x
-)
-select cp.* from s
-join crispr_pairs cp on cp.left_id=s.left_id and cp.right_id=s.right_id
-where species_id=?
-EOT
-
 __PACKAGE__->add_columns(
     qw(
         id
@@ -76,10 +62,11 @@ sub as_hash {
 
     return {
         id        => $self->id,
-        crispr_id => $self->crispr_id, #this is the original crispr the ot belongs to
         chr_name  => $self->chr_name,
         chr_start => $self->chr_start,
+        chr_end   => $self->chr_end,
         pam_right => $self->pam_right,
+        seq       => $self->seq,
     }
 }
 

@@ -168,7 +168,7 @@ sub as_hash {
     chr_start          => $self->chr_start,
     chr_end            => $self->chr_end,
     seq                => $self->seq,
-    species            => $self->species_id,
+    species_id         => $self->species_id,
     pam_right          => $self->pam_right,
     off_target_summary => $self->off_target_summary,
   };

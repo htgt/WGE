@@ -167,6 +167,9 @@ sub pair_off_target_search :Local('pair_off_target_search') {
         }
         elsif ( $pair->status_id == -2 ) {
             #skip it!
+            $c->stash->{json_data} = { 'error' => 'Pair has bad crispr' };
+            $c->forward('View::JSON');
+            return;
         }
 
         #its now pending so update the db accordingly
@@ -214,17 +217,6 @@ sub pair_off_target_search :Local('pair_off_target_search') {
 
     my @ids_to_search = $pair->_data_missing( \@crisprs );
 
-    #we should now call $pair->determine_pair_status,
-    #if its 0 we go ahead,
-    #if one already has data we only find crisprs for the other one,
-    #if its error we bail saying sorry bad pair
-
-    #
-    # STOP
-        #we first need to see if either of the crisprs already have individual off targets!
-        #no point doing it twice.
-    #
-
     my $data;
     if ( @ids_to_search ) {
         my ( $job_id, $error );
@@ -261,7 +253,9 @@ sub pair_off_target_search :Local('pair_off_target_search') {
         }
     }
     else {
-        $data = { success => 0, error => "Pair already finished" };
+        #just calculate paired off targets as we already have all the crispr data
+        $pair->calculate_off_targets;
+        $data = { success => 1 };
     }
 
     $data->{pair_status} = $pair->status_id;
@@ -419,11 +413,13 @@ sub _get_exon_attribute {
 
         $c->log->debug('Finding ' . $attr . ' for: ' . join( ", ", @exon_ids ));
 
-        my $vals = $exon->$attr;
-        _send_error($c, "None found!", 400) unless @{ $vals };
+        #sometimes we get a hash, sometimes an object.
+        #if its an object than call as hash
+        my @vals = map { blessed $_ ? $_->as_hash : $_ } $exon->$attr;
+        _send_error($c, "None found!", 400) unless @vals;
 
         #store each exons data as an arrayref of hashrefs
-        $data{$exon_id} = $vals;
+        $data{$exon_id} = \@vals;
     }
 
     return \%data;

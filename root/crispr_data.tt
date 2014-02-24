@@ -95,7 +95,7 @@
 [%# if we have no off targets to show hide the table %]
 [%# RETURN UNLESS crispr.off_targets.size %]
 
-<table class='table table-bordered .table-hover' id='offtarget_table'>
+<table class='table table-bordered table-hover' id='offtarget_table'>
   <tr>
     <th>Location</th>
     <th>Sequence</th>
@@ -116,7 +116,7 @@
   <tr id="spacer_row"><td colspan="4"></td></tr>
 [% FOREACH off_target IN crispr.off_targets %]
   <tr class="ots">
-    <td class="location">[% ensembl_link(chr_name=off_target.chr_name, chr_start=off_target.chr_start, chr_end=off_target.chr_end) %]</a></td>
+    <td class="location">[% ensembl_link(chr_name=off_target.chr_name, chr_start=off_target.chr_start, chr_end=off_target.chr_end) %]</td>
     <td class="seq">[% off_target.seq %]</td>
     <td class="mm"></td>
     <td>[% display_strand(pam_right=off_target.pam_right) %]</td>

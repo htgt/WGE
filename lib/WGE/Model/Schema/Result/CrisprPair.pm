@@ -208,19 +208,33 @@ __PACKAGE__->belongs_to(
 
 #TODO: integrate lot into schema instead of result
 use Try::Tiny;
-#with qw( MooseX::Log::Log4perl );
+with qw( MooseX::Log::Log4perl );
 
 sub as_hash {
-  my $self = shift;
+  my ( $self, $options ) = @_;
 
-  return {
+  my $data = {
     left_crispr        => $self->left->as_hash,
     right_crispr       => $self->right->as_hash,
     spacer             => $self->spacer,
     species_id         => $self->species_id,
-    off_target_ids     => $self->off_target_ids,
     off_target_summary => $self->off_target_summary,
   };
+
+  #if they want off targets return them as a list of hashes
+  if ( $options->{with_offs} ) {
+    $data->{off_targets} = $self->off_targets;
+  }
+
+  return $data;
+}
+
+sub get_species {
+  my $self = shift;
+
+  return $self->result_source->schema->resultset('Species')->find( 
+      { numerical_id => $self->species_id } 
+  )->id;
 }
 
 =head1
@@ -242,7 +256,14 @@ sub off_targets {
 
     # get 2 entries at a time from the list
     while ( my ($left, $right) = splice( @paired_offs, 0, 2 ) ) {
-      push @pairs, { left_crispr => $left, right_crispr => $right };
+      my $data = { 
+        left_crispr  => $left->as_hash, 
+        right_crispr => $right->as_hash 
+      };
+
+      $data->{spacer} = ($data->{right_crispr}{chr_start} - $data->{left_crispr}{chr_end}) - 1;
+
+      push @pairs, $data;
     }
   }
 
@@ -302,12 +323,14 @@ sub calculate_off_targets {
 sub _get_all_paired_off_targets {
   my ( $self, $distance ) = @_;
 
-  #make sure this is a valid pair that has all the required off target data
-  return if $self->status_id == -2;
-
+  #see if anything is missing#
+  #this will also set the status to -2 if the pair has a bad crispr
   if ( my @missing = $self->_data_missing ) {
     die "Can't calculate off targets as data is missing for crisprs:" . join( ", ", @missing );
   }
+
+  #make sure this is a valid pair that has all the required off target data
+  return if $self->status_id == -2;
 
   #change status to calculating off targets
   $self->update( { status_id => 4 } );
@@ -378,7 +401,7 @@ sub _data_missing {
   #crisprs resultset must have total_offs selected (see below)
 
   #this status has already been calculated, so just return it as is
-  return if $self->status_id == -2 or $self->status_id == 5;
+  return if $self->status_id == -2;
 
   unless ( defined $crisprs ) {
     $self->log->warn( "No crisprs provided, searching crispr table" );
