@@ -1,58 +1,130 @@
+[%- MACRO ensembl_link BLOCK -%]
+  [%- location = "${chr_name}:${chr_start}-${chr_end}" -%]
+  [%# the default string is ':-' so thats why we check its > 2 %]
+  [% IF location.length > 2 %]
+    <a href='http://www.ensembl.org/[% species %]/psychic?q=[% location %]'>[% location %]</a>
+  [% END %]
+[%- END -%]
+
+[%- MACRO display_strand BLOCK -%]
+  [%- IF pam_right == 1 %]+[% ELSIF pam_right == 0 %]-[% ELSE %][% END -%]
+[%- END -%]
+
+[%# don't show the crispr table if there's no data %]
+[% RETURN UNLESS crispr %]
+
+[% crispr_grna = crispr_fwd_seq.substr(0, 20) %]
+[% crispr_pam =  crispr_fwd_seq.substr(20, 3) %]
+
 <legend>Crispr Off-target List</legend>
 
+<style type="text/css">
+.seq {
+  font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;
+  font-size:15px;
+}
+</style>
 
 <script type="text/javascript">
-  String.prototype.match_str = function(q) {
-    if (q.length != this.length) return { "str": "error - size mismatch", "total": -1 };
-  
-    var result = "";
-    var total = 0;
-  
-    for (var i = 0; i < this.length; i++) {
-      if (this.charCodeAt(i) ^ q.charCodeAt(i)) {
-          result += "<b>" + q.charAt(i) + "</b>";
-          total++;
+  //we use this for doing the mismatch counts
+  var crispr_grna = "[% crispr_grna %]";
+  var crispr_pam  = "[% crispr_pam %]"
+  var species     = "[% species %]";
+
+  //split seq into grna and pam
+
+  $(document).ready( function() {
+    var rows = new Array([], [], [], [], []);
+    $("#offtarget_table .ots").each(function() { 
+      var tr = $(this);
+
+      //find sequence and get match data
+      var seq = tr.children(".seq");
+      var match = crispr_grna.match_str( seq.text().substr(0, 20) );
+
+      //update the rows
+      seq.html(match.str + " " + seq.text().substr(20, 3)); 
+      tr.children(".mm").text(match.total);
+
+      //exclude 4 because by removing everything else they'll already be sorted
+      if ( match.total < 4 ) {
+        rows[match.total].push(tr);
       }
-      else {
-          result += q.charAt(i)
+    });
+
+    //order everything by number of mismatches
+    var tbl_top = $("#spacer_row");
+    for ( var mm = rows.length-1; mm >= 0; mm-- ) {
+      for ( var i = rows[mm].length-1; i >= 0; i-- ) {
+        rows[mm][i].insertAfter( tbl_top );
       }
     }
-  
-    return { "str": result, "total": total };
-  }
-  var original_seq = "[% crispr_seq %]";
+
+  });
 </script>
 
+<div class="well">
+  <table>
+    <tr>
+      <td>Species</td>
+      <td>[% species %]</td>
+    </tr>
+    <tr>
+      <td>Location</td>
+      <td class="location">[% ensembl_link(chr_name=crispr.chr_name, chr_start=crispr.chr_start, chr_end=crispr.chr_end) %]</td>
+    </tr>
+    <tr>
+      <td>Sequence</td> 
+      <td>[% crispr.seq %]</td>
+    </tr>
+    <tr>
+      <td>Strand</td>
+      <td>[% display_strand(pam_right=crispr.pam_right) %]</td>
+    </tr>
+    <tr>
+      <td>Off-target summary</td>
+      <td>[% crispr.off_target_summary or 'No data' %]</td>
+    </tr>
+    <tr>
+      <td>Total off-targets</td>
+      <td>[% crispr.off_targets.size or 'No data' %]</td>
+    </tr>
+  </table>
+</div>
 
-crispr target sequence: <tt style="font-size:15px">[% crispr_seq %]</tt>
-<br />
-crispr off-target count is [% off_target_count %]
-<br />
+[%# if we have no off targets to show hide the table %]
+[%# RETURN UNLESS crispr.off_targets.size %]
 
-<table class='table table-bordered .table-hover' id='offtarget_table'>
-  <tr>
-    <th colspan="4">Crispr</th>
-  </tr>
-  <tr>
-    <td></td>
-    <td><tt style="font-size:15px">[% crispr_seq %]</tt></td>
-    <td></td>
-    <td></td>
-  </tr>
-
+<table class='table table-bordered table-hover' id='offtarget_table'>
   <tr>
     <th>Location</th>
     <th>Sequence</th>
     <th>Mismatches</th>
-    <th>pam right</th>
+    <th>Strand</th>
   </tr>
-[% FOREACH crispr IN off_targets %]
   <tr>
-    <td><a href="http://www.ensembl.org/[% crispr.species %]/psychic?q=[% crispr.location %]">[% crispr.location %]</a></td>
-    <td><tt style="font-size:15px"><script>document.write(original_seq.match_str("[% crispr.seq %]").str);</script></tt></td>
-    <td><script>document.write(original_seq.match_str("[% crispr.seq %]").total);</script></td>
-    <td>[% crispr.pam_right %]</td>
-
+    <td>Original CRISPR</td>
+    <td class="seq">
+      [%- crispr_grna _ " " _ crispr_pam -%]
+      [%- IF ! crispr.pam_right -%]
+        <span style="font-size:8px;vertical-align:sub;">(reversed)</span>
+      [%- END -%]
+    </td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr id="spacer_row"><td colspan="4"></td></tr>
+[% FOREACH off_target IN crispr.off_targets %]
+  <tr class="ots">
+    <td class="location">[% ensembl_link(chr_name=off_target.chr_name, chr_start=off_target.chr_start, chr_end=off_target.chr_end) %]</td>
+    <td class="seq">[% off_target.seq %]</td>
+    <td class="mm"></td>
+    <td>[% display_strand(pam_right=off_target.pam_right) %]</td>
+  </tr>
+[% END %]
+[% IF crispr.off_targets.size == 0 %]
+  <tr>
+    <td colspan="4" style="text-align: center">No off target data available for this crispr</td>
   </tr>
 [% END %]
 </table>

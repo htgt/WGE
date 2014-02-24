@@ -14,7 +14,7 @@ use Data::Dumper;
 use Path::Class;
 use Bio::Perl qw( revcom );
 
-Log::Log4perl->easy_init($DEBUG);
+Log::Log4perl->easy_init( $DEBUG );
 
 my ( $species, @ids, $fq_file, $crispr_file, $pair_file );
 GetOptions(
@@ -77,11 +77,40 @@ for my $crispr ( @{ $all_crisprs } ) {
     say $fq_fh ( $crispr->{pam_right} ) ? $crispr->{seq} : revcom( $crispr->{seq} )->seq;
 }
 
-INFO "Total number of crisprs found: " . scalar( @{ $all_crisprs } );
-INFO join "\n", map { $_ . ": " . scalar( keys %{ $crispr_data{$_} } ) } keys %crispr_data;
+DEBUG "Total number of crisprs found: " . scalar( @{ $all_crisprs } );
+DEBUG join "\n", map { $_ . ": " . scalar( keys %{ $crispr_data{$_} } ) } keys %crispr_data;
 
 DumpFile( $crispr_file, \%crispr_data );
 
 1;
 
 __END__
+
+=head1 NAME
+
+find_crisprs.pl - retrieve crisprs from WGE
+
+=head1 SYNOPSIS
+
+find_crisprs.pl [options]
+
+    --species            mouse or human
+    --ids                crispr ids
+    --fq-file            the file to dump fq data into
+    --crispr-yaml-file   crispr yaml file to dump crispr data into
+    --help               show this dialog
+
+Example usage:
+
+find_crisprs.pl --species human --crispr-yaml-file crisprs.yaml --fq-file crisprs.fq --ids 53478 23472 23567
+
+=head1 DESCRIPTION
+
+Given a list of crispr ids dump out the sequence and create the YAML files necessary
+to drive the paired crispr pipeline
+
+=head AUTHOR
+
+Alex Hodgkins
+
+=cut

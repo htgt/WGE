@@ -159,19 +159,27 @@ __PACKAGE__->set_primary_key('id');
 with 'WGE::Util::CrisprRole';
 
 sub as_hash {
-  my $self = shift;
+  my ( $self, $options ) = @_;
 
   #should just do a map on $self->columns...
-  return {
-    id        => $self->id,
-    chr_name  => $self->chr_name,
-    chr_start => $self->chr_start,
-    chr_end   => $self->chr_start+22,
-    seq       => $self->seq,
-    species   => $self->species_id,
-    pam_right => $self->pam_right,
-    seq  => $self->seq,
+  my $data = {
+    id                 => $self->id,
+    chr_name           => $self->chr_name,
+    chr_start          => $self->chr_start,
+    chr_end            => $self->chr_end,
+    seq                => $self->seq,
+    species_id         => $self->species_id,
+    pam_right          => $self->pam_right,
+    off_target_summary => $self->off_target_summary,
   };
+
+  #if they want off targets return them as a list of hashes
+  if ( $options->{with_offs} ) {
+    #pass options along to as hash 
+    $data->{off_targets} = [ map { $_->as_hash( $options ) } $self->off_targets ];
+  }
+
+  return $data;
 }
 
 sub pairs {

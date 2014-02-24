@@ -95,8 +95,13 @@ sub execute {
     my $self = shift;
 
     #these will die if they fail
-    $self->create_temp_tables;
-    $self->update_off_targets;
+
+    #we only want to update the off targets if we have data,
+    #(if no crisprs were under the max off target cutoff we have no data to persist)
+    if ( $self->create_temp_tables ) {
+        $self->update_off_targets;
+    }
+
     $self->update_summaries;
 
     #if we get here without dying everything was successful
@@ -128,6 +133,7 @@ sub create_temp_tables {
             $self->log->warn( "$id has " . $total_offs . " off targets, skipping." ); 
         }
         else {
+            $self->log->debug( "$id has " . $total_offs . " off targets." ); 
             $ots_tsv .= join( "\n", @{ $ots->{all} } ) . "\n";
         }
 
@@ -138,7 +144,26 @@ sub create_temp_tables {
         delete $crisprs->{ $id }; #apparently this is fine (from perl 5.8 onwards) 
     }
 
-    $self->log->info( "Creating temp tables" );
+    #this should never happen - it would mean an empty bed file most likely
+    unless ( $summary_tsv ) {
+        die "No summary data, nothing to persist!";
+    }
+
+    $self->log->info( "Creating temporary summary table" );
+
+    $self->dbh->do( "CREATE TEMP TABLE summ (c_id INTEGER, summary TEXT) ON COMMIT DROP" );
+    $self->dbh->do( "COPY summ (c_id, summary) FROM STDIN" );
+    $self->dbh->pg_putcopydata( $summary_tsv );
+    $self->dbh->pg_putcopyend();
+
+    $self->log->info( "Creating temporary bed table" );
+
+    unless ( $ots_tsv ) {
+        $self->log->warn( "No crisprs found with less than " . $self->max_offs . " off targets!" );
+        $self->log->warn( "Only summary data will be persisted" );
+        #nothing was done so return undef
+        return;
+    }
 
     #make temp table and shove all the data in
     $self->dbh->do( "CREATE TEMP TABLE bed (chr_name TEXT, chr_start INTEGER, c_id INTEGER) ON COMMIT DROP" );
@@ -147,14 +172,10 @@ sub create_temp_tables {
     $self->dbh->pg_putcopyend();
     $self->dbh->do( "CREATE INDEX idx_id ON bed (c_id)" );
 
-    $self->dbh->do( "CREATE TEMP TABLE summ (c_id INTEGER, summary TEXT) ON COMMIT DROP" );
-    $self->dbh->do( "COPY summ (c_id, summary) FROM STDIN" );
-    $self->dbh->pg_putcopydata( $summary_tsv );
-    $self->dbh->pg_putcopyend();
-
     $self->log->info( "Finished temp tables" );
 
-    return;
+    #we successfully created data so return true
+    return 1;
 }
 
 =head2 _process_bed
@@ -190,6 +211,7 @@ sub _process_bed {
             unless defined $db_id and exists $crispr_yaml->{ $exon_id }{ $db_id };
 
         $cols[0] =~ s/^Chr//;
+        $cols[1]++; #we use ensembl numbering in the db
         
         #first column is chromosome, second is start
         #yes we duplicate the db_id but we need it all in a string and this
@@ -208,6 +230,8 @@ sub _process_bed {
     die "No data found in bed file." unless %crisprs;
 
     $self->log->info( "Total lines: $count" );
+    $self->log->info( "Total crisprs: " . scalar( keys %crisprs ) );
+    $self->log->info( "Crisprs found: " . join( ", ", keys %crisprs ) );
 
     return \%crisprs;
 }

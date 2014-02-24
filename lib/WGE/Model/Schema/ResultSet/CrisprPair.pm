@@ -33,90 +33,36 @@ sub load_from_hash {
 
 }
 
-#TODO:
-#delete this method, it is now on the Result
+=head1
 
-#should really be a util method, then we have
-#a calc_off_targets on the result that will call the util method with self->l_crispr etc.
-sub calculate_off_targets {
-    my ( $self, $species, $l_crispr_id, $r_crispr_id, $spacer ) = @_;
+Quickly retrieve a hashref of pair data given some pair ids.
+Input is a species and an arrayref of ids, output is a hashref
 
-    INFO "Finding crispr off targets for $l_crispr_id and $r_crispr_id";
+=cut
+sub fast_search_by_ids {
+    my ( $self, $options ) = @_;
 
     my $schema = $self->result_source->schema;
-    #get all off targets
 
-    my $species_id = $schema->resultset('Species')->find(
-        { id => $species }
-      )->numerical_id;
+    my $ids = "{" . join( ",", @{ $options->{ids} } ) . "}";
 
-    #
-    #TODO: dynamic calculation of spacer so we don't have to do it here
-    #
+    #skip actual off targets because you shouldn't need to get them in bulk
+    my $query = <<EOT;
+with ids as (
+    select unnest(?::text[]) as id
+)
+select cp.id, cp.off_target_summary, cp.status_id, status, cp.last_modified from ids 
+join crispr_pairs cp on ids.id=cp.id and species_id=?
+join crispr_pair_statuses status on cp.status_id=status.id;
+EOT
 
-    my @crisprs = $schema->resultset('CrisprOffTargets')->search(
-        {},
-        { bind => [ '{$l_crispr_id,$r_crispr_id}', $species_id, $species_id  ] }
+    return $schema->storage->dbh_do(
+        sub {
+            my ( $storage, $dbh ) = @_;
+
+            return $dbh->selectall_hashref( $query, 'id', undef, $ids, $options->{species_id} );
+        }
     );
-
-    INFO "Found " . scalar( @crisprs ) . " crispr off targets";
-
-    #group the crisprs by chr_name for quicker comparison
-
-    #i couldn't get the sql to return in a nice way so i just process here
-    my %data;
-    for my $crispr ( @crisprs ) {
-        push @{ $data{ $crispr->chr_name } }, $crispr;
-    }
-
-    INFO "Finding pairs";
-
-    #get instance of FindPairs with off target settings
-    my $pair_finder = WGE::Util::FindPairs->new(
-        max_spacer  => $DISTANCE,
-        include_h2h => 1
-    );
-
-    #find_pairs on $all{chr_name}, $all{chr_name}
-
-    my @all_offs; 
-    while ( my ( $chr_name, $crisprs ) = each %data ) {
-        #just throw all the ids onto one array,
-        #when processing you will take 2 off at a time.
-        push @all_offs, 
-            map { $_->{left_crispr}{id}, $_->{right_crispr}{id} } 
-                @{ $pair_finder->find_pairs( $crisprs, $crisprs ) };
-    }
-
-    die "Uneven number of pair ids!" unless @all_offs % 2 == 0;
-
-    INFO "Parsing pairs";
-
-    #
-    # TODO:
-    #   add CHECK( array_length(off_targets) % 2 = 0 ) maybe?
-    #   write the summary.
-    #   set status to error (-1) on failure
-    #
-
-    my $total = scalar( @all_offs );
-    my $summary = qq/{"total in $DISTANCE":"$total"}/;
-
-    INFO "Persisting pair";
-
-    $self->update_or_create(
-        {
-            left_id         => $l_crispr_id,
-            right_id        => $r_crispr_id,
-            off_target_ids  => \@all_offs,
-            spacer          => $spacer,
-            species_id      => $species_id,
-            status          => 5, #complete
-        },
-        { key => 'primary' }
-    );
-
-    return scalar( @all_offs ) / 2;
 }
 
 1;

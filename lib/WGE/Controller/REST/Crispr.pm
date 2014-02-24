@@ -44,7 +44,7 @@ sub crispr_POST {
 
     my @update_cols = qw(off_targets off_target_summary);
 
-    my $params = $c->req->params;
+    my $params = $c->req->data;
 
     my $crispr = $c->model->resultset('Crispr')->find($params->{id});
     my %update_params = map { $_ => $params->{$_} } grep { exists $params->{$_} } @update_cols;

@@ -56,6 +56,30 @@ __PACKAGE__->add_columns(
 );
 
 with 'WGE::Util::CrisprRole';
+use Bio::Perl qw( revcom_as_string );
+
+sub as_hash {
+    my ( $self, $options ) = @_;
+
+    my $data = {
+        id                 => $self->id,
+        crispr_id          => $self->parent_id, #this is the original crispr the ot belongs to
+        chr_name           => $self->chr_name,
+        chr_start          => $self->chr_start,
+        chr_end            => $self->chr_end,
+        pam_right          => $self->pam_right,
+        species_id         => $self->species_id
+    };
+
+    if ( $options->{always_pam_right} and $self->pam_left ) {
+        $data->{seq} = revcom_as_string( $self->seq );
+    }
+    else {
+        $data->{seq} = $self->seq;
+    }
+
+    return $data;
+}
 
 __PACKAGE__->set_primary_key( "id" );
 

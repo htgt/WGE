@@ -11,10 +11,14 @@ use WGE::Util::GenomeBrowser qw(
     );
 use namespace::autoclean;
 use Data::Dumper;
+use Path::Class;
+use Try::Tiny;
 
 use WGE::Util::FindPairs;
 
 BEGIN { extends 'Catalyst::Controller' }
+
+with qw( MooseX::Log::Log4perl WebAppCommon::Crispr::SubmitInterface );
 
 has pair_finder => (
     is         => 'ro',
@@ -151,16 +155,44 @@ sub pair_off_target_search :Local('pair_off_target_search') {
         }
     );
 
-    #if the pair doesn't exist create it, note that this is subject to a race condition,
-    #we should add locks to the table (david said it's part of select syntax)
-    unless ( $pair ) {
-        #find the crispr entries so we can check they are a valid pair
-        my @crisprs = $c->model('DB')->resultset('Crispr')->search( 
+    my @crisprs;
+    if ( $pair ) {
+        #if its -2 we want to skip, not continue!!
+        if ( $pair->status_id > 0 ) {
+            #LOG HERE
+            #someone else has already started this one, so don't do anything
+            $c->stash->{json_data} = { 'error' => 'Job already started!' };
+            $c->forward('View::JSON');
+            return;
+        }
+        elsif ( $pair->status_id == -2 ) {
+            #skip it!
+            $c->stash->{json_data} = { 'error' => 'Pair has bad crispr' };
+            $c->forward('View::JSON');
+            return;
+        }
+
+        #its now pending so update the db accordingly
+        $pair->update( { status_id => 1 } );
+    } 
+    else {
+        #first find the crispr entries so we can check they are a valid pair
+        #also include the total number of offs for the CrisprPair method
+        @crisprs = $c->model('DB')->resultset('Crispr')->search( 
             {  
                 id         => { -IN => [ $params->{left_id}, $params->{right_id} ] },
                 species_id => $species_id
+            },
+            { 
+                '+select' => [
+                    { array_length => [ 'off_target_ids', 1 ], -as => 'total_offs' }
+                ]
             }
         );
+
+        die "Error locating crisprs" if @crisprs != 2;
+        #the pair doesn't exist so create it. note that this is subject to a race condition,
+        #we should add locks to the table (david said it's part of select syntax)
 
         #identify if the chosen crisprs are valid by
         #checking the list of crisprs against itself for pairs
@@ -168,20 +200,67 @@ sub pair_off_target_search :Local('pair_off_target_search') {
 
         die "Found more than one pair??" if @{ $pairs } > 1;
 
-        $pair = $c->model('DB')->resultset('CrisprPair')->create( 
+        #we didn't find a pair so let's make one
+        $pair = $c->model('DB')->resultset('CrisprPair')->create(
             {
                 left_id    => $pairs->[0]{left_crispr}{id},
                 right_id   => $pairs->[0]{right_crispr}{id},
                 spacer     => $pairs->[0]{spacer},
                 species_id => $species_id,
-
             },
             { key => 'primary' }
         );
 
+        #fetch the row back from the db or we won't have a status id
+        $pair->discard_changes;
     }
 
-    $c->stash->{json_data} = { 'success' => 1 };
+    my @ids_to_search = $pair->_data_missing( \@crisprs );
+
+    my $data;
+    if ( @ids_to_search ) {
+        my ( $job_id, $error );
+        try {
+            die "No pair id" unless $pair->id;
+            #we now definitely have a pair, so we would begin the search process
+            #something like:
+
+            #we need a create crispr cmd method in the common method too, this won't do.
+            my $cmd = [
+                "/nfs/users/nfs_a/ah19/work/paired_crisprs/paired_crisprs_wge.sh",
+                $pair->id,
+                $params->{species},
+                join( " ", @ids_to_search ),
+            ];
+
+            my $bsub_params = {
+                output_dir => dir( '/lustre/scratch109/sanger/ah19/crispr_logs' ),
+                id         => $pair->id,
+            };
+
+            $job_id = $self->c_run_crispr_search_cmd( $cmd, $bsub_params );
+        }
+        catch {
+            $pair->update( { status_id => -1 } );
+            $error = $_;
+        };
+
+        if ( $error ) {
+            $data = { success => 0, error => $error };
+        }
+        else {
+            $data = { success => 1, job_id => $job_id };
+        }
+    }
+    else {
+        #just calculate paired off targets as we already have all the crispr data
+        $pair->calculate_off_targets;
+        $data = { success => 1 };
+    }
+
+    $data->{pair_status} = $pair->status_id;
+
+    $c->stash->{json_data} = $data;
     $c->forward('View::JSON');
 }
 
@@ -246,7 +325,6 @@ sub designs_in_region :Local('designs_in_region') Args(0){
     my $body = join "\n", @{$gibson_gff};
     return $c->response->body( $body );
 }
-
 
 #
 # should these go into a util module? (yes)
@@ -335,11 +413,13 @@ sub _get_exon_attribute {
 
         $c->log->debug('Finding ' . $attr . ' for: ' . join( ", ", @exon_ids ));
 
-        my $vals = $exon->$attr;
-        _send_error($c, "None found!", 400) unless @{ $vals };
+        #sometimes we get a hash, sometimes an object.
+        #if its an object than call as hash
+        my @vals = map { blessed $_ ? $_->as_hash : $_ } $exon->$attr;
+        _send_error($c, "None found!", 400) unless @vals;
 
         #store each exons data as an arrayref of hashrefs
-        $data{$exon_id} = $vals;
+        $data{$exon_id} = \@vals;
     }
 
     return \%data;

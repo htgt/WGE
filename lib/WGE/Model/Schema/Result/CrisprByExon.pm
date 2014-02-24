@@ -60,6 +60,9 @@ __PACKAGE__->belongs_to(
     { id => "numerical_id" },
 );
 
+use YAML::Any qw( Load );
+
+#this should go in the crisprrole...
 sub as_hash {
     my $self = shift;
 
@@ -68,13 +71,32 @@ sub as_hash {
         id
         chr_name
         chr_start
+        chr_end
         seq 
         pam_right
         species_id
         off_target_ids
+        off_target_summary
     );
 
-    return { map { $_ => $self->$_ } @cols };
+    my $data = { map { $_ => $self->$_ } @cols };
+
+    #
+    # this is temp -- we should switch db to store in array
+    #
+    if ( $self->off_target_summary ) {
+        my @sum;
+        #convert hash to array
+        my $summary = Load( $self->off_target_summary );
+
+        while ( my ( $k, $v ) = each %{ $summary } ) {
+            $sum[$k] = $v;
+        }
+
+        $data->{off_target_summary} = \@sum;
+    }
+
+    return $data;
 }
 
 with 'WGE::Util::CrisprRole';

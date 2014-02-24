@@ -4,8 +4,21 @@ use namespace::autoclean;
 use Data::Dumper;
 use TryCatch;
 use IO::File;
+use Bio::Perl qw( revcom_as_string );
 
 BEGIN { extends 'Catalyst::Controller' }
+
+has pair_finder => (
+    is         => 'ro',
+    isa        => 'WGE::Util::FindPairs',
+    lazy_build => 1,
+);
+
+sub _build_pair_finder {
+    my $self = shift;
+
+    return WGE::Util::FindPairs->new;
+}
 
 #
 # Sets the actions in this controller to be registered with no prefix
@@ -19,87 +32,72 @@ WGE::Controller::CrisprReports - Controller for Crispr report pages in WGE
 
 =cut
 
-sub crispr_report :Path('/crispr_report') :Args(1){
-    my ( $self, $c, $id ) = @_;
+sub crispr_data :Path('/crispr') :Args(1){
+    my ( $self, $c, $crispr_id ) = @_;
 
-    my $display_items = [
-        ['Crispr ID'  => 'id' ],
-        ['Species'    => 'species' ],
-        ['Chromosome' => 'chr_name' ],
-        ['Start'      => 'chr_start'],
-        ['End'        => 'chr_end' ],
-        ['Sequence'   => 'seq'],
-        ['PAM right'  => 'pam_right'],
-    ]; 
+    $c->log->info( "Finding crispr $crispr_id" );
 
-    $id =~ s/^WGE-//;
+    my $crispr;
+    #do in a try in case an sql error/dbi is raised
+    try {
+        $crispr = $c->model('DB')->resultset('Crispr')->find( 
+            { id => $crispr_id } 
+        );
+    }
+    catch {
+        $c->log->warn( $_ );
+    };
 
-    my $crispr = $c->model->resultset('Crispr')->find({ id => $id })->as_hash;
+    unless ( $crispr ) {
+        $c->log->info( "Couldn't find crispr $crispr_id!" );
+        $c->stash( error_msg => "$crispr_id is not a valid crispr ID" );
+        return;
+    }
 
-    # Change species numerical id to name
-    my $species = $c->model->resultset('Species')->find({ numerical_id => $crispr->{species} });
-    $crispr->{species} = $species->id;
+    $c->log->info( "Stashing off target data" );
 
-    # Report PAM right as true/false not 1/0
-    $crispr->{pam_right} ? $crispr->{pam_right} = 'true' : $crispr->{pam_right} = 'false';
+    my $crispr_hash = $crispr->as_hash( { with_offs => 1, always_pam_right => 1 } );
+    my $fwd_seq = $crispr_hash->{pam_right} ? $crispr_hash->{seq} : revcom_as_string( $crispr_hash->{seq} );
 
-    $c->stash({ 
-    	crispr        => $crispr,
-    	display_items => $display_items,
-    });
+    $c->stash(
+        crispr         => $crispr_hash,
+        crispr_fwd_seq => $fwd_seq,
+        species        => $crispr->get_species,
+    );
 
-    return;
+    return; 
 }
 
 sub crispr_pair_report :Path('/crispr_pair') :Args(1){
     my ( $self, $c, $id ) = @_;
 
-    my $display_items = [
-        ['Species'    => 'species' ],
-        ['Chromosome' => 'chr_name' ],
-        ['Start'      => 'chr_start'],
-        ['End'        => 'chr_end' ],
-        ['Sequence'   => 'seq'],
-        ['PAM right'  => 'pam_right'],
-    ];
-
-    # I am allowing ID to be in different formats:
-    # WGE_1234:5678 (used in genoverse view) or 1234_5678
-    # should stick to the one used as id in crispr_pairs i.e. 1234_5678
-    $id =~ s/^WGE-//;
-    my ($left_id, $right_id) = split qr/[\:_]/, $id;
-
-    my ($left_crispr, $right_crispr, $spacer);
+    my ( $left_id, $right_id ) = split '_', $id;
 
     # Try to find pair and stats in DB
-    my $crispr_pair = $c->model->resultset('CrisprPair')->find({ left_id => $left_id, right_id => $right_id });
+    my $crispr_pair = $c->model->resultset('CrisprPair')->find( 
+        { left_id => $left_id, right_id => $right_id  }
+    );
 
-    if ($crispr_pair){
-        $left_crispr = $crispr_pair->left->as_hash;
-        $right_crispr = $crispr_pair->right->as_hash;
-        $spacer = $crispr_pair->spacer;
+    #get a hash of pair data
+    my ( $pair, $species );
+    if ( $crispr_pair ) {
+        $pair = $crispr_pair->as_hash( { with_offs => 1 } );
+        $c->log->warn( "Found " . scalar @{ $pair->{off_targets} } );
+        $species = $crispr_pair->get_species;
     }
-    else{
-        $left_crispr = $c->model->resultset('Crispr')->find({ id => $left_id })->as_hash;
-        $right_crispr = $c->model->resultset('Crispr')->find({ id => $right_id })->as_hash;
-        $spacer = $c->req->param('spacer');
+    else {
+        my $left_crispr = $c->model->resultset('Crispr')->find({ id => $left_id });
+        my $right_crispr = $c->model->resultset('Crispr')->find({ id => $right_id });
+
+        #gets a pair hash with spacer but no off target data
+        $pair = $self->pair_finder->_check_valid_pair( $left_crispr, $right_crispr );
+        $species = $left_crispr->get_species;
     }
 
-    foreach my $crispr ($left_crispr, $right_crispr){
-        my $species = $c->model->resultset('Species')->find({ numerical_id => $crispr->{species} });
-        $crispr->{species} = $species->id;
-
-        # Report PAM right as true/false not 1/0
-        $crispr->{pam_right} ? $crispr->{pam_right} = 'true' : $crispr->{pam_right} = 'false';
-    }
-
-    $c->stash({
-        left_crispr => $left_crispr,
-        right_crispr => $right_crispr,
-        display_items => $display_items,
-        crispr_pair => $crispr_pair,
-        spacer => $spacer,
-    });
+    $c->stash( {
+        pair          => $pair,
+        species       => $species,
+    } );
 
     return;
 }

@@ -20,7 +20,7 @@ sub crispr_pair_GET {
     my $pair = $c->model('DB')->resultset('CrisprPair')->find( 
         {
             left_id => $c->req->param('left_id'),
-            right_id=> $c->req->param('right_id'),
+            right_id => $c->req->param('right_id'),
         }
     );
 
@@ -33,7 +33,7 @@ sub crispr_pair_POST {
     $c->assert_user_roles('edit');
 
     my $pair = $c->model('DB')->resultset('CrisprPair')->update_or_create(
-        $c->req->params,
+        $c->req->data,
         { key => 'primary' }
     ) or die $!;
 

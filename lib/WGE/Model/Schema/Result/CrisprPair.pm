@@ -206,19 +206,35 @@ __PACKAGE__->belongs_to(
 # Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-02-18 14:32:58
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:hd1bRXCDGxXNRC0d4BJnlA
 
+#TODO: integrate lot into schema instead of result
 use Try::Tiny;
+with qw( MooseX::Log::Log4perl );
 
 sub as_hash {
-  my $self = shift;
+  my ( $self, $options ) = @_;
 
-  return {
+  my $data = {
     left_crispr        => $self->left->as_hash,
     right_crispr       => $self->right->as_hash,
     spacer             => $self->spacer,
     species_id         => $self->species_id,
-    off_target_ids     => $self->off_target_ids,
     off_target_summary => $self->off_target_summary,
   };
+
+  #if they want off targets return them as a list of hashes
+  if ( $options->{with_offs} ) {
+    $data->{off_targets} = $self->off_targets;
+  }
+
+  return $data;
+}
+
+sub get_species {
+  my $self = shift;
+
+  return $self->result_source->schema->resultset('Species')->find( 
+      { numerical_id => $self->species_id } 
+  )->id;
 }
 
 =head1
@@ -240,7 +256,14 @@ sub off_targets {
 
     # get 2 entries at a time from the list
     while ( my ($left, $right) = splice( @paired_offs, 0, 2 ) ) {
-      push @pairs, { left_crispr => $left, right_crispr => $right };
+      my $data = { 
+        left_crispr  => $left->as_hash, 
+        right_crispr => $right->as_hash 
+      };
+
+      $data->{spacer} = ($data->{right_crispr}{chr_start} - $data->{left_crispr}{chr_end}) - 1;
+
+      push @pairs, $data;
     }
   }
 
@@ -261,6 +284,7 @@ sub calculate_off_targets {
     #default off target distance is 1k
     $distance //= 1000;
     my $total;
+    my $error = 0;
 
     try {
       my ( $offs, $closest ) = $self->_get_all_paired_off_targets( $distance );
@@ -272,21 +296,25 @@ sub calculate_off_targets {
       $closest = (defined $closest) ? $closest->{spacer} : "";
 
       $total = scalar( @{ $offs } ) / 2;
-      my $summary = qq/{"total pairs:"$total", "max_distance": "$distance" "closest": "$closest"}/;
+      my $summary = qq/{"total pairs":"$total", "max_distance": "$distance" "closest": "$closest"}/;
 
       $self->update(
         {
           off_target_ids     => $offs,
           off_target_summary => $summary,
-          status             => 5, #complete
+          status_id          => 5, #complete
         }
       );
     }
     catch {
       #could do with some logging here
-      $self->update( { status => -1 } );
-      print $_ . "\n";
+      $error = 1;
+      $self->update( { status_id => -1 } );
+      $self->log->warn( $_ );
     };
+
+    #should return the error or something really
+    die "Calculating off targets failed!" if $error;
 
     #return the number of pairs
     return $total;
@@ -295,18 +323,27 @@ sub calculate_off_targets {
 sub _get_all_paired_off_targets {
   my ( $self, $distance ) = @_;
 
-  #if this returned false we don't have all the data we need, so bail
-  return unless $self->check_crisprs;
+  #see if anything is missing#
+  #this will also set the status to -2 if the pair has a bad crispr
+  if ( my @missing = $self->_data_missing ) {
+    die "Can't calculate off targets as data is missing for crisprs:" . join( ", ", @missing );
+  }
+
+  #make sure this is a valid pair that has all the required off target data
+  return if $self->status_id == -2;
+
+  #change status to calculating off targets
+  $self->update( { status_id => 4 } );
 
   #get all off targets
   my @crisprs = $self->result_source->schema->resultset('CrisprOffTargets')->search(
       {},
       { 
         bind => [ 
-                  '{' . $self->left_id . ',' . $self->right_id . '}', 
-                  $self->species_id, 
-                  $self->species_id  
-                ] 
+          '{' . $self->left_id . ',' . $self->right_id . '}', 
+          $self->species_id, 
+          $self->species_id  
+        ] 
       }
   );
 
@@ -344,49 +381,77 @@ sub _get_all_paired_off_targets {
   return \@all_offs, $closest;
 }
 
-=head1 
+=head1 _data_missing
 
-This method checks the off target data of the crisprs attached
-to this pair, and updates the status accordingly.
+Returns false if this crispr is already complete, and a list of crisprs
+in need of off target data if any are missing. 
+
+Will update the status of this pair to -2 (bad crispr) if a bad crispr
+is tied to this pair, or to 1 (pending) if there is data missing.
+It is expected that after calling this method you will be updating this crispr,
+or it will be left pending forever
+
+Optionally takes a resultset of crisprs to check. This is 
+for the case where you have already created the crispr resultset 
+for this pair, so there's no point retrieving the crispr data again
 
 =cut
-sub check_crisprs {
-  my ( $self ) = @_;
+sub _data_missing {
+  my ( $self, $crisprs ) = @_;
+  #crisprs resultset must have total_offs selected (see below)
 
-  #make sure both pairs have off targets
-  my @crisprs = $self->result_source->schema->resultset('Crispr')->search(
-    { 
-      id => { -IN => [ $self->left_id, $self->right_id ] }  
-    },
-    { 
-      select => [
-        'id',
-        'off_target_summary',
-        { array_length => [ 'off_target_ids', 1 ], -as => 'total_offs' }
-      ]
-    }
-  );
+  #this status has already been calculated, so just return it as is
+  return if $self->status_id == -2;
 
-  my $status = 4; #calculating off targets status
-  for my $crispr ( @crisprs ) {
+  unless ( defined $crisprs ) {
+    $self->log->warn( "No crisprs provided, searching crispr table" );
+    
+    $crisprs = $self->result_source->schema->resultset('Crispr')->search(
+      { 
+        id         => { -IN => [ $self->left_id, $self->right_id ] },
+        species_id => $self->species_id
+      },
+      { 
+        select => [
+          'id',
+          'off_target_summary',
+          { array_length => [ 'off_target_ids', 1 ], -as => 'total_offs' }
+        ]
+      }
+    );
+
+    die "Couldn't find crisprs!" unless defined $crisprs;
+  }
+
+  #we allow an arrayref or a resultset in $crisprs
+  my @needs_ots_data;
+  for my $crispr ( ref $crisprs eq 'ARRAY' ? @{ $crisprs } : $crisprs->all ) {
     #if a crispr has a summary but no off targets it means its a bad
     #crispr with too many off targets. We therefore set the pair status to bad,
     #as we can't calculate off targets for it
     if ( defined $crispr->get_column( 'off_target_summary' ) ) {
       if ( ! defined $crispr->get_column( 'total_offs' )) {
-        $status = -2;
-        last;
+        #this means one of the crisprs in this pair is bad;
+        #update accordingly and return false as this pair is 'complete'
+        $self->update( { status_id => -2 } );
+        return;
       }
     }
     else {
-      $status = -3; #this means a crispr in this pair doesn't have ots data
+      #this means a crispr in this pair doesn't have ots data
+      push @needs_ots_data, $crispr->id;
     }
   }
 
-  $self->update( { status => $status } );
+  #change status to 'pending' as we expect the user to now do something with it
+  $self->update( { status_id => 1 } );
 
-  #true if everything is good, false if error of some kind
-  return $status > 0; 
+  #if any crisprs need off target data return them
+  return @needs_ots_data;
+}
+
+sub reset_status {
+  shift->update( { status_id => 0 } );
 }
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
