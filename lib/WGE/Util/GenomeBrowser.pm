@@ -162,6 +162,7 @@ sub crisprs_for_region {
 
     # Store species name for gff output
     $params->{species} = $species->id;
+    $params->{species_numerical_id} = $species->numerical_id;
 
     unless($params->{crispr_filter}){ $params->{crispr_filter} = 'all' }
 
@@ -216,7 +217,7 @@ sub crisprs_for_region {
             },
         },
         {
-            columns => [qw/id pam_right chr_start/],
+            columns => [qw/id pam_right chr_start off_target_summary/],
         },
     );
 
@@ -256,15 +257,19 @@ sub crispr_pairs_for_region {
     my $params = shift;
 
     my $crisprs_rs = crisprs_for_region($schema, $params);
+
+    # NB: crisprs_for_region will add the species and species_numerical_id to $params
+    # I should do this in a separate method with sensible name
+
+    my $options = {
+        get_db_data => 1,
+        species_id  => $params->{species_numerical_id},
+    };
     
     # Find pairs amongst crisprs
-    my $pair_finder = WGE::Util::FindPairs->new;
-    my $pairs = $pair_finder->window_find_pairs($params->{start_coord}, $params->{end_coord}, $crisprs_rs);
+    my $pair_finder = WGE::Util::FindPairs->new({ schema => $schema });
+    my $pairs = $pair_finder->window_find_pairs($params->{start_coord}, $params->{end_coord}, $crisprs_rs, $options);
     return $pairs;
-
-    # FIXME: if we want to display off target summaries for pair in genoverse
-    # we will need to look up each pair in CrisprPairs table to see if this has
-    # been computed
 }
 
 
@@ -314,11 +319,7 @@ sub crisprs_to_gff {
     my $crisprs_rs = shift;
     my $params = shift;
 
-DEBUG('Crisprs to gff params: ',Dumper($params));
     my @crisprs_gff;
-
-    # FIXME: add off targets summary to 'attributes' when this info
-    # is available in db
 
     my $design_range = _generate_design_range($params);
 
@@ -355,7 +356,8 @@ DEBUG('Crisprs to gff params: ',Dumper($params));
                 );
             
             if(my $ot_summary = $crispr_r->off_target_summary){
-                $crispr_format_hash{attributes}.='OT_Summary='.$ot_summary;
+                DEBUG("Found off target summary for crispr ".$crispr_r->id);
+                $crispr_format_hash{attributes}.=';OT_Summary='.$ot_summary;
             }
 
             my $crispr_parent_datum = prep_gff_datum( \%crispr_format_hash );
@@ -400,9 +402,6 @@ sub crispr_pairs_to_gff {
 
     my $design_range = _generate_design_range($params);
 
-    # FIXME: add off targets summary to 'attributes' when this info
-    # is available in db
-
     push @crisprs_gff, "##gff-version 3";
     push @crisprs_gff, '##sequence-region lims2-region '
         . $params->{'start_coord'}
@@ -441,8 +440,17 @@ sub crispr_pairs_to_gff {
                     . 'Spacer=' . $crispr_pair->{spacer}
                 );
 
-            if(my $ot_summary = $crispr_pair->{off_target_summary}){
-                $crispr_format_hash{attributes}.='OT_Summary='.$ot_summary;
+            if(my $data = $crispr_pair->{db_data}){
+                DEBUG("Found db_data for crispr pair ".$id);
+                if(defined $data->{off_target_summary}){
+                    $crispr_format_hash{attributes}.=';OT_Summary='.$data->{off_target_summary};
+                }
+                elsif(defined $data->{status}){
+                    $crispr_format_hash{attributes}.=';OT_Summary=Status: '.$data->{status};
+                }
+                else{
+                    DEBUG("No off target summary or status found");
+                }
             }
 
             my $crispr_pair_parent_datum = prep_gff_datum( \%crispr_format_hash );

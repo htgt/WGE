@@ -52,7 +52,7 @@ sub _build_log {
 
 # Faster pair finding for pairs in a large region, e.g. for genoverse browser
 sub window_find_pairs{
-    my ($self, $start, $end, $pairs) = @_;
+    my ($self, $start, $end, $pairs, $options) = @_;
     my $window_size = 400;
     my $max_pair_span = 23 + $self->max_spacer + 23;
     my $shift = $window_size - $max_pair_span;
@@ -62,7 +62,7 @@ sub window_find_pairs{
         $self->log->debug("pair window start: $start");
         my $pair_rs = $pairs->search({ 'chr_start' => { -between => [ $start, $start + $window_size ]} });
         my @crisprs = $pair_rs->all;
-        push @all_pairs, @{ $self->find_pairs(\@crisprs,\@crisprs) || [] };
+        push @all_pairs, @{ $self->find_pairs(\@crisprs,\@crisprs, $options) || [] };
         $start+=$shift;
     }
 
