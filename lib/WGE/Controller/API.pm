@@ -135,12 +135,13 @@ sub pair_off_target_search :Local('pair_off_target_search') {
     my $params = $c->req->params;
 
     check_params_exist( $c, $params, [ qw( species left_id right_id ) ] );
-
-    #for now we will trust that what we got was a valid pair.
-    #we will need to verify or someone can send any old crap.
-    #we need to get the spacer AGAIN here, ugh
     
     # also need to make extra sure someone can't put '24576 || rm -rf *' or something
+
+    #delete anything that's not a number, just to make sure no one types
+    #24576 || rm -rf *' or something. it won't get run anyway unless its found in the db
+    $params->{left_id} =~ s/[^0-9]//g;
+    $params->{right_id} =~ s/[^0-9]//g;
 
     my $species_id = $c->model('DB')->resultset('Species')->find(
         { id       => $params->{species} }

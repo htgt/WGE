@@ -40,14 +40,15 @@ String.prototype.capitalise = function() {
   return this.charAt(0).toUpperCase() + this.slice(1);
 }
 
-function create_alert(text) {
-    //create an error alert,
-    //should make it so we can actually change he class
-    $(".container").prepend(
-        $("<div>", { "class": "alert alert-danger alert-dismissable" })
-            .append( $("<button>", { "class": "close", type: "button", 'aria-hidden': "true", html: "&times;", 'data-dismiss': "alert" }) )
-            .append( $("<span>", { html: text }) )
-    );
+function create_alert(text, alert_class) {
+  alert_class = alert_class || "alert-danger"; //default is error box
+  //create an error alert,
+  //should make it so we can actually change he class
+  $(".container").prepend(
+      $("<div>", { "class": "alert alert-dismissable " + alert_class })
+          .append( $("<button>", { "class": "close", type: "button", 'aria-hidden': "true", html: "&times;", 'data-dismiss': "alert" }) )
+          .append( $("<span>", { html: text }) )
+  );
 }
 
 function get_ensembl_link(location, species) {

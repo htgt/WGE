@@ -58,6 +58,20 @@
       }
     }
 
+    //add functionality to off target button
+    $(".ots-button").click( function(event) {          
+        //stop it from submitting the form
+        event.preventDefault();
+
+        $(this).after($("<i>", { class: "icon-ok" })).hide();
+        create_alert("Your job has been submitted", "alert-success");
+
+        var ids = this.value.split("_");
+        var data = find_off_targets_for_pair(ids[0], ids[1]);
+
+        console.log( data );
+    });
+
   });
 </script>
 
@@ -163,7 +177,10 @@
 [% END %]
 [% IF pair.off_targets.size == 0 %]
   <tr>
-    <td colspan="7" style="text-align: center">No off target data available for this pair!</td>
+    <td colspan="7" style="text-align: center">
+      No off target data available for this pair!
+      <button class="btn btn-block ots-button" value="[% pair.left_crispr.id %]_[% pair.right_crispr.id %]">Find off targets<button>
+    </td>
   </tr>
 [% END %]
 </table>

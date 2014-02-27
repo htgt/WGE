@@ -44,7 +44,6 @@
       $("#exons").find('option').remove(); //remove exons
       $("#exon_label").html('Exons');
       get_table( { hide: 1 } ); //hide crisprs
-      genoverse_button( { hide: 1 } ); //hide genoverse button
       document.location.hash = $(this).val(); //update URL
     });
 
@@ -61,6 +60,21 @@
       $("#crispr_table").remove(); //we want to keep the headings tbh. fine for now
       var table = get_pairs();
     });
+
+    $("#genoverse").click(function(event) {
+        //stop the button submitting the form
+        event.preventDefault();
+
+        if( ! form_valid() ) {
+          return;
+        }
+
+        //redirect the user to the genoverse page
+        var url = "[% c.uri_for('/genoverse_browse') %]";
+        var exon = get_selected_exons();
+        var full_url = url.concat("?view_paired=1&exon_id=",exon);
+        window.location.href=full_url;
+     });
     
     //if someone selects a species then remove the error class
     $("#crispr_search").find('input[type=radio]').click(function() { 
@@ -209,7 +223,6 @@
         $("#search").button('reset');
         
         //todo: change this to be an entire exon search button
-        genoverse_button();
         //create_offtargets_button();
       })
     
@@ -218,74 +231,33 @@
     return table;
   }
 
-  function get_pair_checkbox(pair_id) {
-    return $("<td>").append( $("<input type='checkbox' name='pair'>").val(pair_id) ); 
-  }
-
-  function genoverse_button(options){
-    options = options || {}; //default empty
-    var elem = $("#genoverse");
-    // Don't create it again
-    if( elem.length ) {
-      //allow the user to hide the button as this method is used
-      //whenever the species is changed
-      if (options.hide) {
-        elem.hide();
-      }
-      else {
-        elem.show();
-      }
-
-      return elem;
-    }
-
-    var b = $("<button>", { text: "Show in genome browser", class: "btn btn-default", id: "genoverse"});
-
-    if (options.hide) {
-      b.hide();
-    }
-
-    //add to fields element and add a click method
-    b.appendTo("#fields")
-     .click(function(event) {
-        //stop the button submitting the form
-        event.preventDefault();
-
-        //redirect the user to the genoverse page
-        var url = "[% c.uri_for('/genoverse_browse') %]";
-        var exon = get_selected_exons();
-        var full_url = url.concat("?view_paired=1&exon_id=",exon);
-        window.location.href=full_url;
-     });
-
-     return b;
-  }
-
   function create_offtargets_button(){
-    if( $("#offtargets").length ){
+    if( $("#exon_targets").length ){
       // Don't create it again
       return;
     }
     
-    $("#fields").append($( "<button class='btn btn-default' id='offtargets'>").text("Find Off-Targets")  );
-    $("#offtargets").click(function(event) {          
-      //stop it from submitting the form
-      event.preventDefault();
-      
-      var selectedpairs = get_selected_pairs();
+    $("<button>", { "class": "btn btn-default", id:"exon_targets", text: "Calculate all off targets" })
+      .click(function(event) {          
+        //stop it from submitting the form
+        event.preventDefault();
+        
+        var selectedpairs = get_selected_pairs();
 
-      if ( selectedpairs.length == 0 )
-        return;
+        if ( selectedpairs.length == 0 )
+          return;
 
-      //for now just take the top pair as we only care about one for now
-      var temp = selectedpairs[0];
-      temp.species = get_species();
-      
-      $.get('api/pair_off_target_search', temp, 
-      function(data) { 
-        console.log(data);
-      });
-    });
+        //for now just take the top pair as we only care about one for now
+        var temp = selectedpairs[0];
+        temp.species = get_species();
+        
+        //this needs a new API call
+        $.get('api/pair_off_target_search', temp, 
+          function(data) { 
+            console.log(data);
+        });
+      })
+      .appendTo($("#fields"));
   }
   
   //return whatever species is selected
@@ -324,18 +296,15 @@
     return $.map(fields, function (name) { return $("<th>", { "html": name }); });
   }
 
-  /*
-    change the table to show pairs separately,
-    add summary data for pair and crispr
-    need a link to individual page,
-    and one to pair page.
-    need to find pairs that already have off target data using id,
-    change checkbox to button
-    individual crisprs?
-  */
-
   function get_table(options) {
     options = options || {}; //completely optional
+
+    /*
+      TODO:
+      add a status ? popover like so:
+      $("<a>", { href: "#" }).append($("<i>", { class: 'icon-question-sign' })).popover({ placement: 'top', html: true, title: "Status meanings", content: "Test: test" })
+    */
+
     //make a table if it doesn't exist
     var table = $("#pair_table");
     if ( $("#pair_table").length ) {
@@ -378,41 +347,6 @@
     else {
       table.show();
     }
-
-    return table;
-  }
-
-  //old method before we were getting pairs to display single crisprs.
-  //might be useful later
-  function get_crisprs() {
-    //get all the selected exon ids
-    var exons = $("#exons").find('option:selected').map(function() { return this.value });
-
-    //make a table. this should only be done once -- stupid
-    var table = $("<table>", { "class": 'table table-bordered .table-hover', id: 'crispr_table' });
-    var header = $("<tr>").appendTo( $("<thead>") )
-                          .append( $("<th>", { html: "Exon ID" }) )
-                          .append( $("<th>", { html: "Location" }) )
-                          .append( $("<th>", { html: "Seq" }) )
-                          .appendTo( table );
-
-    //get the crisprs
-    $.get('[% request.uri_base %]/api/crispr_search', { exon_id: exons }, 
-      function(data) { 
-        console.log(data);
-        //add each crispr to the table, its a hash of arrays.
-        $.each(data, function(exon_id, crisprs) {
-          //each exon has a list of crisprs
-          $.each(crisprs, function(idx, crispr) {
-            var location = crispr.chr_name + ':' + crispr.chr_start + '-' + crispr.chr_end;
-            var row = $("<tr>").append( $("<td>", { html: exon_id }) )
-                               .append( $("<td>", { html: location }) )
-                               .append( $("<td>", { html: crispr.seq }) )
-                               .appendTo( table );
-          });
-        });
-    })
-     .fail(ajax_failed);
 
     return table;
   }
@@ -465,7 +399,8 @@
             <select multiple="multiple" class="form-control span4" name="exons" id="exons" autocomplete="off"></select>
           </div>
           <br/>
-          <button class="btn btn-default" id="search" autocomplete="off">Find paired crisprs</button>
+          <button class="btn btn-default" id="search" autocomplete="off">Show in table</button>
+          <button class="btn btn-default" id="genoverse" autocomplete="off">Show in genome browser</button>
         </div>
       </fieldset>
       <br/>
