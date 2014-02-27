@@ -219,11 +219,18 @@ sub as_hash {
     spacer             => $self->spacer,
     species_id         => $self->species_id,
     off_target_summary => $self->off_target_summary,
+    status_id          => $self->status_id,
   };
 
   #if they want off targets return them as a list of hashes
   if ( $options->{with_offs} ) {
     $data->{off_targets} = $self->off_targets;
+  }
+
+  #optional because otherwise if you have a lot
+  #each one will do a new db call with a join to get the status
+  if ( $options->{get_status} ) {
+    $data->{status} = $self->status->status;
   }
 
   return $data;

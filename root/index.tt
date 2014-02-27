@@ -8,7 +8,7 @@
         source: function (request, response) {
           $.get('api/gene_search', { name: request.term, species: get_species() }, 
             function (data) {
-              response(data); 
+              response(data);
             })
            .fail(ajax_failed);
         },
@@ -26,10 +26,27 @@
                     text : val.rank + '. ' + val.exon_id + ' (length ' + val.len + ')'
                 }));
               });
-            });
+
+              //data successfully retrieved so add gene to URL (or update)
+              var spl = document.location.hash.substr(1).split("/");
+              spl[1] = ui.item.value;
+
+              document.location.hash = spl.join("/");
+            })
+            .fail(ajax_failed);
         },
         minLength: 2
     } );
+
+    //when a species is selected clear the other fields and add to the url hash
+    $("input[name=species]").click(function() {
+      $("#gene").val(""); //clear marker symbol box
+      $("#exons").find('option').remove(); //remove exons
+      $("#exon_label").html('Exons');
+      get_table( { hide: 1 } ); //hide crisprs
+      genoverse_button( { hide: 1 } ); //hide genoverse button
+      document.location.hash = $(this).val(); //update URL
+    });
 
     //when someone clicks find paired crisprs create a table of the data
     $("#search").click(function (event) {
@@ -54,15 +71,65 @@
       strip_error( $(this) );
     });
 
+    process_url();
+
   });
 
   //find parent div of whatever jquery object is passed
   function strip_error(item) {
-    item.closest("div").removeClass("has-error");
+    item.closest("div").removeClass("error");
   }
 
   function get_selected_exons() {
     return $("#exons").find('option:selected').map(function() { return this.value }).get();
+  }
+
+  function process_url() {
+    if (document.location.hash) {
+      var opts = document.location.hash.substr(1).split("/");
+
+      //species is set in the URL, so check the right box
+      var radio;
+      if(opts[0] == "Mouse") {
+        radio = $("#radio_mouse");
+      }
+      else if(opts[0] == "Human") {
+        radio = $("#radio_human");
+      }
+      else {
+        console.log("Invalid species found in URL:" + opts[0]);
+      }
+
+      if (radio) {
+        radio.prop({ checked: "checked" });
+      }
+
+      //if there is a gene in the URL insert it into the text box
+      if(opts[1]) {
+        $("#gene").val(opts[1]);
+        //now pretend the user has made a choice to get the exons to show
+
+        /*
+          this doesn't work properly.
+          i have no idea why. but its good enough for now
+        */
+
+        //simulate downkey press in the box after adding text
+        var key_event = $.Event("keydown", { keyCode: $.ui.keyCode.DOWN });
+        $.when(
+          $("#gene").triggerHandler(key_event)
+        ).done(function() {
+          //now press enter on that first item
+          key_event.keyCode = $.ui.keyCode.ENTER;
+          $("#gene").trigger(key_event);
+        });
+        
+      }
+
+      return 1;
+    }
+
+    return;
   }
 
   function get_selected_pairs() {
@@ -142,7 +209,7 @@
         $("#search").button('reset');
         
         //todo: change this to be an entire exon search button
-        create_genoverse_button();
+        genoverse_button();
         //create_offtargets_button();
       })
     
@@ -155,22 +222,43 @@
     return $("<td>").append( $("<input type='checkbox' name='pair'>").val(pair_id) ); 
   }
 
-  function create_genoverse_button(){
-    if( $("#genoverse").length){
-      // Don't create it again
-      return;
+  function genoverse_button(options){
+    options = options || {}; //default empty
+    var elem = $("#genoverse");
+    // Don't create it again
+    if( elem.length ) {
+      //allow the user to hide the button as this method is used
+      //whenever the species is changed
+      if (options.hide) {
+        elem.hide();
+      }
+      else {
+        elem.show();
+      }
+
+      return elem;
     }
-    $("#fields").append($( "<button class='btn btn-default' id='genoverse'>").text("View in Genome Broswer") );
-    $("#genoverse").click(function(event) {
-        
+
+    var b = $("<button>", { text: "Show in genome browser", class: "btn btn-default", id: "genoverse"});
+
+    if (options.hide) {
+      b.hide();
+    }
+
+    //add to fields element and add a click method
+    b.appendTo("#fields")
+     .click(function(event) {
+        //stop the button submitting the form
         event.preventDefault();
 
+        //redirect the user to the genoverse page
         var url = "[% c.uri_for('/genoverse_browse') %]";
         var exon = get_selected_exons();
         var full_url = url.concat("?view_paired=1&exon_id=",exon);
-        console.log(full_url);
         window.location.href=full_url;
-    });
+     });
+
+     return b;
   }
 
   function create_offtargets_button(){
@@ -246,11 +334,13 @@
     individual crisprs?
   */
 
-  function get_table() {
+  function get_table(options) {
+    options = options || {}; //completely optional
     //make a table if it doesn't exist
     var table = $("#pair_table");
     if ( $("#pair_table").length ) {
       table.find("tbody").empty(); //only leave the headers if the table exists
+      $("#pair_table").show(); //in case it has been hidden
     }
     else {
       //create table
@@ -268,16 +358,25 @@
       //add headers
       //$("<tr>").append( $("<th>" ) )
      $("<tr>")
-     .append( $("<th>", { text: "Exon ID" }) )
-     .append( $("<th>", { text: "Spacer" }) )
-     .append( $("<th>", { text: "Status" }) )
-     .append( get_crispr_header() )
-     .append( get_crispr_header() )
-     .appendTo( table.find("thead") );
+       .append( $("<th>", { text: "Exon ID" }) )
+       .append( $("<th>", { text: "Spacer" }) )
+       .append( $("<th>", { text: "Status" }) )
+       .append( get_crispr_header() )
+       .append( get_crispr_header() )
+       .appendTo( table.find("thead") );
 
       //insert the table into the dom
       //should make this function accept an object to add the table to maybe
       $("#crispr_search").append(table);
+    }
+
+    //allow the user to hide the button as this method is used
+    //whenever the species is changed
+    if (options.hide) {
+      table.hide();
+    }
+    else {
+      table.show();
     }
 
     return table;
@@ -320,18 +419,18 @@
 
   function form_valid() {
     if ( ! get_species() ) {
-      console.log("Please choose a species.");
-      $("#species").addClass("has-error");
+      create_alert("Please choose a species.");
+      $("#species").addClass("error");
       return false;
     }
     else if ( $("#gene").val() == "" ) {
-      console.log("No marker symbol provided.");
-      $("#marker_symbol").addClass("has-error");
+      create_alert("No marker symbol provided.");
+      $("#marker_symbol").addClass("error");
       return false;
     }
     else if ( ! get_selected_exons().length ) {
-      console.log("Please choose an exon.");
-      $("#exon_id").addClass("has-error");
+      create_alert("Please choose an exon.");
+      $("#exon_id").addClass("error");
       return false;
     }
 
@@ -345,7 +444,7 @@
     <form role="form" id="crispr_search">
       <fieldset id="fields">
         <legend>Paired Crispr Search</legend>
-        <div class="form-group" id="species">
+        <div class="control-group" id="species">
           <label class="control-label">Species</label>
           <label class="radio">
             <input type="radio" name="species" id="radio_mouse" value="Mouse" />Mouse
@@ -356,12 +455,12 @@
         </div>
         <br/>
         <div>
-          <div class="form-group" id="marker_symbol">
+          <div class="control-group" id="marker_symbol">
             <label class="control-label">Marker Symbol</label>
             <input type="text" class="form-control span4" id="gene" placeholder="Enter gene" autocomplete="off" />
           </div>
           <br/>
-          <div class="form-group" id="exon_id">
+          <div class="control-group" id="exon_id">
             <label class="control-label" id="exon_label">Exons</label>
             <select multiple="multiple" class="form-control span4" name="exons" id="exons" autocomplete="off"></select>
           </div>

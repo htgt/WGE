@@ -30,16 +30,32 @@
 
       var spacer = parseInt( $(this).children(".spacer").text() );
 
-      rows[spacer] = tr;
-      keys.push(spacer);
+      //only add unique spacer lengths to the keys array
+      //as everything is stored in an array
+      if (rows[spacer]) {
+        rows[spacer].push(tr);
+      }
+      else {
+        keys.push(spacer);
+        rows[spacer] = [tr];
+      }
 
     });
 
+    //sort keys with biggest first
     var tbl_top = $("#spacer_row");
-    keys.sort(function(a,b) { return a - b; });
+    keys.sort(function(a,b) { return b - a; });
 
-    for ( var i = keys.length-1; i > 0; i-- ) {
-      rows[keys[i]].insertAfter( tbl_top );
+    console.log(keys);
+
+    //insert each element above the last, sos mallest is first
+    for ( var i = 0; i < keys.length; i++ ) {
+      //we group by spacer which means some of the items here are an array,
+      //if they have the same spacer length.
+      var spacer_rows = rows[keys[i]];
+      for ( var j = 0; j < spacer_rows.length; j++ ) {
+        spacer_rows[j].insertAfter( tbl_top );
+      }
     }
 
   });
@@ -91,6 +107,17 @@
         <th>Off-target summary</th>
         <td>[% pair.left_crispr.off_target_summary or 'No data' %]</td>
         <td>[% pair.right_crispr.off_target_summary or 'No data' %]</td>
+      </tr>
+      
+      <tr>
+        <th>Status</th>
+        <td colspan="2">
+          [%- IF pair.status.defined -%]
+            [% pair.status %]
+          [%- ELSE -%]
+            Not started
+          [%- END -%]
+        </td>
       </tr>
     </tbody>
   </table>

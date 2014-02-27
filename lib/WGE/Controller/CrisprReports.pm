@@ -81,7 +81,7 @@ sub crispr_pair_report :Path('/crispr_pair') :Args(1){
     #get a hash of pair data
     my ( $pair, $species );
     if ( $crispr_pair ) {
-        $pair = $crispr_pair->as_hash( { with_offs => 1 } );
+        $pair = $crispr_pair->as_hash( { with_offs => 1, get_status => 1 } );
         $c->log->warn( "Found " . scalar @{ $pair->{off_targets} } );
         $species = $crispr_pair->get_species;
     }

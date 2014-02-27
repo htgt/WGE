@@ -191,7 +191,7 @@ sub pairs {
   my $pairs = $pair_finder->find_pairs( 
     \@crisprs, 
     \@crisprs, 
-    { get_db_data => 1, species_id => $species->numerical_id } 
+    { get_db_data => 1, species_id => $species->numerical_id, sort_pairs => 1 } 
   );
 
   return wantarray ? @{ $pairs } : $pairs;
