@@ -1,0 +1,63 @@
+[% META title = "About"; META tab_name = "About" %]
+
+<div class="content">
+  <div class="row">
+    <div class="span3">
+        <ul class="nav nav-list affix">
+            <li><a href="#statuses">Statuses</a></li>
+        </ul>
+    </div>
+    <div class="span9">
+        <section id="usage">
+            <h4>How to use the webapp</h4>
+            <img src="[% c.uri_for('/static/images/choose_species.png') %]" title="choose_species" />
+            <img src="[% c.uri_for('/static/images/choose_gene.png') %]" title="choose_gene" />
+            <img src="[% c.uri_for('/static/images/choose_exon.png') %]" title="choose_exon" />
+            <img src="[% c.uri_for('/static/images/loading.png') %]" title="loading" />
+        </section>
+        <section id="statuses">
+            <h4>Explanation of CRISPR pair status column</h4>
+
+            <table class="table">
+                <tr>
+                    <th>Status</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <th>Bad crispr in pair</th>
+                    <td>One (or both) of the CRISPRs involved in the pair is 'bad'; we define bad as a CRISPR with more than 2000 potential off targets. For bad CRISPRs we don't store their individual off targets, only the summary string.</td>
+                </tr>
+                <tr>
+                    <th>Error</th>
+                    <td>Something has gone wrong while attempting to find CRISPR off targets</td>
+                </tr>
+                <tr>
+                    <th>Not started</th>
+                    <td>No one has requested off target data for this CRISPR pair yet</td>
+                </tr>
+                <tr>
+                    <th>Pending</th>
+                    <td>The off target finding job is in the queue waiting to begin</td>
+                </tr>
+                <tr>
+                    <th>Finding Individual off targets</th>
+                    <td>The job has been started</td>
+                </tr>
+                <tr>
+                    <th>Persisting individual off targets</th>
+                    <td>Individual off targets have been found, and are now being inserted into the database</td>
+                </tr>
+                <tr>
+                    <th>Calculating paired off targets</th>
+                    <td>Individual off targets are in the database, so paired off targets are now being computed</td>
+                </tr>
+                <tr>
+                    <th>Complete</th>
+                    <td>Off target data for the individual crisprs is in the database, as well as paired data</td>
+                </tr>
+            </table>
+        </section>
+    </div>
+  </div>
+</div>
+

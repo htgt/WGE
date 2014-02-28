@@ -1,4 +1,4 @@
-[% META title = "WGE"; META tab_name = "Home" %]
+[% META title = "WGE"; META tab_name = "Paired Crispr Search" %]
 
 <script type="text/javascript">
   $(document).ready(function() {
@@ -198,7 +198,7 @@
                     $(this).after(a).hide();
 
                     var ids = this.value.split("_");
-                    var data = find_off_targets_for_pair(ids[0], ids[1]);
+                    var data = find_off_targets_for_pair(get_species(), ids[0], ids[1]);
 
                     console.log( data );
                 });
@@ -211,6 +211,13 @@
                  .append( get_crispr_row(pair.left_crispr) )
                  .append( get_crispr_row(pair.right_crispr) )
                  .appendTo( table.find("tbody") );
+
+              //colour rows if there are bad crisprs or similar
+              if ( pair.db_data ) {
+                if ( pair.db_data["status_id"] == -2 || pair.db_data["status_id"] == -1 ) {
+                  row.css('background-color', '#f2dede'); //error colour
+                }
+              }
 
               //add a column to the left of each group
               if ( idx == 0 ) {
@@ -313,7 +320,7 @@
     }
     else {
       //create table
-      table = $("<table>", { "class": 'table table-bordered table-condensed table-hover', style: "max-width: none;", id: 'pair_table' })
+      table = $("<table>", { "class": 'table table-bordered table-condensed', style: "max-width: none;", id: 'pair_table' })
                 .append( $("<thead>") )
                 .append( $("<tbody>") );
 
@@ -377,7 +384,6 @@
 
     <form role="form" id="crispr_search">
       <fieldset id="fields">
-        <legend>Paired Crispr Search</legend>
         <div class="control-group" id="species">
           <label class="control-label">Species</label>
           <label class="radio">

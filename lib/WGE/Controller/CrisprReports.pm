@@ -32,7 +32,7 @@ WGE::Controller::CrisprReports - Controller for Crispr report pages in WGE
 
 =cut
 
-sub crispr_data :Path('/crispr') :Args(1){
+sub crispr_report :Path('/crispr') :Args(1){
     my ( $self, $c, $crispr_id ) = @_;
 
     $c->log->info( "Finding crispr $crispr_id" );

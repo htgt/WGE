@@ -1,3 +1,4 @@
+[%- META title="Individual Crispr Report"; tab_name="Crispr off-target list" -%]
 [%- MACRO ensembl_link BLOCK -%]
   [%- location = "${chr_name}:${chr_start}-${chr_end}" -%]
   [%# the default string is ':-' so thats why we check its > 2 %]
@@ -16,8 +17,6 @@
 [% crispr_grna = crispr_fwd_seq.substr(0, 20) %]
 [% crispr_pam =  crispr_fwd_seq.substr(20, 3) %]
 
-<legend>Crispr Off-target List</legend>
-
 <style type="text/css">
 .seq {
   font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;
@@ -35,6 +34,7 @@
 
   $(document).ready( function() {
     var rows = new Array([], [], [], [], []);
+    var total_erroneous = 0;
     $("#offtarget_table .ots").each(function() { 
       var tr = $(this);
 
@@ -50,7 +50,17 @@
       if ( match.total < 4 ) {
         rows[match.total].push(tr);
       }
+
+      //quick hack to remove the handful of CC-GG matches
+      //that aren't right. need to stop persisting them.
+      if ( match.total > 5 ) {
+        tr.hide();
+        total_erroneous++;
+      }
     });
+
+    var t = $("#total_offs");
+    t.text( t.text() - total_erroneous );
 
     //order everything by number of mismatches
     var tbl_top = $("#spacer_row");
@@ -87,7 +97,7 @@
     </tr>
     <tr>
       <td>Total off-targets</td>
-      <td>[% crispr.off_targets.size or 'No data' %]</td>
+      <td id="total_offs">[% crispr.off_targets.size or 'No data' %]</td>
     </tr>
   </table>
 </div>
