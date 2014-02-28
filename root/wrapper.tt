@@ -71,7 +71,7 @@
     </div>
 
     <div class="container">
-      [% IF error_msg.length > 0 %]
+      [% IF error_msg %]
         <!-- error messages sent from catalyst -->
         <div class="alert alert-error" id="catalyst_error">
           <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>

@@ -4,8 +4,9 @@
   <fieldset>
     <legend>Gibson Design Gene Pick ([% c.session.species %])</legend>
     
-    <input type="text" class="input-xxlarge" name="gene" placeholder="gene name">
+    <input type="text" class="input-xxlarge" name="gene_id" placeholder="gene name">
     <span class="help-block">Valid search terms: HGNC IDs, MGI IDs, Ensembl Gene IDs and Marker Symbols.</span>
+
 
     <label><strong>Show Exons</strong></label>
     <label class="radio">
@@ -18,7 +19,7 @@
     </label>
 
     <br>
-    <input type="submit" name="action" class="btn btn-primary" value="Find Exons" />
+    <input type="submit" name="gene_pick" class="btn btn-primary" value="Find Exons" />
   </fieldset>
 </form>
 

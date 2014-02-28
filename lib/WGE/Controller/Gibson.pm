@@ -25,6 +25,10 @@ WGE::Controller::Gibson - Controller for Gibson related pages in WGE
 sub gibson_design_gene_pick :Regex('gibson_design_gene_pick/(.*)'){
     my ( $self, $c ) = @_;
 
+print "!!! /gibson_design_gene_pick\n";
+use Smart::Comments;
+
+
     my ($species) = @{ $c->req->captures };
     # Assert user role?
     $c->log->debug("Species: $species");
@@ -43,67 +47,214 @@ sub gibson_design_gene_pick :Regex('gibson_design_gene_pick/(.*)'){
         }
     }
 
-    $c->log->debug("Session species: ".$c->session->{species});
 
+    $c->log->debug("Session species: ".$c->session->{species});
+### $species
+
+    my $gene_pick = $c->request->param('gene_pick');
+
+### $gene_pick    
+
+    return unless $c->request->param('gene_pick');
+
+    my $gene_id = $c->request->param('gene_id');
+    unless ( $gene_id ) {
+        $c->stash( error_msg => "Please enter a gene name" );
+        return;
+    }
+### $gene_id 
+
+
+    $c->forward( 'generate_exon_pick_data' );
+    return if $c->stash->{error_msg};
+
+    $c->go( 'gibson_design_exon_pick' );
+
+print "!!! /gibson_design_gene_pick END\n";
     return;
 }
+
+
+
 
 
 sub gibson_design_exon_pick :Path('/gibson_design_exon_pick') :Args(0){
     my ( $self, $c ) = @_;
 
+print "!!! /gibson_design_exon_pick\n";
+use Smart::Comments;
+
     # Assert user role?
 
-    my $gene_name = $c->request->param('gene');
 
-    unless ( $gene_name ) {
-        $c->stash( error_msg => "Please enter a gene name" );
-        
-        return $c->go('gibson_design_gene_pick');
-    }
 
-    $c->log->debug("Pick exon targets for gene $gene_name");
+
+
+    # if ( $c->request->params->{pick_exons} ) {
+
+    #     print "!!! pick_exons TRUE\n";
+        my $exon_picks = $c->request->params->{exon_pick};
+
+        unless ( $exon_picks ) {
+            $c->stash( error_msg => "No exons selected" );
+            $c->forward( 'generate_exon_pick_data' );
+            return;
+        }
+
+        my %stash_hash = (
+            gene_id         => $c->request->param('gene_id'),
+            ensembl_gene_id => $c->request->param('ensembl_gene_id'),
+            gibson_type     => 'deletion',
+        );
+
+        # if multiple exons, its an array_ref
+        if (ref($exon_picks) eq 'ARRAY') {
+            $stash_hash{five_prime_exon}  = $exon_picks->[0];
+            $stash_hash{three_prime_exon} = $exon_picks->[-1];
+        }
+        # if its not an array_ref, it is a string with a single exon
+        else {
+            $stash_hash{five_prime_exon} = $exon_picks;
+        }
+
+### %stash_hash
+        $c->stash( %stash_hash );
+        $c->go( 'create_gibson_design' );
+    # }
+
+
+
+
+
+
+
+
+
+
+#     $c->log->debug("Pick exon targets for gene " . $c->request->param('gene_id') );
+#     try {
+# print "!!! ON OLD TRY\n";
+
+#         my $create_design_util = WGE::Util::CreateDesign->new(
+#             catalyst => $c,
+#             model    => $c->model('DB'),
+#             species  => $c->session->{species},
+#         );
+#         my ( $gene_data, $exon_data )= $create_design_util->exons_for_gene(
+#             $c->request->param('gene_id'),
+#             $c->request->param('show_exons'),
+#         );
+
+#         $c->stash(
+#             exons    => $exon_data,
+#             gene     => $gene_data,
+#             assembly => $create_design_util->assembly_id,
+#         );
+#     }
+#     catch($e){
+#         my $message = "Problem finding gene: $e";
+#         $c->log->error($message);
+#         $c->flash( error_msg => $message );
+#         $c->go('gibson_design_gene_pick');
+#     };  
+
+
+print "!!! /gibson_design_exon_pick END\n";
+    return;
+}
+
+
+
+
+
+sub generate_exon_pick_data : Private {
+    my ( $self, $c ) = @_;
+
+print "!!! /generate_exon_pick_data\n";
+use Smart::Comments;
+
+    $c->log->debug("Pick exon targets for gene: " . $c->request->param('gene_id') );
     try {
-
         my $create_design_util = WGE::Util::CreateDesign->new(
             catalyst => $c,
             model    => $c->model('DB'),
             species  => $c->session->{species},
         );
-        my ( $gene_data, $exon_data )= $create_design_util->exons_for_gene(
-            $c->request->param('gene'),
+        my ( $gene_data, $exon_data ) = $create_design_util->exons_for_gene(
+            $c->request->param('gene_id'),
             $c->request->param('show_exons'),
         );
 
+
+#         my $exon_ids_string = join(',', map{ $_->{id} } @{ $exon_data } );
+#         my @crisprs = $c->model('DB')->schema->resultset('CrisprByExon')->search( {},
+#             {
+#                 bind => [ '{' . $exon_ids_string . '}', $c->session->{species} ],
+#             }
+#         );
+
+#         my %crispr_count;
+#         foreach my $row (@crisprs) {
+#             ++$crispr_count{$row->ensembl_exon_id};
+#         }
+# ## %crispr_count
+
+
+#         for my $datum ( @{ $exon_data } ) {
+#             $datum->{crispr_count} = $crispr_count{ $datum->{id} } || 0;
+#         }
+
         $c->stash(
-            exons    => $exon_data,
-            gene     => $gene_data,
-            assembly => $create_design_util->assembly_id,
+            exons      => $exon_data,
+            gene       => $gene_data,
+            assembly   => $create_design_util->assembly_id,
+            show_exons => $c->request->param('show_exons'),
         );
     }
     catch($e){
         my $message = "Problem finding gene: $e";
         $c->log->error($message);
         $c->flash( error_msg => $message );
-        $c->go('gibson_design_gene_pick');
-    };  
+    };
 
     return;
 }
 
+
+
+
+
+
+
+
+
+
+
 sub create_gibson_design : Path( '/create_gibson_design' ) : Args(0) {
     my ( $self, $c ) = @_;
 
+print "!!! /create_gibson_design\n";
+use Smart::Comments;
+
     # FIXME assert user role edit
 
-    if ( exists $c->request->params->{create_design} ) {
-        $c->log->info('Creating new design');
+    my $create_design_util = WGE::Util::CreateDesign->new(
+        catalyst => $c,
+        model    => $c->model('DB'),
+        species  => $c->session->{species},
+    );
 
-        my $create_design_util = WGE::Util::CreateDesign->new(
-            catalyst => $c,
-            model    => $c->model('DB'),
-            species  => $c->session->{species},
-        );
+    my $primer3_conf = $create_design_util->c_primer3_default_config;
+    $c->stash( default_p3_conf => $primer3_conf );
+
+### $primer3_conf
+
+
+
+
+    if ( exists $c->request->params->{create_design} ) {
+print "!!! IN c->request->params->{create_design}\n";
+        $c->log->info('Creating new design');
 
         my ($design_attempt, $job_id);
         try {
@@ -115,7 +266,8 @@ sub create_gibson_design : Path( '/create_gibson_design' ) : Args(0) {
             $c->res->redirect( 'gibson_design_gene_pick' );
             return;
         };
-
+### $design_attempt
+### $job_id
         unless ( $job_id ) {
             $c->flash( error_msg => "Unable to submit Design Creation job" );
             $c->res->redirect( 'gibson_design_gene_pick' );
@@ -124,15 +276,20 @@ sub create_gibson_design : Path( '/create_gibson_design' ) : Args(0) {
 
         $c->res->redirect( $c->uri_for('/design_attempt', $design_attempt->id , 'pending') );
     }
-    elsif ( exists $c->request->params->{exon_pick} ) {
-        my $gene_id = $c->request->param('gene_id');
-        my $exon_id = $c->request->param('exon_id');
-        my $ensembl_gene_id = $c->request->param('ensembl_gene_id');
-        $c->stash(
-            exon_id         => $exon_id,
-            gene_id         => $gene_id,
-            ensembl_gene_id => $ensembl_gene_id,
-        );
+#     elsif ( exists $c->request->params->{exon_pick} ) {
+# print "!!! IN c->request->params->{exon_pick}\n";
+#         my $gene_id = $c->request->param('gene_id');
+#         my $exon_id = $c->request->param('exon_id');
+#         my $ensembl_gene_id = $c->request->param('ensembl_gene_id');
+#         $c->stash(
+#             exon_id         => $exon_id,
+#             gene_id         => $gene_id,
+#             ensembl_gene_id => $ensembl_gene_id,
+#         );
+#     }
+    else {
+print "!!! IN ELSE\n";
+        $c->stash( %{ $primer3_conf } );
     }
 
     return;
@@ -141,6 +298,9 @@ sub create_gibson_design : Path( '/create_gibson_design' ) : Args(0) {
 sub create_custom_target_gibson_design : Path( '/create_custom_target_gibson_design' ) : Args(0) {
     my ( $self, $c ) = @_;
 
+print "!!! /create_custom_target_gibson_design\n";
+use Smart::Comments;
+
     # FIXME assert user role edit
 
     my $create_design_util = WGE::Util::CreateDesign->new(
@@ -148,6 +308,10 @@ sub create_custom_target_gibson_design : Path( '/create_custom_target_gibson_des
         model    => $c->model('DB'),
         species  => $c->session->{species},
     );
+
+    my $primer3_conf = $create_design_util->c_primer3_default_config;
+$c->stash( default_p3_conf => $primer3_conf );
+### $primer3_conf
 
     if ( exists $c->request->params->{create_design} ) {
         $c->log->info('Creating new design');
