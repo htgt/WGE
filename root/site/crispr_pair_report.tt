@@ -146,12 +146,12 @@
     <th>Strand</th>
   </tr>
   <tr>
-    <td class="spacer">[% pair.spacer %]</td>
+    <td class="spacer"></td>
     <td></td>
-    <td class="seq">[% pair.left_crispr.seq %]</td>
+    <td class="seq"></td>
     <td></td>
     <td></td>
-    <td class="seq">[% pair.right_crispr.seq %]</td>
+    <td class="seq"></td>
     <td></td>
   </tr>
   <tr id="spacer_row"><td colspan="7"></td></tr>

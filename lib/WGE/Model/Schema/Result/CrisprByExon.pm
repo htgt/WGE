@@ -28,7 +28,7 @@ __PACKAGE__->result_source_instance->is_virtual(1);
 #we also flank the exon by 200bp
 __PACKAGE__->result_source_instance->view_definition( <<'EOT' );
 WITH e as ( 
-    SELECT ensembl_exon_id, (chr_start-222) as chr_start, (chr_end-200) as chr_end, chr_name 
+    SELECT ensembl_exon_id, (chr_start-22) as chr_start, chr_end, chr_name 
     FROM (SELECT unnest(?::text[]) AS id) x
     JOIN exons ON exons.ensembl_exon_id=x.id
 )

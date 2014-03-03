@@ -382,6 +382,8 @@
 <div class="row">
   <div class="span12">
 
+    <h4>Please note that this application is currently in beta. If you have any problems, please <a href="mailto:htgt@sanger.ac.uk">let us know</a></h4>
+
     <form role="form" id="crispr_search">
       <fieldset id="fields">
         <div class="control-group" id="species">
@@ -404,7 +406,9 @@
             <label class="control-label" id="exon_label">Exons</label>
             <select multiple="multiple" class="form-control span4" name="exons" id="exons" autocomplete="off"></select>
           </div>
-          <br/>
+          <small>Note: the CRISPR table only shows CRISPRs that overlap the exon by at least 1 base.<br/>
+            To see flanking crisprs please use the genome browser</small>
+          <br/><br/>
           <button class="btn btn-default" id="search" autocomplete="off">Show in table</button>
           <button class="btn btn-default" id="genoverse" autocomplete="off">Show in genome browser</button>
         </div>

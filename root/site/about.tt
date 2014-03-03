@@ -1,22 +1,185 @@
-[% META title = "About"; META tab_name = "About" %]
+[% META title = "About WTSI Genome Editing"; META tab_name = "About WTSI Genome Editing" %]
+
+<style type="text/css">
+section img {
+    border-color: #000000;
+    border-width: 1px;
+    border-style: solid;
+}
+
+.affix {
+    position: fixed;
+    top: 12px;
+}
+
+.docs-separator {
+    margin: 40px 0 39px
+}
+
+</style>
+
+<script type="text/javascript">
+//need to wait for images to load or the scrollspy is broken
+$(window).load(function() {
+    //link the nav to the anchors
+    $("body").scrollspy({target: ".bs-docs-sidebar", offset: 10});
+    //$("body").scrollspy('refresh');
+});
+</script>
 
 <div class="content">
   <div class="row">
-    <div class="span3">
-        <ul class="nav nav-list affix">
-            <li><a href="#statuses">Statuses</a></li>
+    <div class="span3 bs-docs-sidebar">
+        <ul id="navigation" data-spy="affix" data-offset-top="180" class="nav nav-list bs-docs-sidenav">
+            <li><a href="#wge">WGE</a></li>
+            <li><a href="#disclaimer">Disclaimer</a></li>
+            <li><a href="#usage">Webapp Usage</a></li>
+            <li>
+                <ul class="nav nav-list">
+                    <li><a href="#table_view">Table view</a></li>
+                    <li><a href="#genoverse_view">Genoverse view</a></li>
+                </ul>
+            </li>
+            <li><a href="#off_targets">Off targets</a></li>
+            <li>
+                <ul class="nav nav-list">
+                    <li><a href="#individual_process">Individual</a></li>
+                    <li><a href="#pair_process">Paired</a></li>
+                </ul>
+            </li>
+            <li><a href="#statuses">Pair Status Descriptions</a></li>
+            <li><a href="#source">Source Code</a></li>
+            <li><a href="#refs">References</a></li>
         </ul>
     </div>
     <div class="span9">
-        <section id="usage">
-            <h4>How to use the webapp</h4>
-            <img src="[% c.uri_for('/static/images/choose_species.png') %]" title="choose_species" />
-            <img src="[% c.uri_for('/static/images/choose_gene.png') %]" title="choose_gene" />
-            <img src="[% c.uri_for('/static/images/choose_exon.png') %]" title="choose_exon" />
-            <img src="[% c.uri_for('/static/images/loading.png') %]" title="loading" />
+        <section id="wge">
+            <h2>WGE</h2>
+            <p>
+                WGE stands for WTSI Genome Editing.<br/>
+                WTSI stands for Wellcome Trust Sanger Institute<br/>
+            </p>
         </section>
+        <hr class="docs-separator" />
+        <section id="disclaimer">
+            <h2>Disclaimer</h2>
+            <p>
+                <h5>Please note that the application is currently in <b>beta</b>, so if you have any problems, please let us know.</h5>
+                We assume no responsibility or liability for any loss or damage incurred as a result of any use of the information contained within or downloaded from this website.<br/>
+            </p> 
+        </section>
+        <hr class="docs-separator" />
+        <section id="usage">
+            <h2>How to use the webapp</h2>
+            <p>
+                Firstly, select a species:<br/>
+                <img src="[% c.uri_for('/static/images/about/choose_species.png') %]" title="choose_species" />
+            </p>
+            <p>
+                Then type a gene into the box, and select the gene you're interested in:<br/>
+                <img src="[% c.uri_for('/static/images/about/choose_gene.png') %]" title="choose_gene" />
+            </p>
+            <p>
+                A list of exons from the canonical transcript will appear as below. Select an exon from the list:<br/>
+                <img src="[% c.uri_for('/static/images/about/choose_exon.png') %]" title="choose_exon" /><br/>
+                <small>Note that only exons on canonical transcripts are available for now. This will be amended in a future update</small>
+            </p>
+            <p>
+                There are two options for viewing the data (see below screenshot), a grid view with a single entry in the table per pair, or a genome browser similar to ensembl. If you would like to see individual CRISPRs and not just those belonging to pairs, you must choose the genome browser view.<br/>
+                <img src="[% c.uri_for('/static/images/about/buttons.png') %]" title="option_buttons" /><br/>
+            </p>
+        </section>
+        <hr class="docs-separator" />
+        <section id="table_view">
+            <h2>Table view</h2>
+            <p>
+                If you have chosen the table view, wait for it to load:<br/>
+                <img src="[% c.uri_for('/static/images/about/loading.png') %]" title="loading" /><br/>
+                And you will be provided with a view like this:<br/>
+                <img src="[% c.uri_for('/static/images/about/full_table.png') %]" title="table_view" /><br/>
+            </p>
+            <p>
+                Here you can see all the data for a CRISPR pair, with full details of the CRISPRs it contains. There is also a button labelled 'Find off targets' which when pressed will run a background job that will compute all the off targets for that pair. It should take about 5 minutes but during periods of high usage it could take a lot longer.<br/>
+                The link in the ID column will take you to a page where you can view individual CRISPR off targets if we have them:<br/>
+            </p>
+            <p>
+                <img src="[% c.uri_for('/static/images/about/single_off_target_view.png') %]" title="single off target crispr view" /><br/>
+                And the pair ID column link will take you to a similar page that will show you all paired off targets:<br/>
+                <img src="[% c.uri_for('/static/images/about/paired_off_target_view.png') %]" title="paired off target crispr view" /><br/>
+            </p>
+        </section>
+        <hr class="docs-separator" />
+        <section id="genoverse_view">
+            <h2>Genome browser view</h2>
+            <p>
+                The genome browser view looks like this:</br>
+                <img src="[% c.uri_for('/static/images/about/genoverse_view.png') %]" title="genoverse_view" /></br>
+            </p>
+            <p>
+                From here you can scroll around and new pairs will be loaded into the window. You can shift click and drag over a region to zoom there.<br/>
+                Clicking on a pair will give you more details on that pair:<br/>
+                <img src="[% c.uri_for('/static/images/about/pair_data.png') %]" title="pair_data" /></br>
+                This also includes a link to the same page the table will show you, which will you give you all the data for that pair.<br/>
+            </p>
+            <p>
+                You can also change the view to display single crisprs:<br/>
+                <img src="[% c.uri_for('/static/images/about/show_single_crisprs.png') %]" title="show_single_crisprs" /></br>
+                This will cause a second track to show up on the browser, which can also be clicked to allow you to easily compare the off target data of two CRISPRs (if they have it):<br/>
+                <img src="[% c.uri_for('/static/images/about/individual_view.png') %]" title="individual_view" /></br>
+            </p>
+        </section>
+        <hr class="docs-separator" />
+        <section id="off_targets">
+            <h2>Off targets</h2>
+            <p>
+                An off target is a site in the genome that may be cut by a given CRISPR, where the site is not the original CRISPR site we intended to cut<a href="#refs"><sup>1</sup></a>.<br/> The site must contain a PAM site (NGG), and the sequence will be similar to the given CRISPR sgRNA.
+            </p>
+            <p> 
+                Cutting has been seen with up to 5 mismatches depending on their proximity to the PAM; mismatches closer to the PAM site are less tolerated than those further away.<br/>
+                Cutting has also been seen at a reduced efficiency at NAG PAM sites, but we do not currently look at those when evaluating off targets; this option will be coming in a later version.
+            </p>
+        </section>
+        <hr class="docs-separator" />
+        <section id="individual_process">
+            <h2>Calculating CRISPR off targets</h2>
+            <p>
+                To calculate off targets for CRISPRs we use an aligner called <a href="http://bio-bwa.sourceforge.net/">BWA</a><a href="#refs"><sup>2</sup></a>. It uses a burrows wheeler transform to quickly search for sites in the genome with similar sequence to the CRISPR.<br/>
+            </p>
+            <p>
+                We run BWA with the following parameters<br/>
+                <pre>
+bwa aln -n 5 -o 0 -l 20 -k 4 -N -m 1000000000 ${GENOME} ${CRISPR_FQ_FILE}
+                </pre>
+                This will find all sites within the genome with up to 4 mismatches over the sgRNA. The problem is that bwa will find many sites that do have 4 mismatches over the sgRNA, but they do not have a valid PAM site. The Cas9 protein will not bind to a site that doesn't have a PAM site, so we can safely ignore some of the alignments we get from BWA.<br/>
+            </p>
+            <p>
+                To do this we have to first retrieve the genomic sequence that was aligned; we do this using two tools from the BedTools<a href="#refs"><sup>3</sup></a> suite -- bamToBed followed by fastaFromBed.<br/>
+                After we have determined which off targets we think are valid, we then store them in our crispr database, after which they become viewable through the webapp.<br/>
+            </p>
+        </section>
+        <hr class="docs-separator" />
+        <section id="pair_process">
+            <h2>Calculating off targets for CRISPR pairs</h2>
+            <p>
+                Paired CRISPRs can be used with a modified Cas9 protein to reduce off targets<a href="#refs"><sup>4</sup></a>. What we call a 'Paired CRISPR' is simply two CRISPRs in close proximity (within 50bp~), that are located on opposite strands. <br/>
+            </p>
+            <p>
+                A nickase version of the Cas9 protein is used together with the two CRISPRs, meaning that we still get a break at the the desired site due to the two nicks being in close proximity, and (hopefully) all off targets are repaired without indels as there is only a single stranded break.<br/>
+            </p>
+            <p>
+                This does not completely stop off target cutting; if off targets of either CRISPR in the pair happen to be within close proximity, you could potentially see an unwanted double stranded break. We call this a 'paired off target'.<br/><br/>
+                We calculate any potential paired off targets in our application by checking if any two individual off targets are within 1kb of each other, and if so we store it in our database.
+            </p>
+        </section>
+        <hr class="docs-separator" />
         <section id="statuses">
-            <h4>Explanation of CRISPR pair status column</h4>
+            <h2>Explanation of CRISPR pair status column</h2>
+
+            <p>
+                When viewing CRISPR pairs you will notice that they usually have a status, for example:
+                <img src="[% c.uri_for('/static/images/about/statuses.png') %]" title="crispr pair statuses" /></br>
+                If you see a 'Find off targets' button then this pair has not yet been created, and if it does have a status you can see an explanation in the table below:<br/>
+            </p>
 
             <table class="table">
                 <tr>
@@ -57,7 +220,26 @@
                 </tr>
             </table>
         </section>
+        <hr class="docs-separator" />
+        <section id="source">
+            <h2>Source code</h2>
+            <p>
+                Our web application is written in <a href="http://www.perl.org/">Perl</a> using the <a href="http://www.catalystframework.org/">Catalyst</a> framework. The application runs on a <a href="http://www.postgresql.org/">PostgreSQL</a> database.<br/>
+                The code can be seen in our <a href="https://github.com/htgt/WGE">github repository</a><br/>
+            </p>
+            <p>
+                If you have any questions please e-mail us at: <a href="mailto:htgt@sanger.ac.uk">htgt@sanger.ac.uk</a>
+            </p>
+        </section>
+        <hr class="docs-separator" />
+        <section id="refs"><br/>
+            <p>
+                1. Hsu P.D. et al (2013) DNA targeting specificity of RNA-guided Cas9 nucleases. Nature Biotechnology 31, 827–832 (2013) doi:10.1038/nbt.2647<br/>
+                2. Li H. and Durbin R. (2009) Fast and accurate short read alignment with Burrows-Wheeler Transform. Bioinformatics, 25:1754-60. [PMID: 19451168]<br/>
+                3. Quinlan A.R. and Hall I.M., (2010) BEDTools: a flexible suite of utilities for comparing genomic features. Bioinformatics. 26, 6, pp. 841–842<br/>
+                4. Ran. F.A. et al. (2013) Double Nicking by RNA-Guided CRISPR Cas9 for Enhanced Genome Editing Specificity. Cell 154, 1380–1389<br/>
+            </p>
+        </section>
     </div>
   </div>
 </div>
-
