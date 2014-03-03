@@ -364,8 +364,8 @@
       $("#species").addClass("error");
       return false;
     }
-    else if ( $("#gene").val() == "" ) {
-      create_alert("No marker symbol provided.");
+    else if ( $("#gene").val() == "" || $("#exons").find('option').length == 0 ) {
+      create_alert("Please provide a valid marker symbol.");
       $("#marker_symbol").addClass("error");
       return false;
     }

@@ -41,8 +41,10 @@
               [%- END -%]
           </a>
           <ul class="nav">
-            <li [% IF (template.tab_name == 'Home' OR template.tab_name == undef) %] class="active" [% END %]>
+            <li [% IF (template.tab_name == 'WGE' OR template.tab_name == undef) %] class="active" [% END %]>
             <a href="[% c.uri_for('/') %]">Home</a></li>
+            <li [% IF (template.tab_name == 'Paired Crispr Search') %] class="active" [% END %]>
+            <a href="[% c.uri_for('/find_crisprs') %]">Crispr Finder</a></li>
 
             <li class="dropdown [% IF template.tab_name == 'Gibson' %] active[% END %]" >
             <a href="#" class="dropdown-toggle" data-toggle="dropdown">Gibson Designs<b class="caret"></b></a>
@@ -54,8 +56,8 @@
               </ul>
             </li>
             
-            <li [% IF template.tab_name == 'About' %] class="active" [% END %]>
-            <a href="[% c.uri_for('/about') %]">About</a></li>
+            <li [% IF template.tab_name == 'About WTSI Genome Editing' %] class="active" [% END %]>
+            <a href="[% c.uri_for('/crispr_help') %]">Help</a></li>
 
             <li [% IF template.tab_name == 'Contact' %] class="active" [% END %]>
             <a href="[% c.uri_for('/contact') %]">Contact</a></li>
@@ -64,13 +66,6 @@
     </div>
 
     <div class="container">
-      [% IF error_msg %]
-        <!-- error messages sent from catalyst -->
-        <div class="alert alert-error" id="catalyst_error">
-          <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-          <span>[% error_msg %]</span>
-        </div>
-      [% END %]
       <!-- general error box for javascript to use -->
         <div class="alert alert-danger alert-dismissable" id="alert_error" style="display:none">
           <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>

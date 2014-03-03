@@ -236,7 +236,7 @@ sub pair_off_target_search :Local('pair_off_target_search') {
             ];
 
             my $bsub_params = {
-                output_dir => dir( '/lustre/scratch109/sanger/ah19/crispr_logs' ),
+                output_dir => dir( '/lustre/scratch109/sanger/team87/crispr_logs/' ),
                 id         => $pair->id,
             };
 
