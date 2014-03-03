@@ -136,7 +136,7 @@ sub generate_exon_pick_data : Private {
     catch($e){
         my $message = "Problem finding gene: $e";
         $c->log->error($message);
-        $c->flash( error_msg => $message );
+        $c->stash( error_msg => $message );
     };
 
     return;
@@ -165,12 +165,12 @@ sub create_gibson_design : Path( '/create_gibson_design' ) : Args(0) {
         }
         catch($e) {
             $c->log->error($e);
-            $c->flash( error_msg => "Error submitting Design Creation job: $e" );
+            $c->stash( error_msg => "Error submitting Design Creation job: $e" );
             $c->res->redirect( 'gibson_design_gene_pick' );
             return;
         };
         unless ( $job_id ) {
-            $c->flash( error_msg => "Unable to submit Design Creation job" );
+            $c->stash( error_msg => "Unable to submit Design Creation job" );
             $c->res->redirect( 'gibson_design_gene_pick' );
             return;
         }
@@ -207,13 +207,13 @@ sub create_custom_target_gibson_design : Path( '/create_custom_target_gibson_des
         }
         catch ($e) {
             $c->log->error($e);
-            $c->flash( error_msg => "Error submitting Design Creation job: $e" );
+            $c->stash( error_msg => "Error submitting Design Creation job: $e" );
             $c->res->redirect( 'gibson_design_gene_pick' );
             return;
         }
 
         unless ( $job_id ) {
-            $c->flash( error_msg => "Unable to submit Design Creation job" );
+            $c->stash( error_msg => "Unable to submit Design Creation job" );
             $c->res->redirect( 'gibson_design_gene_pick' );
             return;
         }
