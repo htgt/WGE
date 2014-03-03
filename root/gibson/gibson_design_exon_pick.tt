@@ -12,13 +12,12 @@
 
 <!--
 Removed: design_create_url    = '/create_gibson_design'
-Added:   get_crisprs_url      = '/user/get_crisprs'
+Hidden:  get_crisprs_url      = '/user/get_crisprs'
 -->
 [% INCLUDE 'create_design/exon_pick_table.tt'
   exons = exons
   gene = gene
   exon_pick_url        = '/gibson_design_exon_pick'
-  get_crisprs_url      = '/user/get_crisprs'
   show_current_designs = 1
 %]
 

@@ -25,16 +25,14 @@ WGE::Controller::Gibson - Controller for Gibson related pages in WGE
 sub gibson_design_gene_pick :Regex('gibson_design_gene_pick/(.*)'){
     my ( $self, $c ) = @_;
 
-print "!!! /gibson_design_gene_pick\n";
-use Smart::Comments;
-
+    return unless $c->request->param('gene_pick');
 
     my ($species) = @{ $c->req->captures };
     # Assert user role?
     $c->log->debug("Species: $species");
 
     # Allow species to be missing if session species already set
-    if ($species){
+    if ($species) {
         unless($species eq "Human" or $species eq "Mouse"){
             $c->stash( error_msg => "Species $species not supported by WGE");
             return;
@@ -42,18 +40,12 @@ use Smart::Comments;
         $c->session->{species} = $species;
     }
     else{
-        unless($c->session->{species}){
+        unless($c->session->{species}) {
             $c->stash( error_msg => "No species provided");
         }
     }
 
-
     $c->log->debug("Session species: ".$c->session->{species});
-### $species
-
-    my $gene_pick = $c->request->param('gene_pick');
-
-### $gene_pick    
 
     return unless $c->request->param('gene_pick');
 
@@ -62,15 +54,12 @@ use Smart::Comments;
         $c->stash( error_msg => "Please enter a gene name" );
         return;
     }
-### $gene_id 
-
 
     $c->forward( 'generate_exon_pick_data' );
     return if $c->stash->{error_msg};
 
     $c->go( 'gibson_design_exon_pick' );
 
-print "!!! /gibson_design_gene_pick END\n";
     return;
 }
 
@@ -81,18 +70,10 @@ print "!!! /gibson_design_gene_pick END\n";
 sub gibson_design_exon_pick :Path('/gibson_design_exon_pick') :Args(0){
     my ( $self, $c ) = @_;
 
-print "!!! /gibson_design_exon_pick\n";
-use Smart::Comments;
-
     # Assert user role?
 
+    if ( $c->request->params->{pick_exons} ) {
 
-
-
-
-    # if ( $c->request->params->{pick_exons} ) {
-
-    #     print "!!! pick_exons TRUE\n";
         my $exon_picks = $c->request->params->{exon_pick};
 
         unless ( $exon_picks ) {
@@ -117,49 +98,12 @@ use Smart::Comments;
             $stash_hash{five_prime_exon} = $exon_picks;
         }
 
-### %stash_hash
         $c->stash( %stash_hash );
+
         $c->go( 'create_gibson_design' );
-    # }
 
+    }
 
-
-
-
-
-
-
-
-
-#     $c->log->debug("Pick exon targets for gene " . $c->request->param('gene_id') );
-#     try {
-# print "!!! ON OLD TRY\n";
-
-#         my $create_design_util = WGE::Util::CreateDesign->new(
-#             catalyst => $c,
-#             model    => $c->model('DB'),
-#             species  => $c->session->{species},
-#         );
-#         my ( $gene_data, $exon_data )= $create_design_util->exons_for_gene(
-#             $c->request->param('gene_id'),
-#             $c->request->param('show_exons'),
-#         );
-
-#         $c->stash(
-#             exons    => $exon_data,
-#             gene     => $gene_data,
-#             assembly => $create_design_util->assembly_id,
-#         );
-#     }
-#     catch($e){
-#         my $message = "Problem finding gene: $e";
-#         $c->log->error($message);
-#         $c->flash( error_msg => $message );
-#         $c->go('gibson_design_gene_pick');
-#     };  
-
-
-print "!!! /gibson_design_exon_pick END\n";
     return;
 }
 
@@ -169,9 +113,6 @@ print "!!! /gibson_design_exon_pick END\n";
 
 sub generate_exon_pick_data : Private {
     my ( $self, $c ) = @_;
-
-print "!!! /generate_exon_pick_data\n";
-use Smart::Comments;
 
     $c->log->debug("Pick exon targets for gene: " . $c->request->param('gene_id') );
     try {
@@ -184,25 +125,6 @@ use Smart::Comments;
             $c->request->param('gene_id'),
             $c->request->param('show_exons'),
         );
-
-
-#         my $exon_ids_string = join(',', map{ $_->{id} } @{ $exon_data } );
-#         my @crisprs = $c->model('DB')->schema->resultset('CrisprByExon')->search( {},
-#             {
-#                 bind => [ '{' . $exon_ids_string . '}', $c->session->{species} ],
-#             }
-#         );
-
-#         my %crispr_count;
-#         foreach my $row (@crisprs) {
-#             ++$crispr_count{$row->ensembl_exon_id};
-#         }
-# ## %crispr_count
-
-
-#         for my $datum ( @{ $exon_data } ) {
-#             $datum->{crispr_count} = $crispr_count{ $datum->{id} } || 0;
-#         }
 
         $c->stash(
             exons      => $exon_data,
@@ -220,21 +142,8 @@ use Smart::Comments;
     return;
 }
 
-
-
-
-
-
-
-
-
-
-
 sub create_gibson_design : Path( '/create_gibson_design' ) : Args(0) {
     my ( $self, $c ) = @_;
-
-print "!!! /create_gibson_design\n";
-use Smart::Comments;
 
     # FIXME assert user role edit
 
@@ -247,13 +156,7 @@ use Smart::Comments;
     my $primer3_conf = $create_design_util->c_primer3_default_config;
     $c->stash( default_p3_conf => $primer3_conf );
 
-### $primer3_conf
-
-
-
-
     if ( exists $c->request->params->{create_design} ) {
-print "!!! IN c->request->params->{create_design}\n";
         $c->log->info('Creating new design');
 
         my ($design_attempt, $job_id);
@@ -266,8 +169,6 @@ print "!!! IN c->request->params->{create_design}\n";
             $c->res->redirect( 'gibson_design_gene_pick' );
             return;
         };
-### $design_attempt
-### $job_id
         unless ( $job_id ) {
             $c->flash( error_msg => "Unable to submit Design Creation job" );
             $c->res->redirect( 'gibson_design_gene_pick' );
@@ -276,19 +177,7 @@ print "!!! IN c->request->params->{create_design}\n";
 
         $c->res->redirect( $c->uri_for('/design_attempt', $design_attempt->id , 'pending') );
     }
-#     elsif ( exists $c->request->params->{exon_pick} ) {
-# print "!!! IN c->request->params->{exon_pick}\n";
-#         my $gene_id = $c->request->param('gene_id');
-#         my $exon_id = $c->request->param('exon_id');
-#         my $ensembl_gene_id = $c->request->param('ensembl_gene_id');
-#         $c->stash(
-#             exon_id         => $exon_id,
-#             gene_id         => $gene_id,
-#             ensembl_gene_id => $ensembl_gene_id,
-#         );
-#     }
     else {
-print "!!! IN ELSE\n";
         $c->stash( %{ $primer3_conf } );
     }
 
@@ -297,9 +186,6 @@ print "!!! IN ELSE\n";
 
 sub create_custom_target_gibson_design : Path( '/create_custom_target_gibson_design' ) : Args(0) {
     my ( $self, $c ) = @_;
-
-print "!!! /create_custom_target_gibson_design\n";
-use Smart::Comments;
 
     # FIXME assert user role edit
 
@@ -310,12 +196,10 @@ use Smart::Comments;
     );
 
     my $primer3_conf = $create_design_util->c_primer3_default_config;
-$c->stash( default_p3_conf => $primer3_conf );
-### $primer3_conf
+    $c->stash( default_p3_conf => $primer3_conf );
 
     if ( exists $c->request->params->{create_design} ) {
         $c->log->info('Creating new design');
-
 
         my ($design_attempt, $job_id);
         try {
@@ -337,10 +221,15 @@ $c->stash( default_p3_conf => $primer3_conf );
         $c->res->redirect( $c->uri_for('/design_attempt', $design_attempt->id , 'pending') );
     }
     elsif ( exists $c->request->params->{target_from_exons} ) {
-        my $target_data = $create_design_util->target_params_from_exons;
+        my $target_data = $create_design_util->c_target_params_from_exons;
         $c->stash(
-            target => $target_data,
+            gibson_type => 'deletion',
+            %{ $target_data },
+            %{ $primer3_conf },
         );
+    }
+    else {
+        $c->stash( %{ $primer3_conf } );
     }
 
     return;
@@ -349,7 +238,7 @@ $c->stash( default_p3_conf => $primer3_conf );
 sub design_attempt : PathPart('design_attempt') Chained('/') CaptureArgs(1) {
     my ( $self, $c, $design_attempt_id ) = @_;
 
-    #$c->assert_user_roles( 'read' );
+    # FIXME assert user role edit
 
     my $design_attempt;
     try {

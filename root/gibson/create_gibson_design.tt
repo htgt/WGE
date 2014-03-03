@@ -18,7 +18,7 @@
 
 <div class="well">
   <p>
-    <a href="[% c.uri_for( '/create_custom_target_gibson_design' , { 'five_prime_exon' => exon_id, 'three_prime_exon' => '', 'gene_id' => gene_id, 'ensembl_gene_id' => ensembl_gene_id 'target_from_exons' => '1' } ) %]" class="btn btn-info">
+    <a href="[% c.uri_for( '/create_custom_target_gibson_design' , { 'five_prime_exon' => five_prime_exon, 'three_prime_exon' => three_prime_exon, 'gene_id' => gene_id, 'ensembl_gene_id' => ensembl_gene_id 'target_from_exons' => '1' } ) %]" class="btn btn-info">
     Modify Target</a>
   </p>
   <p>

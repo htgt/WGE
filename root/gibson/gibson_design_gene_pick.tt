@@ -1,6 +1,6 @@
 [% META title = "Gibson Design"; META tab_name = "Gibson" %]
 
-<form method="POST" action="[% c.uri_for( '/gibson_design_exon_pick' ) %]" class="well">
+<form method="POST" action="[% c.uri_for( '/gibson_design_gene_pick' ) %]/[% c.session.species %]" class="well">
   <fieldset>
     <legend>Gibson Design Gene Pick ([% c.session.species %])</legend>
     
