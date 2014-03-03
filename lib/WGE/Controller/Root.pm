@@ -43,7 +43,7 @@ sub find_crisprs :Path('/find_crisprs') :Args(0) {
     return;
 }
 
-sub help :Path('/help') :Args(0){
+sub crispr_help :Path('/crispr_help') :Args(0){
     my ( $self, $c ) = @_;
     
     return;	

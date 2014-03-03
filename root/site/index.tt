@@ -1,0 +1,12 @@
+[% META title = "WTSI Genome Editing"; META tab_name = "WGE" %]
+
+<div class="content">
+  <div class="row">
+    <div class="span12">
+        <h4>WGE is an application that provides tools to aid with genome editing in human and mouse</h4>
+        Gibson design tool<br/>
+        CRISPR pair finder
+        </ul>
+    </div>
+  </div>
+</div>
