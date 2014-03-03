@@ -11,16 +11,14 @@
 [%- END -%]
 
 [% META title="Crispr Pair Report" %]
+[% META tab_name="Crispr Pair" %]
 
 [% RETURN UNLESS pair %]
 <script type="text/javascript">
   //we use this for doing the mismatch counts
-  var crispr_grna = "[% crispr_grna %]";
-  var crispr_pam  = "[% crispr_pam %]"
   var species     = "[% species %]";
 
   //split seq into grna and pam
-
   $(document).ready( function() {
     //quick hack to sort the pairs so i can get a screenshot
     var rows = {};
@@ -46,8 +44,6 @@
     var tbl_top = $("#spacer_row");
     keys.sort(function(a,b) { return b - a; });
 
-    console.log(keys);
-
     //insert each element above the last, sos mallest is first
     for ( var i = 0; i < keys.length; i++ ) {
       //we group by spacer which means some of the items here are an array,
@@ -64,22 +60,17 @@
         event.preventDefault();
 
         $(this).after($("<i>", { class: "icon-ok" })).hide();
-        create_alert("Your job has been submitted", "alert-success");
 
         var ids = this.value.split("_");
-        var data = find_off_targets_for_pair(ids[0], ids[1]);
+        var data = find_off_targets_for_pair(species, ids[0], ids[1]);
+
+        create_alert("Your job has been submitted", "alert-success");
 
         console.log( data );
     });
 
   });
 </script>
-
-<div class="page-header">
-  <h1>Crispr Pair 
-    <small>[% pair.left_crispr.id %]:[% pair.right_crispr.id %]</small>
-  </h1>
-</div>
 
 <div class="well">
   <h4>Spacer: [% pair.spacer %]</h4> 
@@ -155,12 +146,12 @@
     <th>Strand</th>
   </tr>
   <tr>
-    <td class="spacer">[% pair.spacer %]</td>
+    <td class="spacer"></td>
     <td></td>
-    <td class="seq">[% pair.left_crispr.seq %]</td>
+    <td class="seq"></td>
     <td></td>
     <td></td>
-    <td class="seq">[% pair.right_crispr.seq %]</td>
+    <td class="seq"></td>
     <td></td>
   </tr>
   <tr id="spacer_row"><td colspan="7"></td></tr>
@@ -175,11 +166,13 @@
     [% END %]
   </tr>
 [% END %]
-[% IF pair.off_targets.size == 0 %]
+[% UNLESS pair.off_targets.size %]
   <tr>
     <td colspan="7" style="text-align: center">
       No off target data available for this pair!
-      <button class="btn btn-block ots-button" value="[% pair.left_crispr.id %]_[% pair.right_crispr.id %]">Find off targets<button>
+      [% UNLESS pair.status_id.defined %]
+      <button class="btn btn-block ots-button" value="[% pair.left_crispr.id %]_[% pair.right_crispr.id %]">Find off targets</button>
+      [% END %]
     </td>
   </tr>
 [% END %]

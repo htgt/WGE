@@ -69,11 +69,11 @@ function get_ensembl_link(location, species) {
 }
 
 //make a crispr object so all this type of stuff is in one place
-function find_off_targets_for_pair(left_id, right_id) {
+function find_off_targets_for_pair(species, left_id, right_id) {
   var ots_data;
   $.get(
-    'api/pair_off_target_search', 
-    { 'left_id': left_id, 'right_id': right_id, 'species': get_species() }, 
+    base_url+'api/pair_off_target_search', 
+    { 'left_id': left_id, 'right_id': right_id, 'species': species }, 
     function(data) {
       ots_data = data;
     } 
