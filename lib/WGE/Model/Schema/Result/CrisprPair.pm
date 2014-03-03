@@ -206,7 +206,7 @@ __PACKAGE__->belongs_to(
 # Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-02-18 14:32:58
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:hd1bRXCDGxXNRC0d4BJnlA
 
-#TODO: integrate lot into schema instead of result
+#TODO: integrate log into schema instead of result
 use Try::Tiny;
 with qw( MooseX::Log::Log4perl );
 
@@ -219,11 +219,18 @@ sub as_hash {
     spacer             => $self->spacer,
     species_id         => $self->species_id,
     off_target_summary => $self->off_target_summary,
+    status_id          => $self->status_id,
   };
 
   #if they want off targets return them as a list of hashes
   if ( $options->{with_offs} ) {
     $data->{off_targets} = $self->off_targets;
+  }
+
+  #optional because otherwise if you have a lot
+  #each one will do a new db call with a join to get the status
+  if ( $options->{get_status} ) {
+    $data->{status} = $self->status->status;
   }
 
   return $data;
@@ -369,6 +376,10 @@ sub _get_all_paired_off_targets {
     #when processing you will take 2 off at a time.
     for my $pair ( @{ $pairs } ) {
       push @all_offs, $pair->{left_crispr}{id}, $pair->{right_crispr}{id};
+
+      #don't include this pair in the closest comparison or we'll always get it
+      next if $pair->{left_crispr}{id} eq $self->left_id 
+          and $pair->{right_crispr}{id} eq $self->right_id;
 
       if ( ! defined $closest || $closest->{spacer} > $pair->{spacer} ) {
         $closest = $pair;

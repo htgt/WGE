@@ -210,7 +210,7 @@ ALTER SEQUENCE crisprs_id_seq OWNED BY crisprs_human.id;
 --
 
 CREATE TABLE crisprs_mouse (
-    CONSTRAINT crisprs_mouse_species_id_check CHECK ((species_id = 2))
+    CONSTRAINT crispr_pairs_mouse_species_id_check CHECK ((species_id = 2))
 )
 INHERITS (crisprs);
 
@@ -1016,10 +1016,24 @@ ALTER TABLE ONLY users
 
 
 --
+-- Name: idx_crisprs_human_id; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE INDEX idx_crisprs_human_id ON crispr_pairs_human USING btree (id);
+
+
+--
 -- Name: idx_crisprs_human_loci; Type: INDEX; Schema: public; Owner: -; Tablespace: 
 --
 
 CREATE INDEX idx_crisprs_human_loci ON crisprs_human USING btree (chr_name, chr_start);
+
+
+--
+-- Name: idx_crisprs_mouse_id; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE INDEX idx_crisprs_mouse_id ON crispr_pairs_mouse USING btree (id);
 
 
 --

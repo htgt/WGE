@@ -28,7 +28,6 @@ has max_spacer => (
 has include_h2h => (
     is       => 'rw',
     isa      => 'Bool',
-    required => 1,
     default  => 0
 );
 
@@ -53,7 +52,7 @@ sub _build_log {
 
 # Faster pair finding for pairs in a large region, e.g. for genoverse browser
 sub window_find_pairs{
-    my ($self, $start, $end, $pairs) = @_;
+    my ($self, $start, $end, $pairs, $options) = @_;
     my $window_size = 400;
     my $max_pair_span = 23 + $self->max_spacer + 23;
     my $shift = $window_size - $max_pair_span;
@@ -63,7 +62,7 @@ sub window_find_pairs{
         $self->log->debug("pair window start: $start");
         my $pair_rs = $pairs->search({ 'chr_start' => { -between => [ $start, $start + $window_size ]} });
         my @crisprs = $pair_rs->all;
-        push @all_pairs, @{ $self->find_pairs(\@crisprs,\@crisprs) || [] };
+        push @all_pairs, @{ $self->find_pairs(\@crisprs,\@crisprs, $options) || [] };
         $start+=$shift;
     }
 
@@ -74,7 +73,7 @@ sub window_find_pairs{
 #a and b are two arrayrefs of crisprs you want to check for pairs.
 #they can (and often will be) be a reference to the same list.
 sub find_pairs {
-    my ( $self, $a, $b, $options ) = @_;
+    my ( $self, $list_a, $list_b, $options ) = @_;
 
     #make sure we get a species and schema if we are getting db data
     if ( $options->{get_db_data} ) {
@@ -85,11 +84,11 @@ sub find_pairs {
             unless defined $self->schema;
     }
 
-    $self->log->debug( "Finding pairs: ", scalar(@{$a}), ", ", scalar(@{$b}) );
+    $self->log->debug( "Finding pairs: ", scalar(@{$list_a}), ", ", scalar(@{$list_b}) );
 
     my %pairs; #use a hash to avoid duplicates
-    for my $first ( @{ $a } ) {
-        for my $second ( @{ $b } ) {
+    for my $first ( @{ $list_a } ) {
+        for my $second ( @{ $list_b } ) {
             my $valid_pair;
 
             #make sure the earlier pam site is treated as first
@@ -133,7 +132,24 @@ sub find_pairs {
         }
     }
 
-    return [ values %pairs ];
+    #allow the user to specify if they want the pairs sorted.
+    #default is no for better performance
+    if ( $options->{sort_pairs} ) {
+        $self->log->debug( "Sorting pairs" );
+        
+        #return by sorted keys (as a lower key corresponds to a lower chr position)
+        return [ 
+            map { $pairs{$_} } 
+                sort { 
+                    my ( $a1, $a2 ) = split "_", $a; #ids are like: 1_2 
+                    my ( $b1, $b2 ) = split "_", $b; 
+                    return $a1 <=> $b1 || $a2 <=> $b2
+                } keys %pairs 
+        ];
+    }
+    else {
+        return [ values %pairs ];
+    }
 }
 
 sub _check_valid_pair {

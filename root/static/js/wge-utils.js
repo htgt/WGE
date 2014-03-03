@@ -40,14 +40,15 @@ String.prototype.capitalise = function() {
   return this.charAt(0).toUpperCase() + this.slice(1);
 }
 
-function create_alert(text) {
-    //create an error alert,
-    //should make it so we can actually change he class
-    $(".container").prepend(
-        $("<div>", { "class": "alert alert-danger alert-dismissable" })
-            .append( $("<button>", { "class": "close", type: "button", 'aria-hidden': "true", html: "&times;", 'data-dismiss': "alert" }) )
-            .append( $("<span>", { html: text }) )
-    );
+function create_alert(text, alert_class) {
+  alert_class = alert_class || "alert-danger"; //default is error box
+  //create an error alert,
+  //should make it so we can actually change he class
+  $(".container").prepend(
+      $("<div>", { "class": "alert alert-dismissable " + alert_class })
+          .append( $("<button>", { "class": "close", type: "button", 'aria-hidden': "true", html: "&times;", 'data-dismiss': "alert" }) )
+          .append( $("<span>", { html: text }) )
+  );
 }
 
 function get_ensembl_link(location, species) {
@@ -68,11 +69,11 @@ function get_ensembl_link(location, species) {
 }
 
 //make a crispr object so all this type of stuff is in one place
-function find_off_targets_for_pair(left_id, right_id) {
+function find_off_targets_for_pair(species, left_id, right_id) {
   var ots_data;
   $.get(
-    'api/pair_off_target_search', 
-    { 'left_id': left_id, 'right_id': right_id, 'species': get_species() }, 
+    base_url+'api/pair_off_target_search', 
+    { 'left_id': left_id, 'right_id': right_id, 'species': species }, 
     function(data) {
       ots_data = data;
     } 

@@ -135,12 +135,13 @@ sub pair_off_target_search :Local('pair_off_target_search') {
     my $params = $c->req->params;
 
     check_params_exist( $c, $params, [ qw( species left_id right_id ) ] );
-
-    #for now we will trust that what we got was a valid pair.
-    #we will need to verify or someone can send any old crap.
-    #we need to get the spacer AGAIN here, ugh
     
     # also need to make extra sure someone can't put '24576 || rm -rf *' or something
+
+    #delete anything that's not a number, just to make sure no one types
+    #24576 || rm -rf *' or something. it won't get run anyway unless its found in the db
+    $params->{left_id} =~ s/[^0-9]//g;
+    $params->{right_id} =~ s/[^0-9]//g;
 
     my $species_id = $c->model('DB')->resultset('Species')->find(
         { id       => $params->{species} }
@@ -157,7 +158,7 @@ sub pair_off_target_search :Local('pair_off_target_search') {
 
     my @crisprs;
     if ( $pair ) {
-        #if its -2 we want to skip, not continue!!
+        #if its -2 we want to skip, not continue
         if ( $pair->status_id > 0 ) {
             #LOG HERE
             #someone else has already started this one, so don't do anything
@@ -219,6 +220,7 @@ sub pair_off_target_search :Local('pair_off_target_search') {
 
     my $data;
     if ( @ids_to_search ) {
+        $c->log->warn( "Finding off targets for:" . join(", ", @ids_to_search) );
         my ( $job_id, $error );
         try {
             die "No pair id" unless $pair->id;
@@ -246,6 +248,7 @@ sub pair_off_target_search :Local('pair_off_target_search') {
         };
 
         if ( $error ) {
+            $c->log->warn( "Error getting off targets:" . $error );
             $data = { success => 0, error => $error };
         }
         else {
@@ -253,6 +256,7 @@ sub pair_off_target_search :Local('pair_off_target_search') {
         }
     }
     else {
+        $c->log->debug( "Individual crisprs already have off targets, calculating paired offs" );
         #just calculate paired off targets as we already have all the crispr data
         $pair->calculate_off_targets;
         $data = { success => 1 };
@@ -263,23 +267,6 @@ sub pair_off_target_search :Local('pair_off_target_search') {
     $c->stash->{json_data} = $data;
     $c->forward('View::JSON');
 }
-
-# sub pair_off_target_search :Local('pair_off_target_search') {
-# 	my ($self, $c) = @_;
-# 	my $params = $c->req->params;
-	
-# 	check_params_exist( $c, $params, [ 'pair_id[]' ]);
-	
-# 	my @data;
-# 	my $pair_id = $params->{ 'pair_id[]'};
-# 	my @pair_ids = ( ref $pair_id eq 'ARRAY' ) ? @{ $pair_id } : ( $pair_id );
-
-# 	foreach my $id ( @pair_ids ){
-# 		push @data, "Processing pair $id";
-# 	}
-#   $c->stash->{json_data} = \@data;
-#   $c->forward('View::JSON');
-# }	
 
 
 sub design_attempt_status :Chained('/') PathPart('design_attempt_status') Args(1) {
