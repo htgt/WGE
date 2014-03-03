@@ -60,7 +60,9 @@
     });
 
     var t = $("#total_offs");
-    t.text( t.text() - total_erroneous );
+    if( t.text() != 'No data') { //only do this if there's data
+      t.text( t.text() - total_erroneous );
+    }
 
     //order everything by number of mismatches
     var tbl_top = $("#spacer_row");

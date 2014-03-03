@@ -414,10 +414,14 @@ sub _data_missing {
   #this status has already been calculated, so just return it as is
   return if $self->status_id == -2;
 
-  unless ( defined $crisprs ) {
+  #if we were provided with crisprs make sure its an arrayref with 2 entries
+  if ( defined $crisprs && ref $crisprs eq 'ARRAY' && @{ $crisprs } == 2 ) {
+    $self->log->warn("2 crisprs provided, using those");
+  }
+  else{
     $self->log->warn( "No crisprs provided, searching crispr table" );
     
-    $crisprs = $self->result_source->schema->resultset('Crispr')->search(
+    my @rows = $self->result_source->schema->resultset('Crispr')->search(
       { 
         id         => { -IN => [ $self->left_id, $self->right_id ] },
         species_id => $self->species_id
@@ -431,12 +435,14 @@ sub _data_missing {
       }
     );
 
+    $crisprs = \@rows;
+
     die "Couldn't find crisprs!" unless defined $crisprs;
   }
 
   #we allow an arrayref or a resultset in $crisprs
   my @needs_ots_data;
-  for my $crispr ( ref $crisprs eq 'ARRAY' ? @{ $crisprs } : $crisprs->all ) {
+  for my $crispr ( @{ $crisprs } ) {
     #if a crispr has a summary but no off targets it means its a bad
     #crispr with too many off targets. We therefore set the pair status to bad,
     #as we can't calculate off targets for it

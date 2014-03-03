@@ -170,7 +170,7 @@
   <tr>
     <td colspan="7" style="text-align: center">
       No off target data available for this pair!
-      [% UNLESS pair.status_id.defined %]
+      [% IF ! pair.status_id.defined || pair.status_id == 0 %]
       <button class="btn btn-block ots-button" value="[% pair.left_crispr.id %]_[% pair.right_crispr.id %]">Find off targets</button>
       [% END %]
     </td>
