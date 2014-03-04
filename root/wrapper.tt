@@ -43,7 +43,7 @@
           <ul class="nav">
             <li [% IF (template.tab_name == 'WGE' OR template.tab_name == undef) %] class="active" [% END %]>
             <a href="[% c.uri_for('/') %]">Home</a></li>
-            <li [% IF (template.tab_name == 'Paired Crispr Search') %] class="active" [% END %]>
+            <li [% IF (template.tab_name == 'Paired CRISPR Search') %] class="active" [% END %]>
             <a href="[% c.uri_for('/find_crisprs') %]">Crispr Finder</a></li>
 
             <li class="dropdown [% IF template.tab_name == 'Gibson' %] active[% END %]" >
@@ -56,8 +56,10 @@
               </ul>
             </li>
             
-            <li [% IF template.tab_name == 'About WTSI Genome Editing' %] class="active" [% END %]>
+            <li [% IF template.tab_name == 'About the CRISPR finder' %] class="active" [% END %]>
             <a href="[% c.uri_for('/crispr_help') %]">Help</a></li>
+            <li [% IF template.tab_name == 'About WTSI Genome Editing' %] class="active" [% END %]>
+            <a href="[% c.uri_for('/about') %]">About</a></li>
 
             <li [% IF template.tab_name == 'Contact' %] class="active" [% END %]>
             <a href="[% c.uri_for('/contact') %]">Contact</a></li>
