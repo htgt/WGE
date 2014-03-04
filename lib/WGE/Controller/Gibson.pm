@@ -165,7 +165,9 @@ sub create_gibson_design : Path( '/create_gibson_design' ) : Args(0) {
             }
             $c->stash( error_msg => "Error submitting Design Creation job: $error" );
             $c->stash( %$primer3_conf );
-            # Needs to stash rest of data
+            my $params = $c->request->params;
+            $c->stash( %$params );
+
             return;
         };
         unless ( $job_id ) {
@@ -214,7 +216,9 @@ sub create_custom_target_gibson_design : Path( '/create_custom_target_gibson_des
             }
             $c->stash( error_msg => "Error submitting Design Creation job: $error" );
             $c->stash( %$primer3_conf );
-            # Needs to stash rest of data
+            my $params = $c->request->params;
+            $c->stash( %$params );
+
             return;
         }
 
