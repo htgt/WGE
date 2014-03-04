@@ -156,7 +156,16 @@ sub create_gibson_design : Path( '/create_gibson_design' ) : Args(0) {
         }
         catch($e) {
             $c->log->error($e);
-            $c->stash( error_msg => "Error submitting Design Creation job: $e" );
+            my @errors = split ("\n", $e);
+            my $error;
+            if ( scalar @errors > 1 ) {
+                $error = $errors[0].".\n".$errors[1];
+            } else {
+                $error = $errors[0];
+            }
+            $c->stash( error_msg => "Error submitting Design Creation job: $error" );
+            $c->stash( %$primer3_conf );
+            # Needs to stash rest of data
             return;
         };
         unless ( $job_id ) {
@@ -196,7 +205,16 @@ sub create_custom_target_gibson_design : Path( '/create_custom_target_gibson_des
         }
         catch ($e) {
             $c->log->error($e);
-            $c->stash( error_msg => "Error submitting Design Creation job: $e" );
+            my @errors = split ("\n", $e);
+            my $error;
+            if ( scalar @errors > 1 ) {
+                $error = $errors[0].".\n".$errors[1];
+            } else {
+                $error = $errors[0];
+            }
+            $c->stash( error_msg => "Error submitting Design Creation job: $error" );
+            $c->stash( %$primer3_conf );
+            # Needs to stash rest of data
             return;
         }
 
