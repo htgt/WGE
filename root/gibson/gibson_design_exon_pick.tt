@@ -19,6 +19,7 @@ Hidden:  get_crisprs_url      = '/user/get_crisprs'
   gene = gene
   exon_pick_url        = '/gibson_design_exon_pick'
   show_current_designs = 1
+  hide_get_crisprs     = 1
 %]
 
 <!-- LIMS2 specific code for showing existing designs linked to a exon -->
