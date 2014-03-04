@@ -1,4 +1,4 @@
-[% META title = "About WTSI Genome Editing"; META tab_name = "About WTSI Genome Editing" %]
+[% META title = "CRISPR finder help"; META tab_name = "About the CRISPR finder" %]
 
 <style type="text/css">
 section img {
@@ -31,7 +31,6 @@ $(window).load(function() {
   <div class="row">
     <div class="span3 bs-docs-sidebar">
         <ul id="navigation" data-spy="affix" data-offset-top="180" class="nav nav-list bs-docs-sidenav">
-            <li><a href="#wge">WGE</a></li>
             <li><a href="#disclaimer">Disclaimer</a></li>
             <li><a href="#usage">Webapp Usage</a></li>
             <li>
@@ -53,14 +52,6 @@ $(window).load(function() {
         </ul>
     </div>
     <div class="span9">
-        <section id="wge">
-            <h2>WGE</h2>
-            <p>
-                WGE stands for WTSI Genome Editing.<br/>
-                WTSI stands for Wellcome Trust Sanger Institute<br/>
-            </p>
-        </section>
-        <hr class="docs-separator" />
         <section id="disclaimer">
             <h2>Disclaimer</h2>
             <p>

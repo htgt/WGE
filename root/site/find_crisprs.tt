@@ -1,4 +1,4 @@
-[% META title = "WGE"; META tab_name = "Paired Crispr Search" %]
+[% META title = "Paired CRISPR Search"; META tab_name = "Paired CRISPR Search" %]
 
 <script type="text/javascript">
   $(document).ready(function() {
