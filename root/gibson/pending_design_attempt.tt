@@ -3,7 +3,7 @@
 <div class="page-header">
   <h1>
     Design Attempt Progress
-    <small>[% id %]</small>
+    <small>ID [% id %]</small>
   </h1>
 </div>
 
