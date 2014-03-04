@@ -1,4 +1,4 @@
 [% META title = "Contact"; META tab_name = "Contact" %]
 
-Any issues or queries can be sent to:<br/>
-<a href="mailto:htgt@sanger.ac.uk">htgt@sanger.ac.uk</a>
+<h2>This tool should be considered in "beta" release, and is being continuously developed and extended. If you wish to contact us about it, please do so at <a href="mailto:wge@sanger.ac.uk">wge@sanger.ac.uk</a></h2>
+<h4>This work was supported by a core grant from the Wellcome Trust.</h4>

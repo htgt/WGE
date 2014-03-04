@@ -1,15 +1,7 @@
 [% META title = "Paired CRISPR Search"; META tab_name = "Paired CRISPR Search" %]
-<style type="text/css">
-.container-fluid {
-  max-width: 1200px;
-  margin-right: auto;
-  margin-left: auto;
-}
-</style>
 
 <script type="text/javascript">
   $(document).ready(function() {
-    $("#page_container").addClass('container-fluid').removeClass('container');
     //add autocomplete to the gene box
     $('#gene').autocomplete( {
         autoFocus: true,
@@ -233,7 +225,7 @@
               //colour rows if there are bad crisprs or similar
               if ( pair.db_data ) {
                 if ( pair.db_data["status_id"] == -2 || pair.db_data["status_id"] == -1 ) {
-                  row.css('background-color', '#f2dede'); //error colour
+                  row.addClass('error');
                 }
               }
 
