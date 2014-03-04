@@ -62,10 +62,6 @@ sub gibson_design_gene_pick :Regex('gibson_design_gene_pick/(.*)'){
     return;
 }
 
-
-
-
-
 sub gibson_design_exon_pick :Path('/gibson_design_exon_pick') :Args(0){
     my ( $self, $c ) = @_;
 
@@ -105,10 +101,6 @@ sub gibson_design_exon_pick :Path('/gibson_design_exon_pick') :Args(0){
 
     return;
 }
-
-
-
-
 
 sub generate_exon_pick_data : Private {
     my ( $self, $c ) = @_;
@@ -165,12 +157,10 @@ sub create_gibson_design : Path( '/create_gibson_design' ) : Args(0) {
         catch($e) {
             $c->log->error($e);
             $c->stash( error_msg => "Error submitting Design Creation job: $e" );
-            $c->res->redirect( 'gibson_design_gene_pick' );
             return;
         };
         unless ( $job_id ) {
             $c->stash( error_msg => "Unable to submit Design Creation job" );
-            $c->res->redirect( 'gibson_design_gene_pick' );
             return;
         }
 
@@ -207,13 +197,11 @@ sub create_custom_target_gibson_design : Path( '/create_custom_target_gibson_des
         catch ($e) {
             $c->log->error($e);
             $c->stash( error_msg => "Error submitting Design Creation job: $e" );
-            $c->res->redirect( 'gibson_design_gene_pick' );
             return;
         }
 
         unless ( $job_id ) {
             $c->stash( error_msg => "Unable to submit Design Creation job" );
-            $c->res->redirect( 'gibson_design_gene_pick' );
             return;
         }
 
