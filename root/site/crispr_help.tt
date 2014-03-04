@@ -22,7 +22,7 @@ section img {
 //need to wait for images to load or the scrollspy is broken
 $(window).load(function() {
     //link the nav to the anchors
-    $("body").scrollspy({target: ".bs-docs-sidebar", offset: 10});
+    $("body").scrollspy({target: ".bs-docs-sidebar", offset: 20});
     //$("body").scrollspy('refresh');
 });
 </script>
@@ -42,6 +42,7 @@ $(window).load(function() {
             <li><a href="#off_targets">Off targets</a></li>
             <li>
                 <ul class="nav nav-list">
+                    <li><a href="#summary_explanation">Summaries</a></li>
                     <li><a href="#individual_process">Individual</a></li>
                     <li><a href="#pair_process">Paired</a></li>
                 </ul>
@@ -128,6 +129,51 @@ $(window).load(function() {
             <p> 
                 Cutting has been seen with up to 5 mismatches depending on their proximity to the PAM; mismatches closer to the PAM site are less tolerated than those further away.<br/>
                 Cutting has also been seen at a reduced efficiency at NAG PAM sites, but we do not currently look at those when evaluating off targets; this option will be coming in a later version.
+            </p>
+        </section>
+        <hr class="docs-separator" />
+        <section id="summary_explanation">
+            <h2>Explanation of off target summaries</h2>
+            <p id="summaries_individual">
+                <h4>Individual</h4>
+                The individual off target summaries are formatted like this:<br/>
+                <pre>
+0: 1
+1: 0
+2: 3
+3: 26
+4: 89
+                </pre>
+                The left column is the number of mismatches (this is the grouping)<br/>
+                The right column is the number of off-targets we found with that many mismatches<br/><br/>
+                <b>Note: We include the original CRISPR site in the off target summary, so you will <i>always</i> see 1 off target in the 0 mismatches column</b><br/><br/>
+                So in the above example, this CRISPR has:<br/>
+                <pre>
+0 off targets with 0 mismatches (other than itself)
+0 off targets with 1 mismatch
+3 off targets with 2 mismatches
+26 off targets with 3 mismatches
+89 off targets with 4 mismatches
+                </pre>
+                For a total of 118 off targets<br/><br/>
+                Our selection criteria for a 'good' CRISPR is:
+                <pre>
+0: 1
+1: 0
+2: 0
+                </pre>
+            </p>
+            <p id="summaries_paired">
+                <h4>Paired</h4>
+                The paired off target summaries are formatted like this:
+                <pre>
+closest: 23
+total_pairs: 3
+max_distance: 1000
+                </pre>
+                <i>closest</i> tells you how close the nearest valid paired off target we found is. A value of 23 means we found a paired off target with a spacer of 23 bases, which is very close (the pair should be avoided if there's a better option.) If you see 'None' in this column it means we did not find a valid pair within the set distance. <br/><b>Note: this value will never be the original pair.</b><br/><br/>
+                <i>total_pairs</i> tells you how many paired off targets we found. <br/><b>Note: we include the original pair in this total, so the minimum value you will see here is 1.</b><br/><br/>
+                <i>max_distance</i> tells you what the maximum allowed spacer was for us to count a paired off target as valid.
             </p>
         </section>
         <hr class="docs-separator" />

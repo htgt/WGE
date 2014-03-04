@@ -49,10 +49,16 @@ sub find_crisprs :Path('/find_crisprs') :Args(0) {
     return;
 }
 
-sub crispr_help :Path('/crispr_help') :Args(0){
+sub crispr_help :Path('/crispr_help') :Args(0) {
     my ( $self, $c ) = @_;
     
     return;	
+}
+
+sub gibson_help :Path('/gibson_help') :Args(0) {
+    my ( $self, $c ) = @_;
+
+    return;
 }
 
 sub contact :Path('/contact') :Args(0){
