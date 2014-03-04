@@ -42,12 +42,14 @@
           </a>
           <ul class="nav">
             <li [% IF (template.tab_name == 'WGE' OR template.tab_name == undef) %] class="active" [% END %]>
-            <a href="[% c.uri_for('/') %]">Home</a></li>
+              <a href="[% c.uri_for('/') %]">Home</a>
+            </li>
             <li [% IF (template.tab_name == 'Paired CRISPR Search') %] class="active" [% END %]>
-            <a href="[% c.uri_for('/find_crisprs') %]">Crispr Finder</a></li>
+              <a href="[% c.uri_for('/find_crisprs') %]">Crispr Finder</a>
+            </li>
 
             <li class="dropdown [% IF template.tab_name == 'Gibson' %] active[% END %]" >
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Gibson Designs<b class="caret"></b></a>
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Gibson Designs<b class="caret"></b></a>
               <ul class="dropdown-menu">            
                 <li><a href="[% c.uri_for('/gibson_design_gene_pick/Human') %]">Create Human Design</a></li>
                 <li><a href="[% c.uri_for('/gibson_design_gene_pick/Mouse') %]">Create Mouse Design</a></li>                
@@ -55,19 +57,31 @@
                 <li><a href="[% c.uri_for('/view_gibson_designs') %]">View Designs</a></li>
               </ul>
             </li>
+
+            <li class="dropdown [% IF template.tab_name == 'About the CRISPR finder' %]active[% END %]">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Help<b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a href="[% c.uri_for('/crispr_help') %]">CRISPR Finder</a>
+                </li>
+                <li>
+                  <a href="[% c.uri_for('/gibson_help') %]">Gibson Designs</a>
+                </li>
+              </ul>
+            </li>
             
-            <li [% IF template.tab_name == 'About the CRISPR finder' %] class="active" [% END %]>
-            <a href="[% c.uri_for('/crispr_help') %]">Help</a></li>
             <li [% IF template.tab_name == 'About WTSI Genome Editing' %] class="active" [% END %]>
-            <a href="[% c.uri_for('/about') %]">About</a></li>
+              <a href="[% c.uri_for('/about') %]">About</a>
+            </li>
 
             <li [% IF template.tab_name == 'Contact' %] class="active" [% END %]>
-            <a href="[% c.uri_for('/contact') %]">Contact</a></li>
+              <a href="[% c.uri_for('/contact') %]">Contact</a>
+            </li>
           </ul>
         </div>
     </div>
 
-    <div class="container">
+    <div id="page_container" class="container">
       <!-- general error box for javascript to use -->
         <div class="alert alert-danger alert-dismissable" id="alert_error" style="display:none">
           <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>

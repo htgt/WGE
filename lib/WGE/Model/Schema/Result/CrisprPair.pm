@@ -208,6 +208,7 @@ __PACKAGE__->belongs_to(
 
 #TODO: integrate log into schema instead of result
 use Try::Tiny;
+use JSON qw( encode_json );
 with qw( MooseX::Log::Log4perl );
 
 sub as_hash {
@@ -300,10 +301,16 @@ sub calculate_off_targets {
       return unless defined $offs;
 
       #there could have been no paired off targets, so we won't get a closest
-      $closest = (defined $closest) ? $closest->{spacer} : "";
+      $closest = (defined $closest) ? $closest->{spacer} : "None";
 
       $total = scalar( @{ $offs } ) / 2;
-      my $summary = qq/{"total pairs":"$total", "max_distance": "$distance" "closest": "$closest"}/;
+
+      #convert hash to json string
+      my $summary = encode_json {
+        total_pairs  => $total,
+        max_distance => $distance,
+        closest      => $closest,
+      };
 
       $self->update(
         {

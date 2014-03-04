@@ -1,7 +1,15 @@
 [% META title = "Paired CRISPR Search"; META tab_name = "Paired CRISPR Search" %]
+<style type="text/css">
+.container-fluid {
+  max-width: 1200px;
+  margin-right: auto;
+  margin-left: auto;
+}
+</style>
 
 <script type="text/javascript">
   $(document).ready(function() {
+    $("#page_container").addClass('container-fluid').removeClass('container');
     //add autocomplete to the gene box
     $('#gene').autocomplete( {
         autoFocus: true,
@@ -174,11 +182,18 @@
             //each exon has a list of crisprs
             $.each(crisprs, function(idx, pair) {
               var pair_id = pair.left_crispr.id + "_" + pair.right_crispr.id;
+              var summary = "";
               var status;
               if( pair.db_data && pair.db_data["status_id"] != 0 ) {
                 var text = pair.db_data["status"].toString().capitalise();
 
                 status = $("<a>", { href: "[% c.uri_for('/crispr_pair') %]/"+pair_id, text: text });
+
+                //get json object from summarydata
+                var summary_obj = $.parseJSON(pair.db_data["off_target_summary"]);
+                for (var key in summary_obj) {
+                  summary += key + ": " + (summary_obj[key] || 'none') + "<br/>";
+                }
               }
               else {
                 //if it has no off target data add a button to get it
@@ -202,12 +217,15 @@
 
                     console.log( data );
                 });
+
+                summary = 'No data';
               }
 
               var row = 
                 $("<tr>", { style: "font-size: 13px"})
                  .append( $("<td>", { html: pair.spacer }) )
                  .append( $("<td>", { html: status } ) )
+                 .append( $("<td>", { html: summary }) )
                  .append( get_crispr_row(pair.left_crispr) )
                  .append( get_crispr_row(pair.right_crispr) )
                  .appendTo( table.find("tbody") );
@@ -299,8 +317,19 @@
     //return table headers for a crispr.
     var fields = [ "ID", "Location", "Seq", "Off targets" ];
 
+    var off_targets_link = 
+      $("<a>", { href: "[% c.uri_for('crispr_help#summaries_individual') %]", target: "_blank" })
+        .append($("<i>", { class: 'icon-question-sign' }));
+
     //return a list of th elements
-    return $.map(fields, function (name) { return $("<th>", { "html": name }); });
+    return $.map(fields, function (name) { 
+      var th = $("<th>", { "html": name });
+      //add off targets help link
+      if ( name == "Off targets" ) {
+        th.append(off_targets_link);
+      }
+      return th;
+    });
   }
 
   function get_table(options) {
@@ -326,17 +355,22 @@
 
       //grouping
       $("<tr>")
-        .append($("<th>", { html: "Pair", colspan: 3, "class": "group-header" }))
+        .append($("<th>", { html: "Pair", colspan: 4, "class": "group-header" }))
         .append($("<th>", { html: "Left Crispr", colspan: 4, "class": "group-header" }))
         .append($("<th>", { html: "Right Crispr", colspan: 4, "class": "group-header" }))
         .appendTo( table.find("thead") );
 
+      var summary_link = $("<a>", { href: "[% c.uri_for('crispr_help#summaries_paired') %]", target: "_blank" })
+                          .append($("<i>", { class: 'icon-question-sign' }));
+
+        //$("<a>", { href: "#" }).append($("<i>", { class: 'icon-question-sign' }))
       //add headers
       //$("<tr>").append( $("<th>" ) )
      $("<tr>")
        .append( $("<th>", { text: "Exon ID" }) )
        .append( $("<th>", { text: "Spacer" }) )
        .append( $("<th>", { text: "Status" }) )
+       .append( $("<th>", { text: "Summary" }).append(summary_link) )
        .append( get_crispr_header() )
        .append( get_crispr_header() )
        .appendTo( table.find("thead") );

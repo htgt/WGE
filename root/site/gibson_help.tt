@@ -1,0 +1,66 @@
+[% META title = "CRISPR finder help"; META tab_name = "About the CRISPR finder" %]
+
+<style type="text/css">
+section img {
+    border-color: #000000;
+    border-width: 1px;
+    border-style: solid;
+}
+
+.affix {
+    position: fixed;
+    top: 12px;
+}
+
+.docs-separator {
+    margin: 40px 0 39px
+}
+
+</style>
+
+<script type="text/javascript">
+//need to wait for images to load or the scrollspy is broken
+$(window).load(function() {
+    //link the nav to the anchors
+    $("body").scrollspy({target: ".bs-docs-sidebar", offset: 20});
+});
+</script>
+
+<div class="content">
+  <div class="row">
+    <div class="span3 bs-docs-sidebar">
+        <ul id="navigation" data-spy="affix" data-offset-top="180" class="nav nav-list bs-docs-sidenav">
+            <li><a href="#disclaimer">Disclaimer</a></li>
+            <li><a href="#usage">Usage</a></li>
+            <li><a href="#source">Source Code</a></li>
+        </ul>
+    </div>
+    <div class="span9">
+        <section id="disclaimer">
+            <h2>Disclaimer</h2>
+            <p>
+                <h5>Please note that the application is currently in <b>beta</b>, so if you have any problems, please let us know.</h5>
+                We assume no responsibility or liability for any loss or damage incurred as a result of any use of the information contained within or downloaded from this website.<br/>
+            </p> 
+        </section>
+        <hr class="docs-separator" />
+        <section id="usage">
+            <h2>How to use the gibson designer</h2>
+            <p>
+                Text
+            </p>
+        </section>
+        <hr class="docs-separator" />
+        <section id="source">
+            <h2>Source code</h2>
+            <p>
+                Our web application is written in <a href="http://www.perl.org/">Perl</a> using the <a href="http://www.catalystframework.org/">Catalyst</a> framework. The application runs on a <a href="http://www.postgresql.org/">PostgreSQL</a> database.<br/>
+                The code can be seen in our <a href="https://github.com/htgt/WGE">github repository</a><br/>
+            </p>
+            <p>
+                If you have any questions please e-mail us at: <a href="mailto:htgt@sanger.ac.uk">htgt@sanger.ac.uk</a>
+            </p>
+        </section>
+    </div>
+  </div>
+</div>
