@@ -25,9 +25,8 @@ WGE::Controller::Gibson - Controller for Gibson related pages in WGE
 sub gibson_design_gene_pick :Regex('gibson_design_gene_pick/(.*)'){
     my ( $self, $c ) = @_;
 
-    return unless $c->request->param('gene_pick');
-
     my ($species) = @{ $c->req->captures };
+
     # Assert user role?
     $c->log->debug("Species: $species");
 
