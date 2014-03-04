@@ -3,9 +3,15 @@
 <div class="content">
   <div class="row">
     <div class="span12">
-        <h4>WGE is an application that provides tools to aid with genome editing in human and mouse</h4>
-        Gibson design tool<br/>
-        CRISPR pair finder
+        <h4>WTSI Genome Editing is a website that provides tools to aid with genome editing in human and mouse</h4>
+        <h5>Gibson design tool</h5>
+        <p>
+            This tool helps when creating gene knockouts -- given a gene we will attempt to identify an exon that we think after deletion will disrupt gene function. We try to find the most 5' that is constitutive, then choose primers around the exon for deletion or conditional designs.
+        </p>
+        <h5>CRISPR pair finder</h5>
+        <p>
+            The CRISPR pair finder will display all possible CRISPR pairs in and around your chosen exon. 
+        </p>
         </ul>
     </div>
   </div>

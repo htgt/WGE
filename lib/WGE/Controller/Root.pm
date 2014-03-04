@@ -37,6 +37,12 @@ sub index :Path :Args(0) {
     return;
 }
 
+sub about :Path('/about') :Args(0) {
+    my ( $self, $c ) = @_;
+
+    return;
+}
+
 sub find_crisprs :Path('/find_crisprs') :Args(0) {
     my ( $self, $c ) = @_;
 
