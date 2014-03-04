@@ -56,6 +56,8 @@ sub get_all_species :Local('get_all_species') {
         map { $_->numerical_id => $_->id } @species
     };
     $c->forward('View::JSON');
+
+    return;
 }
 
 sub gene_search :Local('gene_search') {
@@ -79,6 +81,8 @@ sub gene_search :Local('gene_search') {
     #return a list of hashrefs with the matching gene data
     $c->stash->{json_data}  = [ sort map { $_->marker_symbol } @genes ];
     $c->forward('View::JSON');
+
+    return;
 }
 
 sub exon_search :Local('exon_search') {
@@ -107,6 +111,8 @@ sub exon_search :Local('exon_search') {
     #return a list of hashrefs with the matching exon ids and ranks
     $c->stash->{json_data} = { transcript => $gene->canonical_transcript, exons => \@exons };
     $c->forward('View::JSON');
+
+    return;
 }
 
 sub crispr_search :Local('crispr_search') {
@@ -117,6 +123,8 @@ sub crispr_search :Local('crispr_search') {
     
     $c->stash->{json_data} = _get_exon_attribute( $c, "crisprs", $params->{ 'exon_id[]' } );
     $c->forward('View::JSON');
+
+    return;
 }
 
 sub pair_search :Local('pair_search') {
@@ -127,6 +135,8 @@ sub pair_search :Local('pair_search') {
     
     $c->stash->{json_data} = _get_exon_attribute( $c, "pairs", $params->{ 'exon_id[]' } );
     $c->forward('View::JSON');
+
+    return;
 }
 
 sub pair_off_target_search :Local('pair_off_target_search') {
@@ -266,6 +276,8 @@ sub pair_off_target_search :Local('pair_off_target_search') {
 
     $c->stash->{json_data} = $data;
     $c->forward('View::JSON');
+
+    return;
 }
 
 
@@ -289,6 +301,8 @@ sub design_attempt_status :Chained('/') PathPart('design_attempt_status') Args(1
 
     $c->stash->{json_data} = { status => $status, designs => $design_links };
     $c->forward('View::JSON');
+
+    return;
 }
 
 sub designs_in_region :Local('designs_in_region') Args(0){
@@ -412,14 +426,6 @@ sub _get_exon_attribute {
     return \%data;
 }
 
-sub _get_species_id {
-    my ( $c, $species ) = @_;
-
-    return $c->model('DB')->resultset('Species')->find(
-        { id => $species }
-    )->numerical_id;
-}
-
 #should use FormValidator::Simple or something later
 #takes a hashref and an arrayref of required options,
 #e.g. check_params_exist( { test => 1 } => [ 'test' ] );
@@ -430,6 +436,8 @@ sub check_params_exist {
     for my $option ( @{ $options } ) {
         _send_error($c, "Error: ".ucfirst(lc $option) . " is required", 400 ) unless defined $params->{$option};
     }
+
+    return;
 }
 
 sub _send_error{
@@ -441,6 +449,8 @@ sub _send_error{
     $c->response->status($status);
     $c->stash->{json_data} = { error => $message };
     $c->detach('View::JSON');
+
+    return;
 }
 
 1;

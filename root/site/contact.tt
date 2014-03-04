@@ -1,4 +1,5 @@
 [% META title = "Contact"; META tab_name = "Contact" %]
+[% PROCESS utils.tt %]
 
-<h2>This tool should be considered in "beta" release, and is being continuously developed and extended. If you wish to contact us about it, please do so at <a href="mailto:wge@sanger.ac.uk">wge@sanger.ac.uk</a></h2>
+<h2>[% PROCESS contact %]</h2>
 <h4>This work was supported by a core grant from the Wellcome Trust.</h4>

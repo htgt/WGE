@@ -1,37 +1,6 @@
 [% META title = "Gibson Design"; META tab_name = "Gibson" %]
-
-<div class="accordion" id="accordion">
-  <div class="accordion-group">
-    <div class="accordion-heading">
-      <a class="accordion-toggle collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
-        <i class="icon-question-sign"></i> Help
-      </a>
-    </div>
-    <div id="collapseOne" class="accordion-body collapse in">
-      <div class="accordion-inner">
-        <p class="lead">This tool helps you choose genomic oligos to use when constructing a knockout vector by Gibson Assembly:</p>
-        <ol>
-          <li>
-            Enter the gene you want to knock out from the search box, as either symbols, HGNC or Ensembl IDs.
-          </li>
-          <li>
-            Choose "Find exons" - displaying either exons on the "main" transcript or all gene exons.
-          </li>
-          <li>
-            From the list of exons, choose a single exon or a set of exons to delete / flox using the checkboxes, and click "Make exon pick"
-          </li>
-          <li>
-            Adjust the parameters of the knockout around the deleted / floxed exon using the graphic. You can choose to make a vector which either deletes or floxes the target exons(s)
-          </li>
-          <li>
-            Click "Create Gibson Design". You will see a progress bar, and then the oligos, if the design was possible with your parameters.
-          </li>
-        </ol>
-        <p>For more information see the <a href="[% c.uri_for('/gibson_help') %]">help page</a></p>
-      </div>
-    </div>
-  </div>
-</div>
+[% PROCESS utils.tt %]
+[% PROCESS gibson_help %]
 
 <form method="POST" action="[% c.uri_for( '/gibson_design_gene_pick' ) %]/[% c.session.species %]" class="well">
   <fieldset>

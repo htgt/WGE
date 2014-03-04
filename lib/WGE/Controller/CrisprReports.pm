@@ -101,3 +101,5 @@ sub crispr_pair_report :Path('/crispr_pair') :Args(1){
 
     return;
 }
+
+1;

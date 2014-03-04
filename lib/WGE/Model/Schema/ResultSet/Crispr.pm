@@ -66,6 +66,8 @@ sub load_from_hash {
 
         $self->create( $crispr );
     }
+
+    return;
 }
 
 1;

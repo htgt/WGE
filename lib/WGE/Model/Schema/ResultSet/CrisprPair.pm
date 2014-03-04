@@ -47,7 +47,7 @@ sub fast_search_by_ids {
     my $ids = "{" . join( ",", @{ $options->{ids} } ) . "}";
 
     #skip actual off targets because you shouldn't need to get them in bulk
-    my $query = <<EOT;
+    my $query = <<'EOT';
 with ids as (
     select unnest(?::text[]) as id
 )

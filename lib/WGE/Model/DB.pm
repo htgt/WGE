@@ -1,5 +1,8 @@
 package WGE::Model::DB;
 
+use strict;
+use warnings;
+
 use Config::Any;
 use File::stat;
 use Carp qw(confess);

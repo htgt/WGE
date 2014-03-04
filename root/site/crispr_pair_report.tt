@@ -1,14 +1,4 @@
-[%- MACRO ensembl_link BLOCK -%]
-  [%- location = "${chr_name}:${chr_start}-${chr_end}" -%]
-  [%# the default string is ':-' so thats why we check its > 2 %]
-  [% IF location.length > 2 %]
-    <a href='http://www.ensembl.org/[% species %]/psychic?q=[% location %]'>[% location %]</a>
-  [% END %]
-[%- END -%]
-
-[%- MACRO display_strand BLOCK -%]
-  [%- IF pam_right == 1 %]+[% ELSIF pam_right == 0 %]-[% ELSE %][% END -%]
-[%- END -%]
+[% PROCESS utils.tt %]
 
 [% META title="Crispr Pair Report" %]
 [% META tab_name="Crispr Pair" %]

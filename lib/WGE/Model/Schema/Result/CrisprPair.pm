@@ -476,6 +476,7 @@ sub _data_missing {
 
 sub reset_status {
   shift->update( { status_id => 0 } );
+  return;
 }
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
