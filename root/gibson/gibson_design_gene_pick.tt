@@ -1,0 +1,30 @@
+[% META title = "Gibson Design"; META tab_name = "Gibson" %]
+[% PROCESS utils.tt %]
+[% PROCESS gibson_help %]
+
+<form method="POST" action="[% c.uri_for( '/gibson_design_gene_pick' ) %]/[% c.session.species %]" class="well">
+  <fieldset>
+    <legend>Gibson Design Gene Pick ([% c.session.species %])</legend>
+    
+    <input type="text" class="input-xxlarge" name="gene_id" placeholder="gene name">
+    <span class="help-block">Valid search terms: HGNC IDs, MGI IDs, Ensembl Gene IDs and Marker Symbols.</span>
+
+
+    <label><strong>Show Exons</strong></label>
+    <label class="radio">
+      <input type="radio" name="show_exons" value="canonical" checked>
+      Canonical Transcript Only
+    </label>
+    <label class="radio">
+      <input type="radio" name="show_exons" value="all">
+      All
+    </label>
+
+    <br>
+    <input type="submit" name="gene_pick" class="btn btn-primary" value="Find Exons" />
+  </fieldset>
+</form>
+
+<div class="well">
+Alternatively, if you know the exact coordinates of your target click <a href="[% c.uri_for('create_custom_target_gibson_design') %]">here</a>.
+</div>

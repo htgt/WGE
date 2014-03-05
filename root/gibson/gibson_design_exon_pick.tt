@@ -1,0 +1,37 @@
+[% META title = "Gibson Design"; META tab_name = "Gibson" %]
+
+[% PROCESS utils.tt %]
+[% PROCESS gibson_help %]
+
+<div class="page-header">
+  <h1>Exon Targets
+  <small>assembly: [% assembly %]</small>
+  </h1>
+</div>
+
+[% INCLUDE 'create_design/exon_pick_gene_display.tt'
+    gene = gene
+%]
+
+<!--
+Removed: design_create_url    = '/create_gibson_design'
+Hidden:  get_crisprs_url      = '/user/get_crisprs'
+-->
+[% INCLUDE 'create_design/exon_pick_table.tt'
+  exons = exons
+  gene = gene
+  exon_pick_url        = '/gibson_design_exon_pick'
+  show_current_designs = 1
+  hide_get_crisprs     = 1
+%]
+
+<!-- LIMS2 specific code for showing existing designs linked to a exon -->
+[% BLOCK design_links %]
+<td>
+  [% FOR id IN exon.designs %]
+  <a href="[% c.uri_for( '/view_design', { design_id => id } ) %]" target="_blank">
+  [% id %]
+  </a>
+  [% END %]
+</td>
+[% END %]

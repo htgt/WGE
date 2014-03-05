@@ -1,13 +1,17 @@
 package WGE::Controller::Root;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::Root::VERSION = '0.002';
+    $WGE::Controller::Root::VERSION = '0.003';
 }
 ## use critic
+
 
 use Moose;
 use namespace::autoclean;
 use Data::Dumper;
+use Try::Tiny;
+use Bio::Perl qw( revcom_as_string );
+use WGE::Util::CreateDesign;
 
 BEGIN { extends 'Catalyst::Controller' }
 
@@ -39,29 +43,46 @@ sub index :Path :Args(0) {
     return;
 }
 
-sub numbers :Path('/numbers') :Args(0){
+sub about :Path('/about') :Args(0) {
     my ( $self, $c ) = @_;
-    
-    my $model = $c->model('DB');
-    
-    $c->stash->{num_genes}   = $model->resultset('Gene')->count, 
-    $c->stash->{num_exons}   = $model->resultset('Exon')->count,
-    $c->stash->{num_crisprs} = $model->resultset('Crispr')->count,
-    $c->stash->{num_pairs}   = $model->resultset('CrisprPair')->count,    
-    
-    return;	
+
+    return;
 }
 
-sub about :Path('/about') :Args(0){
+sub find_crisprs :Path('/find_crisprs') :Args(0) {
+    my ( $self, $c ) = @_;
+
+    return;
+}
+
+sub gibson_designer :Path('/gibson_designer') :Args(0) {
+    my ( $self, $c ) = @_;
+
+    if ( $c->request->params->{species} ) {
+        my $species = $c->request->params->{species};
+        $c->session->{species} = $species;
+        $c->go( "gibson_design_gene_pick/$species" );
+    }
+
+    return;
+}
+
+sub crispr_help :Path('/crispr_help') :Args(0) {
     my ( $self, $c ) = @_;
     
-    return;	
+    return;
+}
+
+sub gibson_help :Path('/gibson_help') :Args(0) {
+    my ( $self, $c ) = @_;
+
+    return;
 }
 
 sub contact :Path('/contact') :Args(0){
     my ( $self, $c ) = @_;
     
-    return;	
+    return;
 }
 
 =head2 default
@@ -72,8 +93,12 @@ Standard 404 error page
 
 sub default :Path {
     my ( $self, $c ) = @_;
-    $c->response->body( 'Page not found' );
+
+    $c->stash(template => '404.tt');
+
     $c->response->status(404);
+
+    return;
 }
 
 =head2 end

@@ -20,6 +20,11 @@ use Catalyst qw/
     -Debug
     ConfigLoader
     Static::Simple
+    Authentication
+    Authorization::Roles
+    Session
+    Session::Store::FastMmap
+    Session::State::Cookie    
 /;
 
 use Log::Log4perl::Catalyst;
@@ -44,8 +49,53 @@ __PACKAGE__->config(
     # Disable deprecated behavior needed by old applications
     disable_component_resolution_regex_fallback => 1,
     enable_catalyst_header => 1, # Send X-Catalyst header
+    default_model => 'DB',
     default_view => 'Web',
+    'View::Web' => {
+        INCLUDE_PATH => [
+            __PACKAGE__->path_to( 'root' ),
+            __PACKAGE__->path_to( 'root', 'gibson' ),
+            __PACKAGE__->path_to( 'root', 'site' ),          
+            $ENV{SHARED_WEBAPP_TT_DIR} || '/opt/t87/global/software/perl/lib/perl5/WebAppCommon/shared_templates',
+            ],
+    },
     'View::JSON' => { expose_stash => 'json_data' },
+    'static' => {
+        include_path => [
+            $ENV{SHARED_WEBAPP_STATIC_DIR} || '/opt/t87/global/software/perl/lib/perl5/WebAppCommon/shared_static',
+            __PACKAGE__->path_to( 'root' ),
+        ],
+    },
+    'Plugin::Session' => {
+        storage => $ENV{WGE_SESSION_STORE} || '/tmp/wge',
+    },
+    authentication => {
+        use_session => 0,
+        default_realm => 'rest_client',
+        realms => {
+            rest_client => {
+                credential => {
+                    class => 'Password',
+                    password_field => 'password',
+                    password_type => 'salted_hash',
+                    password_salt_len => '4',
+                },
+                store => {
+                    class => 'Minimal',
+                    users => {
+                        rest_user => {
+                           password => "{SSHA}K5f/ygKbkRk/GonQzGCjv5gsSS4iuCX+",
+                           roles => [qw/read edit/],
+                        },
+                        guest => {
+                            password => "{SSHA}psAZrBkzjQcJIyDb4K5SpSjQLDdPiWU0",
+                            roles => [qw/read/],
+                        },
+                    }
+                }
+            }            
+        }
+    }
 );
 
 # Start the application

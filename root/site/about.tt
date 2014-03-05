@@ -1,0 +1,21 @@
+[% META title = "About WTSI Genome Editing"; META tab_name = "About WTSI Genome Editing" %]
+[% PROCESS utils.tt %]
+
+<div class="span12">
+    <section id="wge">
+        <h2>WGE</h2>
+        <p class="lead">
+            The WTSI Genome Editing Tool has been written by the High Throughput Gene Targeting group (Team87) at the Wellcome Trust Sanger Institute, and is a logical outgrowth of the genome editing tools we use to create knockouts for our high throughput knockout programs.
+        </p>
+        <p class="lead">
+            [% PROCESS contact %]
+        </p>
+        <p>
+            WGE stands for WTSI Genome Editing.<br/>
+            WTSI stands for Wellcome Trust Sanger Institute<br/>
+        </p>
+        <h5>This work was supported by a core grant from the Wellcome Trust.</h5>
+    </section>
+    <hr class="docs-separator" />
+    [% PROCESS disclaimer %]
+</div>

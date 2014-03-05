@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::Gene;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::Gene::VERSION = '0.002';
+    $WGE::Model::Schema::Result::Gene::VERSION = '0.003';
 }
 ## use critic
 
@@ -196,8 +196,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2013-11-27 17:14:33
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:OPfOxFPOs7mDYEUoqfiNWQ
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 14:04:00
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:jKvJeTq7zHZpN5Bmg0bFHw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

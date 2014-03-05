@@ -1,0 +1,23 @@
+[% META title = "Gibson Designer"; META tab_name = "Gibson Designer" %]
+[% PROCESS utils.tt %]
+
+<div class="row">
+  <div class="span12">
+
+    <h4>Please note that this application is currently in beta. If you have any problems, please <a href="mailto:[% email %]">let us know</a>.</h4>
+    <br/>
+    <p>
+    The Gibson Designer will find the oligos in either Human or Mouse genomes that can be used to create targeting vectors by Gibson assembly. The Gibson Designer matches the vector design with CRISPR sites appropriate for the creation of exon deletions. 
+    </p>
+    <br/>
+    <form role="form" method="post" id="gibson_designer">
+      <div class="control-group" id="species">
+        <label class="control-label">Please select a species to continue.</label>
+      <br/>
+        <input type="submit" name="species" class="btn btn-primary" value="Human"/>
+        &nbsp;&nbsp;&nbsp;
+        <input type="submit" name="species" class="btn btn-primary" value="Mouse"/>
+      </div>
+    </form>
+  </div>
+</div>

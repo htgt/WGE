@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::Exon;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::Exon::VERSION = '0.002';
+    $WGE::Model::Schema::Result::Exon::VERSION = '0.003';
 }
 ## use critic
 
@@ -150,26 +150,58 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2013-11-27 16:26:06
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:uMBFi2/DIBNQ2tnkYI/d7A
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 13:58:10
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:frJ+3S6bI8G0wy8BJUenaQ
+
+use WGE::Util::FindPairs;
 
 sub crisprs {
-    my ( $self, $options ) = @_;
+  my ( $self, $species ) = @_;
 
-    #if the user didn't specify an order, we should provide one
-    unless ( defined $options->{order_by} ) {
-      $options->{order_by} = { -asc => 'chr_start' };
-    }
+  #species is optional in case the caller already had it lying around,
+  #if they didn't then just get it from the gene
+  unless ( $species ) {
+    #get the species id with just 1 db call
+    $species = $self->result_source->schema->resultset('Gene')->find(
+      { id => $self->gene_id },
+      { prefetch => 'species' }
+    )->species;
+  }
 
-    #use custom resultset method to retrieve crisprs
-    return $self->result_source->schema->resultset('Crispr')->search_by_loci( $self, $options );
+  #find all crisprs for this exon
+  #maybe we should change CrisprByExon to not take a list
+  return $self->result_source->schema->resultset('CrisprByExon')->search(
+    {},
+    { bind => [ '{'.$self->ensembl_exon_id.'}', $species->numerical_id ] }
+  );
 }
 
 sub pairs {
   my $self = shift;
 
-  #should add a prefetch
-  return $self->crisprs->all_pairs;
+  #get the species id with just 1 db call
+  my $species = $self->result_source->schema->resultset('Gene')->find(
+    { id => $self->gene_id },
+    { prefetch => 'species' }
+  )->species;
+
+  #get all the crisprs, then identify all the pairs
+  my @crisprs = $self->crisprs( $species );
+
+  my $pair_finder = WGE::Util::FindPairs->new(
+    schema => $self->result_source->schema,
+  );
+
+  #check the list of crisprs against itself for pairs,
+  #also include database data by default
+  my $pairs = $pair_finder->find_pairs( 
+    \@crisprs, 
+    \@crisprs, 
+    { get_db_data => 1, species_id => $species->numerical_id, sort_pairs => 1 } 
+  );
+
+  return wantarray ? @{ $pairs } : $pairs;
+
 }
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

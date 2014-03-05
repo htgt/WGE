@@ -1,0 +1,5 @@
+[% META title = "Contact"; META tab_name = "Contact" %]
+[% PROCESS utils.tt %]
+
+<p class="lead">[% PROCESS contact %]</p>
+<h4>This work was supported by a core grant from the Wellcome Trust.</h4>

@@ -1,0 +1,176 @@
+[% PROCESS utils.tt %]
+
+[% META title="Crispr Pair Report" %]
+[% META tab_name="Crispr Pair" %]
+
+[% RETURN UNLESS pair %]
+<script type="text/javascript">
+  //we use this for doing the mismatch counts
+  var species     = "[% species %]";
+
+  //split seq into grna and pam
+  $(document).ready( function() {
+    //quick hack to sort the pairs so i can get a screenshot
+    var rows = {};
+    var keys = [];
+    $("#offtarget_table .ots").each(function() {
+      var tr = $(this);
+
+      var spacer = parseInt( $(this).children(".spacer").text() );
+
+      //only add unique spacer lengths to the keys array
+      //as everything is stored in an array
+      if (rows[spacer]) {
+        rows[spacer].push(tr);
+      }
+      else {
+        keys.push(spacer);
+        rows[spacer] = [tr];
+      }
+
+    });
+
+    //sort keys with biggest first
+    var tbl_top = $("#spacer_row");
+    keys.sort(function(a,b) { return b - a; });
+
+    //insert each element above the last, sos mallest is first
+    for ( var i = 0; i < keys.length; i++ ) {
+      //we group by spacer which means some of the items here are an array,
+      //if they have the same spacer length.
+      var spacer_rows = rows[keys[i]];
+      for ( var j = 0; j < spacer_rows.length; j++ ) {
+        spacer_rows[j].insertAfter( tbl_top );
+      }
+    }
+
+    //add functionality to off target button
+    $(".ots-button").click( function(event) {          
+        //stop it from submitting the form
+        event.preventDefault();
+
+        $(this).after($("<i>", { class: "icon-ok" })).hide();
+
+        var ids = this.value.split("_");
+        var data = find_off_targets_for_pair(species, ids[0], ids[1]);
+
+        create_alert("Your job has been submitted", "alert-success");
+
+        console.log( data );
+    });
+
+  });
+</script>
+
+<div class="well">
+  <h4>Spacer: [% pair.spacer %]</h4> 
+  <table class="table table-condensed">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Left Crispr</th>
+        <th>Right Crispr</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th>Crispr ID</th>
+        <td><a href="[% c.uri_for('/crispr', pair.left_crispr.id) %]">[% pair.left_crispr.id %]</a></td>
+        <td><a href="[% c.uri_for('/crispr', pair.right_crispr.id) %]">[% pair.right_crispr.id %]</td>
+      </tr>
+      <tr>
+        <th>Species</th>
+        <td>[% species %]</td>
+        <td>[% species %]</td>
+      </tr>
+      <tr>
+        <th>Location</th>
+        <td class="location">[% ensembl_link(chr_name=pair.left_crispr.chr_name, chr_start=pair.left_crispr.chr_start, chr_end=pair.left_crispr.chr_end) %]</td>
+        <td class="location">[% ensembl_link(chr_name=pair.right_crispr.chr_name, chr_start=pair.right_crispr.chr_start, chr_end=pair.right_crispr.chr_end) %]</td>
+      </tr>
+      <tr>
+        <th>Sequence</th> 
+        <td>[% pair.left_crispr.seq %]</td>
+        <td>[% pair.right_crispr.seq %]</td>
+      </tr>
+      <tr>
+        <th>Strand</th>
+        <td>[% display_strand(pam_right=pair.left_crispr.pam_right) %]</td>
+        <td>[% display_strand(pam_right=pair.right_crispr.pam_right) %]</td>
+      </tr>
+      <tr>
+        <th>Off-target summary</th>
+        <td>[% pair.left_crispr.off_target_summary or 'No data' %]</td>
+        <td>[% pair.right_crispr.off_target_summary or 'No data' %]</td>
+      </tr>
+      
+      <tr>
+        <th>Status</th>
+        <td colspan="2">
+          [%- IF pair.status.defined -%]
+            [% pair.status %]
+          [%- ELSE -%]
+            Not started
+          [%- END -%]
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p><b>Note</b>: the row highlighted in blue is the original CRISPR pair</p>
+
+<table class='table table-bordered table-condensed' style="max-width: none;" id='offtarget_table'>
+  <tr>
+    <th>Spacer</th>
+    <th colspan="3">Left Crispr</th>
+    <th colspan="3">Right Crispr</th>
+  </tr>
+  <tr>
+    <th></th>
+    <th>Location</th>
+    <th>Sequence</th>
+    <!-- <th>Mismatches</th> -->
+    <th>Strand</th>
+    <th>Location</th>
+    <th>Sequence</th>
+    <!-- <th>Mismatches</th> -->
+    <th>Strand</th>
+  </tr>
+  <tr>
+    <td class="spacer"></td>
+    <td></td>
+    <td class="seq"></td>
+    <td></td>
+    <td></td>
+    <td class="seq"></td>
+    <td></td>
+  </tr>
+  <tr id="spacer_row"><td colspan="7"></td></tr>
+[% FOREACH off_target IN pair.off_targets %]
+  [% IF off_target.left_crispr.id == pair.left_crispr.id && off_target.right_crispr.id == pair.right_crispr.id  %]
+    [% class = " info" %]
+    [% ELSE %]
+    [% class = "" %]
+  [% END %]
+  <tr class="ots[% class %]">
+    <td class="spacer">[% off_target.spacer %]</td>
+    [% FOREACH type IN ['left_crispr', 'right_crispr'] %]
+    <td class="location">[% ensembl_link(chr_name=off_target.$type.chr_name, chr_start=off_target.$type.chr_start, chr_end=off_target.$type.chr_end) %]</td>
+    <td class="seq">[% off_target.$type.seq %]</td>
+    <!-- <td class="mm"></td> -->
+    <td>[% display_strand(pam_right=off_target.$type.pam_right) %]</td>
+    [% END %]
+  </tr>
+[% END %]
+[% UNLESS pair.off_targets.size %]
+  <tr>
+    <td colspan="7" style="text-align: center">
+      No off target data available for this pair!
+      [% IF ! pair.status_id.defined || pair.status_id == 0 %]
+      <button class="btn btn-block ots-button" value="[% pair.left_crispr.id %]_[% pair.right_crispr.id %]">Find off targets</button>
+      [% END %]
+    </td>
+  </tr>
+[% END %]
+</table>

@@ -109,9 +109,8 @@ sub load_fixtures {
     #default behaviour is to load ALL
     unless ( defined $fixtures ) {
         $fixtures = [
-            { file => 'genes',   resultset => 'Gene'       , delete_related => "Exon"},
-            { file => 'crisprs', resultset => 'Crispr'     , delete_related => "CrisprPair"},
-            { file => 'pairs',   resultset => 'CrisprPair' },
+            { file => 'genes',   resultset => 'Gene'       , delete_related => [qw(Exon)]},
+            { file => 'crisprs', resultset => 'Crispr'     , delete_related => [qw(CrisprsHuman CrisprsMouse)]},
         ];
     }
 
@@ -123,7 +122,9 @@ sub load_fixtures {
         
         # Clear out old fixture data before loading new
         if (my $related = $fixture->{delete_related}){
-        	$self->schema->resultset( $related )->delete_all;
+            foreach my $table (@$related){
+        	    $self->schema->resultset( $table )->delete_all;
+            }
         }
         $self->schema->resultset( $fixture->{resultset} )->delete_all;
         $self->schema->resultset( $fixture->{resultset} )->load_from_hash( $data, 1 );

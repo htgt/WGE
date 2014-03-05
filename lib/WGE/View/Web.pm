@@ -1,7 +1,7 @@
 package WGE::View::Web;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::View::Web::VERSION = '0.002';
+    $WGE::View::Web::VERSION = '0.003';
 }
 ## use critic
 

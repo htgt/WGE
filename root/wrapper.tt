@@ -4,27 +4,25 @@
 <head>
     <meta http-equiv="Content-type" content="text/html; charset=[% settings.charset %]" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WGE</title>
+    <title>[% template.title || "WGE" %]</title>
 
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/2.1.1/css/bootstrap.min.css">  
-    <link rel="stylesheet" href="static/css/jquery-ui-1.9.2.custom.min.css" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/2.3.2/css/bootstrap.min.css">  
+    <link rel="stylesheet" href="[% c.uri_for('static/css/jquery-ui-1.9.2.custom.min.css') %]" />
+    <link rel="stylesheet" href="[% c.uri_for('static/css/style.css') %]" />
+    <link rel="shortcut icon" type="image/x-icon" href="[% c.uri_for('favicon.ico') %]">
 
     <!-- Grab Google CDN's jQuery. fall back to local if necessary -->
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" type="text/javascript"></script>
-    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.1/js/bootstrap.min.js" type="text/javascript"></script>
-    <script src="static/javascript/jquery-ui-1.9.2.custom.min.js"></script>
-
+    <script src="//netdna.bootstrapcdn.com/bootstrap/2.3.2/js/bootstrap.min.js" type="text/javascript"></script>
+    <script src="[% c.uri_for('static/js/jquery-ui-1.9.2.custom.min.js') %]"></script>
     <script type="text/javascript">
-      function create_alert(text) {
-          //create an error alert,
-          //should make it so we can actually change he class
-          $(".container").prepend(
-              $("<div>", { class: "alert alert-danger alert-dismissable" })
-                  .append( $("<button>", { class: "close", type: "button", 'aria-hidden': "true", html: "&times;", 'data-dismiss': "alert" }) )
-                  .append( $("<span>", { html: text }) )
-          );
-      }
+      //set this here so all js classes can know the base_url
+      var base_url = "[% c.uri_for( '' ) %]"
     </script>
+    <script src="[% c.uri_for( 'static/js/wge-utils.js' ) %]"></script>
+
+    <!-- Poller for the design status progress bar -->
+    <script src="[% c.uri_for('static/js/poller.js') %]"></script>
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -37,25 +35,99 @@
 
     <div class="navbar">
         <div class="navbar-inner">
-          <a class="brand" href="#">HTGT WGE 
+          <a class="brand" href="[% c.uri_for('/') %]">HTGT WGE 
               [%- IF settings.environment == 'development' -%]
                 [ DEVEL ]
               [%- END -%]
           </a>
           <ul class="nav">
-            <li class="active"><a href="/">Home</a></li>
-            <li><a href="about">About</a></li>
-            <li><a href="contact">Contact</a></li>
+            <li [% IF (template.tab_name == 'WGE' OR template.tab_name == undef) %] class="active" [% END %]>
+              <a href="[% c.uri_for('/') %]">Home</a>
+            </li>
+            <li [% IF (template.tab_name == 'Paired CRISPR Search') %] class="active" [% END %]>
+              <a href="[% c.uri_for('/find_crisprs') %]">Crispr Finder</a>
+            </li>
+
+            <li class="dropdown [% IF template.tab_name == 'Gibson' %] active[% END %]" >
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Gibson Designs<b class="caret"></b></a>
+              <ul class="dropdown-menu">            
+                <li><a href="[% c.uri_for('/gibson_design_gene_pick/Human') %]">Create Human Design</a></li>
+                <li><a href="[% c.uri_for('/gibson_design_gene_pick/Mouse') %]">Create Mouse Design</a></li>                
+                <li><a href="[% c.uri_for('/gibson_design_attempts') %]">Design Attempts</a></li>
+                <li><a href="[% c.uri_for('/view_gibson_designs') %]">View Designs</a></li>
+              </ul>
+            </li>
+
+            <li class="dropdown [% IF template.tab_name == 'About the CRISPR finder' %]active[% END %]">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Help<b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a href="[% c.uri_for('/crispr_help') %]">CRISPR Finder</a>
+                </li>
+                <li>
+                  <a href="[% c.uri_for('/gibson_help') %]">Gibson Designs</a>
+                </li>
+              </ul>
+            </li>
+            
+            <li [% IF template.tab_name == 'About WTSI Genome Editing' %] class="active" [% END %]>
+              <a href="[% c.uri_for('/about') %]">About</a>
+            </li>
+
+            <li [% IF template.tab_name == 'Contact' %] class="active" [% END %]>
+              <a href="[% c.uri_for('/contact') %]">Contact</a>
+            </li>
           </ul>
         </div>
     </div>
 
-    <div class="container">
+    <div id="page_container" class="container">
+      <!-- general error box for javascript to use -->
         <div class="alert alert-danger alert-dismissable" id="alert_error" style="display:none">
           <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
           <span></span>
         </div>
+
+        <!-- catalyst error message disply taken from LIMS2 -->
+        [% SET error = error_msg || c.stash.error_msg; IF error.length > 0 %]
+        <div class="alert alert-error">
+          <button class="close" data-dismiss="alert" href="#">&times;</button>
+          <p>[% error %]</p>
+        </div>
+        [% END %]
+        [% SET info = info_msg || c.stash.info_msg; IF info.length > 0 %]
+        <div class="alert alert-info">
+          <button class="close" data-dismiss="alert" href="#">&times;</button>
+          <p>[% info %]</p>
+        </div>
+        [% END %]
+        [% SET success = success_msg || c.stash.success_msg; IF success.length > 0 %]
+        <div class="alert alert-success">
+          <button class="close" data-dismiss="alert" href="#">&times;</button>
+          <p>[% success | none %]</p>
+        </div>
+        [% END %]
+
+        [% IF template.tab_name %]
+        <div class="page-header">
+          <h1>[% template.tab_name %]</h1>
+        </div>
+        [% END %]
+
         [% content %]
     </div>
+<script type="text/javascript">
+
+var _gaq = _gaq || [];
+_gaq.push(['_setAccount', 'UA-43136334-3']);
+_gaq.push(['_trackPageview']);
+
+(function() {
+  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+})();
+
+</script>
 </body>
 </html>

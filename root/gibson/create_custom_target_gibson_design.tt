@@ -1,0 +1,12 @@
+[% META title = "Create Custom Target Gibson Design"; META tab_name = "Gibson" %]
+
+[% INCLUDE 'create_design/custom_target_gibson_parameter_diagram.tt' %]
+
+[%  gene_id_label = 'Gene ID'; %]
+
+<form method="POST" action="[% c.uri_for( '/create_custom_target_gibson_design' ) %]" class="well">
+  [% INCLUDE 'create_design/diagram_placeholder.tt'
+    hide_type = 1 %]
+  [% INCLUDE 'create_design/custom_target_specific_parameters.tt' %]
+  [% INCLUDE 'create_design/common_gibson_form_parameters.tt' %]
+</form>

@@ -1,4 +1,4 @@
-use Test::More import => [ '!pass' ], tests => 34;
+use Test::More import => [ '!pass' ], tests => 32;
 
 use strict;
 use warnings;
@@ -26,10 +26,6 @@ is scalar( @genes ), 4, 'Correct number of genes inserted';
 ok my @crisprs = $test->schema->resultset('Crispr')->all, 'Can get crisprs';
 #is scalar( @crisprs ), scalar( keys %{ $crisprs } ), 'Correct number of crisprs inserted';
 is scalar( @crisprs ), 50, 'Correct number of crisprs inserted';
-
-ok my @pairs = $test->schema->resultset('CrisprPair')->all, 'Can get pairs';
-#is scalar( @pairs ), scalar( keys %{ $pairs } ), 'Correct number of pairs inserted';
-is scalar( @pairs ), 25, 'Correct number of pairs inserted';
 
 
 #add headers to make the next requests valid ajax
@@ -108,9 +104,9 @@ $test->add_ajax_headers;
             expect => { error => "Invalid exon id" }
         },
         {
-            name => 'exon with no pairs', 
+            name => 'exon with no pairs error', 
             data => { 'exon_id[]' => 'ENSE00001382843' }, 
-            expect => { ENSE00001382843 => [] }
+            expect => { error => "None found!" }
         },
         {
             name => 'single exon pairs', 
@@ -190,41 +186,27 @@ sub get_single_exon_pairs_expected {
                                     {
                                       'right_crispr' => {
                                                           'chr_start' => 78348577,
-                                                          'chr_end' => 78348599,
                                                           'pam_right' => 1,
-                                                          'species' => 'Mouse',
                                                           'chr_name' => '11',
-                                                          'seq' => 'CTACTTCGTGGATGACCGGCTGG'
+                                                          'seq' => 'CTACTTCGTGGATGACCGGCTGG',
+                                                          'off_target_ids' => undef,
+                                                          'ensembl_exon_id' => 'ENSMUSE00000578254',
+                                                          'id' => 11094334,
+                                                          'species_id' => 2,
                                                         },
+                                      'orientation' => 0,
                                       'left_crispr' => {
                                                          'chr_start' => 78348550,
-                                                         'chr_end' => 78348572,
                                                          'pam_right' => 0,
-                                                         'species' => 'Mouse',
                                                          'chr_name' => '11',
-                                                         'seq' => 'CCCGTATGAGACCCAGTCTGACA'
+                                                         'seq' => 'CCCGTATGAGACCCAGTCTGACA',
+                                                         'off_target_ids' => undef,
+                                                         'ensembl_exon_id' => 'ENSMUSE00000578254',
+                                                         'id' => 11094280,
+                                                         'species_id' => 2,
                                                        },
                                       'spacer' => 4
                                     },
-                                    {
-                                      'right_crispr' => {
-                                                          'chr_start' => 78348577,
-                                                          'chr_end' => 78348599,
-                                                          'pam_right' => 1,
-                                                          'species' => 'Mouse',
-                                                          'chr_name' => '11',
-                                                          'seq' => 'CTACTTCGTGGATGACCGGCTGG'
-                                                        },
-                                      'left_crispr' => {
-                                                         'chr_start' => 78348550,
-                                                         'chr_end' => 78348572,
-                                                         'pam_right' => 0,
-                                                         'species' => 'Mouse',
-                                                         'chr_name' => '11',
-                                                         'seq' => 'CCCGTATGAGACCCAGTCTGACA'
-                                                       },
-                                      'spacer' => 4
-                                    }
         ]
     };
 }
@@ -235,81 +217,53 @@ sub get_multiple_exon_pairs_expected {
                                     {
                                       'right_crispr' => {
                                                           'chr_start' => 78343542,
-                                                          'chr_end' => 78343564,
                                                           'pam_right' => 1,
-                                                          'species' => 'Mouse',
                                                           'chr_name' => '11',
-                                                          'seq' => 'CGAGGATCTGCGGCCCCGCGAGG'
+                                                          'seq' => 'CGAGGATCTGCGGCCCCGCGAGG',
+                                                          'off_target_ids' => undef,
+                                                          'ensembl_exon_id' => 'ENSMUSE00000758105',
+                                                          'id' => 11094141,
+                                                          'species_id' => 2,
                                                         },
+                                      'orientation' => 0,
                                       'left_crispr' => {
                                                          'chr_start' => 78343490,
-                                                         'chr_end' => 78343512,
                                                          'pam_right' => 0,
-                                                         'species' => 'Mouse',
                                                          'chr_name' => '11',
-                                                         'seq' => 'CCCCCTTCCCCTGGCTCCAGCCG'
+                                                         'seq' => 'CCCCCTTCCCCTGGCTCCAGCCG',
+                                                         'off_target_ids' => undef,
+                                                         'ensembl_exon_id' => 'ENSMUSE00000758105',
+                                                         'id' => 11094149,
+                                                         'species_id' => 2,                                                         
                                                        },
                                       'spacer' => 29
                                     },
-                                    {
-                                      'right_crispr' => {
-                                                          'chr_start' => 78343542,
-                                                          'chr_end' => 78343564,
-                                                          'pam_right' => 1,
-                                                          'species' => 'Mouse',
-                                                          'chr_name' => '11',
-                                                          'seq' => 'CGAGGATCTGCGGCCCCGCGAGG'
-                                                        },
-                                      'left_crispr' => {
-                                                         'chr_start' => 78343490,
-                                                         'chr_end' => 78343512,
-                                                         'pam_right' => 0,
-                                                         'species' => 'Mouse',
-                                                         'chr_name' => '11',
-                                                         'seq' => 'CCCCCTTCCCCTGGCTCCAGCCG'
-                                                       },
-                                      'spacer' => 29
-                                    }
                                   ],
           'ENSMUSE00000109902' => [
                                     {
                                       'right_crispr' => {
                                                           'chr_start' => 78347818,
-                                                          'chr_end' => 78347840,
                                                           'pam_right' => 1,
-                                                          'species' => 'Mouse',
                                                           'chr_name' => '11',
-                                                          'seq' => 'GGGACCTGGACCCCAATGCAGGG'
+                                                          'seq' => 'GGGACCTGGACCCCAATGCAGGG',
+                                                          'off_target_ids' => undef,
+                                                          'ensembl_exon_id' => 'ENSMUSE00000109902',
+                                                          'id' => 11094222,
+                                                          'species_id' => 2,
                                                         },
+                                      'orientation' => 0,
                                       'left_crispr' => {
                                                          'chr_start' => 78347805,
-                                                         'chr_end' => 78347827,
                                                          'pam_right' => 0,
-                                                         'species' => 'Mouse',
                                                          'chr_name' => '11',
-                                                         'seq' => 'CCCATCAACCGGCGGGACCTGGA'
+                                                         'seq' => 'CCCATCAACCGGCGGGACCTGGA',
+                                                         'off_target_ids' => undef,
+                                                         'ensembl_exon_id' => 'ENSMUSE00000109902',
+                                                         'id' => 11094231,
+                                                         'species_id' => 2,
                                                        },
                                       'spacer' => -10
                                     },
-                                    {
-                                      'right_crispr' => {
-                                                          'chr_start' => 78347818,
-                                                          'chr_end' => 78347840,
-                                                          'pam_right' => 1,
-                                                          'species' => 'Mouse',
-                                                          'chr_name' => '11',
-                                                          'seq' => 'GGGACCTGGACCCCAATGCAGGG'
-                                                        },
-                                      'left_crispr' => {
-                                                         'chr_start' => 78347805,
-                                                         'chr_end' => 78347827,
-                                                         'pam_right' => 0,
-                                                         'species' => 'Mouse',
-                                                         'chr_name' => '11',
-                                                         'seq' => 'CCCATCAACCGGCGGGACCTGGA'
-                                                       },
-                                      'spacer' => -10
-                                    }
         ]
     };
 }

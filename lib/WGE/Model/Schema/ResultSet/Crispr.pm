@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::ResultSet::Crispr;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::ResultSet::Crispr::VERSION = '0.002';
+    $WGE::Model::Schema::ResultSet::Crispr::VERSION = '0.003';
 }
 ## use critic
 
@@ -72,6 +72,8 @@ sub load_from_hash {
 
         $self->create( $crispr );
     }
+
+    return;
 }
 
 1;

@@ -5,7 +5,6 @@ author:
 build_requires:
   File::Find: 0
   File::Temp: 0
-  JSON: 0
   Test::More: 0.88
   Test::WWW::Mechanize::Catalyst: 0
   URI: 0
@@ -20,9 +19,12 @@ name: WGE
 requires:
   Bio::EnsEMBL::Registry: 0
   Bio::Perl: 0
+  Bio::Seq: 0
+  Bio::SeqIO: 0
   Carp: 0
   Catalyst: 0
   Catalyst::Controller: 0
+  Catalyst::Controller::REST: 0
   Catalyst::Devel: 0
   Catalyst::Model::Adaptor: 0
   Catalyst::Model::DBIC::Schema: 0
@@ -31,25 +33,47 @@ requires:
   Catalyst::View::JSON: 0
   Catalyst::View::TT: 0
   Config::Any: 0
+  Const::Fast: 0
+  DBI: 0
   DBIx::Class::Core: 0
   DBIx::Class::ResultSet: 0
   DBIx::Class::Schema: 0
   DBIx::Class::Schema::Loader: 0
+  Data::Dump: 0
   Data::Dumper: 0
   DateTime::Format::Pg: 0
   File::stat: 0
   FindBin: 0
   Getopt::Long: 0
+  Hash::MoreUtils: 0
+  IO::File: 0
+  IO::String: 0
+  JSON: 0
+  LIMS2::Exception::InvalidState: 0
+  LIMS2::Model::FormValidator::Constraint: 0
+  LIMS2::REST::Client: 0
   LIMS2::Util::EnsEMBL: 0
+  Log::Log4perl: 0
   Log::Log4perl::Catalyst: 0
+  Module::Pluggable::Object: 0
   Moose: 0
+  Moose::Role: 0
   MooseX::ClassAttribute: 0
+  MooseX::Log::Log4perl: 0
   MooseX::MarkAsMethods: 0
   MooseX::NonMoose: 0
+  MooseX::SimpleConfig: 0
+  MooseX::Types::Path::Class: 0
   Path::Class: 0
   Pod::Usage: 0
+  Sub::Exporter: 0
   Term::ReadPassword: 0
   Try::Tiny: 0
+  TryCatch: 0
+  WebAppCommon::Crispr::SubmitInterface: 0
+  WebAppCommon::Design::CreateInterface: 0
+  WebAppCommon::FormValidator: 0
+  WebAppCommon::Util::EnsEMBL: 0
   YAML::Any: 0
   base: 0
   feature: 0
@@ -57,4 +81,4 @@ requires:
   strict: 0
   utf8: 0
   warnings: 0
-version: 0.002
+version: 0.003

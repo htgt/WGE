@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::Species;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::Species::VERSION = '0.002';
+    $WGE::Model::Schema::Result::Species::VERSION = '0.003';
 }
 ## use critic
 
@@ -44,6 +44,13 @@ __PACKAGE__->table("species");
 
 =head1 ACCESSORS
 
+=head2 numerical_id
+
+  data_type: 'integer'
+  is_auto_increment: 1
+  is_nullable: 0
+  sequence: 'species_id_seq'
+
 =head2 id
 
   data_type: 'text'
@@ -51,9 +58,33 @@ __PACKAGE__->table("species");
 
 =cut
 
-__PACKAGE__->add_columns("id", { data_type => "text", is_nullable => 0 });
+__PACKAGE__->add_columns(
+  "numerical_id",
+  {
+    data_type         => "integer",
+    is_auto_increment => 1,
+    is_nullable       => 0,
+    sequence          => "species_id_seq",
+  },
+  "id",
+  { data_type => "text", is_nullable => 0 },
+);
 
 =head1 PRIMARY KEY
+
+=over 4
+
+=item * L</numerical_id>
+
+=back
+
+=cut
+
+__PACKAGE__->set_primary_key("numerical_id");
+
+=head1 UNIQUE CONSTRAINTS
+
+=head2 C<unique_species>
 
 =over 4
 
@@ -63,21 +94,66 @@ __PACKAGE__->add_columns("id", { data_type => "text", is_nullable => 0 });
 
 =cut
 
-__PACKAGE__->set_primary_key("id");
+__PACKAGE__->add_unique_constraint("unique_species", ["id"]);
 
 =head1 RELATIONS
 
-=head2 crisprs
+=head2 assemblies
 
 Type: has_many
 
-Related object: L<WGE::Model::Schema::Result::Crispr>
+Related object: L<WGE::Model::Schema::Result::Assembly>
 
 =cut
 
 __PACKAGE__->has_many(
-  "crisprs",
-  "WGE::Model::Schema::Result::Crispr",
+  "assemblies",
+  "WGE::Model::Schema::Result::Assembly",
+  { "foreign.species_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 chromosomes
+
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::Chromosome>
+
+=cut
+
+__PACKAGE__->has_many(
+  "chromosomes",
+  "WGE::Model::Schema::Result::Chromosome",
+  { "foreign.species_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 design_attempts
+
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::DesignAttempt>
+
+=cut
+
+__PACKAGE__->has_many(
+  "design_attempts",
+  "WGE::Model::Schema::Result::DesignAttempt",
+  { "foreign.species_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 designs
+
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::Design>
+
+=cut
+
+__PACKAGE__->has_many(
+  "designs",
+  "WGE::Model::Schema::Result::Design",
   { "foreign.species_id" => "self.id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
@@ -97,11 +173,53 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+=head2 species_default_assembly
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2013-11-06 19:53:23
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:5Bn7cq1MIxOl6CTJG3aW+A
+Type: might_have
+
+Related object: L<WGE::Model::Schema::Result::SpeciesDefaultAssembly>
+
+=cut
+
+__PACKAGE__->might_have(
+  "species_default_assembly",
+  "WGE::Model::Schema::Result::SpeciesDefaultAssembly",
+  { "foreign.species_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 14:04:27
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:97MIJaAUTbIpKlMhnnmaLQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+
+__PACKAGE__->might_have(
+  "default_assembly",
+  "WGE::Model::Schema::Result::SpeciesDefaultAssembly",
+  { "foreign.species_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+sub name{
+  my ($self) = @_;
+
+  return $self->id;
+}
+
+sub check_assembly_belongs {
+    my ( $self, $assembly ) = @_;
+
+    unless ( $self->assemblies->find({ id => $assembly }) ) {
+        require LIMS2::Exception::InvalidState;
+        LIMS2::Exception::InvalidState->throw(
+            "Assembly $assembly does not belong to species " . $self->id
+        );
+    }
+
+    return 1;
+}
+
 __PACKAGE__->meta->make_immutable;
 1;
