@@ -14,7 +14,7 @@ String.prototype.match_str = function(q) {
 
   for (var i = 0; i < this.length; i++) {
     if (this.charCodeAt(i) ^ q.charCodeAt(i)) {
-        result += "<b>" + q.charAt(i) + "</b>";
+        result += "<span class='mismatch'>" + q.charAt(i) + "</span>";
         total++;
     }
     else {

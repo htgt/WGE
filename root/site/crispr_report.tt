@@ -12,6 +12,10 @@
   font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;
   font-size:15px;
 }
+.mismatch {
+    font-weight: bold;
+    color: #FF0000;
+}
 </style>
 
 <script type="text/javascript">
@@ -94,6 +98,8 @@
   </table>
 </div>
 
+<p><b>Note</b>: the row highlighted in blue is the original CRISPR</p>
+
 [%# if we have no off targets to show hide the table %]
 [%# RETURN UNLESS crispr.off_targets.size %]
 
@@ -117,7 +123,7 @@
   </tr>
   <tr id="spacer_row"><td colspan="4"></td></tr>
 [% FOREACH off_target IN crispr.off_targets %]
-  <tr class="ots">
+  <tr class="ots[% off_target.id == crispr.id ? " info" : "" %]">
     <td class="location">[% ensembl_link(chr_name=off_target.chr_name, chr_start=off_target.chr_start, chr_end=off_target.chr_end) %]</td>
     <td class="seq">[% off_target.seq %]</td>
     <td class="mm"></td>
@@ -130,6 +136,3 @@
   </tr>
 [% END %]
 </table>
-
-
-

@@ -35,7 +35,7 @@
 
     <div class="navbar">
         <div class="navbar-inner">
-          <a class="brand" href="#">HTGT WGE 
+          <a class="brand" href="[% c.uri_for('/') %]">HTGT WGE 
               [%- IF settings.environment == 'development' -%]
                 [ DEVEL ]
               [%- END -%]

@@ -118,6 +118,8 @@
   </table>
 </div>
 
+<p><b>Note</b>: the row highlighted in blue is the original CRISPR pair</p>
+
 <table class='table table-bordered table-condensed' style="max-width: none;" id='offtarget_table'>
   <tr>
     <th>Spacer</th>
@@ -146,7 +148,12 @@
   </tr>
   <tr id="spacer_row"><td colspan="7"></td></tr>
 [% FOREACH off_target IN pair.off_targets %]
-  <tr class="ots">
+  [% IF off_target.left_crispr.id == pair.left_crispr.id && off_target.right_crispr.id == pair.right_crispr.id  %]
+    [% class = " info" %]
+    [% ELSE %]
+    [% class = "" %]
+  [% END %]
+  <tr class="ots[% class %]">
     <td class="spacer">[% off_target.spacer %]</td>
     [% FOREACH type IN ['left_crispr', 'right_crispr'] %]
     <td class="location">[% ensembl_link(chr_name=off_target.$type.chr_name, chr_start=off_target.$type.chr_start, chr_end=off_target.$type.chr_end) %]</td>

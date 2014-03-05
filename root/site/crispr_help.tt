@@ -267,10 +267,11 @@ bwa aln -n 5 -o 0 -l 20 -k 4 -N -m 1000000000 ${GENOME} ${CRISPR_FQ_FILE}
         <hr class="docs-separator" />
         <section id="refs"><br/>
             <p>
-                1. Hsu P.D. et al (2013) DNA targeting specificity of RNA-guided Cas9 nucleases. Nature Biotechnology 31, 827–832 (2013) doi:10.1038/nbt.2647<br/>
+                1. Hsu P.D. et al (2013) DNA targeting specificity of RNA-guided Cas9 nucleases. Nature Biotechnology 31, 827–832 doi:10.1038/nbt.2647<br/>
                 2. Li H. and Durbin R. (2009) Fast and accurate short read alignment with Burrows-Wheeler Transform. Bioinformatics, 25:1754-60. [PMID: 19451168]<br/>
                 3. Quinlan A.R. and Hall I.M., (2010) BEDTools: a flexible suite of utilities for comparing genomic features. Bioinformatics. 26, 6, pp. 841–842<br/>
                 4. Ran. F.A. et al. (2013) Double Nicking by RNA-Guided CRISPR Cas9 for Enhanced Genome Editing Specificity. Cell 154, 1380–1389<br/>
+                5. Shen, B. et al. (2014) Efficient genome modification by CRISPR-Cas9 nickase with minimal off-target effects. Nature Methods doi:10.1038/nmeth.2857<br/>
             </p>
         </section>
     </div>
