@@ -11,7 +11,11 @@
         <h5><a href="[% c.uri_for('/gibson_designer') %]">Gibson Designer</a></h5>
         <p>
             The Gibson Designer will find the oligos in either <a href="[% c.uri_for('/gibson_design_gene_pick/Human') %]">Human</a> or <a href="[% c.uri_for('/gibson_design_gene_pick/Mouse') %]">Mouse</a> genomes that can be used to create targeting vectors by Gibson assembly. The Gibson Designer matches the vector design with CRISPR sites appropriate for the creation of exon deletions.
-        </p><br/><br/>
+        </p><br/>
+        <p>
+            If you use this site in your research, please cite:<br/>
+            <small>Bin Shen, Wensheng Zhang, Jun Zhang, Jiankui Zhou, Jianying Wang, Li Chen, Lu Wang, Alex Hodgkins,     Vivek Iyer, Xingxu Huang &amp; William C Skarnes (2014) Efficient genome modification by CRISPR-Cas9 nickase with minimal off-target effects. doi:10.1038/nmeth.2857</small>
+        </p><br/>
         <a href="http://www.sanger.ac.uk">
             <img src="[% c.uri_for('/static/images/sanger-logo.png') %]" title="sanger logo" />
         </a>

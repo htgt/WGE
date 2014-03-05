@@ -17,7 +17,7 @@
   [%- IF pam_right == 1 %]+[% ELSIF pam_right == 0 %]-[% ELSE %][% END -%]
 [%- END -%]
 
-[% email = "wge@sanger.ac.uk" %]
+[% email = "htgt@sanger.ac.uk" %]
 
 <!--
 To use these you must run: 
