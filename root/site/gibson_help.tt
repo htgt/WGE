@@ -45,37 +45,37 @@ $(window).load(function() {
 
         <section id="usage">
             <h2>How to use the gibson designer</h2>
-            <p>
+            <p class="lead">
                 This tool helps you choose genomic oligos to use when constructing a knockout vector by Gibson Assembly.
             </p>
             <p>
                 Firstly, select a species:<br/>
-                <img src="[% c.uri_for('/static/images/about/gibson_species.png') %]" title="choose_species" />
+                <img class="img-polaroid" src="[% c.uri_for('/static/images/about/gibson_species.png') %]" title="choose_species" />
             </p>
             <p>
                 Then enter the gene you want to knock out from the search box, as either marker symbols, HGNC (human), MGI (mouse) or Ensembl IDs. Now choose "Find exons" - displaying either exons on the canonical "main" transcript or all gene exons.<br/>
 
-                <img src="[% c.uri_for('/static/images/about/gibson_gene_pick.png') %]" title="gene_pick" />
+                <img class="img-polaroid" src="[% c.uri_for('/static/images/about/gibson_gene_pick.png') %]" title="gene_pick" />
             </p>
             <p>
                 From the list of exons, choose a single exon or a set of exons to delete / flox using the checkboxes, and click "Make exon pick".<br/>
-                <img src="[% c.uri_for('/static/images/about/gibson_exon_pick.png') %]" title="exon_pick" />
+                <img class="img-polaroid" src="[% c.uri_for('/static/images/about/gibson_exon_pick.png') %]" title="exon_pick" />
             </p>
             <p>
                 Adjust the parameters of the knockout around the deleted / floxed exon using the graphic. You can choose to make a vector which either deletes or floxes the target exons(s).<br/>
-                <img src="[% c.uri_for('/static/images/about/gibson_params.png') %]" title="gibson_params" />
+                <img class="img-polaroid" src="[% c.uri_for('/static/images/about/gibson_params.png') %]" title="gibson_params" />
             </p>
             <p>
                 You can also optionally tweak some further advanced parameters, which can be accessed by clicking the Advanced Options link.<br/>
-                <img src="[% c.uri_for('/static/images/about/gibson_advanced_options.png') %]" title="gibson_advanced_options" />
+                <img class="img-polaroid" src="[% c.uri_for('/static/images/about/gibson_advanced_options.png') %]" title="gibson_advanced_options" />
             </p>
             <p>
                 Click "Create Gibson Design". You will then see a progress bar, which will automatically update with the status of the design.<br/>
-                <img src="[% c.uri_for('/static/images/about/gibson_design_progress.png') %]" title="gibson_design_attempt_progress" />
+                <img class="img-polaroid" src="[% c.uri_for('/static/images/about/gibson_design_progress.png') %]" title="gibson_design_attempt_progress" />
             </p>
             <p>
                 If the design is successful you will be shown a link to the design, which will display the oligos.<br/>
-                <img src="[% c.uri_for('/static/images/about/gibson_design_summary.png') %]" title="gibson_design_attempt_progress" />
+                <img class="img-polaroid" src="[% c.uri_for('/static/images/about/gibson_design_summary.png') %]" title="gibson_design_attempt_progress" />
             </p>
 
         </section>
@@ -86,11 +86,19 @@ $(window).load(function() {
             <h2>Design Attempts</h2>
             <p>
                 If you want a overview of the designs that have been attempted use the Design Attempts link.<br/>
-                <img src="[% c.uri_for('/static/images/about/design_attempts_link.png') %]" title="gibson_design_attempt_progress" />
+                <img class="img-polaroid" src="[% c.uri_for('/static/images/about/design_attempts_link.png') %]" title="gibson_design_attempt_progress" />
             </p>
             <p>
                 This will bring up a list of recent design attempts, and display their current status, and a link to the design oligos if it was successful.<br/>
-                <img src="[% c.uri_for('/static/images/about/gibson_design_attempts_list.png') %]" title="gibson_design_attempt_progress" />
+                <img class="img-polaroid" src="[% c.uri_for('/static/images/about/gibson_design_attempts_list.png') %]" title="gibson_design_attempt_progress" />
+            </p>
+            <p>
+                For a successful design attempt details will be shown about the parameters used to create the design. <br/>
+                <img class="img-polaroid" src="[% c.uri_for('/static/images/about/design_attempt_success.png') %]" title="gibson_design_attempt_progress" />
+            </p>
+            <p>
+                For a design attempt that failed additional details will be given about the reason for the failure.<br/>
+                <img class="img-polaroid" src="[% c.uri_for('/static/images/about/design_attempt_fail.png') %]" title="gibson_design_attempt_progress" />
             </p>
         </section>
 
