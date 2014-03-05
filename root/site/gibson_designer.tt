@@ -14,9 +14,9 @@
       <div class="control-group" id="species">
         <label class="control-label">Please select a species to continue.</label>
       <br/>
-        <input type="submit" name="species" class="btn btn-primary" value="Mouse"/>
-        &nbsp;&nbsp;&nbsp;
         <input type="submit" name="species" class="btn btn-primary" value="Human"/>
+        &nbsp;&nbsp;&nbsp;
+        <input type="submit" name="species" class="btn btn-primary" value="Mouse"/>
       </div>
     </form>
   </div>
