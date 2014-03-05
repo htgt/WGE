@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+0.005     2014-03-05 16:16:48 Europe/London
+
+    Updated e-mail address to wge
+
 0.004     2014-03-05 16:06:11 Europe/London
 
     Bugfixes: stopped duplicates showing in paired crispr view, reduced genoverse max zoom
