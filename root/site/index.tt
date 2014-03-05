@@ -6,7 +6,7 @@
         <h4>WTSI Genome Editing (WGE) is a website that provides tools to aid with genome editing of human and mouse genomes</h4>
         <h5><a href="[% c.uri_for('/find_crisprs') %]">CRISPR Finder</a></h5>
         <p>
-            The CRISPR Finder will show CRISPR sites (paired or single) in and around genes. You can ask the finder to score the pairs for off-targets effects, and browse individual and paired CRISPR sites using the <a href="www.genoverse.org">Genoverse</a> genome browser tool. 
+            The CRISPR Finder will show CRISPR sites (paired or single) in and around genes. You can ask the finder to score the pairs for off-targets effects, and browse individual and paired CRISPR sites using the <a href="http://www.genoverse.org">Genoverse</a> genome browser tool. 
         </p>
         <h5>Gibson Designer</a></h5>
         <p>
