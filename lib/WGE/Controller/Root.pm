@@ -49,6 +49,18 @@ sub find_crisprs :Path('/find_crisprs') :Args(0) {
     return;
 }
 
+sub gibson_designer :Path('/gibson_designer') :Args(0) {
+    my ( $self, $c ) = @_;
+
+    if ( $c->request->params->{species} ) {
+        my $species = $c->request->params->{species};
+        $c->session->{species} = $species;
+        $c->go( "gibson_design_gene_pick/$species" );
+    }
+
+    return;
+}
+
 sub crispr_help :Path('/crispr_help') :Args(0) {
     my ( $self, $c ) = @_;
     

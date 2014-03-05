@@ -442,11 +442,15 @@ sub crispr_pairs_to_gff {
 
             if(my $data = $crispr_pair->{db_data}){
                 DEBUG("Found db_data for crispr pair ".$id);
+                my $left_ot = $left->{off_target_summary} || "undefined";
+                my $right_ot = $right->{off_target_summary} || "undefined";
                 if(defined $data->{off_target_summary}){
-                    $crispr_format_hash{attributes}.=';OT_Summary='.$data->{off_target_summary};
+                    $crispr_format_hash{attributes}.=';OT_Summary='.$data->{off_target_summary}
+                                                      .";left_ot_summary=$left_ot;right_ot_summary=$right_ot";
                 }
                 elsif(defined $data->{status}){
-                    $crispr_format_hash{attributes}.=';OT_Summary=Status: '.$data->{status};
+                    $crispr_format_hash{attributes}.=';OT_Summary=Status: '.$data->{status}
+                                                     .";left_ot_summary=$left_ot;right_ot_summary=$right_ot";
                 }
                 else{
                     DEBUG("No off target summary or status found");

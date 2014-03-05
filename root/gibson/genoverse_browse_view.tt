@@ -181,7 +181,9 @@
                 URL : report_link
               };
               if (feature.ot_summary){
-                atts['Off-Targets'] = feature.ot_summary;
+                atts['Off-Targets: Pairs'] = feature.ot_summary;
+                atts['Left'] = feature.left_ot_summary;
+                atts['Right'] = feature.right_ot_summary;
               }
               else {
                 atts['Off-Targets'] = 'not computed';
