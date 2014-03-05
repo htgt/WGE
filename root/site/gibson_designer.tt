@@ -9,11 +9,14 @@
     <p>
     The Gibson Designer will find the oligos in either Human or Mouse genomes that can be used to create targeting vectors by Gibson assembly. The Gibson Designer matches the vector design with CRISPR sites appropriate for the creation of exon deletions. 
     </p>
+    <br/>
     <form role="form" method="post" id="gibson_designer">
       <div class="control-group" id="species">
-        <label class="control-label">Please select a species to continue</label>
-        <input type="submit" name="species" class="btn btn-primary" value="Mouse" />
-        <input type="submit" name="species" class="btn btn-primary" value="Human" />
+        <label class="control-label">Please select a species to continue.</label>
+      <br/>
+        <input type="submit" name="species" class="btn btn-primary" value="Mouse"/>
+        &nbsp;&nbsp;&nbsp;
+        <input type="submit" name="species" class="btn btn-primary" value="Human"/>
       </div>
     </form>
   </div>
