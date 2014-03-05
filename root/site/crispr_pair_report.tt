@@ -34,13 +34,36 @@
     var tbl_top = $("#spacer_row");
     keys.sort(function(a,b) { return b - a; });
 
-    //insert each element above the last, sos mallest is first
+    //insert each element above the last, so smallest is first
     for ( var i = 0; i < keys.length; i++ ) {
       //we group by spacer which means some of the items here are an array,
       //if they have the same spacer length.
       var spacer_rows = rows[keys[i]];
       for ( var j = 0; j < spacer_rows.length; j++ ) {
         spacer_rows[j].insertAfter( tbl_top );
+
+        /*
+          HACK:
+          we hide rows that are duplicated. (happens in CC-GG crisprs)
+          this needs to be fixed at the CRISPR level, at which point
+          we can remove this code.
+        */
+        //if this guy is visible, see if it has a duplicate.
+        //if so hide it
+        if (spacer_rows[j].is(':visible')) {
+          for ( var k = 0; k < spacer_rows.length; k++ ) {
+            if ( k == j ) continue;
+
+            //compare the two rows. if the text is the same then hide the later on element
+            if (spacer_rows[j].children(".seq").text() == spacer_rows[k].children(".seq").text()) {
+              //we dont want to hide the blue row, so pretend this one was the blue one 
+              if (spacer_rows[k].hasClass('info')) spacer_rows[j].addClass('info');
+              
+              spacer_rows[k].hide();
+              break; //we found the duplicate
+            }
+          }
+        }
       }
     }
 

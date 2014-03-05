@@ -288,6 +288,8 @@ takes optional parameter of the distance between off targets
 sub calculate_off_targets {
     my ( $self, $distance ) = @_;
 
+    $self->log->debug('Calculating paired off targets');
+
     #the max distance between paired off targets
     #default off target distance is 1k
     $distance //= 1000;
