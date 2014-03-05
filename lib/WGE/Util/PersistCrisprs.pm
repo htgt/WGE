@@ -11,8 +11,7 @@ use Try::Tiny;
 
 #note: we're expecting the user to have initialised log4perl already
 has '+configfile' => (
-    default => $ENV{WGE_REST_CLIENT_CONFIG} || 
-               '/nfs/team87/farm3_lims2_vms/conf/wge-live-rest-client.conf',
+    default => $ENV{WGE_REST_CLIENT_CONFIG},
 );
 
 has [ qw( dbi_str species db_user db_pass ) ] => ( 

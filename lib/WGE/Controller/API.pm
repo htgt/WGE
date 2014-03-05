@@ -239,7 +239,7 @@ sub pair_off_target_search :Local('pair_off_target_search') {
 
             #we need a create crispr cmd method in the common method too, this won't do.
             my $cmd = [
-                "/nfs/users/nfs_a/ah19/work/paired_crisprs/paired_crisprs_wge.sh",
+                "/nfs/team87/farm3_lims2_vms/software/Crisprs/paired_crisprs_wge.sh",
                 $pair->id,
                 $params->{species},
                 join( " ", @ids_to_search ),

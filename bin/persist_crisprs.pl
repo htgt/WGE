@@ -42,9 +42,12 @@ INFO "Maximum allowed off targets is $db_cutoff";
 INFO "Note: not committing data (dry run)" unless $commit;
 
 #remove this later obviously
-$ENV{WGE_REST_CLIENT_CONFIG} ||= '/nfs/team87/farm3_lims2_vms/conf/wge-live-rest-client.conf';
+#$ENV{WGE_REST_CLIENT_CONFIG} ||= '/nfs/team87/farm3_lims2_vms/conf/wge-live-rest-client.conf';
 
-my $p = WGE::Util::PersistCrisprs->new_with_config( 
+die "WGE_REST_CLIENT_CONFIG has not been set" unless $ENV{WGE_REST_CLIENT_CONFIG};
+
+my $p = WGE::Util::PersistCrisprs->new_with_config(
+    configfile       => $ENV{WGE_REST_CLIENT_CONFIG},
     species          => $species,
     bed_file         => $bed_file,
     crispr_yaml_file => $crispr_yaml_file,
