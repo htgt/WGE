@@ -8,7 +8,7 @@
         <p>
             The CRISPR Finder will show CRISPR sites (paired or single) in and around genes. You can ask the finder to score the pairs for off-targets effects, and browse individual and paired CRISPR sites using the <a href="http://www.genoverse.org">Genoverse</a> genome browser tool. 
         </p>
-        <h5>Gibson Designer</a></h5>
+        <h5><a href="[% c.uri_for('/gibson_designer') %]">Gibson Designer</a></h5>
         <p>
             The Gibson Designer will find the oligos in either <a href="[% c.uri_for('/gibson_design_gene_pick/Human') %]">Human</a> or <a href="[% c.uri_for('/gibson_design_gene_pick/Mouse') %]">Mouse</a> genomes that can be used to create targeting vectors by Gibson assembly. The Gibson Designer matches the vector design with CRISPR sites appropriate for the creation of exon deletions.
         </p><br/>
