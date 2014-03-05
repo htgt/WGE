@@ -133,7 +133,7 @@
             resizable : 'true',
             height    : 150,
             labels    : false,
-            threshold : 25000,
+            threshold : 12000,
             messages  : { threshold : 'Crisprs not displayed for regions larger than ' },
 
             populateMenu : function (feature) {
