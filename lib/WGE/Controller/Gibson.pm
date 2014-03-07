@@ -48,16 +48,47 @@ sub gibson_design_gene_pick :Regex('gibson_design_gene_pick/(.*)'){
 
     return unless $c->request->param('gene_pick');
 
-    my $gene_id = $c->request->param('gene_id');
+    my $gene_id = $c->request->param('search_gene');
     unless ( $gene_id ) {
         $c->stash( error_msg => "Please enter a gene name" );
         return;
     }
 
-    $c->forward( 'generate_exon_pick_data' );
-    return if $c->stash->{error_msg};
+    # if user entered a exon id
+    if ( $gene_id =~ qr/^ENS[A-Z]*E\d+$/ ) {
+        my $exon_id = $gene_id;
+        my $create_design_util = WGE::Util::CreateDesign->new(
+            catalyst => $c,
+            model    => $c->model('DB'),
+            species  => $c->session->{species},
+        );
 
-    $c->go( 'gibson_design_exon_pick' );
+        my $exon_data;
+        try{
+            $exon_data = $create_design_util->c_exon_target_data( $exon_id );
+        }
+        catch {
+            $c->stash( error_msg =>
+                    "Unable to find gene information for exon $exon_id, make sure it is a valid ensembl exon id"
+            );
+            return;
+        }
+
+        $c->stash(
+            gene_id         => $exon_data->{gene_id},
+            ensembl_gene_id => $exon_data->{ensembl_gene_id},
+            gibson_type     => 'deletion',
+            five_prime_exon => $exon_id,
+        );
+        $c->go( 'create_gibson_design' );
+    }
+    else {
+        # generate and display data for exon pick table
+        $c->forward( 'generate_exon_pick_data' );
+        return if $c->stash->{error_msg};
+
+        $c->go( 'gibson_design_exon_pick' );
+    }
 
     return;
 }
@@ -66,7 +97,6 @@ sub gibson_design_exon_pick :Path('/gibson_design_exon_pick') :Args(0){
     my ( $self, $c ) = @_;
 
     # Assert user role?
-
     if ( $c->request->params->{pick_exons} ) {
 
         my $exon_picks = $c->request->params->{exon_pick};
@@ -105,7 +135,7 @@ sub gibson_design_exon_pick :Path('/gibson_design_exon_pick') :Args(0){
 sub generate_exon_pick_data : Private {
     my ( $self, $c ) = @_;
 
-    $c->log->debug("Pick exon targets for gene: " . $c->request->param('gene_id') );
+    $c->log->debug("Pick exon targets for gene: " . $c->request->param('search_gene') );
     try {
         my $create_design_util = WGE::Util::CreateDesign->new(
             catalyst => $c,
@@ -113,15 +143,16 @@ sub generate_exon_pick_data : Private {
             species  => $c->session->{species},
         );
         my ( $gene_data, $exon_data ) = $create_design_util->exons_for_gene(
-            $c->request->param('gene_id'),
+            $c->request->param('search_gene'),
             $c->request->param('show_exons'),
         );
 
         $c->stash(
-            exons      => $exon_data,
-            gene       => $gene_data,
-            assembly   => $create_design_util->assembly_id,
-            show_exons => $c->request->param('show_exons'),
+            exons       => $exon_data,
+            gene        => $gene_data,
+            search_gene => $c->request->param('search_gene'),
+            assembly    => $create_design_util->assembly_id,
+            show_exons  => $c->request->param('show_exons'),
         );
     }
     catch($e){
@@ -133,10 +164,8 @@ sub generate_exon_pick_data : Private {
     return;
 }
 
-sub create_gibson_design : Path( '/create_gibson_design' ) : Args(0) {
-    my ( $self, $c ) = @_;
-
-    # FIXME assert user role edit
+sub create_gibson_design : Path( '/create_gibson_design' ) : Args {
+    my ( $self, $c, $is_redo ) = @_;
 
     my $create_design_util = WGE::Util::CreateDesign->new(
         catalyst => $c,
@@ -147,99 +176,74 @@ sub create_gibson_design : Path( '/create_gibson_design' ) : Args(0) {
     my $primer3_conf = $create_design_util->c_primer3_default_config;
     $c->stash( default_p3_conf => $primer3_conf );
 
-    if ( exists $c->request->params->{create_design} ) {
-        $c->log->info('Creating new design');
-
-        my ($design_attempt, $job_id);
-        try {
-            ( $design_attempt, $job_id ) = $create_design_util->create_exon_target_gibson_design();
-        }
-        catch($e) {
-            $c->log->error($e);
-            my @errors = split ("\n", $e);
-            my $error;
-            if ( scalar @errors > 1 ) {
-                $error = $errors[0].".\n".$errors[1];
-            } else {
-                $error = $errors[0];
-            }
-            $c->stash( error_msg => "Error submitting Design Creation job: $error" );
-            $c->stash( %$primer3_conf );
-            my $params = $c->request->params;
-            $c->stash( %$params );
-
-            return;
-        };
-        unless ( $job_id ) {
-            $c->stash( error_msg => "Unable to submit Design Creation job" );
-            return;
-        }
-
-        $c->res->redirect( $c->uri_for('/design_attempt', $design_attempt->id , 'pending') );
+    if ( $is_redo && $is_redo eq 'redo' ) {
+        # if we have redo flag all the stash variables have been setup correctly
+        return;
     }
-    else {
-        $c->stash( %{ $primer3_conf } );
+    elsif ( exists $c->request->params->{create_design} ) {
+        $self->_create_gibson_design( $c, $create_design_util, 'create_exon_target_gibson_design' );
     }
 
     return;
 }
 
-sub create_custom_target_gibson_design : Path( '/create_custom_target_gibson_design' ) : Args(0) {
-    my ( $self, $c ) = @_;
-
-    # FIXME assert user role edit
+sub create_custom_target_gibson_design : Path( '/create_custom_target_gibson_design' ) : Args {
+    my ( $self, $c, $is_redo ) = @_;
 
     my $create_design_util = WGE::Util::CreateDesign->new(
         catalyst => $c,
         model    => $c->model('DB'),
         species  => $c->session->{species},
     );
+    $c->stash( default_p3_conf => $create_design_util->c_primer3_default_config );
 
-    my $primer3_conf = $create_design_util->c_primer3_default_config;
-    $c->stash( default_p3_conf => $primer3_conf );
-
-    if ( exists $c->request->params->{create_design} ) {
-        $c->log->info('Creating new design');
-
-        my ($design_attempt, $job_id);
-        try {
-            ( $design_attempt, $job_id ) = $create_design_util->create_custom_target_gibson_design();
-        }
-        catch ($e) {
-            $c->log->error($e);
-            my @errors = split ("\n", $e);
-            my $error;
-            if ( scalar @errors > 1 ) {
-                $error = $errors[0].".\n".$errors[1];
-            } else {
-                $error = $errors[0];
-            }
-            $c->stash( error_msg => "Error submitting Design Creation job: $error" );
-            $c->stash( %$primer3_conf );
-            my $params = $c->request->params;
-            $c->stash( %$params );
-
-            return;
-        }
-
-        unless ( $job_id ) {
-            $c->stash( error_msg => "Unable to submit Design Creation job" );
-            return;
-        }
-
-        $c->res->redirect( $c->uri_for('/design_attempt', $design_attempt->id , 'pending') );
+    if ( $is_redo && $is_redo eq 'redo' ) {
+        # if we have redo flag all the stash variables have been setup correctly
+        return;
+    }
+    elsif ( exists $c->request->params->{create_design} ) {
+        $self->_create_gibson_design( $c, $create_design_util, 'create_custom_target_gibson_design' );
     }
     elsif ( exists $c->request->params->{target_from_exons} ) {
         my $target_data = $create_design_util->c_target_params_from_exons;
         $c->stash(
             gibson_type => 'deletion',
             %{ $target_data },
-            %{ $primer3_conf },
         );
     }
-    else {
-        $c->stash( %{ $primer3_conf } );
+
+    return;
+}
+
+sub _create_gibson_design {
+    my ( $self, $c, $create_design_util, $cmd ) = @_;
+
+    $c->log->info('Creating new gibson design');
+
+    my ($design_attempt, $job_id);
+    $c->stash( $c->request->params );
+    try {
+        ( $design_attempt, $job_id ) = $create_design_util->$cmd;
     }
+    catch ( WGE::Exception::Validation $err ) {
+        my $errors = $create_design_util->c_format_validation_errors( $err );
+        $c->log->warn( "User create gibson design error: $errors " );
+        $c->stash( error_msg => $errors );
+        return;
+    }
+    catch ($err) {
+        $c->log->error( "Error submitting gibson design job: $err" );
+        $c->stash( error_msg => "Error submitting Design Creation job: $err" );
+        return;
+    }
+
+    unless ( $job_id ) {
+        $c->log->warn( 'Unable to submit Design Creation job' );
+        $c->stash( error_msg => "Unable to submit Design Creation job" );
+        return;
+    }
+
+    $c->res->redirect( $c->uri_for('/design_attempt', $design_attempt->id , 'pending') );
 
     return;
 }
@@ -276,8 +280,13 @@ sub design_attempt : PathPart('design_attempt') Chained('/') CaptureArgs(1) {
 sub view_design_attempt : PathPart('view') Chained('design_attempt') : Args(0) {
     my ( $self, $c ) = @_;
 
+    my $da = $c->stash->{da};
+    my $da_hash = $da->as_hash( { json_as_hash => 1 } );
+
     $c->stash(
-        da => $c->stash->{da}->as_hash( { pretty_print_json => 1 } ),
+        da     => $da->as_hash( { pretty_print_json => 1 } ),
+        fail   => $da_hash->{fail},
+        params => $da_hash->{design_parameters},
     );
     return;
 }
@@ -310,6 +319,42 @@ sub pending_design_attempt : PathPart('pending') Chained('design_attempt') : Arg
         status  => $c->stash->{da}->status,
         gene_id => $c->stash->{da}->gene_id,
     );
+    return;
+}
+
+sub redo_design_attempt : PathPart('redo') Chained('design_attempt') : Args(0) {
+    my ( $self, $c ) = @_;
+
+    #TODO species , what if none set?
+    my $create_design_util = WGE::Util::CreateDesign->new(
+        catalyst => $c,
+        model    => $c->model('DB'),
+        species  => $c->session->{species},
+    );
+
+    my $gibson_target_type;
+    try {
+        # this will stash all the needed design parameters
+        $gibson_target_type = $create_design_util->redo_design_attempt( $c->stash->{da} );
+    }
+    catch ( $err ) {
+        $c->stash(error_msg => "Error processing parameters from design attempt "
+                . $c->stash->{da}->id . ":\n" . $err
+                . "Unable to redo design" );
+        return $c->go('design_attempts');
+    }
+
+    if ( $gibson_target_type eq 'exon' ) {
+        return $c->go( 'create_gibson_design', [ 'redo' ] );
+    }
+    elsif ( $gibson_target_type eq 'location' ) {
+        return $c->go( 'create_custom_target_gibson_design' , [ 'redo' ] );
+    }
+    else {
+        $c->stash( error_msg => "Unknown gibson target type $gibson_target_type"  );
+        return $c->go('design_attempts');
+    }
+
     return;
 }
 
