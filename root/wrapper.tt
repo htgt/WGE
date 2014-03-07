@@ -92,13 +92,13 @@
         [% SET error = error_msg || c.stash.error_msg; IF error.length > 0 %]
         <div class="alert alert-error">
           <button class="close" data-dismiss="alert" href="#">&times;</button>
-          <p>[% error %]</p>
+          <p>[% error | html_line_break %]</p>
         </div>
         [% END %]
         [% SET info = info_msg || c.stash.info_msg; IF info.length > 0 %]
         <div class="alert alert-info">
           <button class="close" data-dismiss="alert" href="#">&times;</button>
-          <p>[% info %]</p>
+          <p>[% info | html_line_break %]</p>
         </div>
         [% END %]
         [% SET success = success_msg || c.stash.success_msg; IF success.length > 0 %]
