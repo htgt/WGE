@@ -2,6 +2,7 @@ package WGE::Util::CreateDesign;
 
 use Moose;
 use WebAppCommon::Util::EnsEMBL;
+use WGE::Exception::Validation;
 use Const::Fast;
 use Path::Class;
 use namespace::autoclean;
@@ -156,6 +157,21 @@ sub create_custom_target_gibson_design {
 
     return ( $design_attempt, $job_id );
 }
+
+=head2 throw_validation_error
+
+Override parent throw method to use WGE::Exception::Validation.
+
+=cut
+around 'throw_validation_error' => sub {
+    my $orig = shift;
+    my $self = shift;
+    my $errors = shift;
+
+    WGE::Exception::Validation->throw(
+        message => $errors,
+    );
+};
 
 __PACKAGE__->meta->make_immutable;
 
