@@ -6,7 +6,7 @@
   <fieldset>
     <legend>Gibson Design Gene Pick ([% c.session.species %])</legend>
     
-    <input type="text" class="input-xxlarge" name="gene_id" placeholder="gene name">
+    <input type="text" class="input-xxlarge" name="search_gene" placeholder="gene name">
     <span class="help-block">Valid search terms: HGNC IDs, MGI IDs, Ensembl Gene IDs and Marker Symbols.</span>
 
 
