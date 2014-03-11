@@ -49,10 +49,9 @@
             </li>
 
             <li class="dropdown [% IF template.tab_name == 'Gibson' %] active[% END %]" >
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Gibson Designs<b class="caret"></b></a>
-              <ul class="dropdown-menu">            
-                <li><a href="[% c.uri_for('/gibson_design_gene_pick/Human') %]">Create Human Design</a></li>
-                <li><a href="[% c.uri_for('/gibson_design_gene_pick/Mouse') %]">Create Mouse Design</a></li>                
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Gibson Designer<b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="[% c.uri_for('/gibson_designer') %]">Create Design</a></li>
                 <li><a href="[% c.uri_for('/gibson_design_attempts') %]">Design Attempts</a></li>
                 <li><a href="[% c.uri_for('/view_gibson_designs') %]">View Designs</a></li>
               </ul>
