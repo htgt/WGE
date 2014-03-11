@@ -1,5 +1,10 @@
 {{$NEXT}}
 
+0.006     2014-03-11 14:18:43 Europe/London
+
+   Added redo button to design attempts. 
+   Better formatting of design attempt error and design parameter data.
+
 0.005     2014-03-05 16:16:48 Europe/London
 
     Updated e-mail address to wge
