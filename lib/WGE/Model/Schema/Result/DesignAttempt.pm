@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::DesignAttempt;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::DesignAttempt::VERSION = '0.005';
+    $WGE::Model::Schema::Result::DesignAttempt::VERSION = '0.006';
 }
 ## use critic
 
@@ -216,8 +216,8 @@ sub as_hash {
     elsif ( $opts->{json_as_hash} ) {
         my $json = JSON->new;
         $design_params
-            = $self->design_parameters ? try { $json->decode( $self->design_parameters ) } : {};
-        $fail_reason = $self->fail ? try { $json->decode( $self->fail_reason ) } : {};
+            = $self->design_parameters ? try { $json->decode( $self->design_parameters ) } : undef;
+        $fail_reason = $self->fail ? try { $json->decode( $self->fail ) } : undef;
     }
     else {
         $design_params = $self->design_parameters;

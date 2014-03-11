@@ -10,3 +10,7 @@
   [% INCLUDE 'create_design/custom_target_specific_parameters.tt' %]
   [% INCLUDE 'create_design/common_gibson_form_parameters.tt' %]
 </form>
+
+[% IF da %]
+[% INCLUDE 'create_design/redo_design_attempt_data.tt' %]
+[% END %]

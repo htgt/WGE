@@ -7,15 +7,13 @@
 <form method="POST" action="[% c.uri_for( '/create_gibson_design' ) %]" class="well">
   [% INCLUDE 'create_design/diagram_placeholder.tt'
     hide_type = 1 %]
-  [% INCLUDE 'create_design/exon_target_specific_parameters.tt'
-    exon_id         = exon_id
-  %]
-  [% INCLUDE 'create_design/common_gibson_form_parameters.tt'
-    gene_id_label   = gene_id_label
-    gene_id         = gene_id
-    ensembl_gene_id = ensembl_gene_id
-  %]
+  [% INCLUDE 'create_design/exon_target_specific_parameters.tt' %]
+  [% INCLUDE 'create_design/common_gibson_form_parameters.tt' %]
 </form>
+
+[% IF da %]
+[% INCLUDE 'create_design/redo_design_attempt_data.tt' %]
+[% END %]
 
 <div class="well">
   <p>
