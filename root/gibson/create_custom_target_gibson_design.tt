@@ -1,5 +1,7 @@
 [% META title = "Create Custom Target Gibson Design"; META tab_name = "Gibson" %]
 
+[% IF c.session.species %]<h2><small>Species: [% c.session.species %]</small></h2>[% END %]
+
 [% INCLUDE 'create_design/custom_target_gibson_parameter_diagram.tt' %]
 
 [%  gene_id_label = 'Gene ID'; %]

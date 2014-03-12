@@ -1,3 +1,8 @@
+0.007     2014-03-12 07:41:53 Europe/London
+
+    Bugfix: Set species correctly when redoing a design attempt.
+    Always show species in the gibson section of the site.
+
 0.006     2014-03-11 14:18:43 Europe/London
 
    Added redo button to design attempts. 
