@@ -325,21 +325,25 @@ sub pending_design_attempt : PathPart('pending') Chained('design_attempt') : Arg
 sub redo_design_attempt : PathPart('redo') Chained('design_attempt') : Args(0) {
     my ( $self, $c ) = @_;
 
-    #TODO species , what if none set?
+    my $da = $c->stash->{da};
+    my $da_data = $da->as_hash( { json_as_hash => 1 } );
+    my $species = $da_data->{design_parameters}{species};
+    $c->session->{species} = $species;
+
     my $create_design_util = WGE::Util::CreateDesign->new(
         catalyst => $c,
         model    => $c->model('DB'),
-        species  => $c->session->{species},
+        species  => $species,
     );
 
     my $gibson_target_type;
     try {
         # this will stash all the needed design parameters
-        $gibson_target_type = $create_design_util->redo_design_attempt( $c->stash->{da} );
+        $gibson_target_type = $create_design_util->redo_design_attempt( $da );
     }
     catch ( $err ) {
         $c->stash(error_msg => "Error processing parameters from design attempt "
-                . $c->stash->{da}->id . ":\n" . $err
+                . $da->id . ":\n" . $err
                 . "Unable to redo design" );
         return $c->go('design_attempts');
     }
