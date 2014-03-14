@@ -99,6 +99,16 @@ __PACKAGE__->table("design_attempts");
   data_type: 'text'
   is_nullable: 1
 
+=head2 candidate_oligos
+
+  data_type: 'text'
+  is_nullable: 1
+
+=head2 candidate_regions
+
+  data_type: 'text'
+  is_nullable: 1
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -133,6 +143,10 @@ __PACKAGE__->add_columns(
     original      => { default_value => \"now()" },
   },
   "comment",
+  { data_type => "text", is_nullable => 1 },
+  "candidate_oligos",
+  { data_type => "text", is_nullable => 1 },
+  "candidate_regions",
   { data_type => "text", is_nullable => 1 },
 );
 
@@ -181,8 +195,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 10:25:34
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:0BcMoDmA1pTSsrpJBafMSA
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-03-14 08:09:36
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:+zTEQNPAkYxdb/yPncGg0A
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
