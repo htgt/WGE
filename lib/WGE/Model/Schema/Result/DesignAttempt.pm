@@ -222,7 +222,6 @@ sub as_hash {
             = $self->fail ? try { $json->pretty->encode( $json->decode( $self->fail ) ) } : '';
     }
     elsif ( $opts->{json_as_hash} ) {
-        my $json = JSON->new;
         $design_params
             = $self->design_parameters ? try { $json->decode( $self->design_parameters ) } : undef;
         $fail_reason = $self->fail ? try { $json->decode( $self->fail ) } : undef;
