@@ -211,9 +211,9 @@ sub as_hash {
     use JSON;
     use Try::Tiny;
 
+    my $json = JSON->new;
     my ( $design_params, $fail_reason );
     if ( $opts->{pretty_print_json} ) {
-        my $json = JSON->new;
         $design_params
             = $self->design_parameters
             ? try { $json->pretty->encode( $json->decode( $self->design_parameters ) ) }
@@ -232,6 +232,8 @@ sub as_hash {
         $fail_reason = $self->fail;
     }
     my @design_ids = $self->design_ids ? split( ' ', $self->design_ids ) : ();
+    my $candidate_oligos  = $self->candidate_oligos  ? try { $json->decode( $self->candidate_oligos ) }  : undef;
+    my $candidate_regions = $self->candidate_regions ? try { $json->decode( $self->candidate_regions ) } : undef;
 
     my %h = (
         id                => $self->id,
@@ -245,6 +247,8 @@ sub as_hash {
         created_at        => $self->created_at->iso8601,
         created_by        => $self->created_by->name,
         comment           => $self->comment,
+        candidate_oligos  => $candidate_oligos,
+        candidate_regions => $candidate_regions,
     );
 
     return \%h;
