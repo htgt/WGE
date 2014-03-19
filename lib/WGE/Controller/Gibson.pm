@@ -1,7 +1,7 @@
 package WGE::Controller::Gibson;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::Gibson::VERSION = '0.007';
+    $WGE::Controller::Gibson::VERSION = '0.008';
 }
 ## use critic
 
@@ -345,7 +345,7 @@ sub redo_design_attempt : PathPart('redo') Chained('design_attempt') : Args(0) {
     my $gibson_target_type;
     try {
         # this will stash all the needed design parameters
-        $gibson_target_type = $create_design_util->redo_design_attempt( $da );
+        $gibson_target_type = $create_design_util->c_redo_design_attempt( $da );
     }
     catch ( $err ) {
         $c->stash(error_msg => "Error processing parameters from design attempt "
