@@ -103,7 +103,23 @@
               labels : true,
               model  : Genoverse.Track.Model.Transcript.Ensembl,
               view   : Genoverse.Track.View.Transcript.Ensembl
-            }
+            },
+            populateMenu : function (feature) {            
+              var atts = {
+                ID     : feature.id,
+                Name   : feature.external_name,
+                Description : feature.description,
+                Parent : feature.Parent,                
+                Start  : feature.start,
+                End    : feature.end,
+                Strand : feature.strand,
+                Type   : feature.feature_type,
+                Biotype: feature.biotype,
+                Source : feature.source,
+                Logic  : feature.logic_name
+              };
+              return atts;
+            }              
           }),          
           Genoverse.Track.extend({
             name      : 'Designs',
@@ -178,16 +194,11 @@
                 End    : feature.end,
                 Spacer : feature.spacer,
                 Name   : feature.name,
-                URL : report_link
+                URL    : report_link,
+                'Off-Targets: Pairs' : feature.ot_summary || 'not computed',
+                Left   : feature.left_ot_summary,
+                Right  : feature.right_ot_summary
               };
-              if (feature.ot_summary){
-                atts['Off-Targets: Pairs'] = feature.ot_summary;
-                atts['Left'] = feature.left_ot_summary;
-                atts['Right'] = feature.right_ot_summary;
-              }
-              else {
-                atts['Off-Targets'] = 'not computed';
-              }
               return atts;              
             }
           }),
