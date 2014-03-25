@@ -1,0 +1,9 @@
+use strict;
+use LIMS2::REST::Client;
+use Data::Dumper;
+
+my $client = LIMS2::REST::Client->new_with_config($ENV{WGE_REST_CLIENT_CONF});
+
+my $res = $client->GET("crispr", { id => "3324957" });
+print Dumper($res);
+

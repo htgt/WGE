@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::CrisprByExon;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::CrisprByExon::VERSION = '0.008';
+    $WGE::Model::Schema::Result::CrisprByExon::VERSION = '0.009';
 }
 ## use critic
 
@@ -100,7 +100,7 @@ sub as_hash {
             $sum[$k] = $v;
         }
 
-        $data->{off_target_summary} = \@sum;
+        $data->{off_target_summary_arr} = \@sum;
     }
 
     return $data;

@@ -47,6 +47,7 @@ requires:
   Getopt::Long: 0
   Hash::MoreUtils: 0
   IO::File: 0
+  IO::Handle: 0
   IO::String: 0
   JSON: 0
   LIMS2::Exception::InvalidState: 0
@@ -65,8 +66,10 @@ requires:
   MooseX::Types::Path::Class: 0
   Path::Class: 0
   Pod::Usage: 0
+  Smart::Comments: 0
   Sub::Exporter: 0
   Term::ReadPassword: 0
+  Text::CSV: 0
   Throwable::Error: 0
   Try::Tiny: 0
   TryCatch: 0
@@ -81,4 +84,4 @@ requires:
   strict: 0
   utf8: 0
   warnings: 0
-version: 0.008
+version: 0.009

@@ -13,8 +13,11 @@ bin/get_crisprs/Makefile
 bin/get_crisprs/get_all_crisprs
 bin/get_crisprs/get_all_crisprs.cpp
 bin/load_genes.pl
+bin/loxp_pairs.pl
 bin/persist_crisprs.pl
+bin/promotor_region_crisprs.pl
 bin/update_crispr_pair.pl
+generate_shash.pl~
 human_genes_73.yaml
 lib/WGE.pm
 lib/WGE/Controller/API.pm
@@ -196,5 +199,7 @@ t/data/crisprs.yaml
 t/data/genes.yaml
 t/lib/Test/WGE.pm
 t/release-no-smart-comments.t
+test_create_design.pl~
+test_rest_client.pl~
 wge.conf
 wge.psgi
