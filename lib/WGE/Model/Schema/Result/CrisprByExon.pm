@@ -94,7 +94,7 @@ sub as_hash {
             $sum[$k] = $v;
         }
 
-        $data->{off_target_summary} = \@sum;
+        $data->{off_target_summary_arr} = \@sum;
     }
 
     return $data;
