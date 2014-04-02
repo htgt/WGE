@@ -19,9 +19,6 @@ WGE::Controller::Authentication - Controller to handle user authentication
 
 =cut
 
-# FIXME: set this secret key somehwere secret
-my $key = "test";
-
 sub login :Path('/login') :Args(0) {
     my ( $self, $c ) = @_;
 
@@ -40,56 +37,20 @@ sub login :Path('/login') :Args(0) {
 sub set_user :Path('/set_user') :Args(0) {
 	my ( $self, $c ) = @_;
 
-    # Check we have an auth code
-    my $auth_code = $c->req->param('code');
-    unless($auth_code){
-        $c->flash->{error_msg} = "Login failed: no authoriziation code returned by google";
-        $c->res->redirect('/');
-        return;
-    }
-
-	# Check returned state and session state
-    my $state = $c->req->param('state');
-    unless ($state eq $c->session->{state}){
-        $c->flash->{error_msg} = "Login failed: google authorization does not match user session";
-        $c->res->redirect('/');
-        return;
-    }
-
-	# Use auth code to fetch user information
-    my $oauth_helper = WGE::Util::OAuthHelper->new;    
-    my $profile;
-    try{
-        $profile = $oauth_helper->fetch_user_profile($auth_code);
-    }
-    catch($e){
-        $c->flash->{error_msg} = "Login failed: could not get google user profile. $e";
-        $c->res->redirect('/');
-        return;
-    }
-
-    $c->log->debug("user profile: ",Dumper($profile));
-    # Check email_verified == true
-    $c->flash->{info_msg} = "Authenticated user ".$profile->{email};
-    $c->res->redirect('/');
+    $c->log->debug("Attempting to authenticate");
+    $c->authenticate($c->req->params,'oauth');
+    $c->response->redirect('/');
     return;
-
-    #my $username = $oauth_request->email_address;
-
-    #unless($username){
-    #	$c->flash->{error_msg} = "Could not login...";
-    #}
-
-    # Find or create user in DB
-
-    # Set user for session
-
-    #$c->response->redirect('/');
 }
 
 sub logout :Path('logout') :Args(0) {
     my ( $self, $c ) = @_;
 
+    $c->logout;
+
+    $c->flash->{info_msg} = 'You have been logged out';
+    $c->response->redirect('/');
+    return;
 }
 
 1;

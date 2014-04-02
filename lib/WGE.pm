@@ -70,7 +70,6 @@ __PACKAGE__->config(
         storage => $ENV{WGE_SESSION_STORE} || '/tmp/wge',
     },
     authentication => {
-        use_session => 0,
         default_realm => 'rest_client',
         realms => {
             rest_client => {
@@ -93,6 +92,18 @@ __PACKAGE__->config(
                         },
                     }
                 }
+            },
+            oauth => {
+                auto_create_user => 1,
+                credential => {
+                    class          => 'OAuth2',
+                    username_field => 'name',
+                },
+                store => {
+                    class         => 'DBIx::Class',
+                    user_model    => 'DB::User',
+                    id_field      => 'name',
+                },                
             }            
         }
     }

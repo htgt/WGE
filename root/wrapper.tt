@@ -78,7 +78,16 @@
             </li>
           </ul>
           <ul class='nav pull-right'>
+           [% IF c.user %]
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">[% c.user.name %] <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="[% c.uri_for('/logout') %]"><i class="icon-off"></i> Logout</a></li>
+              </ul>
+            </li>
+           [% ELSE %]
             <li><a href="[% c.uri_for('/login') %]" class="btn-info" style="color:white">Login with Google</a></li>
+           [% END %]
           </ul>
         </div>
     </div>
