@@ -77,6 +77,9 @@
               <a href="[% c.uri_for('/contact') %]">Contact</a>
             </li>
           </ul>
+          <ul class='nav pull-right'>
+            <li><a href="[% c.uri_for('/login') %]" class="btn-info" style="color:white">Login with Google</a></li>
+          </ul>
         </div>
     </div>
 
@@ -88,19 +91,19 @@
         </div>
 
         <!-- catalyst error message disply taken from LIMS2 -->
-        [% SET error = error_msg || c.stash.error_msg; IF error.length > 0 %]
+        [% SET error = error_msg || c.stash.error_msg || c.flash.error_msg; IF error.length > 0 %]
         <div class="alert alert-error">
           <button class="close" data-dismiss="alert" href="#">&times;</button>
           <p>[% error | html_line_break %]</p>
         </div>
         [% END %]
-        [% SET info = info_msg || c.stash.info_msg; IF info.length > 0 %]
+        [% SET info = info_msg || c.stash.info_msg || c.flash.info_msg; IF info.length > 0 %]
         <div class="alert alert-info">
           <button class="close" data-dismiss="alert" href="#">&times;</button>
           <p>[% info | html_line_break %]</p>
         </div>
         [% END %]
-        [% SET success = success_msg || c.stash.success_msg; IF success.length > 0 %]
+        [% SET success = success_msg || c.stash.success_msg || c.flash.success_msg; IF success.length > 0 %]
         <div class="alert alert-success">
           <button class="close" data-dismiss="alert" href="#">&times;</button>
           <p>[% success | none %]</p>
