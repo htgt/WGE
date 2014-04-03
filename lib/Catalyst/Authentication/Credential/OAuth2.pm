@@ -21,7 +21,6 @@ sub authenticate {
     my $state = $authinfo->{state};
     unless ($state eq $c->session->{state}){
         $c->flash->{error_msg} = "Login failed: google authorization does not match user session";
-        $c->res->redirect('/');
         return;
     }
 
@@ -29,7 +28,7 @@ sub authenticate {
     my $oauth_helper = WGE::Util::OAuthHelper->new;    
     my $profile;
     try{
-        $profile = $oauth_helper->fetch_user_profile($auth_code);
+        $profile = $oauth_helper->fetch_user_profile($auth_code, $c->uri_for('/set_user'));
     }
     catch($e){
         $c->flash->{error_msg} = "Login failed: could not get google user profile. $e";

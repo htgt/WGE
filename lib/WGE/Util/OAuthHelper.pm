@@ -47,13 +47,13 @@ sub _build_client_config{
 }
 
 sub generate_auth_url{
-    my ($self, $state) = @_;
+    my ($self, $state, $redirect) = @_;
 
     my %params = (
         client_id     => $self->client_config->{client_id},
         response_type => 'code',
         scope         => 'email',
-        redirect_uri  => 'http://t87-dev.internal.sanger.ac.uk:3032/set_user',
+        redirect_uri  => $redirect,
         state         => $state,
     );
 
@@ -62,14 +62,14 @@ sub generate_auth_url{
 }
 
 sub fetch_user_profile{
-    my ($self, $code) = @_;
+    my ($self, $code, $redirect) = @_;
 
     my $token_url = $self->google_config->{token_endpoint};
     my %params = (
         code          => $code,
         client_id     => $self->client_config->{client_id},
         client_secret => $self->client_config->{client_secret},
-        redirect_uri  => 'http://t87-dev.internal.sanger.ac.uk:3032/set_user',
+        redirect_uri  => $redirect,
         grant_type    => 'authorization_code',
     );
 

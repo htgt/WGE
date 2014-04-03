@@ -4,6 +4,7 @@ use namespace::autoclean;
 use Data::Dumper;
 use TryCatch;
 use WGE::Util::OAuthHelper;
+use Data::Random qw(rand_chars);
 
 BEGIN { extends 'Catalyst::Controller' }
 
@@ -22,14 +23,15 @@ WGE::Controller::Authentication - Controller to handle user authentication
 sub login :Path('/login') :Args(0) {
     my ( $self, $c ) = @_;
 
-    # FIXME: need to generate proper random number to use as state
-    my $state = $c->sessionid;
+    # Generate random string to verify that google's response 
+    # relates to this session
+    my $state = rand_chars( set => 'alphanumeric', min => 30, max => 30);
     $c->session->{state} = $state;
 
     # Redirect user to google to authenticate
     # After login the user will be redirected to /set_user
     my $oauth_helper = WGE::Util::OAuthHelper->new;
-    my $url = $oauth_helper->generate_auth_url($state);
+    my $url = $oauth_helper->generate_auth_url($state, $c->uri_for('/set_user'));
     $c->response->redirect($url);
     return;
 }
@@ -39,7 +41,7 @@ sub set_user :Path('/set_user') :Args(0) {
 
     $c->log->debug("Attempting to authenticate");
     $c->authenticate($c->req->params,'oauth');
-    $c->response->redirect('/');
+    $c->response->redirect($c->uri_for('/'));
     return;
 }
 
@@ -49,7 +51,7 @@ sub logout :Path('logout') :Args(0) {
     $c->logout;
 
     $c->flash->{info_msg} = 'You have been logged out';
-    $c->response->redirect('/');
+    $c->response->redirect($c->uri_for('/'));
     return;
 }
 
