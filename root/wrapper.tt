@@ -49,10 +49,9 @@
             </li>
 
             <li class="dropdown [% IF template.tab_name == 'Gibson' %] active[% END %]" >
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Gibson Designs<b class="caret"></b></a>
-              <ul class="dropdown-menu">            
-                <li><a href="[% c.uri_for('/gibson_design_gene_pick/Human') %]">Create Human Design</a></li>
-                <li><a href="[% c.uri_for('/gibson_design_gene_pick/Mouse') %]">Create Mouse Design</a></li>                
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Gibson Designer<b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="[% c.uri_for('/gibson_designer') %]">Create Design</a></li>
                 <li><a href="[% c.uri_for('/gibson_design_attempts') %]">Design Attempts</a></li>
                 <li><a href="[% c.uri_for('/view_gibson_designs') %]">View Designs</a></li>
               </ul>
@@ -92,13 +91,13 @@
         [% SET error = error_msg || c.stash.error_msg; IF error.length > 0 %]
         <div class="alert alert-error">
           <button class="close" data-dismiss="alert" href="#">&times;</button>
-          <p>[% error %]</p>
+          <p>[% error | html_line_break %]</p>
         </div>
         [% END %]
         [% SET info = info_msg || c.stash.info_msg; IF info.length > 0 %]
         <div class="alert alert-info">
           <button class="close" data-dismiss="alert" href="#">&times;</button>
-          <p>[% info %]</p>
+          <p>[% info | html_line_break %]</p>
         </div>
         [% END %]
         [% SET success = success_msg || c.stash.success_msg; IF success.length > 0 %]

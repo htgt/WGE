@@ -1,13 +1,14 @@
 package WGE::Util::CreateDesign;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::CreateDesign::VERSION = '0.003';
+    $WGE::Util::CreateDesign::VERSION = '0.010';
 }
 ## use critic
 
 
 use Moose;
 use WebAppCommon::Util::EnsEMBL;
+use WGE::Exception::Validation;
 use Const::Fast;
 use Path::Class;
 use namespace::autoclean;
@@ -124,69 +125,9 @@ sub exons_for_gene {
     return unless $gene;
 
     my $gene_data = $self->c_build_gene_data( $gene );
-
     my $exon_data = $self->c_build_gene_exon_data( $gene, $gene_data->{gene_id}, $exon_types );
-    
-    # Do we want to do this in WGE??
-    #$self->designs_for_exons( $exon_data, $gene_data->{gene_id} );
 
     return ( $gene_data, $exon_data );
-}
-
-=head2 designs_for_exons
-
-Grab any existing designs for the exons.
-
-=cut
-sub designs_for_exons {
-    my ( $self, $exons, $gene_id ) = @_;
-
-    $self->log->debug("Getting designs for gene $gene_id");
-
-    my @gene_designs = $self->model->schema->resultset('GeneDesign')->search(
-         { gene_id => $gene_id }
-    );
-
-    my @designs = map { $_->design } @gene_designs;
-
-    my $assembly = $self->model->schema->resultset('SpeciesDefaultAssembly')->find(
-        { species_id => $self->species } )->assembly_id;
-
-    for my $exon ( @{ $exons } ) {
-        my @matching_designs;
-
-        for my $design ( @designs ) {
-
-            my $oligo_data = prebuild_oligos( $design, $assembly );
-            # if no oligo data then design does not have oligos on assembly
-            # FIXME -  don't use LIMS2::Model
-            next unless $oligo_data;
-            my $di = LIMS2::Model::Util::DesignInfo->new(
-                design => $design,
-                oligos => $oligo_data,
-            );
-            if ( $exon->{start} > $di->target_region_start
-                && $exon->{end} < $di->target_region_end
-                && $exon->{chr} eq $di->chr_name
-            ) {
-                push @matching_designs, $design;
-            }
-        }
-        $exon->{designs} = [ map { $_->id } @matching_designs ]
-            if @matching_designs;
-    }
-    return;
-}
-
-=head2 target_params_from_exons
-
-Given target exons return target coordinates
-
-=cut
-sub target_params_from_exons {
-    my ( $self ) = @_;
-
-    return $self->c_target_params_from_exons();
 }
 
 =head2 create_exon_target_gibson_design
@@ -223,35 +164,20 @@ sub create_custom_target_gibson_design {
     return ( $design_attempt, $job_id );
 }
 
-=head2 prebuild_oligos
+=head2 throw_validation_error
 
-Copied from LIMS2::Model::Util::DesignTargets
-Pre-build oligo hash for design from pre-fetched data to feed into design info object.
-This stops the design info object making its own database queries and speeds up the
-overall data retrieval.
+Override parent throw method to use WGE::Exception::Validation.
 
 =cut
-sub prebuild_oligos {
-    my ( $design, $default_assembly ) = @_;
+around 'throw_validation_error' => sub {
+    my $orig = shift;
+    my $self = shift;
+    my $errors = shift;
 
-    my %design_oligos_data;
-    for my $oligo ( $design->oligos ) {
-        my ( $locus ) = grep{ $_->assembly_id eq $default_assembly } $oligo->loci;
-        return unless $locus;
-
-        my %oligo_data = (
-            start      => $locus->chr_start,
-            end        => $locus->chr_end,
-            chromosome => $locus->chr->name,
-            strand     => $locus->chr_strand,
-        );
-        $oligo_data{seq} = $oligo->seq;
-
-        $design_oligos_data{ $oligo->design_oligo_type_id } = \%oligo_data;
-    }
-
-    return \%design_oligos_data;
-}
+    WGE::Exception::Validation->throw(
+        message => $errors,
+    );
+};
 
 __PACKAGE__->meta->make_immutable;
 

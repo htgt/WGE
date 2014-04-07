@@ -289,9 +289,9 @@
     var id_link  = $("<a>", { href: "[% c.uri_for('/crispr') %]/" + crispr.id, html: crispr.id });
     var summary = "";
 
-    if ( crispr.off_target_summary !== null && crispr.off_target_summary.length > 0 ) {
-      for ( var i = 0; i < crispr.off_target_summary.length; i++ ) {
-        summary += i + ": " + crispr.off_target_summary[i] + "<br/>";
+    if ( crispr.off_target_summary_arr !== undefined && crispr.off_target_summary_arr.length > 0 ) {
+      for ( var i = 0; i < crispr.off_target_summary_arr.length; i++ ) {
+        summary += i + ": " + crispr.off_target_summary_arr[i] + "<br/>";
       }
     }
     else {

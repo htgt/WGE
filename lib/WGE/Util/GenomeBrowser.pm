@@ -1,7 +1,7 @@
 package WGE::Util::GenomeBrowser;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::GenomeBrowser::VERSION = '0.003';
+    $WGE::Util::GenomeBrowser::VERSION = '0.010';
 }
 ## use critic
 
@@ -444,24 +444,26 @@ sub crispr_pairs_to_gff {
                     . $id . ';'
                     . 'Name=' . $id .';'
                     . 'Spacer=' . $crispr_pair->{spacer}
-                );
+                );          
 
+            # Add paired OT summary information if pair has data in DB
             if(my $data = $crispr_pair->{db_data}){
                 DEBUG("Found db_data for crispr pair ".$id);
-                my $left_ot = $left->{off_target_summary} || "undefined";
-                my $right_ot = $right->{off_target_summary} || "undefined";
                 if(defined $data->{off_target_summary}){
-                    $crispr_format_hash{attributes}.=';OT_Summary='.$data->{off_target_summary}
-                                                      .";left_ot_summary=$left_ot;right_ot_summary=$right_ot";
+                    $crispr_format_hash{attributes}.=';OT_Summary='.$data->{off_target_summary};
                 }
                 elsif(defined $data->{status}){
-                    $crispr_format_hash{attributes}.=';OT_Summary=Status: '.$data->{status}
-                                                     .";left_ot_summary=$left_ot;right_ot_summary=$right_ot";
+                    $crispr_format_hash{attributes}.=';OT_Summary=Status: '.$data->{status};
                 }
                 else{
-                    DEBUG("No off target summary or status found");
+                    DEBUG("No paired off target summary or status found");
                 }
             }
+
+            # We might have single OT summaries without paired OTs
+            my $left_ot = $left->{off_target_summary} || "not computed";
+            my $right_ot = $right->{off_target_summary} || "not computed";
+            $crispr_format_hash{attributes}.=";left_ot_summary=$left_ot;right_ot_summary=$right_ot";  
 
             my $crispr_pair_parent_datum = prep_gff_datum( \%crispr_format_hash );
 

@@ -13,7 +13,10 @@ bin/get_crisprs/Makefile
 bin/get_crisprs/get_all_crisprs
 bin/get_crisprs/get_all_crisprs.cpp
 bin/load_genes.pl
+bin/loxp_pairs.pl
+bin/loxp_pairs_report.pl
 bin/persist_crisprs.pl
+bin/promotor_region_crisprs.pl
 bin/update_crispr_pair.pl
 human_genes_73.yaml
 lib/WGE.pm
@@ -24,7 +27,10 @@ lib/WGE/Controller/REST.pm
 lib/WGE/Controller/REST/Crispr.pm
 lib/WGE/Controller/REST/CrisprPair.pm
 lib/WGE/Controller/REST/Design.pm
+lib/WGE/Controller/REST/Species.pm
 lib/WGE/Controller/Root.pm
+lib/WGE/Exception.pm
+lib/WGE/Exception/Validation.pm
 lib/WGE/Model/DB.pm
 lib/WGE/Model/FormValidator.pm
 lib/WGE/Model/Plugin/User.pm
@@ -171,6 +177,7 @@ root/static/images/btn_88x31_built_shadow.png
 root/static/images/btn_88x31_powered.png
 root/static/images/btn_88x31_powered_shadow.png
 root/static/images/catalyst_logo.png
+root/static/images/gibson_designer/vector_construction.png
 root/static/images/sanger-logo.png
 root/static/js/diagram.builder.js
 root/static/js/jquery-ui-1.9.2.custom.min.js

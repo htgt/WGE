@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::DesignAttempt;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::DesignAttempt::VERSION = '0.003';
+    $WGE::Model::Schema::Result::DesignAttempt::VERSION = '0.010';
 }
 ## use critic
 
@@ -105,6 +105,16 @@ __PACKAGE__->table("design_attempts");
   data_type: 'text'
   is_nullable: 1
 
+=head2 candidate_oligos
+
+  data_type: 'text'
+  is_nullable: 1
+
+=head2 candidate_regions
+
+  data_type: 'text'
+  is_nullable: 1
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -139,6 +149,10 @@ __PACKAGE__->add_columns(
     original      => { default_value => \"now()" },
   },
   "comment",
+  { data_type => "text", is_nullable => 1 },
+  "candidate_oligos",
+  { data_type => "text", is_nullable => 1 },
+  "candidate_regions",
   { data_type => "text", is_nullable => 1 },
 );
 
@@ -187,8 +201,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 10:25:34
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:0BcMoDmA1pTSsrpJBafMSA
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-03-14 08:09:36
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:+zTEQNPAkYxdb/yPncGg0A
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
@@ -203,9 +217,9 @@ sub as_hash {
     use JSON;
     use Try::Tiny;
 
+    my $json = JSON->new;
     my ( $design_params, $fail_reason );
     if ( $opts->{pretty_print_json} ) {
-        my $json = JSON->new;
         $design_params
             = $self->design_parameters
             ? try { $json->pretty->encode( $json->decode( $self->design_parameters ) ) }
@@ -214,16 +228,17 @@ sub as_hash {
             = $self->fail ? try { $json->pretty->encode( $json->decode( $self->fail ) ) } : '';
     }
     elsif ( $opts->{json_as_hash} ) {
-        my $json = JSON->new;
         $design_params
-            = $self->design_parameters ? try { $json->decode( $self->design_parameters ) } : {};
-        $fail_reason = $self->fail ? try { $json->decode( $self->fail_reason ) } : {};
+            = $self->design_parameters ? try { $json->decode( $self->design_parameters ) } : undef;
+        $fail_reason = $self->fail ? try { $json->decode( $self->fail ) } : undef;
     }
     else {
         $design_params = $self->design_parameters;
         $fail_reason = $self->fail;
     }
     my @design_ids = $self->design_ids ? split( ' ', $self->design_ids ) : ();
+    my $candidate_oligos  = $self->candidate_oligos  ? try { $json->decode( $self->candidate_oligos ) }  : undef;
+    my $candidate_regions = $self->candidate_regions ? try { $json->decode( $self->candidate_regions ) } : undef;
 
     my %h = (
         id                => $self->id,
@@ -237,6 +252,8 @@ sub as_hash {
         created_at        => $self->created_at->iso8601,
         created_by        => $self->created_by->name,
         comment           => $self->comment,
+        candidate_oligos  => $candidate_oligos,
+        candidate_regions => $candidate_regions,
     );
 
     return \%h;

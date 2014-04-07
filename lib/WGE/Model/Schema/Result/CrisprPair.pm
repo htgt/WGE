@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::CrisprPair;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::CrisprPair::VERSION = '0.003';
+    $WGE::Model::Schema::Result::CrisprPair::VERSION = '0.010';
 }
 ## use critic
 
@@ -293,6 +293,8 @@ takes optional parameter of the distance between off targets
 =cut
 sub calculate_off_targets {
     my ( $self, $distance ) = @_;
+
+    $self->log->debug('Calculating paired off targets');
 
     #the max distance between paired off targets
     #default off target distance is 1k

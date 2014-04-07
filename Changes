@@ -1,3 +1,33 @@
+0.010     2014-04-07 16:55:30 Europe/London
+
+    Added supress_relations option in design rest client
+
+0.009     2014-03-25 12:30:10 Europe/London
+
+    Genoverse popup improvements
+
+0.008     2014-03-19 07:13:15 Europe/London
+
+    Add candidate_oligos and candidate_regions columns to the design attempts table.
+
+0.007     2014-03-12 07:41:53 Europe/London
+
+    Bugfix: Set species correctly when redoing a design attempt.
+    Always show species in the gibson section of the site.
+
+0.006     2014-03-11 14:18:43 Europe/London
+
+   Added redo button to design attempts. 
+   Better formatting of design attempt error and design parameter data.
+
+0.005     2014-03-05 16:16:48 Europe/London
+
+    Updated e-mail address to wge
+
+0.004     2014-03-05 16:06:11 Europe/London
+
+    Bugfixes: stopped duplicates showing in paired crispr view, reduced genoverse max zoom
+
 0.003     2014-03-05 13:26:06 Europe/London
 
     WGE release
