@@ -17,7 +17,7 @@ sub design_GET{
 
      my $design = $c->model->resultset('Design')->find({ id => $c->req->param('id') });
 
-     return $self->status_ok( $c, entity => $design->as_hash(1) );
+     return $self->status_ok( $c, entity => $design->as_hash(0) );
 }
 
 sub design_POST{
