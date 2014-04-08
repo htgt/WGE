@@ -265,16 +265,41 @@ __PACKAGE__->many_to_many("crisprs_2s", "user_crisprs_mice", "crispr");
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+
 sub user_crisprs{
     my $self = shift;
 
     return ($self->user_crisprs_humans, $self->user_crisprs_mice);
 }
 
+sub mouse_crisprs{
+  my $self = shift;
+
+  return map { $self->result_source->schema->resultset('Crispr')->find({ id => $_->crispr_id }) } $self->user_crisprs_mice;
+}
+
+sub human_crisprs{
+  my $self = shift;
+
+  return map { $self->result_source->schema->resultset('Crispr')->find({ id => $_->crispr_id }) } $self->user_crisprs_humans;
+}
+
 sub user_crispr_pairs{
     my $self = shift;
 
     return ($self->user_crispr_pairs_humans, $self->user_crispr_pairs_mice);
+}
+
+sub mouse_crispr_pairs{
+  my $self = shift;
+
+  return map { $self->result_source->schema->resultset('CrisprPair')->find({ id => $_->crispr_pair_id }) } $self->user_crispr_pairs_mice;
+}
+
+sub human_crispr_pairs{
+  my $self = shift;
+
+  return map { $self->result_source->schema->resultset('CrisprPair')->find({ id => $_->crispr_pair_id }) } $self->user_crispr_pairs_humans;
 }
 
 __PACKAGE__->meta->make_immutable;
