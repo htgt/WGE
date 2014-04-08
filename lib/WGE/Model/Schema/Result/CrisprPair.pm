@@ -203,8 +203,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-02-18 14:32:58
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:hd1bRXCDGxXNRC0d4BJnlA
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-04-07 13:53:05
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:BOB/yT8Z3MFYX7bL/aUZOg
 
 #TODO: integrate log into schema instead of result
 use Try::Tiny;
@@ -221,6 +221,7 @@ sub as_hash {
     species_id         => $self->species_id,
     off_target_summary => $self->off_target_summary,
     status_id          => $self->status_id,
+    id                 => $self->id,
   };
 
   #if they want off targets return them as a list of hashes
@@ -482,5 +483,29 @@ sub reset_status {
 }
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+sub link_to_user_id{
+    my ($self, $user_id) = @_;
+    my $schema = $self->result_source->schema;
+    my $species = $self->get_species;
+    my $linker_table = "UserCrisprPairs".$species;
+
+    my $link = $schema->resultset($linker_table)->new({ crispr_pair_id => $self->id, user_id => $user_id });
+    $link->insert;
+
+    return;
+}
+
+sub remove_link_to_user_id{
+    my ($self, $user_id) = @_;
+    my $schema = $self->result_source->schema;
+    my $species = $self->get_species;
+    my $linker_table = "UserCrisprPairs".$species;
+
+    my $link = $schema->resultset($linker_table)->find({ crispr_pair_id => $self->id, user_id => $user_id });
+    $link->delete;
+    
+    return; 
+}
+
 __PACKAGE__->meta->make_immutable;
 1;

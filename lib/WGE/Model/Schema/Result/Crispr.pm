@@ -151,8 +151,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-28 11:39:32
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:nKvhG/qH0R9OGT5Q+PFjDA
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-04-07 13:53:05
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ZprIzKAbhW49WJo5mMdGvw
 
 __PACKAGE__->set_primary_key('id');
 
@@ -198,5 +198,28 @@ sub off_targets {
 }
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+sub link_to_user_id{
+    my ($self, $user_id) = @_;
+    my $schema = $self->result_source->schema;
+    my $species = $schema->resultset('Species')->find({ numerical_id => $self->species_id });
+    my $linker_table = "UserCrisprs".$species->id;
+
+    my $link = $schema->resultset($linker_table)->new({ crispr_id => $self->id, user_id => $user_id });
+    $link->insert;
+
+    return;
+}
+
+sub remove_link_to_user_id{
+    my ($self, $user_id) = @_;
+    my $schema = $self->result_source->schema;
+    my $species = $schema->resultset('Species')->find({ numerical_id => $self->species_id });
+    my $linker_table = "UserCrisprs".$species->id;
+
+    my $link = $schema->resultset($linker_table)->find({ crispr_id => $self->id, user_id => $user_id });
+    $link->delete;
+    
+    return; 
+}
 __PACKAGE__->meta->make_immutable;
 1;

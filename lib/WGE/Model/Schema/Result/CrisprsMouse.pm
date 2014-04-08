@@ -171,9 +171,34 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+=head2 user_crisprs_mice
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-28 16:41:34
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:eqNLXqfzQWfzdUE7AQOCeg
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::UserCrisprsMouse>
+
+=cut
+
+__PACKAGE__->has_many(
+  "user_crisprs_mice",
+  "WGE::Model::Schema::Result::UserCrisprsMouse",
+  { "foreign.crispr_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 users
+
+Type: many_to_many
+
+Composing rels: L</user_crisprs_mice> -> user
+
+=cut
+
+__PACKAGE__->many_to_many("users", "user_crisprs_mice", "user");
+
+
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-04-07 13:53:05
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:UUeSdeSA64NAYTKkQXUTfA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

@@ -51,6 +51,49 @@ function create_alert(text, alert_class) {
   );
 }
 
+function close_alerts() {
+  $("div.alert.alert-dismissable > .close").each(function(i,button){ button.click() });
+}
+
+function toggle_bookmark(button, path, id, item_name){
+  var regexp = new RegExp("Bookmark " + item_name);
+  var b = button;
+  if(b.textContent.match(regexp)){
+    //console.log("bookmarking " + item_name + " " + id);
+    $.get(path + "/" + id + "/add",
+      function (data) {
+        //console.log(data);
+        if(data.error){
+          close_alerts();
+          create_alert(data.error);
+        }
+        else{
+          close_alerts();
+          create_alert(data.message, "alert-success");
+          b.textContent = "Remove Bookmark";
+        }
+      }
+    );
+  }
+  else if(b.textContent.match(/Remove Bookmark/)){
+    //console.log("removing bookmark for " + item_name + " " + id);
+    $.get(path + "/" + id + "/remove",
+      function (data) {
+        //console.log(data);
+        if(data.error){
+          close_alerts();
+          create_alert(data.error);
+        }
+        else{
+          close_alerts();
+          create_alert(data.message, "alert-success");
+          b.textContent = "Bookmark " + item_name;
+        }
+      }
+    );
+  }
+}
+
 function get_ensembl_link(location, species) {
   //get ensembl species name
   var ens_species;

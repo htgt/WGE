@@ -202,9 +202,34 @@ __PACKAGE__->belongs_to(
   },
 );
 
+=head2 user_crispr_pairs_humans
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-02-18 14:32:58
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:LM2vVifxmz/4GaTRC5Zbag
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::UserCrisprPairsHuman>
+
+=cut
+
+__PACKAGE__->has_many(
+  "user_crispr_pairs_humans",
+  "WGE::Model::Schema::Result::UserCrisprPairsHuman",
+  { "foreign.crispr_pair_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 users
+
+Type: many_to_many
+
+Composing rels: L</user_crispr_pairs_humans> -> user
+
+=cut
+
+__PACKAGE__->many_to_many("users", "user_crispr_pairs_humans", "user");
+
+
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-04-07 13:53:05
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:IkEQFdSgDjaNBtPmh2e6rg
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
