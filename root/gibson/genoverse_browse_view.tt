@@ -142,6 +142,38 @@
           }),
 [% IF view_single %]
           Genoverse.Track.extend({
+            name      : 'Bookmarked Crisprs',
+            url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]&bookmarked_only=1" ,
+            model     : Genoverse.Track.Model.Transcript.GFF3,
+            view      : Genoverse.Track.View.Transcript,
+            autoHeight : true,
+            height    : 150,
+            labels    : false,
+            threshold : 3000,
+            messages  : { threshold : 'Crisprs not displayed for regions larger than ' },
+
+            populateMenu : function (feature) {
+              var report_link = "<a href='[%c.uri_for('/crispr')%]/" + feature.name 
+                                + "' target='_blank'><font color='#00FFFF'>Crispr Report</font></a>";
+              var atts = {
+                Start  : feature.start,
+                End    : feature.end,
+                Name   : feature.name,
+                URL : report_link
+              };
+              if (feature.ot_summary){
+                atts['Off-Targets'] = feature.ot_summary;
+              }
+              else {
+                atts['Off-Targets'] = 'not computed';
+              }
+              return atts;
+            }
+
+          }),
+[% END %]
+[% IF view_single %]
+          Genoverse.Track.extend({
             name      : 'Crisprs',
             url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]" ,
             model     : Genoverse.Track.Model.Transcript.GFF3,
@@ -154,7 +186,7 @@
 
             populateMenu : function (feature) {
               var report_link = "<a href='[%c.uri_for('/crispr')%]/" + feature.name 
-                                + "'><font color='#00FFFF'>Crispr Report</font></a>";
+                                + "' target='_blank'><font color='#00FFFF'>Crispr Report</font></a>";
               var atts = {
                 Start  : feature.start,
                 End    : feature.end,
@@ -175,6 +207,37 @@
 [% IF view_paired %]
           Genoverse.Track.extend({
             name      : 'Crispr_pairs',
+            url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]&bookmarked_only=1" ,
+            model     : Genoverse.Track.Model.Transcript.GFF3,
+            view      : Genoverse.Track.View.Transcript,
+            autoHeight : true,
+            height    : 150,
+            labels    : false,
+            threshold : 3000,
+            messages  : { threshold : 'Crispr pairs not displayed for regions larger than ' },
+
+            populateMenu : function (feature) {
+              var report_link = "<a href='[%c.uri_for('/crispr_pair')%]/" 
+                                + feature.name 
+                                + "?spacer=" + feature.spacer
+                                + "' target='_blank'><font color='#00FFFF'>Crispr Pair Report</font></a>";              
+              var atts = {
+                Start  : feature.start,
+                End    : feature.end,
+                Spacer : feature.spacer,
+                Name   : feature.name,
+                URL    : report_link,
+                'Off-Targets: Pairs' : feature.ot_summary || 'not computed',
+                Left   : feature.left_ot_summary,
+                Right  : feature.right_ot_summary
+              };
+              return atts;              
+            }
+          }),
+[% END %]
+[% IF view_paired %]
+          Genoverse.Track.extend({
+            name      : 'Crispr_pairs',
             url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]" ,
             model     : Genoverse.Track.Model.Transcript.GFF3,
             view      : Genoverse.Track.View.Transcript,
@@ -188,7 +251,7 @@
               var report_link = "<a href='[%c.uri_for('/crispr_pair')%]/" 
                                 + feature.name 
                                 + "?spacer=" + feature.spacer
-                                + "'><font color='#00FFFF'>Crispr Pair Report</font></a>";              
+                                + "' target='_blank'><font color='#00FFFF'>Crispr Pair Report</font></a>";              
               var atts = {
                 Start  : feature.start,
                 End    : feature.end,

@@ -2,9 +2,16 @@ package WGE::Util::GenomeBrowser;
 use strict;
 use Data::Dumper;
 use TryCatch;
+use Log::Log4perl qw(:easy);
 use warnings FATAL => 'all';
 
 
+BEGIN {
+    #try not to override the logger
+    unless ( Log::Log4perl->initialized ) {
+        Log::Log4perl->easy_init( { level => $DEBUG } );
+    }
+ }
 =head1 NAME
 
 WGE::Model::Util::GenomeBrowser
@@ -25,6 +32,7 @@ use Sub::Exporter -setup => {
         crispr_pairs_to_gff 
         gibson_designs_for_region
         design_oligos_to_gff
+        bookmarked_pairs_for_region
     ) ]
 };
 
@@ -35,7 +43,7 @@ use Log::Log4perl qw( :easy );
 Takes schema and hashref of params (usually from catalyst request) and returns hashref
 containing chromosome name and coordinates
 
-Input params can be coordinates etc, WGE design id or exon id
+Input params can be coordinates etc, WGE design id or exon id or crispr id
 
 af11
 
@@ -98,6 +106,17 @@ sub get_region_from_params{
                 'browse_end'   => $exon->chr_end
             };
         }
+        elsif (my $crispr_id = $params->{'crispr_id'}){
+            my $crispr = $schema->resultset('Crispr')->find({ id => $crispr_id });
+            my $genome = $crispr->species->default_assembly->assembly_id;
+            # Browse to a 1kb region around the crispr
+            return {
+                'genome'       => $genome,
+                'chromosome'   => $crispr->chr_name,
+                'browse_start' => $crispr->chr_start - 500,
+                'browse_end'   => $crispr->chr_start + 500,
+            }
+        }
     }
     else{
         # All region params provided, we just return them
@@ -108,7 +127,7 @@ sub get_region_from_params{
         return \%region;
     }
     
-    die "No region parameters, design_id or exon_id provided";
+    die "No region parameters, design_id, exon_id or crispr_id provided";
 }
 
 =head fetch_design_data
@@ -164,6 +183,8 @@ sub crisprs_for_region {
     $params->{species} = $species->id;
     $params->{species_numerical_id} = $species->numerical_id;
 
+    my $user = $params->{user};
+
     unless($params->{crispr_filter}){ $params->{crispr_filter} = 'all' }
 
     if ($params->{crispr_filter} eq 'exonic'){
@@ -179,6 +200,7 @@ sub crisprs_for_region {
             {},
             { bind => [ '{' . join( ",", @exon_ids ) . '}', $species->numerical_id ] }
         );
+        if($user){ return _bookmarked($user, $exon_crisprs_rs) };
         return $exon_crisprs_rs;
     }
     elsif ($params->{crispr_filter} eq 'exon_flanking'){
@@ -200,6 +222,7 @@ sub crisprs_for_region {
                 'chr_start'  => [ @region_conditions ]
             }
         );
+        if($user){ return _bookmarked($user, $flanking_crisprs_rs) };
         return $flanking_crisprs_rs;
     }
 
@@ -220,7 +243,7 @@ sub crisprs_for_region {
             columns => [qw/id pam_right chr_start off_target_summary/],
         },
     );
-
+    if($user){ return _bookmarked($user, $crisprs_rs) };
     return $crisprs_rs;
 }
 
@@ -231,14 +254,16 @@ sub _genes_for_region {
 
     # Horrible SQL::Abstract syntax
     # Query is to find any genes which overlap with the region specified
-    # i.e. find genes which the browse region start or end (or both) fall within 
+    # i.e. gene start <= region end && region start <= gene end
     my $genes = $schema->resultset('Gene')->search(
         { 
             'species_id' => $species->id,
             'chr_name' => $params->{chromosome_number},
-            -or => [
-                -and => [ 'chr_start' => { '<' => $params->{start_coord}}, 'chr_end' => {'>' => $params->{start_coord} }],
-                -and => [ 'chr_start' => { '<' => $params->{end_coord}}, 'chr_end' => {'>' => $params->{end_coord} }],
+            -and => [
+                'chr_start' => { '<' => $params->{end_coord} },
+                'chr_end'   => { '>' => $params->{start_coord} },
+                #-and => [ 'chr_start' => { '<' => $params->{start_coord}}, 'chr_end' => {'>' => $params->{start_coord} }],
+                #-and => [ 'chr_start' => { '<' => $params->{end_coord}}, 'chr_end' => {'>' => $params->{end_coord} }],
             ],
         },
     );
@@ -272,6 +297,59 @@ sub crispr_pairs_for_region {
     return $pairs;
 }
 
+=head bookmarked_pairs_for_region
+
+Retrieves pairs from db that have been bookmarked by user. No fancy pair finding needed for this.
+
+=cut
+
+sub bookmarked_pairs_for_region{
+    my $schema = shift;
+    my $params = shift;
+
+    my $species = $schema->resultset('Assembly')->find({ id => $params->{assembly_id} })->species;
+
+    # Store species name for gff output
+    $params->{species} = $species->id;
+    $params->{species_numerical_id} = $species->numerical_id;
+
+    my @pairs;
+
+    if ($species->id eq 'Human'){
+        @pairs = $params->{user}->human_crispr_pairs;
+    }
+    elsif($species->id eq 'Mouse'){
+        @pairs = $params->{user}->mouse_crispr_pairs;
+    }
+
+    my @pairs_in_region;
+    foreach my $pair (@pairs){
+
+        next unless $pair->left->chr_name eq $params->{chromosome_number};
+
+        my $start = $pair->left->chr_start;
+        my $end = $pair->right->chr_end;
+
+        # Test if crispr pair overlaps with region
+        if ( $start <= $params->{end_coord} and $params->{start_coord} <= $end ){
+            push @pairs_in_region, $pair;
+        }
+    }
+
+    my @hashes = map { $_->as_hash({ get_status => 1 }) } @pairs_in_region;
+    
+    # Add db_data key to the pair hashes so they resemble 
+    # those generated by WGE::Util::FindPairs 
+    foreach my $pair_hash (@hashes){
+        my $db_data = {
+            off_target_summary => $pair_hash->{off_target_summary},
+            status             => $pair_hash->{status},
+        };
+        $pair_hash->{db_data} = $db_data;
+    }
+    DEBUG Dumper(\@hashes);
+    return \@hashes;
+}
 
 =head crisprs_for_region_as_arrayref 
 
@@ -747,5 +825,15 @@ sub _generate_design_range{
     }
 
     return $design_range;
+}
+
+## Return the list of crisprs filtered to those bookmarked by this user
+sub _bookmarked{
+    my ($user, $crisprs_rs) = @_;
+
+    my @bookmarked_ids = map { $_->crispr_id } $user->user_crisprs;
+    my $bookmarked_rs = $crisprs_rs->search({ id => { -in => \@bookmarked_ids }});
+
+    return $bookmarked_rs
 }
 1;

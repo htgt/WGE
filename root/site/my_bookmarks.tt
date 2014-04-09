@@ -4,19 +4,11 @@
 [% META tab_name="My Bookmarks" %]
 
 [% FOREACH species IN ['Human', 'Mouse'] %]
- <h4>[% species %] Regions of Interest</h4>
- [% FOREACH chr IN regions.$species.keys.sort %]
-   Chromosome [% chr %]:
-   <ul>
-   [% FOREACH start IN regions.$species.$chr.keys.sort %]
-     <li>[% start %]</li>
-   [% END %]
-   </ul>
- [% END %]
  <h4>[% species %] Crisprs</h4>
 
   <table class="table table-bordered table-condensed">
    <tr>
+    <th></th>
     <th>ID</th>
     <th>Location</th>
     <th>Sequence</th>
@@ -26,6 +18,7 @@
    </tr>
    [% FOREACH crispr IN bookmarks.$species.crisprs %]
    <tr>
+    <td><a href="[% c.uri_for('/genoverse_browse', { crispr_id => crispr.id, view_single => 1 }) %]">View</a></td>
     <td><a href="[% c.uri_for('/crispr', crispr.id) %]">[% crispr.id %]</a></td>
     <td class="location">[% ensembl_link(chr_name=crispr.chr_name, chr_start=crispr.chr_start, chr_end=crispr.chr_end) %]</td>
     <td>[% crispr.seq %]</td>
@@ -39,11 +32,12 @@
  <h4>[% species %] Crispr Pairs</h4>
   <table class="table table-bordered table-condensed">
    <tr>
-    <th colspan="4" class="group-header">Pair</th>
+    <th colspan="5" class="group-header">Pair</th>
     <th colspan="4" class="group-header">Left Crispr</th>
     <th colspan="4" class="group-header">Right Crispr</th>
    </tr>
    <tr>
+    <th></th>
     <th>ID</th>
     <th>Spacer</th>
     <th>Status</th>
@@ -59,6 +53,7 @@
    </tr>
    [% FOREACH pair IN bookmarks.$species.crispr_pairs %]
    <tr>
+     <td><a href="[% c.uri_for('/genoverse_browse', {crispr_id => pair.left_crispr.id, view_paired => 1}) %]">View</a></td>
      <td><a href="[% c.uri_for('/crispr_pair', pair.id) %]">[% pair.id %]</a></td>
      <td>[% pair.spacer %]</td>
      <td>[% pair.status %]</td>
