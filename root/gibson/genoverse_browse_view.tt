@@ -1,4 +1,4 @@
-[% META title="Browse Crisprs"; META tab_name = 'Designs' %]
+[% META title="Browse Crisprs" %]
 <div class="page-header">
   <h1>[%- genes -%] 
   <small>[% IF design_id %]design: <strong>[%design_id%]</strong>[% END %]
@@ -12,7 +12,7 @@
   <input type="hidden" name="chromosome" value=[%chromosome%] />
   <input id="browse_start" type="hidden" name="browse_start" value=[%browse_start%] />
   <input id="browse_end" type="hidden" name="browse_end" value=[%browse_end%] />
-  <input type="hidden" name="genes" value=[%genes%] />
+  <input type="hidden" name="genes" value="[%genes%]" />
   [% IF design_id %]<input type="hidden" name="design_id" value=[%design_id%] />[% END %]
 
   <table class='table'>
@@ -139,8 +139,8 @@
       show_paired();
     });
 
-    $("#flank_size").live('keypress', function (event){
-      if(event.which == 13)
+    $("#flank_size").keypress(function (event){
+      if(event.which == 13){
         // enter key was pressed
         $("#browse_start")[0].value = $(window)[0].genoverse.start + 200;
         $("#browse_end")[0].value = $(window)[0].genoverse.end - 200;
