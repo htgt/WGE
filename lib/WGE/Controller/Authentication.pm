@@ -27,6 +27,7 @@ sub login :Path('/login') :Args(0) {
     # relates to this session
     my $state = rand_chars( set => 'alphanumeric', min => 30, max => 30);
     $c->session->{state} = $state;
+    $c->session->{login_referer} = $c->req->referer;
 
     # Redirect user to google to authenticate
     # After login the user will be redirected to /set_user
@@ -41,7 +42,7 @@ sub set_user :Path('/set_user') :Args(0) {
 
     $c->log->debug("Attempting to authenticate");
     $c->authenticate($c->req->params,'oauth');
-    $c->response->redirect($c->uri_for('/'));
+    $c->response->redirect($c->session->{login_referer} || $c->uri_for('/'));
     return;
 }
 
