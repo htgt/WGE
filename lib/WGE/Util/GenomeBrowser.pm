@@ -307,6 +307,8 @@ sub bookmarked_pairs_for_region{
     my $schema = shift;
     my $params = shift;
 
+    # FIXME: this needs to respond to exon and exon-flanking filters
+    
     my $species = $schema->resultset('Assembly')->find({ id => $params->{assembly_id} })->species;
 
     # Store species name for gff output

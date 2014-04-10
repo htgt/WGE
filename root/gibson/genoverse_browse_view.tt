@@ -25,17 +25,17 @@
    <tbody>
     <tr>
       <td>
-        <input type="radio" name="view_single" value="1" onclick="this.form.submit();" [% IF view_single %]checked[% END %]>
+        <input id="show_single" type="radio" name="view_single" value="1" [% IF view_single %]checked[% END %]>
         Show</input>
         <br />
-        <input type="radio" name="view_single" value="0" onclick="this.form.submit();" [% IF view_single == 0 %]checked[% END %]>
+        <input id="hide_single" type="radio" name="view_single" value="0"  [% IF view_single == 0 %]checked[% END %]>
         Hide</input>
       </td>
       <td>
-        <input type="radio" name="view_paired" value="1" onclick="this.form.submit();" [% IF view_paired %]checked[% END %]>
+        <input id="show_paired" type="radio" name="view_paired" value="1" [% IF view_paired %]checked[% END %]>
         Show</input>
         <br />
-        <input type="radio" name="view_paired" value="0" onclick="this.form.submit();" [% IF view_paired == 0 %]checked[% END %]>
+        <input id="hide_paired" type="radio" name="view_paired" value="0" [% IF view_paired == 0 %]checked[% END %]>
         Hide</input>
       </td>
       <td>
@@ -57,6 +57,53 @@
   </table>
 </form>      
 
+
+<script type="text/javascript">
+  $(document).ready( function() {
+
+    $("#hide_single").click(function (event){
+      var crisprs = $.grep( $(window)[0].genoverse.tracks, function(n,i){ return n.name == "Crisprs" });
+      $(window)[0].genoverse.removeTrack(crisprs[0]);
+      var bookmarked = $.grep( $(window)[0].genoverse.tracks, function(n,i){ return n.name == "Bookmarked Crisprs" });
+      if(bookmarked[0]){
+        $(window)[0].genoverse.removeTrack(bookmarked[0]);
+      }
+    });
+    
+    $("#show_single").click(function (event){
+      // Insert the tracks at position 3, just below genes track (assuming user has not closed gene and sequence tracks..)
+      var crisprs = $.grep( $(window)[0].genoverse.tracksLibrary, function(n,i){ return n.name == "Crisprs" });
+      var bookmarked = $.grep( $(window)[0].genoverse.tracksLibrary, function(n,i){ return n.name == "Bookmarked Crisprs" });
+      if(bookmarked[0]){
+       $(window)[0].genoverse.addTrack(
+        Genoverse.Track.extend($.extend(true, {},bookmarked[0])),3);
+      }
+      $(window)[0].genoverse.addTrack(
+        Genoverse.Track.extend($.extend(true, {},crisprs[0])),3);
+    });
+
+    $("#hide_paired").click(function (event){
+      var crisprs = $.grep( $(window)[0].genoverse.tracks, function(n,i){ return n.name == "Crispr Pairs" });
+      $(window)[0].genoverse.removeTrack(crisprs[0]);
+      var bookmarked = $.grep( $(window)[0].genoverse.tracks, function(n,i){ return n.name == "Bookmarked Crispr Pairs" });
+      if(bookmarked[0]){
+        $(window)[0].genoverse.removeTrack(bookmarked[0]);
+      }
+    });
+    
+    $("#show_paired").click(function (event){
+      // Insert the tracks at position 3, just below genes track (assuming user has not closed gene and sequence tracks..)
+      var crisprs = $.grep( $(window)[0].genoverse.tracksLibrary, function(n,i){ return n.name == "Crispr Pairs" });
+      var bookmarked = $.grep( $(window)[0].genoverse.tracksLibrary, function(n,i){ return n.name == "Bookmarked Crispr Pairs" });
+      if(bookmarked[0]){
+       $(window)[0].genoverse.addTrack(
+        Genoverse.Track.extend($.extend(true, {},bookmarked[0])),3);
+      }
+      $(window)[0].genoverse.addTrack(
+        Genoverse.Track.extend($.extend(true, {},crisprs[0])),3);
+    });
+  });  
+</script>
 
     <script type="text/javascript" src="[% c.uri_for('/static/genoverse/js/genoverse.wtsi.js')%]">
        {
@@ -140,8 +187,9 @@
               return atts;
             }            
           }),
-[% IF view_single %]
+[% IF c.user %]
           Genoverse.Track.extend({
+            hidden    : [% IF view_single %] false [% ELSE %] true [% END %],
             name      : 'Bookmarked Crisprs',
             url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]&bookmarked_only=1" ,
             model     : Genoverse.Track.Model.Transcript.GFF3,
@@ -172,8 +220,9 @@
 
           }),
 [% END %]
-[% IF view_single %]
+
           Genoverse.Track.extend({
+            hidden    : [% IF view_single %] false [% ELSE %] true [% END %],
             name      : 'Crisprs',
             url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]" ,
             model     : Genoverse.Track.Model.Transcript.GFF3,
@@ -203,10 +252,11 @@
             }
 
           }),
-[% END %]
-[% IF view_paired %]
+
+[% IF c.user %]
           Genoverse.Track.extend({
-            name      : 'Crispr_pairs',
+            hidden    : [% IF view_paired %] false [% ELSE %] true [% END %],
+            name      : 'Bookmarked Crispr Pairs',
             url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]&bookmarked_only=1" ,
             model     : Genoverse.Track.Model.Transcript.GFF3,
             view      : Genoverse.Track.View.Transcript,
@@ -235,9 +285,9 @@
             }
           }),
 [% END %]
-[% IF view_paired %]
           Genoverse.Track.extend({
-            name      : 'Crispr_pairs',
+            hidden    : [% IF view_paired %] false [% ELSE %] true [% END %],
+            name      : 'Crispr Pairs',
             url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]" ,
             model     : Genoverse.Track.Model.Transcript.GFF3,
             view      : Genoverse.Track.View.Transcript,
@@ -265,7 +315,7 @@
               return atts;              
             }
           }),
-[% END %]
+
           Genoverse.Track.Scaleline
         ]
       }
