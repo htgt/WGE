@@ -10,8 +10,8 @@
 <form action="[% c.uri_for( '/genoverse_browse' ) %]" class="well">
   <input type="hidden" name="genome" value=[%genome%] />
   <input type="hidden" name="chromosome" value=[%chromosome%] />
-  <input type="hidden" name="browse_start" value=[%browse_start%] />
-  <input type="hidden" name="browse_end" value=[%browse_end%] />
+  <input id="browse_start" type="hidden" name="browse_start" value=[%browse_start%] />
+  <input id="browse_end" type="hidden" name="browse_end" value=[%browse_end%] />
   <input type="hidden" name="genes" value=[%genes%] />
   [% IF design_id %]<input type="hidden" name="design_id" value=[%design_id%] />[% END %]
 
@@ -28,28 +28,28 @@
         <input id="show_single" type="radio" name="view_single" value="1" [% IF view_single %]checked[% END %]>
         Show</input>
         <br />
-        <input id="hide_single" type="radio" name="view_single" value="0"  [% IF view_single == 0 %]checked[% END %]>
+        <input id="hide_single" type="radio" name="view_single" value="0"  [% IF not view_single %]checked[% END %]>
         Hide</input>
       </td>
       <td>
         <input id="show_paired" type="radio" name="view_paired" value="1" [% IF view_paired %]checked[% END %]>
         Show</input>
         <br />
-        <input id="hide_paired" type="radio" name="view_paired" value="0" [% IF view_paired == 0 %]checked[% END %]>
+        <input id="hide_paired" type="radio" name="view_paired" value="0" [% IF not view_paired %]checked[% END %]>
         Hide</input>
       </td>
       <td>
        <fieldset [% UNLESS view_paired OR view_single %]disabled[% END %]>
-        <input type="radio" name="crispr_filter" value="all" onclick="this.form.submit();" [% IF crispr_filter == 'all'  or not crispr_filter %]checked[% END %]>
+        <input type="radio" name="crispr_filter" value="all" [% IF crispr_filter == 'all'  or not crispr_filter %]checked[% END %]>
         Show All</input>
         <br />
-        <input type="radio" name="crispr_filter" value="exonic" onclick="this.form.submit();" [% IF crispr_filter == 'exonic' %]checked[% END %]>
+        <input type="radio" name="crispr_filter" value="exonic" [% IF crispr_filter == 'exonic' %]checked[% END %]>
         Exon Only</input>
         <br />
-        <input type="radio" name="crispr_filter" value="exon_flanking" onclick="this.form.submit();" [% IF crispr_filter == 'exon_flanking' %]checked[% END %]>
+        <input type="radio" name="crispr_filter" value="exon_flanking" [% IF crispr_filter == 'exon_flanking' %]checked[% END %]>
         Exon Flanking Only</input>
         <br />
-        Flanking region: <input type="number" name="flank_size" value="[% flank_size OR 100 %]" min="1" max="1000" keypress="this.form.submit()"/>
+        Flanking region: <input type="number" id="flank_size" name="flank_size" value="[% flank_size OR 100 %]" min="1" max="1000"/>
        </fieldset>
       </td>
     </tr>
@@ -57,20 +57,19 @@
   </table>
 </form>      
 
-
 <script type="text/javascript">
-  $(document).ready( function() {
+  
+  // Functions to show and hide sets of tracks
+  function hide_single (){
+    var crisprs = $.grep( $(window)[0].genoverse.tracks, function(n,i){ return n.name == "Crisprs" });
+    $(window)[0].genoverse.removeTrack(crisprs[0]);
+    var bookmarked = $.grep( $(window)[0].genoverse.tracks, function(n,i){ return n.name == "Bookmarked Crisprs" });
+    if(bookmarked[0]){
+      $(window)[0].genoverse.removeTrack(bookmarked[0]);
+    }
+  }
 
-    $("#hide_single").click(function (event){
-      var crisprs = $.grep( $(window)[0].genoverse.tracks, function(n,i){ return n.name == "Crisprs" });
-      $(window)[0].genoverse.removeTrack(crisprs[0]);
-      var bookmarked = $.grep( $(window)[0].genoverse.tracks, function(n,i){ return n.name == "Bookmarked Crisprs" });
-      if(bookmarked[0]){
-        $(window)[0].genoverse.removeTrack(bookmarked[0]);
-      }
-    });
-    
-    $("#show_single").click(function (event){
+  function show_single (){
       // Insert the tracks at position 3, just below genes track (assuming user has not closed gene and sequence tracks..)
       var crisprs = $.grep( $(window)[0].genoverse.tracksLibrary, function(n,i){ return n.name == "Crisprs" });
       var bookmarked = $.grep( $(window)[0].genoverse.tracksLibrary, function(n,i){ return n.name == "Bookmarked Crisprs" });
@@ -80,18 +79,18 @@
       }
       $(window)[0].genoverse.addTrack(
         Genoverse.Track.extend($.extend(true, {},crisprs[0])),3);
-    });
+  }
 
-    $("#hide_paired").click(function (event){
+  function hide_paired (){
       var crisprs = $.grep( $(window)[0].genoverse.tracks, function(n,i){ return n.name == "Crispr Pairs" });
       $(window)[0].genoverse.removeTrack(crisprs[0]);
       var bookmarked = $.grep( $(window)[0].genoverse.tracks, function(n,i){ return n.name == "Bookmarked Crispr Pairs" });
       if(bookmarked[0]){
         $(window)[0].genoverse.removeTrack(bookmarked[0]);
       }
-    });
-    
-    $("#show_paired").click(function (event){
+  }
+
+  function show_paired (){
       // Insert the tracks at position 3, just below genes track (assuming user has not closed gene and sequence tracks..)
       var crisprs = $.grep( $(window)[0].genoverse.tracksLibrary, function(n,i){ return n.name == "Crispr Pairs" });
       var bookmarked = $.grep( $(window)[0].genoverse.tracksLibrary, function(n,i){ return n.name == "Bookmarked Crispr Pairs" });
@@ -101,8 +100,61 @@
       }
       $(window)[0].genoverse.addTrack(
         Genoverse.Track.extend($.extend(true, {},crisprs[0])),3);
+  }
+
+  function set_url (urlParams, update) {
+    this.base($.extend(urlParams || this.urlParams, { test: $("#flank_size")[0].value, test2 : $('input[name=crispr_filter]:checked').val() }), update);
+  }
+
+  $(document).ready( function() {
+
+    // All tracks are loaded by default on page refresh
+    // Hide the ones we don't want to see
+    // We are doing it this way because using the hidden attribute
+    // on the genoverse tracks caused "call stack size exceeded" error
+    Genoverse.on('afterInit', function () {
+      if($("#hide_single")[0].checked == true){
+        hide_single();
+      }
+      
+      if($("#hide_paired")[0].checked == true){
+        hide_paired();
+      }      
     });
-  });  
+
+    // Handle clicks on the show/hide radio inputs
+    $("#hide_single").click(function (event){
+      hide_single();
+    });
+    
+    $("#show_single").click(function (event){
+      show_single();
+    });
+
+    $("#hide_paired").click(function (event){
+      hide_paired();
+    });
+    
+    $("#show_paired").click(function (event){
+      show_paired();
+    });
+
+    $("#flank_size").live('keypress', function (event){
+      if(event.which == 13)
+        // enter key was pressed
+        $("#browse_start")[0].value = $(window)[0].genoverse.start + 200;
+        $("#browse_end")[0].value = $(window)[0].genoverse.end - 200;
+        this.form.submit();
+      }
+    });
+
+    $('input[name=crispr_filter]').click(function (event){
+      $("#browse_start")[0].value = $(window)[0].genoverse.start + 200;
+      $("#browse_end")[0].value = $(window)[0].genoverse.end - 200;
+      this.form.submit();
+    });
+
+  });
 </script>
 
     <script type="text/javascript" src="[% c.uri_for('/static/genoverse/js/genoverse.wtsi.js')%]">
@@ -189,7 +241,6 @@
           }),
 [% IF c.user %]
           Genoverse.Track.extend({
-            hidden    : [% IF view_single %] false [% ELSE %] true [% END %],
             name      : 'Bookmarked Crisprs',
             url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]&bookmarked_only=1" ,
             model     : Genoverse.Track.Model.Transcript.GFF3,
@@ -222,7 +273,6 @@
 [% END %]
 
           Genoverse.Track.extend({
-            hidden    : [% IF view_single %] false [% ELSE %] true [% END %],
             name      : 'Crisprs',
             url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]" ,
             model     : Genoverse.Track.Model.Transcript.GFF3,
@@ -255,7 +305,6 @@
 
 [% IF c.user %]
           Genoverse.Track.extend({
-            hidden    : [% IF view_paired %] false [% ELSE %] true [% END %],
             name      : 'Bookmarked Crispr Pairs',
             url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]&bookmarked_only=1" ,
             model     : Genoverse.Track.Model.Transcript.GFF3,
@@ -286,7 +335,6 @@
           }),
 [% END %]
           Genoverse.Track.extend({
-            hidden    : [% IF view_paired %] false [% ELSE %] true [% END %],
             name      : 'Crispr Pairs',
             url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]" ,
             model     : Genoverse.Track.Model.Transcript.GFF3,
@@ -320,4 +368,5 @@
         ]
       }
     </script>
+
     <div id="genoverse"></div>
