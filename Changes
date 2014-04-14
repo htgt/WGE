@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+0.011     2014-04-14 11:03:52 Europe/London
+
+    Added flank option to CrisprByExon resultset, highlighting of crispr pair off target mismatches and is_genic/is_exonic fields to the crispr table
+
 0.010     2014-04-07 16:55:30 Europe/London
 
     Added supress_relations option in design rest client
