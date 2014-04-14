@@ -68,12 +68,13 @@ sub update_status {
     die "update_offs needs a left_id, right_id and a status" 
         unless $left_id and $right_id and $status;
 
-    return $client->POST(
-        'crispr_pair',
+    DEBUG "Updating $left_id $right_id";
+    return $client->GET(
+        'pair_off_target_search',
         { 
-            left_id   => $left_id,
-            right_id  => $right_id,
-            status_id => $status,
+            left_id    => $left_id,
+            right_id   => $right_id,
+            species    => $species,
         }
     );
 }

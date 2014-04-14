@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::CrisprPair;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::CrisprPair::VERSION = '0.009';
+    $WGE::Model::Schema::Result::CrisprPair::VERSION = '0.011';
 }
 ## use critic
 
@@ -431,7 +431,7 @@ sub _data_missing {
 
   #if we were provided with crisprs make sure its an arrayref with 2 entries
   if ( defined $crisprs && ref $crisprs eq 'ARRAY' && @{ $crisprs } == 2 ) {
-    $self->log->warn("2 crisprs provided, using those");
+    $self->log->warn( "2 crisprs provided, using those" );
   }
   else{
     $self->log->warn( "No crisprs provided, searching crispr table" );

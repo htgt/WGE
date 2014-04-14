@@ -74,7 +74,10 @@
         var url = "[% c.uri_for('/genoverse_browse') %]";
         var exon = get_selected_exons();
         var full_url = url.concat("?view_paired=1&exon_id=",exon);
-        window.location.href=full_url;
+        //window.location.href=full_url;
+        window.open(full_url);
+        
+        return false;
      });
     
     //if someone selects a species then remove the error class
@@ -312,7 +315,7 @@
 
     var off_targets_link = 
       $("<a>", { href: "[% c.uri_for('crispr_help#summaries_individual') %]", target: "_blank" })
-        .append($("<i>", { class: 'icon-question-sign' }));
+        .append($("<i>", { "class": 'icon-question-sign' }));
 
     //return a list of th elements
     return $.map(fields, function (name) { 
@@ -331,7 +334,7 @@
     /*
       TODO:
       add a status ? popover like so:
-      $("<a>", { href: "#" }).append($("<i>", { class: 'icon-question-sign' })).popover({ placement: 'top', html: true, title: "Status meanings", content: "Test: test" })
+      $("<a>", { href: "#" }).append($("<i>", { "class": 'icon-question-sign' })).popover({ placement: 'top', html: true, title: "Status meanings", content: "Test: test" })
     */
 
     //make a table if it doesn't exist
@@ -354,9 +357,9 @@
         .appendTo( table.find("thead") );
 
       var summary_link = $("<a>", { href: "[% c.uri_for('crispr_help#summaries_paired') %]", target: "_blank" })
-                          .append($("<i>", { class: 'icon-question-sign' }));
+                          .append($("<i>", { "class": 'icon-question-sign' }));
 
-        //$("<a>", { href: "#" }).append($("<i>", { class: 'icon-question-sign' }))
+        //$("<a>", { href: "#" }).append($("<i>", { "class": 'icon-question-sign' }))
       //add headers
       //$("<tr>").append( $("<th>" ) )
      $("<tr>")

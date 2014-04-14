@@ -11,7 +11,8 @@ use Data::Dumper;
 use YAML::Any qw( LoadFile );
 use Try::Tiny;
 use Log::Log4perl qw( :easy );
-use WGE::Util::PersistCrisprs;
+use WGE::Util::PersistCrisprs::Bed;
+use WGE::Util::PersistCrisprs::TSV;
 
 #
 # TODO: 
@@ -20,7 +21,7 @@ use WGE::Util::PersistCrisprs;
 #
 
 #techncially these should be in caps as they're global
-my ( $crispr_yaml_file, $bed_file, $species );
+my ( $crispr_yaml_file, $tsv_file, $bed_file, $species, $type );
 my ( $db_cutoff, $log_level, $commit ) = ( 5000, $DEBUG, 0 );
 GetOptions(
     "help"               => sub { pod2usage( 1 ) },
@@ -28,32 +29,51 @@ GetOptions(
     "trace"              => sub { $log_level = $TRACE },
     "quiet"              => sub { $log_level = $WARN },
     "species=s"          => sub { my ( $name, $val ) = @_; $species = ucfirst(lc $val); },
+    "tsv-file=s"         => \$tsv_file,
     "crispr-yaml-file=s" => \$crispr_yaml_file,
     "bed-file=s"         => \$bed_file,
     "max-offs=i"         => \$db_cutoff,
     "commit!"            => \$commit, #default is to NOT commit anything.
 ) or die pod2usage( 2 );
 
-die pod2usage( 2 ) unless $species and $crispr_yaml_file and $bed_file;
+die pod2usage( 2 ) unless $species and ( $tsv_file or ($crispr_yaml_file and $bed_file) );
 
 Log::Log4perl->easy_init( $log_level );
 
-INFO "Maximum allowed off targets is $db_cutoff";
+die "WGE_REST_CLIENT_CONFIG has not been set" unless $ENV{WGE_REST_CLIENT_CONFIG};
+
+my %opts = ( 
+    configfile => $ENV{WGE_REST_CLIENT_CONFIG},
+    species    => $species,
+    dry_run    => !$commit, #dry run is the opposite of commit. duh
+);
+
 INFO "Note: not committing data (dry run)" unless $commit;
+
+my $class = 'WGE::Util::PersistCrisprs';
+
+if ( $tsv_file ) {
+    INFO "Persisting TSV file '$tsv_file'";
+    $opts{tsv_file} = $tsv_file;
+
+    $class .= '::TSV';
+}
+else {
+    INFO "Persisting bed file '$bed_file'";
+
+    $opts{bed_file}         = $bed_file;
+    $opts{crispr_yaml_file} = $crispr_yaml_file;
+    $opts{max_offs}         = $db_cutoff;
+
+    $class .= "::Bed";
+
+    INFO "Maximum allowed off targets is $db_cutoff";
+}
 
 #remove this later obviously
 #$ENV{WGE_REST_CLIENT_CONFIG} ||= '/nfs/team87/farm3_lims2_vms/conf/wge-live-rest-client.conf';
 
-die "WGE_REST_CLIENT_CONFIG has not been set" unless $ENV{WGE_REST_CLIENT_CONFIG};
-
-my $p = WGE::Util::PersistCrisprs->new_with_config(
-    configfile       => $ENV{WGE_REST_CLIENT_CONFIG},
-    species          => $species,
-    bed_file         => $bed_file,
-    crispr_yaml_file => $crispr_yaml_file,
-    max_offs         => $db_cutoff,
-    dry_run          => !$commit, #dry run is the opposite of commit. duh
-);
+my $p = $class->new_with_config( %opts );
 
 $p->execute;
 
@@ -70,6 +90,7 @@ persist_crisprs.pl - add off target information to crisprs in wge
 persist_wge.pl [options]
 
     --species            mouse or human
+    --tsv-file           provided instead of a bed & yaml file
     --bed-file           bed file containing *valid* off targets
     --crispr-yaml-file   crispr yaml file linking seq names from the bed file to db ids
     --commit             whether or not to persist. default is false. [optional]

@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::Exon;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::Exon::VERSION = '0.009';
+    $WGE::Model::Schema::Result::Exon::VERSION = '0.011';
 }
 ## use critic
 
@@ -156,7 +156,9 @@ __PACKAGE__->belongs_to(
 use WGE::Util::FindPairs;
 
 sub crisprs {
-  my ( $self, $species ) = @_;
+  my ( $self, $species, $flank ) = @_;
+
+  $flank //= 0;
 
   #species is optional in case the caller already had it lying around,
   #if they didn't then just get it from the gene
@@ -172,12 +174,14 @@ sub crisprs {
   #maybe we should change CrisprByExon to not take a list
   return $self->result_source->schema->resultset('CrisprByExon')->search(
     {},
-    { bind => [ '{'.$self->ensembl_exon_id.'}', $species->numerical_id ] }
+    { bind => [ '{'.$self->ensembl_exon_id.'}', $flank, $species->numerical_id ] }
   );
 }
 
 sub pairs {
-  my $self = shift;
+  my ( $self, $flank ) = @_;
+
+  $flank //= 0;
 
   #get the species id with just 1 db call
   my $species = $self->result_source->schema->resultset('Gene')->find(
@@ -186,7 +190,7 @@ sub pairs {
   )->species;
 
   #get all the crisprs, then identify all the pairs
-  my @crisprs = $self->crisprs( $species );
+  my @crisprs = $self->crisprs( $species, $flank );
 
   my $pair_finder = WGE::Util::FindPairs->new(
     schema => $self->result_source->schema,

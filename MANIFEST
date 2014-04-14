@@ -14,10 +14,10 @@ bin/get_crisprs/get_all_crisprs
 bin/get_crisprs/get_all_crisprs.cpp
 bin/load_genes.pl
 bin/loxp_pairs.pl
+bin/loxp_pairs_report.pl
 bin/persist_crisprs.pl
 bin/promotor_region_crisprs.pl
 bin/update_crispr_pair.pl
-generate_shash.pl~
 human_genes_73.yaml
 lib/WGE.pm
 lib/WGE/Controller/API.pm
@@ -27,11 +27,13 @@ lib/WGE/Controller/REST.pm
 lib/WGE/Controller/REST/Crispr.pm
 lib/WGE/Controller/REST/CrisprPair.pm
 lib/WGE/Controller/REST/Design.pm
+lib/WGE/Controller/REST/Species.pm
 lib/WGE/Controller/Root.pm
 lib/WGE/Exception.pm
 lib/WGE/Exception/Validation.pm
 lib/WGE/Model/DB.pm
 lib/WGE/Model/FormValidator.pm
+lib/WGE/Model/Plugin/CrisprPair.pm
 lib/WGE/Model/Plugin/User.pm
 lib/WGE/Model/Schema.pm
 lib/WGE/Model/Schema/Result/Assembly.pm
@@ -76,6 +78,8 @@ lib/WGE/Util/FindCrisprs.pm
 lib/WGE/Util/FindPairs.pm
 lib/WGE/Util/GenomeBrowser.pm
 lib/WGE/Util/PersistCrisprs.pm
+lib/WGE/Util/PersistCrisprs/Bed.pm
+lib/WGE/Util/PersistCrisprs/TSV.pm
 lib/WGE/View/JSON.pm
 lib/WGE/View/Web.pm
 mouse_genes_73.yaml
@@ -199,7 +203,5 @@ t/data/crisprs.yaml
 t/data/genes.yaml
 t/lib/Test/WGE.pm
 t/release-no-smart-comments.t
-test_create_design.pl~
-test_rest_client.pl~
 wge.conf
 wge.psgi

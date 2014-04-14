@@ -1,7 +1,7 @@
 package WGE::Util::GenomeBrowser;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::GenomeBrowser::VERSION = '0.009';
+    $WGE::Util::GenomeBrowser::VERSION = '0.011';
 }
 ## use critic
 
@@ -181,9 +181,10 @@ sub crisprs_for_region {
 
         DEBUG("Finding crisprs in exons ".(join ", ", @exon_ids));
         
+        #TODO: change exon_flanking stuff to use the flank option CrisprByExon now accepts
         my $exon_crisprs_rs = $schema->resultset('CrisprByExon')->search(
             {},
-            { bind => [ '{' . join( ",", @exon_ids ) . '}', $species->numerical_id ] }
+            { bind => [ '{' . join( ",", @exon_ids ) . '}', 0, $species->numerical_id ] }
         );
         return $exon_crisprs_rs;
     }
@@ -237,15 +238,15 @@ sub _genes_for_region {
 
     # Horrible SQL::Abstract syntax
     # Query is to find any genes which overlap with the region specified
-    # i.e. find genes which the browse region start or end (or both) fall within 
+    # i.e. gene start <= region end && region start <= gene end 
     my $genes = $schema->resultset('Gene')->search(
         { 
             'species_id' => $species->id,
             'chr_name' => $params->{chromosome_number},
-            -or => [
-                -and => [ 'chr_start' => { '<' => $params->{start_coord}}, 'chr_end' => {'>' => $params->{start_coord} }],
-                -and => [ 'chr_start' => { '<' => $params->{end_coord}}, 'chr_end' => {'>' => $params->{end_coord} }],
-            ],
+            -and => [
+                'chr_start' => { '<' => $params->{end_coord} },
+                'chr_end'   => { '>' => $params->{start_coord} },
+           ],
         },
     );
 

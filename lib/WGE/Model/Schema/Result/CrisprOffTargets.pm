@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::CrisprOffTargets;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::CrisprOffTargets::VERSION = '0.009';
+    $WGE::Model::Schema::Result::CrisprOffTargets::VERSION = '0.011';
 }
 ## use critic
 
@@ -74,6 +74,7 @@ sub as_hash {
         chr_start          => $self->chr_start,
         chr_end            => $self->chr_end,
         pam_right          => $self->pam_right,
+        pam_start          => $self->pam_start,
         species_id         => $self->species_id
     };
 

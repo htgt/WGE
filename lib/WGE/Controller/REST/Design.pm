@@ -1,7 +1,7 @@
 package WGE::Controller::REST::Design;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::REST::Design::VERSION = '0.009';
+    $WGE::Controller::REST::Design::VERSION = '0.011';
 }
 ## use critic
 
@@ -23,7 +23,12 @@ sub design_GET{
 
      my $design = $c->model->resultset('Design')->find({ id => $c->req->param('id') });
 
-     return $self->status_ok( $c, entity => $design->as_hash(1) );
+     my $supress_relations = 1;
+     if (defined $c->req->param('supress_relations') ) {
+        $supress_relations = $c->req->param('supress_relations');
+     }
+
+     return $self->status_ok( $c, entity => $design->as_hash($supress_relations) );
 }
 
 sub design_POST{

@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::CrisprsHuman;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::CrisprsHuman::VERSION = '0.009';
+    $WGE::Model::Schema::Result::CrisprsHuman::VERSION = '0.011';
 }
 ## use critic
 
@@ -86,6 +86,16 @@ __PACKAGE__->table("crisprs_human");
   data_type: 'text'
   is_nullable: 1
 
+=head2 exonic
+
+  data_type: 'boolean'
+  is_nullable: 1
+
+=head2 genic
+
+  data_type: 'boolean'
+  is_nullable: 1
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -110,6 +120,10 @@ __PACKAGE__->add_columns(
   { data_type => "integer[]", is_nullable => 1 },
   "off_target_summary",
   { data_type => "text", is_nullable => 1 },
+  "exonic",
+  { data_type => "boolean", is_nullable => 1 },
+  "genic",
+  { data_type => "boolean", is_nullable => 1 },
 );
 
 =head1 PRIMARY KEY
@@ -178,8 +192,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-28 16:41:34
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Sb5JeyY+TcPgTpm5sFCP9w
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-04-14 10:58:20
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:LZZE7Fjryo1Yv46yd5zTwQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
