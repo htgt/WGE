@@ -7,8 +7,39 @@
   </h1>
 </div>
 
+[% IF c.user %]
+<button id="show_hide_guest" class="btn btn-info pull-right">Hide public (guest) attempts</button>
+[% END %]
+
 [% INCLUDE 'create_design/design_attempt_table.tt'
     show_species       = 1
     design_attempt_url = '/design_attempt'
     view_design_url    = '/view_gibson_design'
 %]
+
+<script type="text/javascript">
+ 
+  $(document).ready(function() {
+    $('#show_hide_guest').click(function(){
+       var button = this;
+       var next_action;
+
+       $('table tr').each(function(index,row){
+       	 if(row.cells[7].textContent == 'guest'){
+       	 	if (button.textContent.match('Hide')){
+        	 	row.hidden = true;
+        	 	next_action = 'Show';
+        	}
+        	else {
+        		row.hidden = false;
+        		next_action = 'Hide';
+        	}
+       	 }
+       });
+
+       
+       this.textContent = next_action + " public (guest) attempts";
+    });
+  });
+
+</script>
