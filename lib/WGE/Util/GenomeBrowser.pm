@@ -623,6 +623,11 @@ sub gibson_designs_for_region {
 
     my $chromosome_id = get_chromosome_id($schema, $params);
 
+    my $username = "guest";
+    if ($params->{user}){
+        $username = $params->{user}->name;
+    }
+
     my $oligo_rs = $schema->resultset('GibsonDesignBrowser')->search( {},
         {
             bind => [
@@ -630,6 +635,7 @@ sub gibson_designs_for_region {
                 $params->{end_coord},
                 $chromosome_id,
                 $params->{assembly_id},
+                $username,
             ],
         }
     );

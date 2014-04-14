@@ -4,8 +4,10 @@
 [% META tab_name="My Bookmarks" %]
 
 [% FOREACH species IN ['Human', 'Mouse'] %]
- <h4>[% species %] Crisprs</h4>
-
+ <div class="well well-large">
+  
+  <h4>[% species %] Crisprs</h4>
+  [% IF bookmarks.$species.crisprs.size %]
   <table class="table table-bordered table-condensed">
    <tr>
     <th></th>
@@ -18,7 +20,7 @@
    </tr>
    [% FOREACH crispr IN bookmarks.$species.crisprs %]
    <tr>
-    <td><a href="[% c.uri_for('/genoverse_browse', { crispr_id => crispr.id, view_single => 1 }) %]">View</a></td>
+    <td><a class="btn btn-info btn-small" href="[% c.uri_for('/genoverse_browse', { crispr_id => crispr.id, view_single => 1 }) %]">View</a></td>
     <td><a href="[% c.uri_for('/crispr', crispr.id) %]">[% crispr.id %]</a></td>
     <td class="location">[% ensembl_link(chr_name=crispr.chr_name, chr_start=crispr.chr_start, chr_end=crispr.chr_end) %]</td>
     <td>[% crispr.seq %]</td>
@@ -28,13 +30,17 @@
    </tr>
    [% END %]
   </table>
+  [% ELSE %]
+  <p class="muted">You have no bookmarked [% species %] crisprs</p>
+  [% END %]
 
- <h4>[% species %] Crispr Pairs</h4>
-  <table class="table table-bordered table-condensed">
+  
+  <h4>[% species %] Crispr Pairs</h4>
+  [% IF bookmarks.$species.crispr_pairs.size %]
+  <table class="table table-bordered table-condensed table-striped">
    <tr>
     <th colspan="5" class="group-header">Pair</th>
-    <th colspan="4" class="group-header">Left Crispr</th>
-    <th colspan="4" class="group-header">Right Crispr</th>
+    <th colspan="5" class="group-header">Individual Crisprs</th>
    </tr>
    <tr>
     <th></th>
@@ -42,30 +48,102 @@
     <th>Spacer</th>
     <th>Status</th>
     <th>Summary</th>
+    <th></th>
     <th>ID</th>
     <th>Location</th>
     <th>Sequence</th>
     <th>Summary</th>
-    <th>ID</th>
-    <th>Location</th>
-    <th>Sequence</th>
-    <th>Summary</th>
+
    </tr>
    [% FOREACH pair IN bookmarks.$species.crispr_pairs %]
    <tr>
-     <td><a href="[% c.uri_for('/genoverse_browse', {crispr_id => pair.left_crispr.id, view_paired => 1}) %]">View</a></td>
-     <td><a href="[% c.uri_for('/crispr_pair', pair.id) %]">[% pair.id %]</a></td>
-     <td>[% pair.spacer %]</td>
-     <td>[% pair.status %]</td>
-     <td>[% pair.off_target_summary %]</td>
-     [% FOREACH crispr IN [pair.left_crispr pair.right_crispr] %]
-      <td><a href="[% c.uri_for('/crispr', crispr.id) %]">[% crispr.id %]</a></td>
-      <td class="location">[% ensembl_link(chr_name=crispr.chr_name, chr_start=crispr.chr_start, chr_end=crispr.chr_end) %]</td>
-      <td>[% crispr.seq %]</td>
-      <td>[% crispr.off_target_summary or 'No data' %]</td>
-     [% END %]
+     <td rowspan="2"><a class="btn btn-info btn-small" href="[% c.uri_for('/genoverse_browse', {crispr_id => pair.left_crispr.id, view_paired => 1}) %]">View</a></td>
+     <td rowspan="2"><a href="[% c.uri_for('/crispr_pair', pair.id) %]">[% pair.id %]</a></td>
+     <td rowspan="2">[% pair.spacer %]</td>
+     <td rowspan="2">[% pair.status %]</td>
+     <td rowspan="2">[% pair.off_target_summary %]</td>
+
+      <td>Left</td>
+      <td><a href="[% c.uri_for('/crispr', pair.left_crispr.id) %]">[% pair.left_crispr.id %]</a></td>
+      <td class="location">[% ensembl_link(chr_name=pair.left_crispr.chr_name, chr_start=pair.left_crispr.chr_start, chr_end=pair.left_crispr.chr_end) %]</td>
+      <td>[% pair.left_crispr.seq %]</td>
+      <td>[% pair.left_crispr.off_target_summary or 'No data' %]</td>
+
+      </tr>
+      <tr>
+
+      <td>Right</td>
+      <td><a href="[% c.uri_for('/crispr', pair.right_crispr.id) %]">[% pair.right_crispr.id %]</a></td>
+      <td class="location">[% ensembl_link(chr_name=pair.right_crispr.chr_name, chr_start=pair.right_crispr.chr_start, chr_end=pair.right_crispr.chr_end) %]</td>
+      <td>[% pair.right_crispr.seq %]</td>
+      <td>[% pair.right_crispr.off_target_summary or 'No data' %]</td>
+
    </tr>
    [% END %]
   </table>
-[% END %]
+  [% ELSE %]
+  <p class="muted">You have no bookmarked [% species %] crispr pairs</p>
+  [% END %]
 
+  
+  <h4>[% species %] Gibson Designs</h4>
+  [% IF bookmarks.$species.designs.size %]
+  <table class="table table-bordered">
+   <tr>
+    <th>ID</th>
+    <th>Type</th>
+    <th>Genes</th>
+    <th>Created at</th>      
+  </tr>
+  [% FOREACH design IN bookmarks.$species.designs %]
+  <tr>
+    <td>[% design.id %]</td>
+    <td>[% design.type %]</td>
+    <td>[% design.assigned_genes %]</td>
+    <td>[% design.created_at %]</td>
+  </tr>
+  [% END %]
+  </table>
+  [% ELSE %]
+  <p class="muted">You have no [% species %] gibson designs</p>
+  [% END %]
+
+  <h4>[% species %] Design Attempts</h4>
+  [% IF bookmarks.$species.attempts.size %]
+  <table class="table table-bordered">
+   <tr>
+    <th>ID</th>
+    <th>Genes</th>
+    <th>Exons</th>
+    <th>Status</th>
+    <th>Designs</th>
+    <th>Errors</th>
+    <th>Created at</th>      
+  </tr>
+  [% FOREACH attempt IN bookmarks.$species.attempts %]
+  <tr>
+    <td><a href="[% c.uri_for( '/design_attempt', attempt.id, 'view' ) %]">[% attempt.id %]</td>
+    <td>[% attempt.gene_id %]</td>
+    <td>
+      [% attempt.design_parameters.five_prime_exon %]
+      [% IF attempt.design_parameters.three_prime_exon %]
+        - [% attempt.design_parameters.three_prime_exon %]
+      [% END %] 
+    </td>
+    <td>[% attempt.status %]</td>
+    <td>
+      [% FOR id IN attempt.design_ids %]
+        <a href="[% c.uri_for( '/view_gibson_design', { design_id => id } ) %]">[% id %]</a>
+      [% END %]
+    </td>
+    <td>[% attempt.fail.error %]</td>
+    <td>[% attempt.created_at %]</td>
+  </tr>
+  [% END %]
+  </table>
+  [% ELSE %]
+  <p class="muted">You have no [% species %] gibson design attempts</p>  
+  [% END %]
+
+  </div>
+[% END %]

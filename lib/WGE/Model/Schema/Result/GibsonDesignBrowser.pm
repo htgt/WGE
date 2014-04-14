@@ -41,6 +41,7 @@ with gibsons as (select
 	  a.design_oligo_id         oligo_id
 	, b.design_id               design_id
     , c.design_type_id	        design_type_id
+    , c.created_by              created_by
 from design_oligo_loci a
 	
 join design_oligos b
@@ -67,6 +68,9 @@ join design_oligos d_o
 	on ( gibsons.design_id = d_o.design_id )
 join design_oligo_loci d_l
 	on ( d_l.design_oligo_id = d_o.id )
+join users u
+    on ( u.id = gibsons.created_by )
+where u.name = ?
 order by chr_start
 EOT
 
