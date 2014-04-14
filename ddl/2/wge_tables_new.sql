@@ -164,7 +164,9 @@ CREATE TABLE crisprs (
     pam_right boolean NOT NULL,
     species_id integer NOT NULL,
     off_target_ids integer[],
-    off_target_summary text
+    off_target_summary text,
+    exonic boolean,
+    genic boolean
 );
 
 
@@ -230,7 +232,9 @@ CREATE TABLE design_attempts (
     species_id text NOT NULL,
     created_by integer NOT NULL,
     created_at timestamp without time zone DEFAULT now() NOT NULL,
-    comment text
+    comment text,
+    candidate_oligos text,
+    candidate_regions text
 );
 
 
@@ -1296,7 +1300,7 @@ ALTER TABLE ONLY designs
 --
 
 ALTER TABLE ONLY exons
-    ADD CONSTRAINT exons_gene_id_fkey FOREIGN KEY (gene_id) REFERENCES genes(id);
+    ADD CONSTRAINT exons_gene_id_fkey FOREIGN KEY (gene_id) REFERENCES genes(id) ON DELETE CASCADE;
 
 
 --

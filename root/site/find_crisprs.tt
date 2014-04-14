@@ -74,7 +74,10 @@
         var url = "[% c.uri_for('/genoverse_browse') %]";
         var exon = get_selected_exons();
         var full_url = url.concat("?view_paired=1&exon_id=",exon);
-        window.location.href=full_url;
+        //window.location.href=full_url;
+        window.open(full_url);
+        
+        return false;
      });
     
     //if someone selects a species then remove the error class
