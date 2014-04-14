@@ -115,13 +115,20 @@ sub exon_search :Local('exon_search') {
     return;
 }
 
+#these two methods are identical, should move the remaining duplication
 sub crispr_search :Local('crispr_search') {
     my ($self, $c) = @_;
     my $params = $c->req->params;
     
     check_params_exist( $c, $params, [ 'exon_id[]' ]);
     
-    $c->stash->{json_data} = _get_exon_attribute( $c, "crisprs", $params->{ 'exon_id[]' } );
+    $c->stash->{json_data} = _get_exon_attribute( 
+        $c, 
+        "crisprs", 
+        $params->{ 'exon_id[]' }, 
+        $params->{ flank } 
+    );
+
     $c->forward('View::JSON');
 
     return;
@@ -133,7 +140,13 @@ sub pair_search :Local('pair_search') {
     
     check_params_exist( $c, $params, [ 'exon_id[]' ]);
     
-    $c->stash->{json_data} = _get_exon_attribute( $c, "pairs", $params->{ 'exon_id[]' } );
+    $c->stash->{json_data} = _get_exon_attribute( 
+        $c, 
+        "pairs", 
+        $params->{ 'exon_id[]' }, 
+        $params->{ flank },
+    );
+    
     $c->forward('View::JSON');
 
     return;
@@ -145,92 +158,38 @@ sub pair_off_target_search :Local('pair_off_target_search') {
     my $params = $c->req->params;
 
     check_params_exist( $c, $params, [ qw( species left_id right_id ) ] );
-    
-    # also need to make extra sure someone can't put '24576 || rm -rf *' or something
 
-    #delete anything that's not a number, just to make sure no one types
-    #24576 || rm -rf *' or something. it won't get run anyway unless its found in the db
-    $params->{left_id} =~ s/[^0-9]//g;
-    $params->{right_id} =~ s/[^0-9]//g;
+    my ( $pair, $crisprs ) = $c->model('DB')->find_or_create_crispr_pair( $params );
 
-    my $species_id = $c->model('DB')->resultset('Species')->find(
-        { id       => $params->{species} }
-    )->numerical_id;
+    #see what the current pair status is, and decide what to do
 
-
-    my $pair = $c->model('DB')->resultset('CrisprPair')->find( 
-        { 
-            left_id    => $params->{left_id}, 
-            right_id   => $params->{right_id},
-            species_id => $species_id,
-        }
-    );
-
-    my @crisprs;
-    if ( $pair ) {
-        #if its -2 we want to skip, not continue
-        if ( $pair->status_id > 0 ) {
-            #LOG HERE
-            #someone else has already started this one, so don't do anything
-            $c->stash->{json_data} = { 'error' => 'Job already started!' };
-            $c->forward('View::JSON');
-            return;
-        }
-        elsif ( $pair->status_id == -2 ) {
-            #skip it!
-            $c->stash->{json_data} = { 'error' => 'Pair has bad crispr' };
-            $c->forward('View::JSON');
-            return;
-        }
-
-        #its now pending so update the db accordingly
-        $pair->update( { status_id => 1 } );
-    } 
-    else {
-        #first find the crispr entries so we can check they are a valid pair
-        #also include the total number of offs for the CrisprPair method
-        @crisprs = $c->model('DB')->resultset('Crispr')->search( 
-            {  
-                id         => { -IN => [ $params->{left_id}, $params->{right_id} ] },
-                species_id => $species_id
-            },
-            { 
-                '+select' => [
-                    { array_length => [ 'off_target_ids', 1 ], -as => 'total_offs' }
-                ]
-            }
-        );
-
-        die "Error locating crisprs" if @crisprs != 2;
-        #the pair doesn't exist so create it. note that this is subject to a race condition,
-        #we should add locks to the table (david said it's part of select syntax)
-
-        #identify if the chosen crisprs are valid by
-        #checking the list of crisprs against itself for pairs
-        my $pairs = $self->pair_finder->find_pairs( \@crisprs, \@crisprs );
-
-        die "Found more than one pair??" if @{ $pairs } > 1;
-
-        #we didn't find a pair so let's make one
-        $pair = $c->model('DB')->resultset('CrisprPair')->create(
-            {
-                left_id    => $pairs->[0]{left_crispr}{id},
-                right_id   => $pairs->[0]{right_crispr}{id},
-                spacer     => $pairs->[0]{spacer},
-                species_id => $species_id,
-            },
-            { key => 'primary' }
-        );
-
-        #fetch the row back from the db or we won't have a status id
-        $pair->discard_changes;
+    #if its -2 we want to skip, not continue
+    if ( $pair->status_id > 0 ) {
+        #LOG HERE
+        #someone else has already started this one, so don't do anything
+        $c->stash->{json_data} = { 'error' => 'Job already started!' };
+        $c->forward('View::JSON');
+        return;
+    }
+    elsif ( $pair->status_id == -2 ) {
+        #skip it!
+        $c->stash->{json_data} = { 'error' => 'Pair has bad crispr' };
+        $c->forward('View::JSON');
+        return;
     }
 
-    my @ids_to_search = $pair->_data_missing( \@crisprs );
+    #pair is ready to start
+
+    #its now pending so update the db accordingly
+    $pair->update( { status_id => 1 } );
+
+    #if we already have the crisprs pass them on so the method doesn't have to
+    #fetch them again
+    my @ids_to_search = $pair->_data_missing( $crisprs );
 
     my $data;
     if ( @ids_to_search ) {
-        $c->log->warn( "Finding off targets for:" . join(", ", @ids_to_search) );
+        $c->log->warn( "Finding off targets for: " . join(", ", @ids_to_search) );
         my ( $job_id, $error );
         try {
             die "No pair id" unless $pair->id;
@@ -391,7 +350,7 @@ sub crispr_pairs_in_region :Local('crispr_pairs_in_region') Args(0){
 
 #used to retrieve pairs or crisprs from an arrayref of exons
 sub _get_exon_attribute {
-    my ( $c, $attr, $exon_ids ) = @_;
+    my ( $c, $attr, $exon_ids, $flank ) = @_;
 
     _send_error($c, 'No exons given to _get_exon_attribute', 500 ) 
         unless defined $exon_ids;
@@ -415,8 +374,8 @@ sub _get_exon_attribute {
         $c->log->debug('Finding ' . $attr . ' for: ' . join( ", ", @exon_ids ));
 
         #sometimes we get a hash, sometimes an object.
-        #if its an object than call as hash
-        my @vals = map { blessed $_ ? $_->as_hash : $_ } $exon->$attr;
+        #if its an object then call as hash
+        my @vals = map { blessed $_ ? $_->as_hash : $_ } $exon->$attr( $flank );
         _send_error($c, "None found!", 400) unless @vals;
 
         #store each exons data as an arrayref of hashrefs

@@ -175,9 +175,10 @@ sub crisprs_for_region {
 
         DEBUG("Finding crisprs in exons ".(join ", ", @exon_ids));
         
+        #TODO: change exon_flanking stuff to use the flank option CrisprByExon now accepts
         my $exon_crisprs_rs = $schema->resultset('CrisprByExon')->search(
             {},
-            { bind => [ '{' . join( ",", @exon_ids ) . '}', $species->numerical_id ] }
+            { bind => [ '{' . join( ",", @exon_ids ) . '}', 0, $species->numerical_id ] }
         );
         return $exon_crisprs_rs;
     }

@@ -28,8 +28,8 @@ __PACKAGE__->result_source_instance->is_virtual(1);
 #we also flank the exon by 200bp
 __PACKAGE__->result_source_instance->view_definition( <<'EOT' );
 WITH e as ( 
-    SELECT ensembl_exon_id, (chr_start-22) as chr_start, chr_end, chr_name 
-    FROM (SELECT unnest(?::text[]) AS id) x
+    SELECT ensembl_exon_id, ((chr_start-flank)-22) as chr_start, (chr_end+flank) as chr_end, chr_name 
+    FROM (SELECT unnest(?::text[]) AS id, ?::int as flank) x
     JOIN exons ON exons.ensembl_exon_id=x.id
 )
 SELECT e.ensembl_exon_id, c.*
@@ -65,7 +65,7 @@ use YAML::Any qw( Load );
 
 #this should go in the crisprrole...
 sub as_hash {
-    my $self = shift;
+    my ( $self, $opts ) = shift;
 
     my @cols = qw(
         ensembl_exon_id

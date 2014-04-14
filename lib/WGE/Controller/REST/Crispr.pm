@@ -68,12 +68,13 @@ sub crisprs_by_exon_GET {
     )->numerical_id;
 
     my $exons = $c->req->param('exons');
+    my $flank = $c->req->param('flank') // 0;
 
     my @exon_ids = ( ref $exons ) ? @{ $exons } : ( $exons );
 
     my @crisprs = map { $_->as_hash } $c->model('DB')->resultset('CrisprByExon')->search(
         {},
-        { bind => [ '{' . join( ",", @exon_ids ) . '}', $species_id ] }
+        { bind => [ '{' . join( ",", @exon_ids ) . '}', $flank, $species_id ] }
     );
 
     return $self->status_ok( $c, entity => \@crisprs );

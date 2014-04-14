@@ -68,6 +68,7 @@ sub as_hash {
         chr_start          => $self->chr_start,
         chr_end            => $self->chr_end,
         pam_right          => $self->pam_right,
+        pam_start          => $self->pam_start,
         species_id         => $self->species_id
     };
 
