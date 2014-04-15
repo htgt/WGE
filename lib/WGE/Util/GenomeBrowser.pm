@@ -148,12 +148,12 @@ sub fetch_design_data{
         $design = $schema->c_retrieve_design( { id => $design_id } );
     }
     catch( LIMS2::Exception::Validation $e ) {
-        die "Please provide a valid design id";
+        die "Please provide a valid design id\n";
     } 
     catch( LIMS2::Exception::NotFound $e ) {
-        die "Design $design_id not found" ;
+        die "Design $design_id not found\n" ;
     }
-
+    
     my $design_data = $design->as_hash;
     $design_data->{assigned_genes} = join q{, }, @{ $design_data->{assigned_genes} || [] };
 
@@ -684,7 +684,7 @@ sub design_oligos_to_gff {
                 'phase' => '.',
                 'attributes' => 'ID='
                     . 'D_' . $design_data . ';'
-                    . 'Name=' . 'D_' . $design_data
+                    . 'Name=' . $design_data
                 );
             my $oligo_parent_datum = prep_gff_datum( \%oligo_format_hash );
             push @oligo_gff, $oligo_parent_datum;

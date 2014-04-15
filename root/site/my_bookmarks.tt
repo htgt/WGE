@@ -90,6 +90,7 @@
   [% IF bookmarks.$species.designs.size %]
   <table class="table table-bordered">
    <tr>
+    <th></th>
     <th>ID</th>
     <th>Type</th>
     <th>Genes</th>
@@ -97,9 +98,10 @@
   </tr>
   [% FOREACH design IN bookmarks.$species.designs %]
   <tr>
-    <td>[% design.id %]</td>
+    <td><a class="btn btn-info btn-small" href="[% c.uri_for('/genoverse_browse', { design_id => design.id }) %]">View</a></td>
+    <td><a href="[% c.uri_for('/view_gibson_design', { design_id => design.id } ) %]">[% design.id %]</a></td>
     <td>[% design.type %]</td>
-    <td>[% design.assigned_genes %]</td>
+    <td>[% design.assigned_genes.join(', ') %]</td>
     <td>[% design.created_at %]</td>
   </tr>
   [% END %]

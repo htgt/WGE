@@ -396,9 +396,30 @@ my @DISPLAY_DESIGN = (
 sub view_design :Path( '/view_gibson_design' ) : Args(0) {
     my ( $self, $c ) = @_;
 
-    #$c->assert_user_roles( 'read' );
+    my $design_data;
+    try{
+        $design_data = fetch_design_data($c->model, $c->request->params);
+    }
+    catch($err){
+        $c->stash(error_msg => "Failed to fetch design data: $err");
+        return $c->go('view_gibson_designs');
+    }
 
-    my $design_data = fetch_design_data($c->model, $c->request->params);
+    my $owner = $design_data->{created_by};
+    unless($owner eq 'guest'){
+        my $design_id = $design_data->{id};
+        if(my $user = $c->user){
+            # Check they own this design
+            unless($user->name eq $owner){
+                $c->stash( error_msg => "Design $design_id is private");
+                return $c->go('view_gibson_designs');
+            }
+        }
+        else{
+            $c->stash( error_msg => "Design $design_id is private - login to view your designs");
+            return $c->go('view_gibson_designs');
+        }
+    }
 
     my $species_id = $design_data->{species};
 

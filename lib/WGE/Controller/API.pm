@@ -315,7 +315,9 @@ sub designs_in_region :Local('designs_in_region') Args(0){
         chromosome_number    => $c->request->params->{chr},
         start_coord          => $c->request->params->{start},
         end_coord            => $c->request->params->{end},
+        user                 => $c->user,
     };
+
     # FIXME: generate gff for all design oligos in specified region
     my $oligos = gibson_designs_for_region (
          $schema,

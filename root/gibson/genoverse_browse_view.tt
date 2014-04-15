@@ -19,7 +19,7 @@
    <thead>
     <tr>
      <th>Single Crisprs</th><th>Paired Crisprs</th>
-     <th>[% UNLESS view_single OR view_paired %]<p class="muted">[% END %]Crispr Filters</th>
+     <th><p id="crispr_filters_heading" [% UNLESS view_single OR view_paired %]class="muted"[% END %]>Crispr Filters</th>
     </tr>
    </thead>
    <tbody>
@@ -39,7 +39,7 @@
         Hide</input>
       </td>
       <td>
-       <fieldset [% UNLESS view_paired OR view_single %]disabled[% END %]>
+       <fieldset name="crispr_filters" [% UNLESS view_paired OR view_single %]disabled[% END %]>
         <input type="radio" name="crispr_filter" value="all" [% IF crispr_filter == 'all'  or not crispr_filter %]checked[% END %]>
         Show All</input>
         <br />
@@ -79,6 +79,7 @@
       }
       $(window)[0].genoverse.addTrack(
         Genoverse.Track.extend($.extend(true, {},crisprs[0])),3);
+      enable_filters();
   }
 
   function hide_paired (){
@@ -100,10 +101,12 @@
       }
       $(window)[0].genoverse.addTrack(
         Genoverse.Track.extend($.extend(true, {},crisprs[0])),3);
+      enable_filters();
   }
 
-  function set_url (urlParams, update) {
-    this.base($.extend(urlParams || this.urlParams, { test: $("#flank_size")[0].value, test2 : $('input[name=crispr_filter]:checked').val() }), update);
+  function enable_filters(){
+      $("[name='crispr_filters']")[0].disabled = false;
+      $("#crispr_filters_heading")[0].className = "";
   }
 
   $(document).ready( function() {
@@ -228,9 +231,12 @@
             resizable : 'auto',
             height    : 150,
 
-            populateMenu : function (feature) {            
+            populateMenu : function (feature) {
+              var link = "<a href='[%c.uri_for('/view_gibson_design')%]?design_id=" + feature.name
+                                + "' target='_blank'><font color='#00FFFF'>Design Report</font></a>";           
               var atts = {
                 ID     : feature.id,
+                url    : link,
                 Type   : feature.type,
                 Start  : feature.start,
                 End    : feature.end,
