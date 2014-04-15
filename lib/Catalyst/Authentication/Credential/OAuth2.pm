@@ -1,4 +1,5 @@
 package Catalyst::Authentication::Credential::OAuth2;
+use base qw/Catalyst::Authentication::Credential/;
 
 use strict;
 use warnings FATAL => 'all';
@@ -6,6 +7,15 @@ use warnings FATAL => 'all';
 use TryCatch;
 use Data::Dumper;
 use WGE::Util::OAuthHelper;
+
+sub new {
+    my ($class, $config, $app, $realm) = @_;
+
+    my $self = {};
+    bless $self, $class;
+
+    return $self;
+}
 
 sub authenticate {
     my ( $self, $c, $realm, $authinfo ) = @_;
@@ -36,7 +46,11 @@ sub authenticate {
     }
 
     $c->log->debug("user profile: ",Dumper($profile));
-    # Check email_verified == true
+
+    unless($profile->{email_verified}){
+        $c->flash->{error_msg} = "Login failed: email address not verified for ".$profile->{email};
+        return;
+    }
     $c->flash->{info_msg} = "You are now logged in as ".$profile->{email};
 
     my $username = $profile->{email};
