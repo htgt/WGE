@@ -25,9 +25,9 @@ __PACKAGE__->result_source_instance->is_virtual(1);
 #take 22 off the chr_start so we can find crisprs that overlap start/end
 __PACKAGE__->result_source_instance->view_definition( <<'EOT' );
 WITH g as ( 
-    SELECT ensembl_gene_id, chr_name, (chr_start-22) as chr_start, chr_end, chr_name
+    SELECT ensembl_gene_id, chr_name, (chr_start-22) as chr_start, chr_end
     FROM genes
-    WHERE g.ensembl_gene_id=?
+    WHERE genes.ensembl_gene_id=?
 )
 SELECT g.ensembl_gene_id, c.*
 FROM g

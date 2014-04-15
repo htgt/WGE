@@ -1,5 +1,13 @@
 {{$NEXT}}
 
+0.010     2014-04-07 16:55:30 Europe/London
+
+    Added supress_relations option in design rest client
+
+0.009     2014-03-25 12:30:10 Europe/London
+
+    Genoverse popup improvements
+
 0.008     2014-03-19 07:13:15 Europe/London
 
     Add candidate_oligos and candidate_regions columns to the design attempts table.

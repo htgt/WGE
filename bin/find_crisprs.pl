@@ -17,6 +17,8 @@ use Bio::Perl qw( revcom );
 Log::Log4perl->easy_init( $DEBUG );
 
 my ( $species, @ids, $fq_file, $crispr_file, $pair_file );
+my $include_completed = 0;
+my $flank = 200;
 GetOptions(
     "help"               => sub { pod2usage( 1 ) },
     "man"                => sub { pod2usage( 2 ) },
@@ -24,6 +26,8 @@ GetOptions(
     "ids=s{,}"           => \@ids,
     "fq-file=s"          => sub { my ( $name, $val ) = @_; $fq_file = file( $val ); },
     "crispr-yaml-file=s" => \$crispr_file,
+    "flank"              => \$flank,
+    "include-completed!" => \$include_completed,
 ) or pod2usage( 2 );
 
 die pod2usage( 2 ) unless $species and @ids and ($fq_file or $crispr_file);
@@ -43,9 +47,10 @@ my $all_crisprs;
 if ( @exon_ids ) {
     WARN "Some exon ids were invalid" unless @exon_ids == @ids;
     DEBUG "Fetching crisprs for exon ids: " . join( ", ", @exon_ids );
+    DEBUG "Exons will be flanked by $flank bases" if $flank;
     $all_crisprs = $client->GET(
         'crisprs_by_exon', 
-        { exons => \@exon_ids, species => $species }
+        { exons => \@exon_ids, species => $species, flank => $flank }
     );
 }
 elsif ( @crispr_ids ) {
@@ -63,8 +68,18 @@ else {
 die "Couldn't find any crisprs!" unless @{ $all_crisprs };
 
 my $fq_fh = $fq_file->openw or die "Can't open $fq_file: $!";
+my $total_crisprs = 0;
 my %crispr_data;
 for my $crispr ( @{ $all_crisprs } ) {
+    unless ( $include_completed ) {
+        if ( defined $crispr->{off_target_summary} ) {
+            DEBUG $crispr->{id} . " already has off target data, skipping.";
+            next 
+        }
+    }
+
+    $total_crisprs++;
+
     $crispr->{ensembl_exon_id} ||= 'ENSE000'; #if there's no exon id use this placeholder
     #create the empty hash to conform to how we used to do crisprs
     $crispr_data{ $crispr->{ensembl_exon_id} }->{ $crispr->{id} } = {};
@@ -78,6 +93,12 @@ for my $crispr ( @{ $all_crisprs } ) {
 }
 
 DEBUG "Total number of crisprs found: " . scalar( @{ $all_crisprs } );
+DEBUG "Total valid crisprs:" . $total_crisprs;
+
+unless ( $total_crisprs ) {
+    die "Couldn't find any valid crisprs! Try re-running with --include-completed";
+}
+#show the number of crisprs for each exon
 DEBUG join "\n", map { $_ . ": " . scalar( keys %{ $crispr_data{$_} } ) } keys %crispr_data;
 
 DumpFile( $crispr_file, \%crispr_data );
@@ -95,7 +116,8 @@ find_crisprs.pl - retrieve crisprs from WGE
 find_crisprs.pl [options]
 
     --species            mouse or human
-    --ids                crispr ids
+    --ids                crispr ids or exon ids
+    --flank              how much to flank exon ids by (default is 0) [optional]
     --fq-file            the file to dump fq data into
     --crispr-yaml-file   crispr yaml file to dump crispr data into
     --help               show this dialog
@@ -103,6 +125,7 @@ find_crisprs.pl [options]
 Example usage:
 
 find_crisprs.pl --species human --crispr-yaml-file crisprs.yaml --fq-file crisprs.fq --ids 53478 23472 23567
+find_crisprs.pl --species human --crispr-yaml-file crisprs.yaml --fq-file crisprs.fq --ids ENSE00001425722 ENSE00003611020 --flank 200
 
 =head1 DESCRIPTION
 

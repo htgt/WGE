@@ -80,6 +80,16 @@ __PACKAGE__->table("crisprs_mouse");
   data_type: 'text'
   is_nullable: 1
 
+=head2 exonic
+
+  data_type: 'boolean'
+  is_nullable: 1
+
+=head2 genic
+
+  data_type: 'boolean'
+  is_nullable: 1
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -104,6 +114,10 @@ __PACKAGE__->add_columns(
   { data_type => "integer[]", is_nullable => 1 },
   "off_target_summary",
   { data_type => "text", is_nullable => 1 },
+  "exonic",
+  { data_type => "boolean", is_nullable => 1 },
+  "genic",
+  { data_type => "boolean", is_nullable => 1 },
 );
 
 =head1 PRIMARY KEY

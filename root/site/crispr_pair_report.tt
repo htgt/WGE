@@ -4,10 +4,21 @@
 [% META tab_name="Crispr Pair" %]
 
 [% RETURN UNLESS pair %]
+<style type="text/css">
+.mismatch {
+  color: #FF0000;
+}
+</style>
+
 <script type="text/javascript">
-  //we use this for doing the mismatch counts
+  //these vars come from template toolkit
   var species     = "[% species %]";
   var pair_id     = "[% pair.left_crispr.id _ '_' _ pair.right_crispr.id %]";
+
+  //we use this for doing the mismatch counts
+  var l_seq   = "[% pair.left_crispr.seq %]";
+  var r_seq   = "[% pair.right_crispr.seq %]";
+
 
   //split seq into grna and pam
   $(document).ready( function() {
@@ -25,6 +36,26 @@
     var keys = [];
     $("#offtarget_table .ots").each(function() {
       var tr = $(this);
+
+      /*
+        TODO: display this l/r data after checking its right
+        probably will just put into two columns:
+        mismatches, off target of 
+      */
+
+      //this is pretty hacky, we basically recompute the mismatches,
+      //but we do that in the individual page too, so whatever I guess
+
+      //colour both the left and right off target 
+      //seqs[0] is the left, seqs[1] is the right
+      var seqs = tr.children(".seq"), mm = tr.children(".mm");
+      for ( var i = 0; i < 2; i++ ) {
+        var seq = $( seqs[i] );
+        var summary = check_str( seq.text() );
+
+        seq.html( summary.str );
+        $(mm[i]).text( summary.total + " (" + summary.match + ")" );
+      }
 
       var spacer = parseInt( $(this).children(".spacer").text() );
 
@@ -93,6 +124,33 @@
     });
 
   });
+
+function check_str(text) { 
+  text_r = text.revcom();
+
+  //get all possible matches
+  var all = [
+    l_seq.match_str(text,   {"match": "Left Fwd"}), 
+    l_seq.match_str(text_r, {"match": "Left Rev"}), 
+    r_seq.match_str(text,   {"match": "Right Fwd"}), 
+    r_seq.match_str(text_r, {"match": "Right Rev"})
+  ];
+
+  var smallest = all[0]; 
+
+  for (var i=1; i < all.length; i++) { 
+    if ( all[i].total < smallest.total ) { 
+      smallest = all[i]; 
+    }
+    else if ( all[i].total == smallest.total ) {
+      //TODO: something useful here? this is probably adequate
+      console.log("Found identical mismatch counts for " + text);
+      smallest.match += ", " + all[i].match;
+    }
+  } 
+
+  return smallest; 
+}
 </script>
 
 <div class="well">
@@ -160,35 +218,27 @@
   </table>
 </div>
 
-<p><b>Note</b>: the row highlighted in blue is the original CRISPR pair</p>
+<p><b>Note</b>: the row highlighted in blue is the original CRISPR pair<br/></p>
+<p><b>Mismatch count</b>: Left/right refers to the CRISPR the off target matched. Fwd/rev is the orientation of the match.</p>
 
 <table class='table table-bordered table-condensed' style="max-width: none;" id='offtarget_table'>
   <tr>
     <th>Spacer</th>
-    <th colspan="3">Left Crispr</th>
-    <th colspan="3">Right Crispr</th>
+    <th colspan="4">Left Crispr</th>
+    <th colspan="4">Right Crispr</th>
   </tr>
   <tr>
     <th></th>
     <th>Location</th>
     <th>Sequence</th>
-    <!-- <th>Mismatches</th> -->
+    <th>Mismatches</th>
     <th>Strand</th>
     <th>Location</th>
     <th>Sequence</th>
-    <!-- <th>Mismatches</th> -->
+    <th>Mismatches</th>
     <th>Strand</th>
   </tr>
-  <tr>
-    <td class="spacer"></td>
-    <td></td>
-    <td class="seq"></td>
-    <td></td>
-    <td></td>
-    <td class="seq"></td>
-    <td></td>
-  </tr>
-  <tr id="spacer_row"><td colspan="7"></td></tr>
+  <!-- <tr id="spacer_row"><td colspan="9"></td></tr>-->
 [% FOREACH off_target IN pair.off_targets %]
   [% IF off_target.left_crispr.id == pair.left_crispr.id && off_target.right_crispr.id == pair.right_crispr.id  %]
     [% class = " info" %]
@@ -200,14 +250,14 @@
     [% FOREACH type IN ['left_crispr', 'right_crispr'] %]
     <td class="location">[% ensembl_link(chr_name=off_target.$type.chr_name, chr_start=off_target.$type.chr_start, chr_end=off_target.$type.chr_end) %]</td>
     <td class="seq">[% off_target.$type.seq %]</td>
-    <!-- <td class="mm"></td> -->
+    <td class="mm"></td>
     <td>[% display_strand(pam_right=off_target.$type.pam_right) %]</td>
     [% END %]
   </tr>
 [% END %]
 [% UNLESS pair.off_targets.size %]
   <tr>
-    <td colspan="7" style="text-align: center">
+    <td colspan="9" style="text-align: center">
       No off target data available for this pair!
       [% IF ! pair.status_id.defined || pair.status_id == 0 %]
       <button class="btn btn-block ots-button" value="[% pair.left_crispr.id %]_[% pair.right_crispr.id %]">Find off targets</button>
