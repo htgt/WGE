@@ -217,21 +217,13 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
-=head2 users
 
-Type: many_to_many
-
-Composing rels: L</user_crispr_pairs_mice> -> user
-
-=cut
-
-__PACKAGE__->many_to_many("users", "user_crispr_pairs_mice", "user");
-
-
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-04-07 13:53:05
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:yasfXwG3mnKHhE7IyTf02A
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-04-15 09:58:51
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:iKFdzESA9KX1+x40AAcwqQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+__PACKAGE__->many_to_many("users", "user_crispr_pairs_mice", "user");
+
 __PACKAGE__->meta->make_immutable;
 1;

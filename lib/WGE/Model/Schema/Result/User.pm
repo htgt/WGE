@@ -219,49 +219,9 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
-=head2 crispr_pairs
 
-Type: many_to_many
-
-Composing rels: L</user_crispr_pairs_mice> -> crispr_pair
-
-=cut
-
-__PACKAGE__->many_to_many("crispr_pairs", "user_crispr_pairs_mice", "crispr_pair");
-
-=head2 crispr_pairs_2s
-
-Type: many_to_many
-
-Composing rels: L</user_crispr_pairs_humans> -> crispr_pair
-
-=cut
-
-__PACKAGE__->many_to_many("crispr_pairs_2s", "user_crispr_pairs_humans", "crispr_pair");
-
-=head2 crisprs
-
-Type: many_to_many
-
-Composing rels: L</user_crisprs_humans> -> crispr
-
-=cut
-
-__PACKAGE__->many_to_many("crisprs", "user_crisprs_humans", "crispr");
-
-=head2 crisprs_2s
-
-Type: many_to_many
-
-Composing rels: L</user_crisprs_mice> -> crispr
-
-=cut
-
-__PACKAGE__->many_to_many("crisprs_2s", "user_crisprs_mice", "crispr");
-
-
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-04-07 13:53:05
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:X6R7FtDL+jNfNFMp4dlJ8A
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-04-15 09:58:51
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:rfe/H7RMQgI3l46eZj7bVQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
@@ -272,12 +232,14 @@ sub user_crisprs{
     return ($self->user_crisprs_humans, $self->user_crisprs_mice);
 }
 
+# many-to-many relationship would return MouseCrispr so we do this instead
 sub mouse_crisprs{
   my $self = shift;
 
   return map { $self->result_source->schema->resultset('Crispr')->find({ id => $_->crispr_id }) } $self->user_crisprs_mice;
 }
 
+# many-to-many relationship would return HumanCrispr so we do this instead
 sub human_crisprs{
   my $self = shift;
 
@@ -290,12 +252,14 @@ sub user_crispr_pairs{
     return ($self->user_crispr_pairs_humans, $self->user_crispr_pairs_mice);
 }
 
+# many-to-many relationship would return MouseCrisprPair so we do this instead
 sub mouse_crispr_pairs{
   my $self = shift;
 
   return map { $self->result_source->schema->resultset('CrisprPair')->find({ id => $_->crispr_pair_id }) } $self->user_crispr_pairs_mice;
 }
 
+# many-to-many relationship would return HumanCrisprPair so we do this instead
 sub human_crispr_pairs{
   my $self = shift;
 
