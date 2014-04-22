@@ -56,6 +56,17 @@ sub check_params{
     return $FORM_VALIDATOR->check_params(@args);
 }
 
+sub clear_cached_constraint_method {
+    my ( $self, $constraint_name ) = @_;
+
+    $FORM_VALIDATOR ||= WGE::Model::FormValidator->new({model => $self});
+    if ( $FORM_VALIDATOR->has_cached_constraint_method($constraint_name) ) {
+        $FORM_VALIDATOR->delete_cached_constraint_method($constraint_name);
+    }
+
+    return;
+}
+
 ## no critic(RequireFinalReturn)
 sub retrieve {
     my ( $self, $entity_class, $search_params, $search_opts ) = @_;
