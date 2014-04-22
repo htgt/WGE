@@ -19,11 +19,11 @@
     <br/><br/>
     <form role="form" method="post" id="gibson_designer">
       <div class="control-group" id="species">
-        <label class="control-label">Please select a species to continue.</label>
+        <label class="control-label">Please [% UNLESS c.user %]<a href="[% c.uri_for('/login') %]">login with google</a> then [% END %]select a species to continue.</label>
         <br/>
-        <input type="submit" name="species" class="btn btn-primary" value="Human"/>
+        <input type="submit" name="species" class="btn btn-primary [% UNLESS c.user %]disabled" disabled[% ELSE %]" [% END %] value="Human"/>
         &nbsp;&nbsp;&nbsp;
-        <input type="submit" name="species" class="btn btn-primary" value="Mouse"/>
+        <input type="submit" name="species" class="btn btn-primary [% UNLESS c.user %]disabled" disabled[% ELSE %]" [% END %] value="Mouse"/>
       </div>
     </form>
   </div>

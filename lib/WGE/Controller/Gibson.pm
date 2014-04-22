@@ -16,6 +16,17 @@ BEGIN { extends 'Catalyst::Controller' }
 #
 __PACKAGE__->config(namespace => '');
 
+sub _require_login {
+    my ( $self, $c ) = @_;
+
+    my $login_uri = $c->uri_for('/login');
+    unless ($c->user_exists){
+        $c->flash( error_msg => "You must <a href=\"$login_uri\">log in</a> to use the Gibson Designer" );
+        $c->res->redirect($c->uri_for('/gibson_designer'));
+    }
+    return; 
+}
+
 =head1 NAME
 
 WGE::Controller::Gibson - Controller for Gibson related pages in WGE
@@ -25,9 +36,10 @@ WGE::Controller::Gibson - Controller for Gibson related pages in WGE
 sub gibson_design_gene_pick :Regex('gibson_design_gene_pick/(.*)'){
     my ( $self, $c ) = @_;
 
+    $self->_require_login($c);
+
     my ($species) = @{ $c->req->captures };
 
-    # Assert user role?
     $c->log->debug("Species: $species");
 
     # Allow species to be missing if session species already set
@@ -96,7 +108,8 @@ sub gibson_design_gene_pick :Regex('gibson_design_gene_pick/(.*)'){
 sub gibson_design_exon_pick :Path('/gibson_design_exon_pick') :Args(0){
     my ( $self, $c ) = @_;
 
-    # Assert user role?
+    $self->_require_login($c);
+
     if ( $c->request->params->{pick_exons} ) {
 
         my $exon_picks = $c->request->params->{exon_pick};
@@ -167,6 +180,8 @@ sub generate_exon_pick_data : Private {
 sub create_gibson_design : Path( '/create_gibson_design' ) : Args {
     my ( $self, $c, $is_redo ) = @_;
 
+    $self->_require_login($c);
+
     my $create_design_util = WGE::Util::CreateDesign->new(
         catalyst => $c,
         model    => $c->model('DB'),
@@ -189,6 +204,8 @@ sub create_gibson_design : Path( '/create_gibson_design' ) : Args {
 
 sub create_custom_target_gibson_design : Path( '/create_custom_target_gibson_design' ) : Args {
     my ( $self, $c, $is_redo ) = @_;
+
+    $self->_require_login($c);
 
     my $create_design_util = WGE::Util::CreateDesign->new(
         catalyst => $c,
@@ -489,12 +506,10 @@ sub view_gibson_designs :Path( '/view_gibson_designs' ) : Args(0) {
 sub download_design :Path( '/download_design' ) : Args(0) {
     my ( $self, $c ) = @_;
 
-    #$c->assert_user_roles( 'read' );
-
     my $design_data = fetch_design_data($c->model, $c->request->params);
 
     my $filename = "WGE_design_".$design_data->{id}.".csv";
-
+# FIXME: check user has permission to view this
     my $content = write_design_data_csv($design_data, \@DISPLAY_DESIGN);
 
     $c->response->status( 200 );
