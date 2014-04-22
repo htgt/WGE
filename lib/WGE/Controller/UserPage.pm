@@ -33,12 +33,12 @@ sub my_bookmarks :Path('/my_bookmarks'){
     my $bookmarks;
     $bookmarks->{'Human'}->{crisprs}      = [map { $_->as_hash } $c->user->human_crisprs];
     $bookmarks->{'Human'}->{crispr_pairs} = [map { $_->as_hash({ get_status => 1}) } $c->user->human_crispr_pairs];
-    $bookmarks->{'Human'}->{designs}      = [map { $_->as_hash } $designs_rs->search({ species_id => 'Human' }) ];
-    $bookmarks->{'Human'}->{attempts}     = [map { $_->as_hash({ json_as_hash => 1 }) } $attempts_rs->search({ species_id => 'Human' }) ];      
+    $bookmarks->{'Human'}->{designs}      = [map { $_->as_hash } $designs_rs->search({ species_id => 'Human' }, { order_by => 'created_at DESC' }) ];
+    $bookmarks->{'Human'}->{attempts}     = [map { $_->as_hash({ json_as_hash => 1 }) } $attempts_rs->search({ species_id => 'Human' },  { order_by => 'created_at DESC' } ) ];      
     $bookmarks->{'Mouse'}->{crisprs}      = [map { $_->as_hash } $c->user->mouse_crisprs];
     $bookmarks->{'Mouse'}->{crispr_pairs} = [map { $_->as_hash({ get_status => 1}) } $c->user->mouse_crispr_pairs];
-    $bookmarks->{'Mouse'}->{designs}      = [map { $_->as_hash } $designs_rs->search({ species_id => 'Mouse' }) ]; 
-    $bookmarks->{'Mouse'}->{attempts}     = [map { $_->as_hash({ json_as_hash => 1 }) } $attempts_rs->search({ species_id => 'Mouse' }) ];   
+    $bookmarks->{'Mouse'}->{designs}      = [map { $_->as_hash } $designs_rs->search({ species_id => 'Mouse' }, { order_by => 'created_at DESC' }) ]; 
+    $bookmarks->{'Mouse'}->{attempts}     = [map { $_->as_hash({ json_as_hash => 1 }) } $attempts_rs->search({ species_id => 'Mouse' }, { order_by => 'created_at DESC' } ) ];   
 $c->log->debug(Dumper($bookmarks));
     $c->stash(
     	bookmarks => $bookmarks,
