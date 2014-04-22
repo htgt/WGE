@@ -61,13 +61,13 @@
      <td rowspan="2"><a href="[% c.uri_for('/crispr_pair', pair.id) %]">[% pair.id %]</a></td>
      <td rowspan="2">[% pair.spacer %]</td>
      <td rowspan="2">[% pair.status %]</td>
-     <td rowspan="2">[% pair.off_target_summary %]</td>
+     <td rowspan="2">[% pair.off_target_summary.remove('[{}"]').replace(':',': ').replace(',\s*', '<br>') %]</td>
 
       <td>Left</td>
       <td><a href="[% c.uri_for('/crispr', pair.left_crispr.id) %]">[% pair.left_crispr.id %]</a></td>
       <td class="location">[% ensembl_link(chr_name=pair.left_crispr.chr_name, chr_start=pair.left_crispr.chr_start, chr_end=pair.left_crispr.chr_end) %]</td>
       <td>[% pair.left_crispr.seq %]</td>
-      <td>[% pair.left_crispr.off_target_summary or 'No data' %]</td>
+      <td>[% pair.left_crispr.off_target_summary.remove('[{}]').replace(', ','<br>') or 'No data' %]</td>
 
       </tr>
       <tr>
@@ -76,7 +76,7 @@
       <td><a href="[% c.uri_for('/crispr', pair.right_crispr.id) %]">[% pair.right_crispr.id %]</a></td>
       <td class="location">[% ensembl_link(chr_name=pair.right_crispr.chr_name, chr_start=pair.right_crispr.chr_start, chr_end=pair.right_crispr.chr_end) %]</td>
       <td>[% pair.right_crispr.seq %]</td>
-      <td>[% pair.right_crispr.off_target_summary or 'No data' %]</td>
+      <td>[% pair.right_crispr.off_target_summary.remove('[{}]').replace(', ','<br>') or 'No data' %]</td>
 
    </tr>
    [% END %]
