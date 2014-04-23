@@ -55,6 +55,7 @@ sub generate_auth_url{
         scope         => 'email',
         redirect_uri  => $redirect,
         state         => $state,
+        prompt        => 'select_account',
     );
 
     my $url_base = $self->google_config->{authorization_endpoint};
