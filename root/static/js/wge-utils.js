@@ -64,17 +64,40 @@ function close_alerts() {
   $("div.alert.alert-dismissable > .close").each(function(i,button){ button.click() });
 }
 
-function toggle_bookmark(button, path, id, item_name){
+function is_bookmarked(path, id){
+  $.get(path + "/" + id,
+    function (data) {
+      console.log(data);
+      if(data.error){
+        close_alerts();
+        create_alert(data.error);
+      }
+      else{
+        console.log(data.is_bookmarked);
+        close_alerts();
+        return data.is_bookmarked;
+      }
+    }
+  );
+}
+
+function toggle_bookmark(button, path, id, item_name, spinner){
   var regexp = new RegExp("Bookmark " + item_name);
   var b = button;
+  var orig_text = b.textContent;
+
   if(b.textContent.match(regexp)){
     //console.log("bookmarking " + item_name + " " + id);
+    if(spinner){
+      b.innerHTML += '<img alt="Waiting" src="' + spinner + '">';
+    }
     $.get(path + "/" + id + "/add",
       function (data) {
         //console.log(data);
         if(data.error){
           close_alerts();
           create_alert(data.error);
+          b.textContent = orig_text;
         }
         else{
           close_alerts();
@@ -86,12 +109,16 @@ function toggle_bookmark(button, path, id, item_name){
   }
   else if(b.textContent.match(/Remove Bookmark/)){
     //console.log("removing bookmark for " + item_name + " " + id);
+    if(spinner){
+      b.innerHTML += '<img alt="Waiting" src="' + spinner + '">';
+    }
     $.get(path + "/" + id + "/remove",
       function (data) {
         //console.log(data);
         if(data.error){
           close_alerts();
           create_alert(data.error);
+          b.textContent = orig_text;
         }
         else{
           close_alerts();

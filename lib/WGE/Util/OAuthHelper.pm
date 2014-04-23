@@ -12,7 +12,13 @@ use namespace::autoclean;
 use MooseX::ClassAttribute;
 use MIME::Base64 qw(decode_base64);
 use Log::Log4perl qw(:easy);
-Log::Log4perl->easy_init($DEBUG);
+
+BEGIN {
+    #try not to override the logger
+    unless ( Log::Log4perl->initialized ) {
+        Log::Log4perl->easy_init( { level => $DEBUG } );
+    }
+}
 
 class_has google_config => (
     is         => 'ro',
