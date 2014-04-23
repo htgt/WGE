@@ -33,8 +33,9 @@
     $("#bookmark").click(function (event){
       event.preventDefault();
       var b = document.getElementById("bookmark");
-
-      toggle_bookmark(b, "/bookmark_crispr", crispr_id, "Crispr");
+      var uri = "[% c.uri_for('/bookmark_crispr') %]";
+ 
+      toggle_bookmark(b, uri, crispr_id, "Crispr");
     });
 
     var rows = new Array([], [], [], [], []);
