@@ -168,6 +168,7 @@ __PACKAGE__->has_many(
 # Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-04-14 10:58:20
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:XZrdxdr4Rn6M/6RCR93lLQ
 
+
 __PACKAGE__->set_primary_key('id');
 
 with 'WGE::Util::CrisprRole';
@@ -212,5 +213,28 @@ sub off_targets {
 }
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+sub link_to_user_id{
+    my ($self, $user_id) = @_;
+    my $schema = $self->result_source->schema;
+    my $species = $schema->resultset('Species')->find({ numerical_id => $self->species_id });
+    my $linker_table = "UserCrisprs".$species->id;
+
+    my $link = $schema->resultset($linker_table)->new({ crispr_id => $self->id, user_id => $user_id });
+    $link->insert;
+
+    return;
+}
+
+sub remove_link_to_user_id{
+    my ($self, $user_id) = @_;
+    my $schema = $self->result_source->schema;
+    my $species = $schema->resultset('Species')->find({ numerical_id => $self->species_id });
+    my $linker_table = "UserCrisprs".$species->id;
+
+    my $link = $schema->resultset($linker_table)->find({ crispr_id => $self->id, user_id => $user_id });
+    $link->delete;
+    
+    return; 
+}
 __PACKAGE__->meta->make_immutable;
 1;

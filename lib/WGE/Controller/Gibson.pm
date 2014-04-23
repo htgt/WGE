@@ -16,6 +16,17 @@ BEGIN { extends 'Catalyst::Controller' }
 #
 __PACKAGE__->config(namespace => '');
 
+sub _require_login {
+    my ( $self, $c ) = @_;
+
+    my $login_uri = $c->uri_for('/login');
+    unless ($c->user_exists){
+        $c->flash( error_msg => "You must <a href=\"$login_uri\">log in</a> to use the Gibson Designer" );
+        $c->res->redirect($c->uri_for('/gibson_designer'));
+    }
+    return; 
+}
+
 =head1 NAME
 
 WGE::Controller::Gibson - Controller for Gibson related pages in WGE
@@ -25,9 +36,10 @@ WGE::Controller::Gibson - Controller for Gibson related pages in WGE
 sub gibson_design_gene_pick :Regex('gibson_design_gene_pick/(.*)'){
     my ( $self, $c ) = @_;
 
+    $self->_require_login($c);
+
     my ($species) = @{ $c->req->captures };
 
-    # Assert user role?
     $c->log->debug("Species: $species");
 
     # Allow species to be missing if session species already set
@@ -96,7 +108,8 @@ sub gibson_design_gene_pick :Regex('gibson_design_gene_pick/(.*)'){
 sub gibson_design_exon_pick :Path('/gibson_design_exon_pick') :Args(0){
     my ( $self, $c ) = @_;
 
-    # Assert user role?
+    $self->_require_login($c);
+
     if ( $c->request->params->{pick_exons} ) {
 
         my $exon_picks = $c->request->params->{exon_pick};
@@ -167,6 +180,8 @@ sub generate_exon_pick_data : Private {
 sub create_gibson_design : Path( '/create_gibson_design' ) : Args {
     my ( $self, $c, $is_redo ) = @_;
 
+    $self->_require_login($c);
+
     my $create_design_util = WGE::Util::CreateDesign->new(
         catalyst => $c,
         model    => $c->model('DB'),
@@ -189,6 +204,8 @@ sub create_gibson_design : Path( '/create_gibson_design' ) : Args {
 
 sub create_custom_target_gibson_design : Path( '/create_custom_target_gibson_design' ) : Args {
     my ( $self, $c, $is_redo ) = @_;
+
+    $self->_require_login($c);
 
     my $create_design_util = WGE::Util::CreateDesign->new(
         catalyst => $c,
@@ -251,8 +268,6 @@ sub _create_gibson_design {
 sub design_attempt : PathPart('design_attempt') Chained('/') CaptureArgs(1) {
     my ( $self, $c, $design_attempt_id ) = @_;
 
-    # FIXME assert user role edit
-
     my $design_attempt;
     try {
         $design_attempt = $c->model
@@ -260,14 +275,29 @@ sub design_attempt : PathPart('design_attempt') Chained('/') CaptureArgs(1) {
     }
     catch( LIMS2::Exception::Validation $e ) {
         $c->stash( error_msg => "Please enter a valid design attempt id" );
-        return $c->go('design_attempts');
+        return $c->go('gibson_design_attempts');
     }
     catch( LIMS2::Exception::NotFound $e ) {
         $c->stash( error_msg => "Design Attempt $design_attempt_id not found" );
-        return $c->go('design_attempts');
+        return $c->go('gibson_design_attempts');
     }
 
     $c->log->debug( "Retrived design_attempt: $design_attempt_id" );
+
+    my $owner = $design_attempt->created_by->name;
+    unless($owner eq 'guest'){
+        if(my $user = $c->user){
+            # Check they own this design
+            unless($user->name eq $owner){
+                $c->stash( error_msg => "Design Attempt $design_attempt_id is private");
+                return $c->go('gibson_design_attempts');
+            }
+        }
+        else{
+            $c->stash( error_msg => "Design Attempt $design_attempt_id is private - login to view your designs");
+            return $c->go('gibson_design_attempts');
+        }
+    }
 
     $c->stash(
         da      => $design_attempt,
@@ -294,12 +324,22 @@ sub view_design_attempt : PathPart('view') Chained('design_attempt') : Args(0) {
 sub gibson_design_attempts :Path( '/gibson_design_attempts' ) : Args(0) {
     my ( $self, $c ) = @_;
 
+    # Show user's designs and guest created designs
+    my $user_criteria;
+    if($c->user){
+        $user_criteria = ['guest', $c->user->name];
+    }
+    else{
+        $user_criteria = 'guest';
+    }
     #TODO make this a extjs grid to enable filtering, sorting etc 
 
     my @design_attempts = $c->model->resultset('DesignAttempt')->search(
         {
+            'created_by.name' => $user_criteria,
         },
         {
+            join => 'created_by',
             order_by => { '-desc' => 'created_at' },
             rows => 50,
         }
@@ -345,7 +385,7 @@ sub redo_design_attempt : PathPart('redo') Chained('design_attempt') : Args(0) {
         $c->stash(error_msg => "Error processing parameters from design attempt "
                 . $da->id . ":\n" . $err
                 . "Unable to redo design" );
-        return $c->go('design_attempts');
+        return $c->go('gibson_design_attempts');
     }
 
     if ( $gibson_target_type eq 'exon' ) {
@@ -356,7 +396,7 @@ sub redo_design_attempt : PathPart('redo') Chained('design_attempt') : Args(0) {
     }
     else {
         $c->stash( error_msg => "Unknown gibson target type $gibson_target_type"  );
-        return $c->go('design_attempts');
+        return $c->go('gibson_design_attempts');
     }
 
     return;
@@ -373,9 +413,30 @@ my @DISPLAY_DESIGN = (
 sub view_design :Path( '/view_gibson_design' ) : Args(0) {
     my ( $self, $c ) = @_;
 
-    #$c->assert_user_roles( 'read' );
+    my $design_data;
+    try{
+        $design_data = fetch_design_data($c->model, $c->request->params);
+    }
+    catch($err){
+        $c->stash(error_msg => "Failed to fetch design data: $err");
+        return $c->go('view_gibson_designs');
+    }
 
-    my $design_data = fetch_design_data($c->model, $c->request->params);
+    my $owner = $design_data->{created_by};
+    unless($owner eq 'guest'){
+        my $design_id = $design_data->{id};
+        if(my $user = $c->user){
+            # Check they own this design
+            unless($user->name eq $owner){
+                $c->stash( error_msg => "Design $design_id is private");
+                return $c->go('view_gibson_designs');
+            }
+        }
+        else{
+            $c->stash( error_msg => "Design $design_id is private - login to view your designs");
+            return $c->go('view_gibson_designs');
+        }
+    }
 
     my $species_id = $design_data->{species};
 
@@ -445,12 +506,10 @@ sub view_gibson_designs :Path( '/view_gibson_designs' ) : Args(0) {
 sub download_design :Path( '/download_design' ) : Args(0) {
     my ( $self, $c ) = @_;
 
-    #$c->assert_user_roles( 'read' );
-
     my $design_data = fetch_design_data($c->model, $c->request->params);
 
     my $filename = "WGE_design_".$design_data->{id}.".csv";
-
+# FIXME: check user has permission to view this
     my $content = write_design_data_csv($design_data, \@DISPLAY_DESIGN);
 
     $c->response->status( 200 );

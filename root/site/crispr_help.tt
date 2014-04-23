@@ -39,6 +39,7 @@ $(window).load(function() {
                 <ul class="nav nav-list">
                     <li><a href="#table_view">Table view</a></li>
                     <li><a href="#genoverse_view">Genoverse view</a></li>
+                    <li><a href="#bookmarks">Bookmarks</a></li>
                 </ul>
             </li>
             <li><a href="#off_targets">Off targets</a></li>
@@ -117,6 +118,24 @@ $(window).load(function() {
             </p>
         </section>
         <hr class="docs-separator" />
+        <section id="bookmarks">
+            <h2>Bookmarks</h2>
+            <p>Login to WGE using your Google account in order to bookmark crisprs and crispr pairs<br/>
+            <img src="[% c.uri_for('/static/images/about/login.png') %]" title="login" /></br>
+            </p>
+            <p>Add or remove bookmarks on the report pages for a crispr or crispr pair
+            <img src="[% c.uri_for('/static/images/about/bookmark_crispr.png') %]" title="bookmark_crispr" /></br>
+            <img src="[% c.uri_for('/static/images/about/bookmark_pair.png') %]" title="bookmark_pair" /></br>
+            <img src="[% c.uri_for('/static/images/about/bookmark_done.png') %]" title="bookmark_done" /></br>
+            </p>
+            <p>View summary information about all your bookmarked items
+            <img src="[% c.uri_for('/static/images/about/view_bookmarks.png') %]" title="view_bookmarks" /></br>
+            </p>
+            <p>When logged in your bookmarked crisprs and pairs will appear on additional tracks in the genoverse view
+            <img src="[% c.uri_for('/static/images/about/genoverse_bookmarks.png') %]" title="genoverse_bookmarks" /></br>
+            </p>
+        </section>
+        <hr class="docs-separator" />        
         <section id="off_targets">
             <h2>Off targets</h2>
             <p>

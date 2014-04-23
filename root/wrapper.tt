@@ -19,7 +19,8 @@
       //set this here so all js classes can know the base_url
       var base_url = "[% c.uri_for( '' ) %]"
     </script>
-    <script src="[% c.uri_for( 'static/js/wge-utils.js' ) %]"></script>
+    <!-- Added nonsense param to url to force browser to reload the js file -->
+    <script src="[% c.uri_for( 'static/js/wge-utils.js', {i => 3} ) %]"></script>
 
     <!-- Poller for the design status progress bar -->
     <script src="[% c.uri_for('static/js/poller.js') %]"></script>
@@ -77,6 +78,21 @@
               <a href="[% c.uri_for('/contact') %]">Contact</a>
             </li>
           </ul>
+          <ul class='nav pull-right'>
+           [% IF c.user %]
+            <li [% IF (template.tab_name == 'My Bookmarks') %] class="active" [% END %]>
+             <a href="[% c.uri_for('/my_bookmarks') %]">My Bookmarks</a>
+            </li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">[% c.user.name %] <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="[% c.uri_for('/logout') %]"><i class="icon-off"></i> Logout</a></li>
+              </ul>
+            </li>
+           [% ELSE %]
+            <li><a href="[% c.uri_for('/login') %]" class="btn-info" style="color:white">Login with Google</a></li>
+           [% END %]
+          </ul>
         </div>
     </div>
 
@@ -88,19 +104,19 @@
         </div>
 
         <!-- catalyst error message disply taken from LIMS2 -->
-        [% SET error = error_msg || c.stash.error_msg; IF error.length > 0 %]
+        [% SET error = error_msg || c.stash.error_msg || c.flash.error_msg; IF error.length > 0 %]
         <div class="alert alert-error">
           <button class="close" data-dismiss="alert" href="#">&times;</button>
           <p>[% error | html_line_break %]</p>
         </div>
         [% END %]
-        [% SET info = info_msg || c.stash.info_msg; IF info.length > 0 %]
+        [% SET info = info_msg || c.stash.info_msg || c.flash.info_msg; IF info.length > 0 %]
         <div class="alert alert-info">
           <button class="close" data-dismiss="alert" href="#">&times;</button>
           <p>[% info | html_line_break %]</p>
         </div>
         [% END %]
-        [% SET success = success_msg || c.stash.success_msg; IF success.length > 0 %]
+        [% SET success = success_msg || c.stash.success_msg || c.flash.success_msg; IF success.length > 0 %]
         <div class="alert alert-success">
           <button class="close" data-dismiss="alert" href="#">&times;</button>
           <p>[% success | none %]</p>

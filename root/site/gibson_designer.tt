@@ -16,7 +16,8 @@
       <h5>Construction of knockout vectors by Gibson assembly</h5>
       <p>Schematic diagram showing a strategy for the design of PCR primers and the construction knockout vectors. (<b>a</b>) For any exon of the mouse or human genome, the Gibson Designer searches for oligo sequences suitable for the PCR amplification of 5’ and 3’ homology arms from genomic DNA.  The program allows users to define the endpoints and length of the homology arms.  (<b>b</b>)  The 5’ and 3’ homology arms, appended with sequences matching the ends of a standard targeting cassette and plasmid backbone, are combined with the targeting cassette and plasmid backbone fragments in a 4-part Gibson reaction.</p>
     </div>
-    <br/><br/>
+    <br/>
+    [% IF c.user %]
     <form role="form" method="post" id="gibson_designer">
       <div class="control-group" id="species">
         <label class="control-label">Please select a species to continue.</label>
@@ -26,5 +27,8 @@
         <input type="submit" name="species" class="btn btn-primary" value="Mouse"/>
       </div>
     </form>
+    [% ELSE %]
+    <h4><a href="[% c.uri_for('/login') %]">Login with Google</a> to continute.</h4>
+    [% END %]
   </div>
 </div>

@@ -185,11 +185,30 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+=head2 user_crisprs_humans
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-04-14 10:58:20
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:LZZE7Fjryo1Yv46yd5zTwQ
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::UserCrisprsHuman>
+
+=cut
+
+__PACKAGE__->has_many(
+  "user_crisprs_humans",
+  "WGE::Model::Schema::Result::UserCrisprsHuman",
+  { "foreign.crispr_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-04-15 09:58:51
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:yH3Q7vrdsK5F6A2hozplHg
+
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+
+__PACKAGE__->many_to_many("users", "user_crisprs_humans", "user");
+
 __PACKAGE__->meta->make_immutable;
 1;

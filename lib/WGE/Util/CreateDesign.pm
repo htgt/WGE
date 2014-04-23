@@ -57,7 +57,8 @@ sub _build_user {
     my $self = shift;
 
     # We will add user login later
-    return "guest";
+    my $user = $self->catalyst->user->name || "guest";
+    return $user;
 }
 
 has assembly_id => (

@@ -11,14 +11,26 @@
 </style>
 
 <script type="text/javascript">
-  //we use this for doing the mismatch counts
   //these vars come from template toolkit
-  var species = "[% species %]";
+  var species     = "[% species %]";
+  var pair_id     = "[% pair.left_crispr.id _ '_' _ pair.right_crispr.id %]";
+
+  //we use this for doing the mismatch counts
   var l_seq   = "[% pair.left_crispr.seq %]";
   var r_seq   = "[% pair.right_crispr.seq %]";
 
+
   //split seq into grna and pam
   $(document).ready( function() {
+
+    //function to handle bookmarking of crispr pair
+    $("#bookmark").click(function (event){
+      event.preventDefault();
+      var b = document.getElementById("bookmark");
+
+      toggle_bookmark(b, "/bookmark_crispr_pair", pair_id, "Crispr Pair");
+    });
+
     //quick hack to sort the pairs so i can get a screenshot
     var rows = {};
     var keys = [];
@@ -142,7 +154,16 @@ function check_str(text) {
 </script>
 
 <div class="well">
-  <h4>Spacer: [% pair.spacer %]</h4> 
+  <h4>Spacer: [% pair.spacer %]</h4>
+  [% IF c.user %]
+   <button class="btn btn-info pull-right" id="bookmark">
+   [% IF is_bookmarked %]
+     Remove Bookmark
+   [% ELSE %] 
+     Bookmark Crispr Pair
+   [% END %]
+   </button>
+  [% END %]  
   <table class="table table-condensed">
     <thead>
       <tr>
