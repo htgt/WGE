@@ -34,6 +34,7 @@ $(window).load(function() {
             <li><a href="#disclaimer">Disclaimer</a></li>
             <li><a href="#usage">Gibson Design Tool Usage</a></li>
             <li><a href="#design_attempts">Design Attempts</a></li>
+            <li><a href="#view_designs">Designs</a></li>
             <li><a href="#source">Source Code</a></li>
         </ul>
     </div>
@@ -49,9 +50,13 @@ $(window).load(function() {
                 This tool helps you choose genomic oligos to use when constructing a knockout vector by Gibson Assembly.
             </p>
             <p>
-                Firstly, select a species:<br/>
-                <img class="img-polaroid" src="[% c.uri_for('/static/images/about/gibson_species.png') %]" title="choose_species" />
+                Firstly, login with your Google account.<br/>
+                <img class="img-polaroid" src="[% c.uri_for('/static/images/about/login.png') %]" title="login" />
             </p>
+            <p>
+                Next, select 'Create Design' from the 'Gibson Designer' menu and choose your species of interest.<br/>
+                <img class="img-polaroid" src="[% c.uri_for('/static/images/about/gibson_species.png') %]" title="gibson_species" />
+            </p>            
             <p>
                 Then enter the gene you want to knock out from the search box, as either marker symbols, HGNC (human), MGI (mouse) or Ensembl IDs. Now choose "Find exons" - displaying either exons on the canonical "main" transcript or all gene exons.<br/>
 
@@ -100,6 +105,19 @@ $(window).load(function() {
                 For a design attempt that failed additional details will be given about the reason for the failure.<br/>
                 <img class="img-polaroid" src="[% c.uri_for('/static/images/about/design_attempt_fail.png') %]" title="gibson_design_attempt_progress" />
             </p>
+        </section>
+
+        <hr class="docs-separator" />
+
+        <section id="view_designs">
+            <h2>Designs</h2>
+            <p>
+                You can see summary information about all your designs and design attempts on the 'My Bookmarks' page<br/>
+                <img class="img-polaroid" src="[% c.uri_for('/static/images/about/my_bookmarks_gibson.png') %]" title="my_bookmarks_gibson" />
+            </p>
+            <p>
+                Click on the 'view' link to see your design in the genoverse genome browser
+                <img class="img-polaroid" src="[% c.uri_for('/static/images/about/gibson_genoverse.png') %]" title="gibson_genoverse" />
         </section>
 
         <hr class="docs-separator" />

@@ -1,7 +1,7 @@
 package WGE::Model::DB;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::DB::VERSION = '0.011';
+    $WGE::Model::DB::VERSION = '0.012';
 }
 ## use critic
 
@@ -60,6 +60,17 @@ sub check_params{
     my $caller = ( caller(2) )[3];
     DEBUG "check_params caller: $caller";
     return $FORM_VALIDATOR->check_params(@args);
+}
+
+sub clear_cached_constraint_method {
+    my ( $self, $constraint_name ) = @_;
+
+    $FORM_VALIDATOR ||= WGE::Model::FormValidator->new({model => $self});
+    if ( $FORM_VALIDATOR->has_cached_constraint_method($constraint_name) ) {
+        $FORM_VALIDATOR->delete_cached_constraint_method($constraint_name);
+    }
+
+    return;
 }
 
 ## no critic(RequireFinalReturn)

@@ -1,4 +1,4 @@
-[% META title="Browse Crisprs"; META tab_name = 'Designs' %]
+[% META title="Browse Crisprs" %]
 <div class="page-header">
   <h1>[%- genes -%] 
   <small>[% IF design_id %]design: <strong>[%design_id%]</strong>[% END %]
@@ -10,46 +10,46 @@
 <form action="[% c.uri_for( '/genoverse_browse' ) %]" class="well">
   <input type="hidden" name="genome" value=[%genome%] />
   <input type="hidden" name="chromosome" value=[%chromosome%] />
-  <input type="hidden" name="browse_start" value=[%browse_start%] />
-  <input type="hidden" name="browse_end" value=[%browse_end%] />
-  <input type="hidden" name="genes" value=[%genes%] />
+  <input id="browse_start" type="hidden" name="browse_start" value=[%browse_start%] />
+  <input id="browse_end" type="hidden" name="browse_end" value=[%browse_end%] />
+  <input type="hidden" name="genes" value="[%genes%]" />
   [% IF design_id %]<input type="hidden" name="design_id" value=[%design_id%] />[% END %]
 
   <table class='table'>
    <thead>
     <tr>
      <th>Single Crisprs</th><th>Paired Crisprs</th>
-     <th>[% UNLESS view_single OR view_paired %]<p class="muted">[% END %]Crispr Filters</th>
+     <th><p id="crispr_filters_heading" [% UNLESS view_single OR view_paired %]class="muted"[% END %]>Crispr Filters</th>
     </tr>
    </thead>
    <tbody>
     <tr>
       <td>
-        <input type="radio" name="view_single" value="1" onclick="this.form.submit();" [% IF view_single %]checked[% END %]>
+        <input id="show_single" type="radio" name="view_single" value="1" [% IF view_single %]checked[% END %]>
         Show</input>
         <br />
-        <input type="radio" name="view_single" value="0" onclick="this.form.submit();" [% IF view_single == 0 %]checked[% END %]>
+        <input id="hide_single" type="radio" name="view_single" value="0"  [% IF not view_single %]checked[% END %]>
         Hide</input>
       </td>
       <td>
-        <input type="radio" name="view_paired" value="1" onclick="this.form.submit();" [% IF view_paired %]checked[% END %]>
+        <input id="show_paired" type="radio" name="view_paired" value="1" [% IF view_paired %]checked[% END %]>
         Show</input>
         <br />
-        <input type="radio" name="view_paired" value="0" onclick="this.form.submit();" [% IF view_paired == 0 %]checked[% END %]>
+        <input id="hide_paired" type="radio" name="view_paired" value="0" [% IF not view_paired %]checked[% END %]>
         Hide</input>
       </td>
       <td>
-       <fieldset [% UNLESS view_paired OR view_single %]disabled[% END %]>
-        <input type="radio" name="crispr_filter" value="all" onclick="this.form.submit();" [% IF crispr_filter == 'all'  or not crispr_filter %]checked[% END %]>
+       <fieldset name="crispr_filters" [% UNLESS view_paired OR view_single %]disabled[% END %]>
+        <input type="radio" name="crispr_filter" value="all" [% IF crispr_filter == 'all'  or not crispr_filter %]checked[% END %]>
         Show All</input>
         <br />
-        <input type="radio" name="crispr_filter" value="exonic" onclick="this.form.submit();" [% IF crispr_filter == 'exonic' %]checked[% END %]>
+        <input type="radio" name="crispr_filter" value="exonic" [% IF crispr_filter == 'exonic' %]checked[% END %]>
         Exon Only</input>
         <br />
-        <input type="radio" name="crispr_filter" value="exon_flanking" onclick="this.form.submit();" [% IF crispr_filter == 'exon_flanking' %]checked[% END %]>
+        <input type="radio" name="crispr_filter" value="exon_flanking" [% IF crispr_filter == 'exon_flanking' %]checked[% END %]>
         Exon Flanking Only</input>
         <br />
-        Flanking region: <input type="number" name="flank_size" value="[% flank_size OR 100 %]" min="1" max="1000" keypress="this.form.submit()"/>
+        Flanking region: <input type="number" id="flank_size" name="flank_size" value="[% flank_size OR 100 %]" min="1" max="1000"/>
        </fieldset>
       </td>
     </tr>
@@ -57,6 +57,108 @@
   </table>
 </form>      
 
+<script type="text/javascript">
+  
+  // Functions to show and hide sets of tracks
+  function hide_single (){
+    var crisprs = $.grep( $(window)[0].genoverse.tracks, function(n,i){ return n.name == "Crisprs" });
+    $(window)[0].genoverse.removeTrack(crisprs[0]);
+    var bookmarked = $.grep( $(window)[0].genoverse.tracks, function(n,i){ return n.name == "Bookmarked Crisprs" });
+    if(bookmarked[0]){
+      $(window)[0].genoverse.removeTrack(bookmarked[0]);
+    }
+  }
+
+  function show_single (){
+      // Insert the tracks at position 3, just below genes track (assuming user has not closed gene and sequence tracks..)
+      var crisprs = $.grep( $(window)[0].genoverse.tracksLibrary, function(n,i){ return n.name == "Crisprs" });
+      var bookmarked = $.grep( $(window)[0].genoverse.tracksLibrary, function(n,i){ return n.name == "Bookmarked Crisprs" });
+      if(bookmarked[0]){
+       $(window)[0].genoverse.addTrack(
+        Genoverse.Track.extend($.extend(true, {},bookmarked[0])),3);
+      }
+      $(window)[0].genoverse.addTrack(
+        Genoverse.Track.extend($.extend(true, {},crisprs[0])),3);
+      enable_filters();
+  }
+
+  function hide_paired (){
+      var crisprs = $.grep( $(window)[0].genoverse.tracks, function(n,i){ return n.name == "Crispr Pairs" });
+      $(window)[0].genoverse.removeTrack(crisprs[0]);
+      var bookmarked = $.grep( $(window)[0].genoverse.tracks, function(n,i){ return n.name == "Bookmarked Crispr Pairs" });
+      if(bookmarked[0]){
+        $(window)[0].genoverse.removeTrack(bookmarked[0]);
+      }
+  }
+
+  function show_paired (){
+      // Insert the tracks at position 3, just below genes track (assuming user has not closed gene and sequence tracks..)
+      var crisprs = $.grep( $(window)[0].genoverse.tracksLibrary, function(n,i){ return n.name == "Crispr Pairs" });
+      var bookmarked = $.grep( $(window)[0].genoverse.tracksLibrary, function(n,i){ return n.name == "Bookmarked Crispr Pairs" });
+      if(bookmarked[0]){
+       $(window)[0].genoverse.addTrack(
+        Genoverse.Track.extend($.extend(true, {},bookmarked[0])),3);
+      }
+      $(window)[0].genoverse.addTrack(
+        Genoverse.Track.extend($.extend(true, {},crisprs[0])),3);
+      enable_filters();
+  }
+
+  function enable_filters(){
+      $("[name='crispr_filters']")[0].disabled = false;
+      $("#crispr_filters_heading")[0].className = "";
+  }
+
+  $(document).ready( function() {
+
+    // All tracks are loaded by default on page refresh
+    // Hide the ones we don't want to see
+    // We are doing it this way because using the hidden attribute
+    // on the genoverse tracks caused "call stack size exceeded" error
+    Genoverse.on('afterInit', function () {
+      if($("#hide_single")[0].checked == true){
+        hide_single();
+      }
+      
+      if($("#hide_paired")[0].checked == true){
+        hide_paired();
+      }      
+    });
+
+    // Handle clicks on the show/hide radio inputs
+    $("#hide_single").click(function (event){
+      hide_single();
+    });
+    
+    $("#show_single").click(function (event){
+      show_single();
+    });
+
+    $("#hide_paired").click(function (event){
+      hide_paired();
+    });
+    
+    $("#show_paired").click(function (event){
+      show_paired();
+    });
+
+    $("#flank_size").keypress(function (event){
+      if(event.which == 13){
+        // enter key was pressed
+        $("#browse_start")[0].value = $(window)[0].genoverse.start + 200;
+        $("#browse_end")[0].value = $(window)[0].genoverse.end - 200;
+        this.form.submit();
+      }
+    });
+
+    $('input[name=crispr_filter]').click(function (event){
+      $("#browse_start")[0].value = $(window)[0].genoverse.start + 200;
+      $("#browse_end")[0].value = $(window)[0].genoverse.end - 200;
+      this.form.submit();
+    });
+
+  });
+</script>
 
     <script type="text/javascript" src="[% c.uri_for('/static/genoverse/js/genoverse.wtsi.js')%]">
        {
@@ -129,9 +231,12 @@
             resizable : 'auto',
             height    : 150,
 
-            populateMenu : function (feature) {            
+            populateMenu : function (feature) {
+              var link = "<a href='[%c.uri_for('/view_gibson_design')%]?design_id=" + feature.name
+                                + "' target='_blank'><font color='#00FFFF'>Design Report</font></a>";           
               var atts = {
                 ID     : feature.id,
+                url    : link,
                 Type   : feature.type,
                 Start  : feature.start,
                 End    : feature.end,
@@ -140,10 +245,10 @@
               return atts;
             }            
           }),
-[% IF view_single %]
+[% IF c.user %]
           Genoverse.Track.extend({
-            name      : 'Crisprs',
-            url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]" ,
+            name      : 'Bookmarked Crisprs',
+            url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]&bookmarked_only=1" ,
             model     : Genoverse.Track.Model.Transcript.GFF3,
             view      : Genoverse.Track.View.Transcript,
             autoHeight : true,
@@ -154,7 +259,7 @@
 
             populateMenu : function (feature) {
               var report_link = "<a href='[%c.uri_for('/crispr')%]/" + feature.name 
-                                + "'><font color='#00FFFF'>Crispr Report</font></a>";
+                                + "' target='_blank'><font color='#00FFFF'>Crispr Report</font></a>";
               var atts = {
                 Start  : feature.start,
                 End    : feature.end,
@@ -172,10 +277,42 @@
 
           }),
 [% END %]
-[% IF view_paired %]
+
           Genoverse.Track.extend({
-            name      : 'Crispr_pairs',
-            url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]" ,
+            name      : 'Crisprs',
+            url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]" ,
+            model     : Genoverse.Track.Model.Transcript.GFF3,
+            view      : Genoverse.Track.View.Transcript,
+            autoHeight : true,
+            height    : 150,
+            labels    : false,
+            threshold : 3000,
+            messages  : { threshold : 'Crisprs not displayed for regions larger than ' },
+
+            populateMenu : function (feature) {
+              var report_link = "<a href='[%c.uri_for('/crispr')%]/" + feature.name 
+                                + "' target='_blank'><font color='#00FFFF'>Crispr Report</font></a>";
+              var atts = {
+                Start  : feature.start,
+                End    : feature.end,
+                Name   : feature.name,
+                URL : report_link
+              };
+              if (feature.ot_summary){
+                atts['Off-Targets'] = feature.ot_summary;
+              }
+              else {
+                atts['Off-Targets'] = 'not computed';
+              }
+              return atts;
+            }
+
+          }),
+
+[% IF c.user %]
+          Genoverse.Track.extend({
+            name      : 'Bookmarked Crispr Pairs',
+            url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]&bookmarked_only=1" ,
             model     : Genoverse.Track.Model.Transcript.GFF3,
             view      : Genoverse.Track.View.Transcript,
             autoHeight : true,
@@ -188,7 +325,7 @@
               var report_link = "<a href='[%c.uri_for('/crispr_pair')%]/" 
                                 + feature.name 
                                 + "?spacer=" + feature.spacer
-                                + "'><font color='#00FFFF'>Crispr Pair Report</font></a>";              
+                                + "' target='_blank'><font color='#00FFFF'>Crispr Pair Report</font></a>";              
               var atts = {
                 Start  : feature.start,
                 End    : feature.end,
@@ -203,8 +340,39 @@
             }
           }),
 [% END %]
+          Genoverse.Track.extend({
+            name      : 'Crispr Pairs',
+            url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]" ,
+            model     : Genoverse.Track.Model.Transcript.GFF3,
+            view      : Genoverse.Track.View.Transcript,
+            autoHeight : true,
+            height    : 150,
+            labels    : false,
+            threshold : 3000,
+            messages  : { threshold : 'Crispr pairs not displayed for regions larger than ' },
+
+            populateMenu : function (feature) {
+              var report_link = "<a href='[%c.uri_for('/crispr_pair')%]/" 
+                                + feature.name 
+                                + "?spacer=" + feature.spacer
+                                + "' target='_blank'><font color='#00FFFF'>Crispr Pair Report</font></a>";              
+              var atts = {
+                Start  : feature.start,
+                End    : feature.end,
+                Spacer : feature.spacer,
+                Name   : feature.name,
+                URL    : report_link,
+                'Off-Targets: Pairs' : feature.ot_summary || 'not computed',
+                Left   : feature.left_ot_summary,
+                Right  : feature.right_ot_summary
+              };
+              return atts;              
+            }
+          }),
+
           Genoverse.Track.Scaleline
         ]
       }
     </script>
+
     <div id="genoverse"></div>

@@ -1,7 +1,7 @@
 package WGE::Controller::Root;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::Root::VERSION = '0.011';
+    $WGE::Controller::Root::VERSION = '0.012';
 }
 ## use critic
 

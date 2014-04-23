@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::User;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::User::VERSION = '0.011';
+    $WGE::Model::Schema::Result::User::VERSION = '0.012';
 }
 ## use critic
 
@@ -165,11 +165,112 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+=head2 user_crispr_pairs_humans
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 10:25:35
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:w+nD87LYQZ9wPyfoVFqFCA
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::UserCrisprPairsHuman>
+
+=cut
+
+__PACKAGE__->has_many(
+  "user_crispr_pairs_humans",
+  "WGE::Model::Schema::Result::UserCrisprPairsHuman",
+  { "foreign.user_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 user_crispr_pairs_mice
+
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::UserCrisprPairsMouse>
+
+=cut
+
+__PACKAGE__->has_many(
+  "user_crispr_pairs_mice",
+  "WGE::Model::Schema::Result::UserCrisprPairsMouse",
+  { "foreign.user_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 user_crisprs_humans
+
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::UserCrisprsHuman>
+
+=cut
+
+__PACKAGE__->has_many(
+  "user_crisprs_humans",
+  "WGE::Model::Schema::Result::UserCrisprsHuman",
+  { "foreign.user_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 user_crisprs_mice
+
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::UserCrisprsMouse>
+
+=cut
+
+__PACKAGE__->has_many(
+  "user_crisprs_mice",
+  "WGE::Model::Schema::Result::UserCrisprsMouse",
+  { "foreign.user_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-04-15 09:58:51
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:rfe/H7RMQgI3l46eZj7bVQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+
+sub user_crisprs{
+    my $self = shift;
+
+    return ($self->user_crisprs_humans, $self->user_crisprs_mice);
+}
+
+# many-to-many relationship would return MouseCrispr so we do this instead
+sub mouse_crisprs{
+  my $self = shift;
+
+  return map { $self->result_source->schema->resultset('Crispr')->find({ id => $_->crispr_id }) } $self->user_crisprs_mice;
+}
+
+# many-to-many relationship would return HumanCrispr so we do this instead
+sub human_crisprs{
+  my $self = shift;
+
+  return map { $self->result_source->schema->resultset('Crispr')->find({ id => $_->crispr_id }) } $self->user_crisprs_humans;
+}
+
+sub user_crispr_pairs{
+    my $self = shift;
+
+    return ($self->user_crispr_pairs_humans, $self->user_crispr_pairs_mice);
+}
+
+# many-to-many relationship would return MouseCrisprPair so we do this instead
+sub mouse_crispr_pairs{
+  my $self = shift;
+
+  return map { $self->result_source->schema->resultset('CrisprPair')->find({ id => $_->crispr_pair_id }) } $self->user_crispr_pairs_mice;
+}
+
+# many-to-many relationship would return HumanCrisprPair so we do this instead
+sub human_crispr_pairs{
+  my $self = shift;
+
+  return map { $self->result_source->schema->resultset('CrisprPair')->find({ id => $_->crispr_pair_id }) } $self->user_crispr_pairs_humans;
+}
+
 __PACKAGE__->meta->make_immutable;
 1;

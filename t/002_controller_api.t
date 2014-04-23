@@ -1,4 +1,4 @@
-use Test::More import => [ '!pass' ], tests => 32;
+use Test::More import => [ '!pass' ], tests => 33;
 
 use strict;
 use warnings;
@@ -186,10 +186,11 @@ sub get_single_exon_pairs_expected {
                                     {
                                       'right_crispr' => {
                                                           'chr_start' => 78348577,
+                                                          'chr_end' => 78348599,
                                                           'pam_right' => 1,
                                                           'chr_name' => '11',
                                                           'seq' => 'CTACTTCGTGGATGACCGGCTGG',
-                                                          'off_target_ids' => undef,
+                                                          'off_target_summary' => undef,
                                                           'ensembl_exon_id' => 'ENSMUSE00000578254',
                                                           'id' => 11094334,
                                                           'species_id' => 2,
@@ -197,10 +198,11 @@ sub get_single_exon_pairs_expected {
                                       'orientation' => 0,
                                       'left_crispr' => {
                                                          'chr_start' => 78348550,
+                                                         'chr_end' => 78348572,
                                                          'pam_right' => 0,
                                                          'chr_name' => '11',
                                                          'seq' => 'CCCGTATGAGACCCAGTCTGACA',
-                                                         'off_target_ids' => undef,
+                                                         'off_target_summary' => undef,
                                                          'ensembl_exon_id' => 'ENSMUSE00000578254',
                                                          'id' => 11094280,
                                                          'species_id' => 2,
@@ -217,10 +219,11 @@ sub get_multiple_exon_pairs_expected {
                                     {
                                       'right_crispr' => {
                                                           'chr_start' => 78343542,
+                                                          'chr_end' => 78343564,
                                                           'pam_right' => 1,
                                                           'chr_name' => '11',
                                                           'seq' => 'CGAGGATCTGCGGCCCCGCGAGG',
-                                                          'off_target_ids' => undef,
+                                                          'off_target_summary' => undef,
                                                           'ensembl_exon_id' => 'ENSMUSE00000758105',
                                                           'id' => 11094141,
                                                           'species_id' => 2,
@@ -228,10 +231,11 @@ sub get_multiple_exon_pairs_expected {
                                       'orientation' => 0,
                                       'left_crispr' => {
                                                          'chr_start' => 78343490,
+                                                         'chr_end' => 78343512,
                                                          'pam_right' => 0,
                                                          'chr_name' => '11',
                                                          'seq' => 'CCCCCTTCCCCTGGCTCCAGCCG',
-                                                         'off_target_ids' => undef,
+                                                         'off_target_summary' => undef,
                                                          'ensembl_exon_id' => 'ENSMUSE00000758105',
                                                          'id' => 11094149,
                                                          'species_id' => 2,                                                         
@@ -243,6 +247,7 @@ sub get_multiple_exon_pairs_expected {
                                     {
                                       'right_crispr' => {
                                                           'chr_start' => 78347818,
+                                                          'chr_end' => 78347840,
                                                           'pam_right' => 1,
                                                           'chr_name' => '11',
                                                           'seq' => 'GGGACCTGGACCCCAATGCAGGG',
@@ -254,6 +259,7 @@ sub get_multiple_exon_pairs_expected {
                                       'orientation' => 0,
                                       'left_crispr' => {
                                                          'chr_start' => 78347805,
+                                                         'chr_end' => 78347827,
                                                          'pam_right' => 0,
                                                          'chr_name' => '11',
                                                          'seq' => 'CCCATCAACCGGCGGGACCTGGA',

@@ -23,10 +23,20 @@
   var crispr_grna = "[% crispr_grna %]";
   var crispr_pam  = "[% crispr_pam %]"
   var species     = "[% species %]";
+  var crispr_id   = "[% crispr.id %]";
 
   //split seq into grna and pam
 
   $(document).ready( function() {
+
+  //function to handle bookmarking of crispr
+    $("#bookmark").click(function (event){
+      event.preventDefault();
+      var b = document.getElementById("bookmark");
+
+      toggle_bookmark(b, "/bookmark_crispr", crispr_id, "Crispr");
+    });
+
     var rows = new Array([], [], [], [], []);
     var total_erroneous = 0;
     $("#offtarget_table .ots").each(function() { 
@@ -65,11 +75,21 @@
         rows[mm][i].insertAfter( tbl_top );
       }
     }
-
   });
+
+
 </script>
 
 <div class="well">
+  [% IF c.user %]
+   <button class="btn btn-info pull-right" id="bookmark">
+   [% IF is_bookmarked %]
+     Remove Bookmark
+   [% ELSE %] 
+     Bookmark Crispr
+   [% END %]
+   </button>
+  [% END %]
   <table>
     <tr>
       <td>Species</td>

@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::CrisprsMouse;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::CrisprsMouse::VERSION = '0.011';
+    $WGE::Model::Schema::Result::CrisprsMouse::VERSION = '0.012';
 }
 ## use critic
 
@@ -191,12 +191,28 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+=head2 user_crisprs_mice
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-04-14 10:58:20
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:od+1rn1p8mBYi8RLKPYmBQ
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::UserCrisprsMouse>
+
+=cut
+
+__PACKAGE__->has_many(
+  "user_crisprs_mice",
+  "WGE::Model::Schema::Result::UserCrisprsMouse",
+  { "foreign.crispr_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-04-15 09:58:51
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Xt2aYgMIGiCKQqq5lb2VjQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
-__PACKAGE__->set_primary_key('id');
+__PACKAGE__->many_to_many("users", "user_crisprs_mice", "user");
+
 __PACKAGE__->meta->make_immutable;
 1;

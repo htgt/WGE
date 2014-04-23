@@ -1,7 +1,7 @@
 package WGE::Util::CreateDesign;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::CreateDesign::VERSION = '0.011';
+    $WGE::Util::CreateDesign::VERSION = '0.012';
 }
 ## use critic
 
@@ -63,7 +63,8 @@ sub _build_user {
     my $self = shift;
 
     # We will add user login later
-    return "guest";
+    my $user = $self->catalyst->user->name || "guest";
+    return $user;
 }
 
 has assembly_id => (

@@ -1,12 +1,13 @@
 package WGE::Util::CrisprRole;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::CrisprRole::VERSION = '0.011';
+    $WGE::Util::CrisprRole::VERSION = '0.012';
 }
 ## use critic
 
 
 use Moose::Role;
+use List::MoreUtils qw(any);
 
 requires qw( chr_start pam_right species_id result_source );
 
@@ -34,6 +35,15 @@ sub get_species {
     return $self->result_source->schema->resultset('Species')->find( 
         { numerical_id => $self->species_id } 
     )->id;
+}
+
+# Get species rs as you would if species_id was a foreign key
+sub species {
+    my $self = shift;
+
+    return $self->result_source->schema->resultset('Species')->find( 
+        { numerical_id => $self->species_id } 
+    );	
 }
 
 1;

@@ -1,7 +1,7 @@
 package WGE::Controller::API;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::API::VERSION = '0.011';
+    $WGE::Controller::API::VERSION = '0.012';
 }
 ## use critic
 
@@ -14,6 +14,7 @@ use WGE::Util::GenomeBrowser qw(
     crisprs_to_gff
     crispr_pairs_for_region
     crispr_pairs_to_gff
+    bookmarked_pairs_for_region
     );
 use namespace::autoclean;
 use Data::Dumper;
@@ -279,7 +280,9 @@ sub designs_in_region :Local('designs_in_region') Args(0){
         chromosome_number    => $c->request->params->{chr},
         start_coord          => $c->request->params->{start},
         end_coord            => $c->request->params->{end},
+        user                 => $c->user,
     };
+
     # FIXME: generate gff for all design oligos in specified region
     my $oligos = gibson_designs_for_region (
          $schema,
@@ -308,6 +311,11 @@ sub crisprs_in_region :Local('crisprs_in_region') Args(0){
         flank_size        => $c->request->params->{flank_size},    
     };
     
+    # Show only bookmarked crisprs
+    if($c->request->params->{bookmarked_only}){
+        $params->{user} = $c->user;
+    }
+
     my $crisprs = crisprs_for_region($schema, $params);
 
     if(my $design_id = $c->request->params->{design_id}){
@@ -337,8 +345,16 @@ sub crispr_pairs_in_region :Local('crispr_pairs_in_region') Args(0){
         flank_size        => $c->request->params->{flank_size},        
     };
     
-    my $pairs = crispr_pairs_for_region($schema, $params);
-
+    my $pairs;
+    # Show only bookmarked crispr pairs
+    if($c->request->params->{bookmarked_only}){
+        $params->{user} = $c->user;
+        $pairs = bookmarked_pairs_for_region($schema, $params);
+    }
+    else{
+        $pairs = crispr_pairs_for_region($schema, $params);
+    }
+#$c->log->debug(Dumper($pairs));
     if(my $design_id = $c->request->params->{design_id}){
         my $five_f = $c->model->c_retrieve_design_oligo({ design_id => $design_id, oligo_type => '5F' });
         my $three_r = $c->model->c_retrieve_design_oligo({ design_id => $design_id, oligo_type => '3R'});

@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::CrisprPairsMouse;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::CrisprPairsMouse::VERSION = '0.011';
+    $WGE::Model::Schema::Result::CrisprPairsMouse::VERSION = '0.012';
 }
 ## use critic
 
@@ -208,11 +208,28 @@ __PACKAGE__->belongs_to(
   },
 );
 
+=head2 user_crispr_pairs_mice
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-02-18 14:32:58
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:/J4hVosGXhr58pzbKfC/8A
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::UserCrisprPairsMouse>
+
+=cut
+
+__PACKAGE__->has_many(
+  "user_crispr_pairs_mice",
+  "WGE::Model::Schema::Result::UserCrisprPairsMouse",
+  { "foreign.crispr_pair_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-04-15 09:58:51
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:iKFdzESA9KX1+x40AAcwqQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+__PACKAGE__->many_to_many("users", "user_crispr_pairs_mice", "user");
+
 __PACKAGE__->meta->make_immutable;
 1;

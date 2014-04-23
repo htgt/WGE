@@ -23,6 +23,7 @@ requires:
   Bio::SeqIO: 0
   Carp: 0
   Catalyst: 0
+  Catalyst::Authentication::Credential: 0
   Catalyst::Controller: 0
   Catalyst::Controller::REST: 0
   Catalyst::Devel: 0
@@ -41,10 +42,12 @@ requires:
   DBIx::Class::Schema::Loader: 0
   Data::Dump: 0
   Data::Dumper: 0
+  Data::Random: 0
   DateTime::Format::Pg: 0
   File::stat: 0
   FindBin: 0
   Getopt::Long: 0
+  HTTP::Request::Common: 0
   Hash::MoreUtils: 0
   IO::File: 0
   IO::Handle: 0
@@ -53,8 +56,11 @@ requires:
   LIMS2::Exception::InvalidState: 0
   LIMS2::REST::Client: 0
   LIMS2::Util::EnsEMBL: 0
+  LWP::UserAgent: 0
+  List::MoreUtils: 0
   Log::Log4perl: 0
   Log::Log4perl::Catalyst: 0
+  MIME::Base64: 0
   Module::Pluggable::Object: 0
   Moose: 0
   Moose::Role: 0
@@ -76,6 +82,7 @@ requires:
   WebAppCommon::Crispr::SubmitInterface: 0
   WebAppCommon::Design::CreateInterface: 0
   WebAppCommon::FormValidator: 0
+  WebAppCommon::FormValidator::Constraint: 0
   WebAppCommon::Util::EnsEMBL: 0
   YAML::Any: 0
   base: 0
@@ -84,4 +91,4 @@ requires:
   strict: 0
   utf8: 0
   warnings: 0
-version: 0.011
+version: 0.012
