@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+0.013     2014-04-23 10:53:26 Europe/London
+
+    bugfix: use c.uri_for when creating bookmark button
+
 0.012     2014-04-23 10:06:57 Europe/London
 
     Added google login and bookmarking features
