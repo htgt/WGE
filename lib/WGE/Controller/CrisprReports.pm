@@ -96,7 +96,7 @@ sub crispr_bookmark_status :Path('/crispr_bookmark_status'){
 sub crispr_pair_bookmark_status :Path('/crispr_pair_bookmark_status'){
     my ($self, $c, $pair_id) = @_;
     if($c->user){
-        if (grep { $_->crispr_pair_id == $pair_id } $c->user->user_crispr_pairs){
+        if (grep { $_->crispr_pair_id eq $pair_id } $c->user->user_crispr_pairs){
             $c->stash->{json_data} = { is_bookmarked => 1 };
         }
         else{

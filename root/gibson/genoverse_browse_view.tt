@@ -104,6 +104,11 @@
       enable_filters();
   }
 
+  function get_track(name){
+    var tracks = $.grep( $(window)[0].genoverse.tracks, function(n,i){ return n.name == name });
+    return tracks[0];
+  }
+
   function enable_filters(){
       $("[name='crispr_filters']")[0].disabled = false;
       $("#crispr_filters_heading")[0].className = "";
@@ -123,8 +128,7 @@
       if($("#hide_paired")[0].checked == true){
         hide_paired();
       }
-
-      // FIXME: this spinner from LIMS2 works but is too big!
+      
       var spinner = "[% c.uri_for( '/static/images/spinner-circle.gif' ) %]";
 
       // override the 'makeMenu' method in order to add bookmarking buttons
@@ -133,68 +137,37 @@
       
       $(window)[0].genoverse.makeMenu = function (feature, event, track) {
         console.log(feature);
+        // run existing makeMenu code to create popup
         old_makeMenu.apply(this, arguments);
         console.log(feature.menuEl);
+
+        // append the bookmarking button to the popup        
+        var settings;
         if(feature.type == 'Crispr'){
           console.log('this is a crispr - adding bookmark button');
-          var name = 'crispr_' + feature.name;
-          
-          // remove existing button (bookmark state may have changed)
-          $('[name=' + name + ']').remove();
-
-          // check bookmark state and add button
-          var text;
-          if(is_bookmarked("[% c.uri_for('/crispr_bookmark_status') %]", feature.name) == 1){
-            text = 'Remove Bookmark';
-          }
-          else{
-            text = 'Bookmark Crispr';
-          }
-
-          feature.menuEl.append('<button name="' 
-                                + name +
-                                '">'
-                                + text +
-                                '</button>');
-
-          // add ajax request to button
-          $('[name=' + name + ']').click(function (event){
-              console.log('i am clicking the button');
-              var uri = "[% c.uri_for('/bookmark_crispr') %]";
-              toggle_bookmark(this, uri, feature.name, "Crispr", spinner);
-          });
+          settings = {
+             'id'           : feature.name,
+             'type'         : 'Crispr',
+             'status_uri'   : "[% c.uri_for('/crispr_bookmark_status') %]",
+             'bookmark_uri' : "[% c.uri_for('/bookmark_crispr') %]",
+             'spinner'      : spinner,
+             'bookmark_track' : get_track('Bookmarked Crisprs')
+          };
+          add_bookmark_button(feature.menuEl,settings);
         }
         else if(feature.type == 'crispr_pair'){
           console.log('this is a crispr pair - adding bookmark button');
-          var name = 'crispr_pair_' + feature.name;
-          
-          // remove existing button (bookmark state may have changed)
-          $('[name=' + name + ']').remove();
-
-          // check bookmark state and add button
-          var text;
-          if(is_bookmarked("[% c.uri_for('/crispr_pair_bookmark_status') %]", feature.name) == 1){
-            text = 'Remove Bookmark';
-          }
-          else{
-            text = 'Bookmark Crispr Pair';
-          }
-
-          feature.menuEl.append('<button name="' 
-                                + name +
-                                '">'
-                                + text +
-                                '</button>');
-
-          // add ajax request to button
-          $('[name=' + name + ']').click(function (event){
-              console.log('i am clicking the button');
-              var uri = "[% c.uri_for('/bookmark_crispr_pair') %]";
-              toggle_bookmark(this, uri, feature.name, "Crispr Pair", spinner);
-          });          
+          settings = {
+             'id'           : feature.name,
+             'type'         : 'Crispr Pair',
+             'status_uri'   : "[% c.uri_for('/crispr_pair_bookmark_status') %]",
+             'bookmark_uri' : "[% c.uri_for('/bookmark_crispr_pair') %]",
+             'spinner'      : spinner,
+             'bookmark_track' : get_track('Bookmarked Crispr Pairs')
+          };
+          add_bookmark_button(feature.menuEl,settings);          
         }
       };
-
     });
 
     // Handle clicks on the show/hide radio inputs
@@ -318,6 +291,7 @@
           }),
 [% IF c.user %]
           Genoverse.Track.extend({
+            id        : 'Bookmarked Crisprs',
             name      : 'Bookmarked Crisprs',
             url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]&bookmarked_only=1" ,
             model     : Genoverse.Track.Model.Transcript.GFF3,
@@ -382,6 +356,7 @@
 
 [% IF c.user %]
           Genoverse.Track.extend({
+            id        : 'Bookmarked Crispr Pairs',
             name      : 'Bookmarked Crispr Pairs',
             url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]&bookmarked_only=1" ,
             model     : Genoverse.Track.Model.Transcript.GFF3,
