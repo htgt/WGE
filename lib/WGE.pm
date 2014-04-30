@@ -60,6 +60,7 @@ __PACKAGE__->config(
             ],
     },
     'View::JSON' => { expose_stash => 'json_data' },
+    'View::CSV' => { sep_char => "\t", suffix => "tsv" },
     'static' => {
         include_path => [
             $ENV{SHARED_WEBAPP_STATIC_DIR} || '/opt/t87/global/software/perl/lib/perl5/WebAppCommon/shared_static',

@@ -54,10 +54,18 @@ sub authenticate {
     $c->flash->{info_msg} = "You are now logged in as ".$profile->{email};
 
     my $username = $profile->{email};
+
+    my $existing_user = $c->model('DB')->resultset('User')->find( { name => $username } );
+
     my $user_obj = $realm->find_user(
         { name => $username },
         $c
     );
+
+    unless ( $existing_user ) {
+        $c->log->debug( 'User did not exist, refreshing cache' );
+        $c->model('DB')->clear_cached_constraint_method('existing_user');
+    }
      
     unless ( $user_obj ) {
         $c->log->error( "User '$username' could not be created in WGE" );
