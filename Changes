@@ -1,5 +1,11 @@
 {{$NEXT}}
 
+0.014     2014-04-30 11:15:59 Europe/London
+
+    Bugfix: cache is now cleared after a new user is created
+    Model can now be loaded outside of the webapp
+    Added CSV view
+
 0.013     2014-04-23 10:53:26 Europe/London
 
     bugfix: use c.uri_for when creating bookmark button
