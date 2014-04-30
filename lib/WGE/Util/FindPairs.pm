@@ -1,7 +1,7 @@
 package WGE::Util::FindPairs;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::FindPairs::VERSION = '0.013';
+    $WGE::Util::FindPairs::VERSION = '0.014';
 }
 ## use critic
 

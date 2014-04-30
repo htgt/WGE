@@ -31,6 +31,7 @@ requires:
   Catalyst::Model::DBIC::Schema: 0
   Catalyst::Plugin::Static::Simple: 0
   Catalyst::Runtime: 5.80
+  Catalyst::View::CSV: 0
   Catalyst::View::JSON: 0
   Catalyst::View::TT: 0
   Config::Any: 0
@@ -91,4 +92,4 @@ requires:
   strict: 0
   utf8: 0
   warnings: 0
-version: 0.013
+version: 0.014

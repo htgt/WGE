@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::ResultSet::User;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::ResultSet::User::VERSION = '0.013';
+    $WGE::Model::Schema::ResultSet::User::VERSION = '0.014';
 }
 ## use critic
 
@@ -14,7 +14,6 @@ sub auto_create {
 
     my $new = $self->create($col_data);
 
-    $self->result_source->schema->clear_cached_constraint_method('existing_user');
     return $new;
 }
 

@@ -90,6 +90,7 @@ lib/WGE/Util/OAuthHelper.pm
 lib/WGE/Util/PersistCrisprs.pm
 lib/WGE/Util/PersistCrisprs/Bed.pm
 lib/WGE/Util/PersistCrisprs/TSV.pm
+lib/WGE/View/CSV.pm
 lib/WGE/View/JSON.pm
 lib/WGE/View/Web.pm
 mouse_genes_73.yaml

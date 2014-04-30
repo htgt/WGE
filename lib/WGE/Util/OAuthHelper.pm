@@ -1,7 +1,7 @@
 package WGE::Util::OAuthHelper;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::OAuthHelper::VERSION = '0.013';
+    $WGE::Util::OAuthHelper::VERSION = '0.014';
 }
 ## use critic
 
@@ -61,6 +61,7 @@ sub generate_auth_url{
         scope         => 'email',
         redirect_uri  => $redirect,
         state         => $state,
+        prompt        => 'select_account',
     );
 
     my $url_base = $self->google_config->{authorization_endpoint};
