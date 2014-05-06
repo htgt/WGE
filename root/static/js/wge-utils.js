@@ -100,20 +100,19 @@ function add_bookmark_button(menu, settings){
     );
 }
 
-function refresh_track(track, action, id){
+function refresh_track(track){
   if(track){
     var genoverse = $(window)[0].genoverse;
-    track.model.dataRanges.remove({ x: genoverse.start, w: genoverse.end - genoverse.start + 1, y: 0, h: 1 });
-    
-    if(action == 'remove'){
-      console.log('removing feature from track ' + id);
-      var feature = track.model.featuresById[id];
-      // FIXME: remove is not working. removing by coordinates not working either
-      track.model.features.remove({}, feature);
-    }  
-
     track.controller.resetImages();
-    track.controller.setScale();
+
+    // clear out existing data and features for this region so they are regenerated
+    track.model.dataRanges.remove({ x: genoverse.start, w: genoverse.end - genoverse.start + 1, y: 0, h: 1 }); 
+    track.model.features.remove({ x: genoverse.start, w: genoverse.end - genoverse.start + 1, y: 0, h: 1 }); 
+
+    // clear out the image_container divs
+    track.controller.imgContainers.empty();
+
+    // redraw the track
     track.controller.makeFirstImage();
   }
 }
@@ -140,7 +139,7 @@ function toggle_bookmark(button, path, id, item_name, spinner, bookmark_track){
           close_alerts();
           create_alert(data.message, "alert-success");
           b.textContent = "Remove Bookmark";
-          refresh_track(bookmark_track, 'add', id);
+          refresh_track(bookmark_track);
         }
       }
     );
@@ -162,7 +161,7 @@ function toggle_bookmark(button, path, id, item_name, spinner, bookmark_track){
           close_alerts();
           create_alert(data.message, "alert-success");
           b.textContent = "Bookmark " + item_name;
-          refresh_track(bookmark_track, 'remove', id);
+          refresh_track(bookmark_track);
         }
       }
     );
