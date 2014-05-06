@@ -27,8 +27,9 @@
     $("#bookmark").click(function (event){
       event.preventDefault();
       var b = document.getElementById("bookmark");
+      var uri = "[% c.uri_for('/bookmark_crispr_pair') %]";
 
-      toggle_bookmark(b, "/bookmark_crispr_pair", pair_id, "Crispr Pair");
+      toggle_bookmark(b, uri, pair_id, "Crispr Pair");
     });
 
     //quick hack to sort the pairs so i can get a screenshot

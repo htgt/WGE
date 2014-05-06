@@ -3,6 +3,9 @@ package WGE::Model::DB;
 use strict;
 use warnings;
 
+use Moose;
+extends qw( Catalyst::Model::DBIC::Schema );
+
 use Config::Any;
 use File::stat;
 use Carp qw(confess);
@@ -12,34 +15,46 @@ use Log::Log4perl qw( :easy );
 use Module::Pluggable::Object;
 use Data::Dump qw( pp );
 
-use base qw/Catalyst::Model::DBIC::Schema/;
+has form_validator => (
+    is         => 'rw',
+    isa        => 'WGE::Model::FormValidator',
+    lazy_build => 1,
+);
 
-my ($CONNECT_INFO, $FORM_VALIDATOR);
-
-{
-	my $filename = $ENV{WGE_DBCONNECT_CONFIG}
-        or confess "WGE_DBCONNECT_CONFIG environment variable not set";
-    my $st = stat($filename)
-        or confess "stat '$filename': $!";
-
-    my $config = Config::Any->load_files( { files => [$filename], use_ext => 1, flatten_to_hash => 1 } );
-    my $db_config = $config->{$filename}->{ $ENV{WGE_DB} }
-        or confess "No db connection info found for ".$ENV{WGE_DB}." in $filename"; 
-    $CONNECT_INFO = $db_config;
-
+sub _build_form_validator {
+    return WGE::Model::FormValidator->new( { model => shift } );
 }
 
-# Traits are Moose roles
-# use any role modules found in the WebAppCommon Plugin dir
-# or the WGE Model Plugin dir
-__PACKAGE__->config({
-    schema_class => $CONNECT_INFO->{schema_class},
-    connect_info =>  $CONNECT_INFO,
-    traits => [ '+MooseX::Log::Log4perl',
-       map { "+".$_ } Module::Pluggable::Object->new( 
-        search_path => [ 'WebAppCommon::Plugin', 'WGE::Model::Plugin' ] )->plugins,       
-    ],
-});
+#load config file and set the required schema_class and connect_info attrs
+around BUILDARGS => sub {
+    my $orig  = shift;
+    my $class = shift;
+
+    #make sure config file is set and the file actually exists
+    my $config_file = $ENV{WGE_DBCONNECT_CONFIG};
+    my $db_name     = $ENV{WGE_DB};
+
+    confess "WGE_DBCONNECT_CONFIG must be set"  unless $config_file;
+    confess "Could not access $config_file: $!" unless stat $config_file;
+    confess "WGE_DB must be set" unless $db_name;
+
+    my $config = Config::Any->load_files( 
+        { files => [ $config_file ], use_ext => 1, flatten_to_hash => 1 } 
+    );
+
+    my $db_config = $config->{$config_file}->{$db_name}
+        or confess "No db connection info found for $db_name in $config_file";
+
+    #call the original buildargs to process arguments,
+    #which returns a hashref
+    my $data = $class->$orig( @_ );
+
+    #set the two required attrs from our config
+    $data->{schema_class} ||= $db_config->{schema_class};
+    $data->{connect_info} ||= $db_config;
+
+    return $data;
+};
 
 sub txn_do {
     my ( $self, $code_ref, @args ) = @_;
@@ -47,21 +62,20 @@ sub txn_do {
     return $self->schema->txn_do( $code_ref, $self, @args );
 }
 
-sub check_params{
-    my ($self, @args) = @_;
+sub check_params {
+    my ( $self, @args ) = @_;
 
-    $FORM_VALIDATOR ||= WGE::Model::FormValidator->new({model => $self});
+    #get the subroutnie name that called us
     my $caller = ( caller(2) )[3];
-    DEBUG "check_params caller: $caller";
-    return $FORM_VALIDATOR->check_params(@args);
+    $self->log->debug( "check_params caller: $caller" );
+    return $self->form_validator->check_params( @args );
 }
 
 sub clear_cached_constraint_method {
     my ( $self, $constraint_name ) = @_;
 
-    $FORM_VALIDATOR ||= WGE::Model::FormValidator->new({model => $self});
-    if ( $FORM_VALIDATOR->has_cached_constraint_method($constraint_name) ) {
-        $FORM_VALIDATOR->delete_cached_constraint_method($constraint_name);
+    if ( $self->form_validator->has_cached_constraint_method($constraint_name) ) {
+        $self->form_validator->delete_cached_constraint_method($constraint_name);
     }
 
     return;
@@ -136,4 +150,13 @@ sub _chr_id_for {
 
     return $chr->id;
 }
+
+#get all plugins
+my @plugins = Module::Pluggable::Object->new( 
+    search_path => [ 'WebAppCommon::Plugin', 'WGE::Model::Plugin' ]  
+)->plugins;
+
+#load roles
+with qw( MooseX::Log::Log4perl ), @plugins;
+
 1;
