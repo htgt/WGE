@@ -1,7 +1,7 @@
 package WGE::Controller::CrisprReports;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::CrisprReports::VERSION = '0.014';
+    $WGE::Controller::CrisprReports::VERSION = '0.015';
 }
 ## use critic
 
@@ -78,6 +78,44 @@ sub crispr_report :Path('/crispr') :Args(1){
     }
 
     return; 
+}
+
+sub crispr_bookmark_status :Path('/crispr_bookmark_status'){
+    my ($self, $c, $crispr_id) = @_;
+    if($c->user){
+        if (grep { $_->crispr_id == $crispr_id } $c->user->user_crisprs){
+            $c->stash->{json_data} = { is_bookmarked => 1 };
+        }
+        else{
+            $c->stash->{json_data} = { is_bookmarked => 0 };
+        }
+    }
+    else{
+        $c->stash->{json_data} = { error => "Could not check crispr bookmark status - no logged in user"};
+    }
+
+    $c->forward('View::JSON');
+
+    return;
+}
+
+sub crispr_pair_bookmark_status :Path('/crispr_pair_bookmark_status'){
+    my ($self, $c, $pair_id) = @_;
+    if($c->user){
+        if (grep { $_->crispr_pair_id eq $pair_id } $c->user->user_crispr_pairs){
+            $c->stash->{json_data} = { is_bookmarked => 1 };
+        }
+        else{
+            $c->stash->{json_data} = { is_bookmarked => 0 };
+        }
+    }
+    else{
+        $c->stash->{json_data} = { error => "Could not check crispr pair bookmark status - no logged in user"};
+    }
+
+    $c->forward('View::JSON');
+
+    return;
 }
 
 sub bookmark_crispr :Path('/bookmark_crispr'){

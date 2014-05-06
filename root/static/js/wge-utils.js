@@ -64,39 +64,104 @@ function close_alerts() {
   $("div.alert.alert-dismissable > .close").each(function(i,button){ button.click() });
 }
 
-function toggle_bookmark(button, path, id, item_name){
+// function to add a bookmarking button to the crispr and crispr pair 
+// popup menus in the genoverse browse view
+function add_bookmark_button(menu, settings){
+    $.get(settings.status_uri + "/" + settings.id,
+      function (data){
+        console.log(data);
+        if(data.error){
+          close_alerts();
+          create_alert(data.error);
+          return;
+        }
+        else{
+          close_alerts();
+          var button_text;
+          if(data.is_bookmarked){
+            button_text = 'Remove Bookmark';
+          }
+          else{
+            button_text = 'Bookmark ' + settings.type;
+          }
+
+          // remove existing button (bookmark state may have changed)
+          $('[name=' + settings.id + ']').remove();
+          
+          // add the new button
+          menu.append('<button name="' + settings.id + '">' + button_text + '</button>');
+
+          // add ajax request to button
+          $('[name=' + settings.id + ']').click(function (event){
+            toggle_bookmark(this, settings.bookmark_uri, settings.id, settings.type, settings.spinner, settings.bookmark_track);
+          });                       
+        }
+      }
+    );
+}
+
+function refresh_track(track){
+  if(track){
+    var genoverse = $(window)[0].genoverse;
+    track.controller.resetImages();
+
+    // clear out existing data and features for this region so they are regenerated
+    track.model.dataRanges.remove({ x: genoverse.start, w: genoverse.end - genoverse.start + 1, y: 0, h: 1 }); 
+    track.model.features.remove({ x: genoverse.start, w: genoverse.end - genoverse.start + 1, y: 0, h: 1 }); 
+
+    // clear out the image_container divs
+    track.controller.imgContainers.empty();
+
+    // redraw the track
+    track.controller.makeFirstImage();
+  }
+}
+
+function toggle_bookmark(button, path, id, item_name, spinner, bookmark_track){
   var regexp = new RegExp("Bookmark " + item_name);
   var b = button;
+  var orig_text = b.textContent;
+
   if(b.textContent.match(regexp)){
     //console.log("bookmarking " + item_name + " " + id);
+    if(spinner){
+      b.innerHTML += '<img alt="Waiting" src="' + spinner + '" height="30" width="30">';
+    }
     $.get(path + "/" + id + "/add",
       function (data) {
         //console.log(data);
         if(data.error){
           close_alerts();
           create_alert(data.error);
+          b.textContent = orig_text;
         }
         else{
           close_alerts();
           create_alert(data.message, "alert-success");
           b.textContent = "Remove Bookmark";
+          refresh_track(bookmark_track);
         }
       }
     );
   }
   else if(b.textContent.match(/Remove Bookmark/)){
     //console.log("removing bookmark for " + item_name + " " + id);
+    if(spinner){
+      b.innerHTML += '<img alt="Waiting" src="' + spinner + '">';
+    }
     $.get(path + "/" + id + "/remove",
       function (data) {
         //console.log(data);
         if(data.error){
           close_alerts();
           create_alert(data.error);
+          b.textContent = orig_text;
         }
         else{
           close_alerts();
           create_alert(data.message, "alert-success");
           b.textContent = "Bookmark " + item_name;
+          refresh_track(bookmark_track);
         }
       }
     );
