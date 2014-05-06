@@ -1,5 +1,10 @@
 {{$NEXT}}
 
+0.015     2014-05-06 13:30:10 Europe/London
+
+   Added crispr bookmarking buttons to genoverse view
+   Added remove bookmark buttons to "My Bookmarks" page
+
 0.014     2014-04-30 11:15:59 Europe/London
 
     Bugfix: cache is now cleared after a new user is created
