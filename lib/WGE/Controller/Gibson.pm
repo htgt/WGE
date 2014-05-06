@@ -550,4 +550,37 @@ sub genoverse_browse_view :Path( '/genoverse_browse') : Args(0){
     return;
 }
 
+## Handle ajax request to delete design attempt
+sub delete_design_attempt :Path('delete_design_attempt'){
+    my ( $self, $c, $attempt_id ) = @_;
+
+    if($c->user){
+        try{
+            my $attempt = $c->model->c_retrieve_design_attempt({ id => $attempt_id });
+            unless ($c->user->id == $attempt->created_by->id){
+                $c->log->debug($c->user->name." tried to delete design attempt created_by ".$attempt->created_by->name);
+                die "design attempt does not belong to ".$c->user->name."\n";
+            }
+            # Only delete failed designs
+            if($attempt->status eq 'fail'){
+                $attempt->delete;
+                $c->stash->{json_data} = { message => "Design attempt $attempt_id was deleted"};
+            }
+            else{
+                die "status is ".$attempt->status.". Only failed attempts can be deleted.\n";
+            }
+        }
+        catch($e){
+            $c->stash->{json_data} = { error => "Could not delete design attempt $attempt_id - $e" };
+        }
+    }
+    else{
+        # error, no user logged in
+        $c->stash->{json_data} = { error => "Could not delete design attempt $attempt_id - no logged in user" };
+    }
+
+    $c->forward('View::JSON');
+
+    return    
+}
 1;

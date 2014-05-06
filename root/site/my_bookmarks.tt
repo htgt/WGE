@@ -118,6 +118,7 @@
   [% IF bookmarks.$species.attempts.size %]
   <table class="table table-bordered">
    <tr>
+    <th></th>
     <th>ID</th>
     <th>Genes</th>
     <th>Exons</th>
@@ -128,6 +129,12 @@
   </tr>
   [% FOREACH attempt IN bookmarks.$species.attempts %]
   <tr>
+    
+    <td>
+    [% IF attempt.status == 'fail' %]
+    <a class="btn btn-small" type="delete_design_attempt" id="[% attempt.id %]" title="delete design attempt"><i class="icon-remove"></i></a>
+    [% END %]
+    </td>
     <td><a href="[% c.uri_for( '/design_attempt', attempt.id, 'view' ) %]">[% attempt.id %]</td>
     <td>[% attempt.gene_id %]</td>
     <td>
@@ -156,12 +163,14 @@
 
 <script type="text/javascript">
 
-function remove_bookmark (uri, id, button){
-  $.get(uri + '/' + id + '/remove',
+function remove_item (uri, button){
+  $.get(uri,
     function(data){
       if(data.error){
         close_alerts();
         create_alert(data.error);
+        // scroll to the top so user sees alert
+        $("html, body").animate({ scrollTop: 0 }, "fast");
       }
       else{
         close_alerts();
@@ -181,14 +190,20 @@ function remove_bookmark (uri, id, button){
    
    $("[type='crispr_remove_bookmark']").click(function(event){
       event.preventDefault();
-      var uri = '[% c.uri_for('bookmark_crispr') %]';
-      remove_bookmark(uri, this.id, this);
+      var uri = '[% c.uri_for('bookmark_crispr') %]' + '/' + this.id + '/remove';
+      remove_item(uri, this);
    });
 
    $("[type='crispr_pair_remove_bookmark']").click(function(event){
       event.preventDefault();
-      var uri = '[% c.uri_for('bookmark_crispr_pair') %]';
-      remove_bookmark(uri, this.id, this);
+      var uri = '[% c.uri_for('bookmark_crispr_pair') %]' + '/' + this.id + '/remove';
+      remove_item(uri, this);
+   });
+
+   $("[type='delete_design_attempt']").click(function(event){
+      event.preventDefault();
+      var uri = '[% c.uri_for('delete_design_attempt') %]' + '/' + this.id;
+      remove_item(uri, this);
    });
 
  })
