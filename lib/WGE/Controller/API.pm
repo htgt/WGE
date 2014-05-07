@@ -14,6 +14,7 @@ use namespace::autoclean;
 use Data::Dumper;
 use Path::Class;
 use Try::Tiny;
+use Iterator::Simple;
 
 use WGE::Util::FindPairs;
 
@@ -33,6 +34,11 @@ sub _build_pair_finder {
     return WGE::Util::FindPairs->new;
 }
 
+# Can't lazy build this as we need to access schema to find the guest user
+has guest_user => (
+    is         => 'rw',
+    isa        => 'WGE::Model::Schema::Result::User',
+);
 
 =head1 NAME
 
@@ -265,6 +271,27 @@ sub design_attempt_status :Chained('/') PathPart('design_attempt_status') Args(1
     return;
 }
 
+sub user_can_view_design{
+    my($self, $c, $design_id) = @_;
+
+    unless($self->guest_user){
+        $self->guest_user( $c->model->schema->resultset('User')->find({ name => 'guest' }) );
+    }
+
+    if( $self->guest_user->can_view_design_id($design_id) ){
+        return 1;
+    }
+    
+    if(my $user = $c->user){
+        # Check they have permission to view this design
+        if( $user->can_view_design_id($design_id) ){
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 sub designs_in_region :Local('designs_in_region') Args(0){
     my ($self, $c) = @_;
 
@@ -283,7 +310,15 @@ sub designs_in_region :Local('designs_in_region') Args(0){
          $params,
     );
 
-    my $gibson_gff = design_oligos_to_gff( $oligos, $params );
+    my @filtered;
+    while ( my $gibson = $oligos->next ) {
+        if ($self->user_can_view_design($c,$gibson->design_id)){
+            push @filtered, $gibson;
+        }
+    }
+    my $filtered_oligos = Iterator::Simple::iter(\@filtered);
+
+    my $gibson_gff = design_oligos_to_gff( $filtered_oligos, $params );
     $c->response->content_type( 'text/plain' );
     my $body = join "\n", @{$gibson_gff};
     return $c->response->body( $body );

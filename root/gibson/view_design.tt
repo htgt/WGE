@@ -17,10 +17,12 @@
     <i class="icon-download-alt icon-white"></i>
     Download CSV
   </a>
+  [% IF c.user AND c.user.name == design.created_by %]
   <a class='btn btn-primary' role="button" href="#ShareDesignModal" data-toggle="modal">
     <i class="icon-share icon-white"></i>
     Share Design
-  </a>  
+  </a>
+  [% END %]
 </div>
 
 <div class="modal hide fade" id="ShareDesignModal">

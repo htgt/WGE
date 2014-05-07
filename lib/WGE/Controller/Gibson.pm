@@ -410,21 +410,10 @@ my @DISPLAY_DESIGN = (
     [ 'Created at'              => 'created_at' ]
 );
 
-sub view_design :Path( '/view_gibson_design' ) : Args(0) {
-    my ( $self, $c ) = @_;
-
-    my $design_data;
-    try{
-        $design_data = fetch_design_data($c->model, $c->request->params);
-    }
-    catch($err){
-        $c->stash(error_msg => "Failed to fetch design data: $err");
-        return $c->go('view_gibson_designs');
-    }
-
+sub _check_user_can_view_design{
+    my($c, $design_id) = @_;
     my $guest_user = $c->model->schema->resultset('User')->find({ name => 'guest' });
 
-    my $design_id = $design_data->{id};
     unless( $guest_user->can_view_design_id($design_id) ){
         if(my $user = $c->user){
             # Check they have permission to view this design
@@ -438,6 +427,21 @@ sub view_design :Path( '/view_gibson_design' ) : Args(0) {
             return $c->go('view_gibson_designs');
         }
     }
+}
+
+sub view_design :Path( '/view_gibson_design' ) : Args(0) {
+    my ( $self, $c ) = @_;
+
+    my $design_data;
+    try{
+        $design_data = fetch_design_data($c->model, $c->request->params);
+    }
+    catch($err){
+        $c->stash(error_msg => "Failed to fetch design data: $err");
+        return $c->go('view_gibson_designs');
+    }
+
+    _check_user_can_view_design($c, $design_data->{id});
 
     my $species_id = $design_data->{species};
 
@@ -509,8 +513,10 @@ sub download_design :Path( '/download_design' ) : Args(0) {
 
     my $design_data = fetch_design_data($c->model, $c->request->params);
 
+    _check_user_can_view_design($c, $design_data->{id});
+
     my $filename = "WGE_design_".$design_data->{id}.".csv";
-# FIXME: check user has permission to view this
+
     my $content = write_design_data_csv($design_data, \@DISPLAY_DESIGN);
 
     $c->response->status( 200 );
@@ -619,13 +625,15 @@ sub share_design :Path('share_design'){
         }
 
         if( my $username = $params->{share_with_user} ){
-            # verify email address
+            # FIXME: verify email address
+            
             $c->model->share_design({ 
                 username => $username,
                 design_id => $design->id,
             });
             push @messages, "Design shared with $username";
-            # email user from sanger.htgt@gmail.com
+            
+            # FIXME: email user from sanger.htgt@gmail.com
             push @messages, "Email sent to $username";
         }
     }
