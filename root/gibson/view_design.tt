@@ -1,4 +1,4 @@
-[% META title="View Design"; META tab_name = 'Designs' %]
+[% META title="View Design"; META tab_name = 'Gibson' %]
 
 <p>
   <a href="[% c.uri_for( '/view_gibson_designs' ) %]" class="btn btn-primary">
@@ -17,6 +17,36 @@
     <i class="icon-download-alt icon-white"></i>
     Download CSV
   </a>
+  <a class='btn btn-primary' role="button" href="#ShareDesignModal" data-toggle="modal">
+    <i class="icon-share icon-white"></i>
+    Share Design
+  </a>  
+</div>
+
+<div class="modal hide fade" id="ShareDesignModal">
+  <form method="POST" id="share_design" action="[% c.uri_for( '/share_design' ) %]" class="modal-form"  enctype="multipart/form-data" >
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal">×</button>
+      <h3 id="myModalLabel">Share Design</h3>
+    </div>
+
+    <div class="modal-body">
+      <input type="hidden" name="id" value="[% design.id %]" />
+      Share design [% design.id %] with: <br/>
+      <input id="share_with_all" name="share_with_all" value="share_with_all" type="checkbox"/> All Users <br/>
+      <br/>
+      Or
+      <br/>
+      Another Google user <input id="share_with_user" name="share_with_user" type="text" placeholder="Enter user's email.." />
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn" data-dismiss="modal">Cancel</button>
+      <button name="share_design" id="share_design" type="submit" value="share_design" class="btn btn-primary">
+          <i class="icon-share icon-white"></i> Share Design
+      </button>
+    </div>
+  </form>
 </div>
 
 <table class="table table-bordered">

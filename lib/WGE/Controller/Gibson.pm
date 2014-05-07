@@ -287,7 +287,7 @@ sub design_attempt : PathPart('design_attempt') Chained('/') CaptureArgs(1) {
     my $owner = $design_attempt->created_by->name;
     unless($owner eq 'guest'){
         if(my $user = $c->user){
-            # Check they own this design
+            # Check they own this design attempt
             unless($user->name eq $owner){
                 $c->stash( error_msg => "Design Attempt $design_attempt_id is private");
                 return $c->go('gibson_design_attempts');
@@ -422,12 +422,13 @@ sub view_design :Path( '/view_gibson_design' ) : Args(0) {
         return $c->go('view_gibson_designs');
     }
 
-    my $owner = $design_data->{created_by};
-    unless($owner eq 'guest'){
-        my $design_id = $design_data->{id};
+    my $guest_user = $c->model->schema->resultset('User')->find({ name => 'guest' });
+
+    my $design_id = $design_data->{id};
+    unless( $guest_user->can_view_design_id($design_id) ){
         if(my $user = $c->user){
-            # Check they own this design
-            unless($user->name eq $owner){
+            # Check they have permission to view this design
+            unless( $user->can_view_design_id($design_id) ){
                 $c->stash( error_msg => "Design $design_id is private");
                 return $c->go('view_gibson_designs');
             }
@@ -582,5 +583,61 @@ sub delete_design_attempt :Path('delete_design_attempt'){
     $c->forward('View::JSON');
 
     return    
+}
+
+sub share_design :Path('share_design'){
+    my ($self, $c) = @_;
+
+    my $params = $c->request->params;
+    my $redirect_uri = $c->uri_for('/view_gibson_design', { design_id => $params->{id} });
+    my @messages;
+
+    try{
+        
+        unless( $c->user){
+            die "You must login to share designs\n";
+        }
+
+        unless ( $params->{share_with_all} or $params->{share_with_user} ) {
+            die "You have not specified who to share the design with\n";
+        }
+
+        my $design = $c->model->c_retrieve_design({ id => $params->{id} })
+            or die "Design $params->{id} not found\n";
+
+        unless( $design->created_by->id eq $c->user->id){
+            die "Design $params->{id} does not belong to ".$c->user->name."\n";
+        }
+
+        if( $params->{share_with_all} ){
+            # share with user 'guest'
+            $c->model->share_design({ 
+                username => 'guest',
+                design_id => $design->id,
+            });
+            push @messages, "Design shared with all users";
+        }
+
+        if( my $username = $params->{share_with_user} ){
+            # verify email address
+            $c->model->share_design({ 
+                username => $username,
+                design_id => $design->id,
+            });
+            push @messages, "Design shared with $username";
+            # email user from sanger.htgt@gmail.com
+            push @messages, "Email sent to $username";
+        }
+    }
+    catch($e){
+        $c->flash->{error_msg} = "Cannot share design: $e";
+        $c->res->redirect( $redirect_uri );
+        return;        
+    }
+
+    $c->log->debug("Design shared: ".(join ", ", @messages));
+    $c->flash->{success_msg} = join "<br/>", @messages;
+    $c->res->redirect( $redirect_uri );
+    return;    
 }
 1;

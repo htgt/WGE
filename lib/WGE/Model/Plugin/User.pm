@@ -61,4 +61,26 @@ sub bookmark_crispr_pair{
 
     return;
 }
+
+sub pspec_share_design{
+    # does not need to be an existing user for this
+    return {
+        username      => { validate => 'non_empty_string' },
+        design_id     => { validate => 'existing_design_id' },
+    };
+}
+
+sub share_design{
+    my ($self, $params) = @_;
+
+    my $validated_params = $self->check_params( $params, $self->pspec_share_design );
+    my $user = $self->schema->resultset('User')->find_or_create({ name => $validated_params->{username} });
+    unless ($user->shared_designs->find({ id => $validated_params->{design_id}})){
+        $self->schema->resultset('UserSharedDesign')->create({
+            user_id   => $user->id,
+            design_id => $validated_params->{design_id}
+        });
+    }
+    return;
+}
 1;

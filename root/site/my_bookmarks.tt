@@ -98,6 +98,7 @@
     <th>ID</th>
     <th>Type</th>
     <th>Genes</th>
+    <th>Created by</th>    
     <th>Created at</th>      
   </tr>
   [% FOREACH design IN bookmarks.$species.designs %]
@@ -106,12 +107,38 @@
     <td><a href="[% c.uri_for('/view_gibson_design', { design_id => design.id } ) %]">[% design.id %]</a></td>
     <td>[% design.type %]</td>
     <td>[% design.assigned_genes.join(', ') %]</td>
+    <td>[% design.created_by %]</td>    
     <td>[% design.created_at %]</td>
   </tr>
   [% END %]
   </table>
   [% ELSE %]
   <p class="muted">You have no [% species %] gibson designs</p>
+  [% END %]
+
+  
+  [% IF bookmarks.$species.shared_designs.size %]
+  <h4>[% species %] Gibson Designs shared with me</h4>
+  <table class="table table-bordered">
+   <tr>
+    <th></th>
+    <th>ID</th>
+    <th>Type</th>
+    <th>Genes</th>
+    <th>Created by</th>
+    <th>Created at</th>      
+  </tr>
+  [% FOREACH design IN bookmarks.$species.shared_designs %]
+  <tr>
+    <td><a class="btn btn-info btn-small" href="[% c.uri_for('/genoverse_browse', { design_id => design.id }) %]">View</a></td>
+    <td><a href="[% c.uri_for('/view_gibson_design', { design_id => design.id } ) %]">[% design.id %]</a></td>
+    <td>[% design.type %]</td>
+    <td>[% design.assigned_genes.join(', ') %]</td>
+    <td>[% design.created_by %]</td>
+    <td>[% design.created_at %]</td>
+  </tr>
+  [% END %]
+  </table>
   [% END %]
 
   <h4>[% species %] Design Attempts</h4>

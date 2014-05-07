@@ -9,6 +9,7 @@ use DBIx::Class::Schema::Loader 'make_schema_at';
 use FindBin;
 use Path::Class;
 use Term::ReadPassword qw( read_password );
+use Data::Dumper;
 
 #stolen verbatim from lims2_model_dump_schema.pl
 #when we have off targets we'll probably want to bring the REL_NAME_MAP hash back in, see above file
@@ -22,6 +23,32 @@ my $schema_class = 'WGE::Model::Schema';
 my $lib_dir      = dir( $FindBin::Bin )->parent->subdir( 'lib' );
 my $overwrite    = 0;
 my @components   = qw( InflateColumn::DateTime );
+
+#my $REL_NAME_MAP = {
+#    Users => {
+#        designs   => 'shared_designs',
+#        design_2s => 'designs',
+#    } 
+#}
+
+sub rel_name_mapper {
+    my $params = shift;
+
+    # Ensure we handle the two different links from user to design correctly
+    if ($params->{local_moniker} eq "User"){
+        if($params->{remote_moniker} eq "Design"){
+            if(grep { $_ eq "created_by" } @{ $params->{remote_columns} }){
+                return "designs";
+            }
+            else{
+                return "shared_designs";
+            }
+        }
+    }
+
+    # In all other cases return default rel name
+    return $params->{name};
+}
 
 GetOptions(
     'help'            => sub { pod2usage( 1 ) },
@@ -64,7 +91,8 @@ my %make_schema_opts = (
     components         => \@components,
     use_moose          => 1,
     #exclude            => qr/fixture_md5/,
-    skip_load_external => 1
+    skip_load_external => 1,
+    rel_name_map       => \&rel_name_mapper,
 );
 
 if ( $overwrite ) {

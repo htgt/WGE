@@ -257,9 +257,34 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
+=head2 user_shared_designs
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 10:25:34
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:lfF/5uZlS5MWBzu4dD19fg
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::UserSharedDesign>
+
+=cut
+
+__PACKAGE__->has_many(
+  "user_shared_designs",
+  "WGE::Model::Schema::Result::UserSharedDesign",
+  { "foreign.design_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 users
+
+Type: many_to_many
+
+Composing rels: L</user_shared_designs> -> user
+
+=cut
+
+__PACKAGE__->many_to_many("users", "user_shared_designs", "user");
+
+
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-05-07 09:50:34
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:E0GbxH5wWCeA/JQP+Gt/1Q
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

@@ -219,9 +219,34 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+=head2 user_shared_designs
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-04-15 09:58:51
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:rfe/H7RMQgI3l46eZj7bVQ
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::UserSharedDesign>
+
+=cut
+
+__PACKAGE__->has_many(
+  "user_shared_designs",
+  "WGE::Model::Schema::Result::UserSharedDesign",
+  { "foreign.user_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 shared_designs
+
+Type: many_to_many
+
+Composing rels: L</user_shared_designs> -> design
+
+=cut
+
+__PACKAGE__->many_to_many("shared_designs", "user_shared_designs", "design");
+
+
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-05-07 10:37:17
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:SlQW16p5O4XqORV28oAikg
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
@@ -264,6 +289,12 @@ sub human_crispr_pairs{
   my $self = shift;
 
   return map { $self->result_source->schema->resultset('CrisprPair')->find({ id => $_->crispr_pair_id }) } $self->user_crispr_pairs_humans;
+}
+
+sub can_view_design_id{
+  my ($self, $design_id) = @_;
+  return 1 if $self->designs->find({ id => $design_id });
+  return 1 if $self->shared_designs->find({ id => $design_id });
 }
 
 __PACKAGE__->meta->make_immutable;
