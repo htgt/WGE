@@ -186,6 +186,7 @@
   [% END %]
 
   </div>
+
 [% END %]
 
 <script type="text/javascript">
@@ -214,7 +215,7 @@ function remove_item (uri, button){
  }
 
  $(document).ready( function() {
-   
+
    $("[type='crispr_remove_bookmark']").click(function(event){
       event.preventDefault();
       var uri = '[% c.uri_for('bookmark_crispr') %]' + '/' + this.id + '/remove';
@@ -228,9 +229,13 @@ function remove_item (uri, button){
    });
 
    $("[type='delete_design_attempt']").click(function(event){
-      event.preventDefault();
-      var uri = '[% c.uri_for('delete_design_attempt') %]' + '/' + this.id;
-      remove_item(uri, this);
+      event.preventDefault();   
+      var remove = confirm("Delete design attempt " + this.id + "?");
+      if(remove){
+        var uri = '[% c.uri_for('delete_design_attempt') %]' + '/' + this.id;
+        remove_item(uri, this);
+      }
+      return;
    });
 
  })
