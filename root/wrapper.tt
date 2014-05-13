@@ -20,7 +20,7 @@
       var base_url = "[% c.uri_for( '' ) %]"
     </script>
     <!-- Added nonsense param to url to force browser to reload the js file -->
-    <script src="[% c.uri_for( 'static/js/wge-utils.js', {i => 3} ) %]"></script>
+    <script src="[% c.uri_for( 'static/js/wge-utils.js', {i => 22} ) %]"></script>
 
     <!-- Poller for the design status progress bar -->
     <script src="[% c.uri_for('static/js/poller.js') %]"></script>

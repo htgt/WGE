@@ -1,5 +1,23 @@
 {{$NEXT}}
 
+0.014     2014-04-30 11:15:59 Europe/London
+
+    Bugfix: cache is now cleared after a new user is created
+    Model can now be loaded outside of the webapp
+    Added CSV view
+
+0.013     2014-04-23 10:53:26 Europe/London
+
+    bugfix: use c.uri_for when creating bookmark button
+
+0.012     2014-04-23 10:06:57 Europe/London
+
+    Added google login and bookmarking features
+
+0.011     2014-04-14 11:03:52 Europe/London
+
+    Added flank option to CrisprByExon resultset, highlighting of crispr pair off target mismatches and is_genic/is_exonic fields to the crispr table
+
 0.010     2014-04-07 16:55:30 Europe/London
 
     Added supress_relations option in design rest client

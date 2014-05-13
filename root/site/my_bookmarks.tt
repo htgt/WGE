@@ -11,6 +11,7 @@
   <table class="table table-bordered table-condensed">
    <tr>
     <th></th>
+    <th></th>
     <th>ID</th>
     <th>Location</th>
     <th>Sequence</th>
@@ -20,7 +21,8 @@
    </tr>
    [% FOREACH crispr IN bookmarks.$species.crisprs %]
    <tr>
-    <td><a class="btn btn-info btn-small" href="[% c.uri_for('/genoverse_browse', { crispr_id => crispr.id, view_single => 1 }) %]">View</a></td>
+    <td><a class="btn btn-info btn-small" href="[% c.uri_for('/genoverse_browse', { crispr_id => crispr.id, view_single => 1 }) %]" title="view in genome browser">View</a></td>
+    <td><a class="btn btn-small" type="crispr_remove_bookmark" id="[% crispr.id %]" title="remove bookmark"><i class="icon-remove"></i></a></td>    
     <td><a href="[% c.uri_for('/crispr', crispr.id) %]">[% crispr.id %]</a></td>
     <td class="location">[% ensembl_link(chr_name=crispr.chr_name, chr_start=crispr.chr_start, chr_end=crispr.chr_end) %]</td>
     <td>[% crispr.seq %]</td>
@@ -39,10 +41,11 @@
   [% IF bookmarks.$species.crispr_pairs.size %]
   <table class="table table-bordered table-condensed table-striped">
    <tr>
-    <th colspan="5" class="group-header">Pair</th>
+    <th colspan="6" class="group-header">Pair</th>
     <th colspan="5" class="group-header">Individual Crisprs</th>
    </tr>
    <tr>
+    <th></th>
     <th></th>
     <th>ID</th>
     <th>Spacer</th>
@@ -57,7 +60,8 @@
    </tr>
    [% FOREACH pair IN bookmarks.$species.crispr_pairs %]
    <tr>
-     <td rowspan="2"><a class="btn btn-info btn-small" href="[% c.uri_for('/genoverse_browse', {crispr_id => pair.left_crispr.id, view_paired => 1}) %]">View</a></td>
+     <td rowspan="2"><a class="btn btn-info btn-small" href="[% c.uri_for('/genoverse_browse', {crispr_id => pair.left_crispr.id, view_paired => 1}) %]" title="view in genome browser">View</a></td>
+    <td rowspan="2"><a class="btn btn-small" type="crispr_pair_remove_bookmark" id="[% pair.id %]" title="remove bookmark"><i class="icon-remove"></i></a></td>        
      <td rowspan="2"><a href="[% c.uri_for('/crispr_pair', pair.id) %]">[% pair.id %]</a></td>
      <td rowspan="2">[% pair.spacer %]</td>
      <td rowspan="2">[% pair.status %]</td>
@@ -149,3 +153,44 @@
 
   </div>
 [% END %]
+
+<script type="text/javascript">
+
+function remove_bookmark (uri, id, button){
+  $.get(uri + '/' + id + '/remove',
+    function(data){
+      if(data.error){
+        close_alerts();
+        create_alert(data.error);
+      }
+      else{
+        close_alerts();
+        create_alert(data.message, "alert-success");
+        // remove the containing row
+        if(button.parentElement.rowSpan == 2){
+          //remove the sibling row too
+          button.parentElement.parentElement.nextElementSibling.remove()
+        }
+        button.parentElement.parentElement.remove();
+      }          
+    }
+  ); 
+ }
+
+ $(document).ready( function() {
+   
+   $("[type='crispr_remove_bookmark']").click(function(event){
+      event.preventDefault();
+      var uri = '[% c.uri_for('bookmark_crispr') %]';
+      remove_bookmark(uri, this.id, this);
+   });
+
+   $("[type='crispr_pair_remove_bookmark']").click(function(event){
+      event.preventDefault();
+      var uri = '[% c.uri_for('bookmark_crispr_pair') %]';
+      remove_bookmark(uri, this.id, this);
+   });
+
+ })
+
+</script>
