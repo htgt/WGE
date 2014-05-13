@@ -148,3 +148,25 @@ function ajax_failed(data) {
   create_alert(data.responseJSON.error);
   $("#search").button('reset');
 }
+
+//params should be a hash (a value can be an array)
+//e.g. build_url("test", {"csv": 1, "exon_id": ["ENSMUSE0000005825","ENSMUSE00"]})
+function build_url(url, params) {
+  var encoded = [];
+  for (var key in params) {
+    if (! params.hasOwnProperty(key)) continue; //skip inherited values
+
+    //make an array of length one so we don't have to duplicate code
+    var val;
+    if (params[key] instanceof Array)
+      val = params[key];
+    else
+      val = [params[key]];
+
+    for (var i = 0; i < val.length; i++)
+      encoded.push(encodeURIComponent(key) + "=" + encodeURIComponent(val[i]));
+  }
+
+  //don't return ? if there's no options
+  return url + (encoded.length ? "?" + encoded.join("&") : "");
+} 

@@ -40,6 +40,25 @@ sub crispr_pair_POST {
     return $self->status_ok( $c, entity => $pair->as_hash );
 }
 
+sub find_or_create_crispr_pair :Path( '/api/find_or_create_crispr_pair' ) :ActionClass( 'REST' ) {}
+
+sub find_or_create_crispr_pair_GET {
+    my ( $self, $c ) = @_;
+
+    $c->assert_user_roles('edit');
+
+    my ( $pair, $crisprs, $error );
+    try {
+        ( $pair, $crisprs ) = $c->model('DB')->find_or_create_crispr_pair( $c->req->params );
+    }
+    catch {
+        $error = $_;
+    };
+
+    return $error ? $self->status_bad_request( $c, message => $error ) 
+                  : $self->status_ok( $c, entity => $pair->as_hash );
+}
+
 sub calculate_offs : Path( '/api/calculate_pair_off_targets' ) : Args(0) :ActionClass( 'REST' ) {}
 
 sub calculate_offs_GET {

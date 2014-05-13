@@ -15,29 +15,17 @@
         },
         select: function (event, ui) {
           strip_error( $(this) ); //error no longer valid
-          $.get('api/exon_search', { marker_symbol: ui.item.value, species: get_species() },
-            function (data) {
-              //console.log(data);
-              $("#exons").find('option').remove(); //clear old exons
-              $("#exon_label").html("Exons for " + data.transcript);
-              //add new exons into the form
-              $.each(data.exons, function(i, val) { 
-                $("#exons").append($('<option>', { 
-                    value: val.exon_id,
-                    text : val.rank + '. ' + val.exon_id + ' (length ' + val.len + ')'
-                }));
-              });
-
-              //data successfully retrieved so add gene to URL (or update)
-              var spl = document.location.hash.substr(1).split("/");
-              spl[1] = ui.item.value;
-
-              document.location.hash = spl.join("/");
-            })
-            .fail(ajax_failed);
+          exon_search({ marker_symbol: ui.item.value, species: get_species() });
         },
         minLength: 2
     } );
+
+    //should add methods for using the location.hash really
+    $("#exons").change(function() {
+        var spl = document.location.hash.substr(1).split("/");
+        spl[2] = get_selected_exons().join(",");
+        document.location.hash = spl.join("/");
+    });
 
     //when a species is selected clear the other fields and add to the url hash
     $("input[name=species]").click(function() {
@@ -79,6 +67,19 @@
         
         return false;
      });
+
+    $("#download").click(function(event) {
+      event.preventDefault();
+
+      if ( ! form_valid() ) {
+        return;
+      }
+
+      var url = "[% c.uri_for('/api/pair_search') %]";
+
+      //open csv download in new window
+      window.open( build_url(url, {"csv": 1, "exon_id[]": get_selected_exons()}) );
+    });
     
     //if someone selects a species then remove the error class
     $("#crispr_search").find('input[type=radio]').click(function() { 
@@ -92,6 +93,39 @@
     process_url();
 
   });
+
+var q;
+
+  function exon_search(params, select) {
+    params = params || {marker_symbol: "Error"};
+    select = select || {};
+
+    $.get('api/exon_search', params,
+      function (data) {
+        //console.log(data);
+        $("#exons").find('option').remove(); //clear old exons
+        $("#exon_label").html("Exons for " + data.transcript);
+        //add new exons into the form
+        $.each(data.exons, function(i, val) { 
+          var opt = $('<option>', { 
+              value: val.exon_id,
+              text : val.rank + '. ' + val.exon_id + ' (length ' + val.len + ')'
+          }).appendTo($("#exons"));
+
+          //see if this option should be selected
+          if (select.hasOwnProperty(val.exon_id)) {
+            opt.prop("selected", true);
+          }
+        });
+
+        //data successfully retrieved so add gene to URL (or update)
+        var spl = document.location.hash.substr(1).split("/");
+        spl[1] = params.marker_symbol;
+
+        document.location.hash = spl.join("/");
+      })
+      .fail(ajax_failed);
+  }
 
   //find parent div of whatever jquery object is passed
   function strip_error(item) {
@@ -123,24 +157,17 @@
       }
 
       //if there is a gene in the URL insert it into the text box
-      if(opts[1]) {
+      if (opts[1]) {
         $("#gene").val(opts[1]);
-        //now pretend the user has made a choice to get the exons to show
 
-        /*
-          this doesn't work properly.
-          i have no idea why. but its good enough for now
-        */
-
-        //simulate downkey press in the box after adding text
-        var key_event = $.Event("keydown", { keyCode: $.ui.keyCode.DOWN });
-        $.when(
-          $("#gene").triggerHandler(key_event)
-        ).done(function() {
-          //now press enter on that first item
-          key_event.keyCode = $.ui.keyCode.ENTER;
-          $("#gene").trigger(key_event);
-        });
+        //populate exons
+        var selected = {};
+        if (opts[2]) {
+          var exons = opts[2].split(",");
+          for ( var i = 0; i < exons.length; i++ )
+            selected[exons[i]] = true;
+        }
+        exon_search({marker_symbol: opts[1], species: opts[0]}, selected);       
         
       }
 
@@ -441,6 +468,7 @@
           <br/><br/>
           <button class="btn btn-default" id="search" autocomplete="off">Show in table</button>
           <button class="btn btn-default" id="genoverse" autocomplete="off">Show in genome browser</button>
+          <button class="btn btn-default" id="download" autocomplete="off">Download as spreadsheet</button>
         </div>
       </fieldset>
       <br/>

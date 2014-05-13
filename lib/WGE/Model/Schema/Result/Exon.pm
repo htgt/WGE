@@ -154,6 +154,10 @@ sub crisprs {
 
   $flank //= 0;
 
+  if ( $flank > 5000 ) {
+    die "Provided exon flank $flank is too large";
+  }
+
   #species is optional in case the caller already had it lying around,
   #if they didn't then just get it from the gene
   unless ( $species ) {

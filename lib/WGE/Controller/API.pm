@@ -127,6 +127,7 @@ sub crispr_search :Local('crispr_search') {
         $c, 
         "crisprs", 
         $params->{ 'exon_id[]' }, 
+        undef, #species which is optional
         $params->{ flank } 
     );
 
@@ -141,14 +142,61 @@ sub pair_search :Local('pair_search') {
     
     check_params_exist( $c, $params, [ 'exon_id[]' ]);
     
-    $c->stash->{json_data} = _get_exon_attribute( 
+    my $pair_data = _get_exon_attribute( 
         $c, 
         "pairs", 
         $params->{ 'exon_id[]' }, 
         $params->{ flank },
     );
-    
-    $c->forward('View::JSON');
+
+    #default to json, but allow csv
+    if ( exists $params->{csv} and $params->{csv} ) {
+        my @csv_data;
+
+        my @fields = qw( exon_id spacer status summary );
+
+        my @crispr_fields = qw( id location seq off_target_summary );
+
+        for my $orientation ( qw( l r ) ) {
+            push @fields, map { $orientation . "_" . $_ } @crispr_fields;
+        }
+
+        push @csv_data, \@fields;
+
+        while ( my ( $exon_id, $pairs ) = each %{ $pair_data } ) {
+            for my $pair ( @{ $pairs } ) {
+                my ( $status, $summary ) = ( "No data", "No data" );
+
+                if ( $pair->{db_data} ) {
+                    $status  = $pair->{db_data}{status} || "No data";
+                    $summary = $pair->{db_data}{off_target_summary} || "No data";
+                }
+
+                my @row = ( 
+                    $exon_id, 
+                    $pair->{spacer},
+                    $status,
+                    $summary,
+                );
+
+                push @row, map { $pair->{left_crispr}{$_} } @crispr_fields;
+                push @row, map { $pair->{right_crispr}{$_} } @crispr_fields;
+
+                push @csv_data, \@row;
+            }
+        }
+
+        $c->stash(
+            filename     => "WGE-" . $params->{'exon_id[]'} . "-pairs.tsv", 
+            data         => \@csv_data,
+            current_view => 'CSV',
+        );
+        $c->forward('View::CSV');
+    }
+    else {
+        $c->stash->{json_data} = $pair_data;
+        $c->forward('View::JSON');
+    }
 
     return;
 }
@@ -365,8 +413,9 @@ sub crispr_pairs_in_region :Local('crispr_pairs_in_region') Args(0){
 
 
 #used to retrieve pairs or crisprs from an arrayref of exons
+#args should just be flank generally.
 sub _get_exon_attribute {
-    my ( $c, $attr, $exon_ids, $flank ) = @_;
+    my ( $c, $attr, $exon_ids, @args ) = @_;
 
     _send_error($c, 'No exons given to _get_exon_attribute', 500 ) 
         unless defined $exon_ids;
@@ -391,7 +440,7 @@ sub _get_exon_attribute {
 
         #sometimes we get a hash, sometimes an object.
         #if its an object then call as hash
-        my @vals = map { blessed $_ ? $_->as_hash : $_ } $exon->$attr( $flank );
+        my @vals = map { blessed $_ ? $_->as_hash : $_ } $exon->$attr( @args );
         _send_error($c, "None found!", 400) unless @vals;
 
         #store each exons data as an arrayref of hashrefs
