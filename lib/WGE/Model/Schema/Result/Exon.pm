@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::Exon;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::Exon::VERSION = '0.015';
+    $WGE::Model::Schema::Result::Exon::VERSION = '0.016';
 }
 ## use critic
 
@@ -159,6 +159,10 @@ sub crisprs {
   my ( $self, $species, $flank ) = @_;
 
   $flank //= 0;
+
+  if ( $flank > 5000 ) {
+    die "Provided exon flank $flank is too large";
+  }
 
   #species is optional in case the caller already had it lying around,
   #if they didn't then just get it from the gene

@@ -18,7 +18,7 @@ bin/loxp_pairs_report.pl
 bin/persist_crisprs.pl
 bin/promotor_region_crisprs.pl
 bin/update_crispr_pair.pl
-human_genes_73.yaml
+human_genes_75.yaml
 lib/Catalyst/Authentication/Credential/OAuth2.pm
 lib/WGE.pm
 lib/WGE/Controller/API.pm
@@ -93,7 +93,7 @@ lib/WGE/Util/PersistCrisprs/TSV.pm
 lib/WGE/View/CSV.pm
 lib/WGE/View/JSON.pm
 lib/WGE/View/Web.pm
-mouse_genes_73.yaml
+mouse_genes_75.yaml
 root/favicon.ico
 root/gibson/create_custom_target_gibson_design.tt
 root/gibson/create_gibson_design.tt

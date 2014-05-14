@@ -1,7 +1,7 @@
 package WGE::Util::FindPairs;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::FindPairs::VERSION = '0.015';
+    $WGE::Util::FindPairs::VERSION = '0.016';
 }
 ## use critic
 
@@ -187,6 +187,7 @@ sub _check_valid_pair {
         orientation  => $orientation,
         left_crispr  => $first->as_hash,
         right_crispr => $second->as_hash,
+        id           => $first->id . "_" . $second->id,
         db_data      => undef,#optionally populated later
     }
 }

@@ -1,7 +1,7 @@
 package WGE::Controller::API;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::API::VERSION = '0.015';
+    $WGE::Controller::API::VERSION = '0.016';
 }
 ## use critic
 
@@ -133,6 +133,7 @@ sub crispr_search :Local('crispr_search') {
         $c, 
         "crisprs", 
         $params->{ 'exon_id[]' }, 
+        undef, #species which is optional
         $params->{ flank } 
     );
 
@@ -147,14 +148,77 @@ sub pair_search :Local('pair_search') {
     
     check_params_exist( $c, $params, [ 'exon_id[]' ]);
     
-    $c->stash->{json_data} = _get_exon_attribute( 
+    my $pair_data = _get_exon_attribute( 
         $c, 
         "pairs", 
         $params->{ 'exon_id[]' }, 
         $params->{ flank },
     );
-    
-    $c->forward('View::JSON');
+
+    #default to json, but allow csv
+    if ( exists $params->{csv} and $params->{csv} ) {
+        my @csv_data;
+
+        my @fields = qw( exon_id spacer pair_status summary pair_id );
+
+        my @crispr_fields = qw( id location seq off_target_summary );
+
+        for my $orientation ( qw( l r ) ) {
+            push @fields, map { $orientation . "_" . $_ } @crispr_fields;
+        }
+
+        push @csv_data, \@fields;
+
+        while ( my ( $exon_id, $pairs ) = each %{ $pair_data } ) {
+            for my $pair ( @{ $pairs } ) {
+                my ( $status, $summary ) = ("Not started", "");
+
+                if ( $pair->{db_data} ) {
+                    $status  = $pair->{db_data}{status} if $pair->{db_data}{status};
+                    $summary = $pair->{db_data}{off_target_summary} if $pair->{db_data}{off_target_summary};
+                }
+
+                my @row = ( 
+                    $exon_id, 
+                    $pair->{spacer},
+                    $status,
+                    $summary,
+                    $pair->{id},
+                );
+
+                #add all the individual crispr fields for both crisprs
+                for my $dir ( qw( left_crispr right_crispr ) ) {
+                    #mirror ensembl location format
+                    $pair->{$dir}{location} = $pair->{$dir}{chr_name}  . ":" 
+                                      . $pair->{$dir}{chr_start} . "-" 
+                                      . $pair->{$dir}{chr_end};
+
+                    push @row, map { $pair->{$dir}{$_} || "" } @crispr_fields;
+                }
+
+                push @csv_data, \@row;
+            }
+        }
+
+        $c->log->debug( "Total CSV rows:" . scalar( @csv_data ) );
+
+        #format array of exons properly
+        my $exons = $params->{'exon_id[]'};
+        if ( ref $exons eq 'ARRAY' ) {
+            #limit exon string to 50 characters
+            $exons = substr( join("-", @{ $params->{'exon_id[]'} }), 0, 50 );
+        } 
+
+        $c->stash(
+            filename     => "WGE-" . $exons . "-pairs.tsv", 
+            data         => \@csv_data,
+            current_view => 'CSV',
+        );
+    }
+    else {
+        $c->stash->{json_data} = $pair_data;
+        $c->forward('View::JSON');
+    }
 
     return;
 }
@@ -354,7 +418,7 @@ sub crispr_pairs_in_region :Local('crispr_pairs_in_region') Args(0){
     else{
         $pairs = crispr_pairs_for_region($schema, $params);
     }
-#$c->log->debug(Dumper($pairs));
+
     if(my $design_id = $c->request->params->{design_id}){
         my $five_f = $c->model->c_retrieve_design_oligo({ design_id => $design_id, oligo_type => '5F' });
         my $three_r = $c->model->c_retrieve_design_oligo({ design_id => $design_id, oligo_type => '3R'});
@@ -371,8 +435,9 @@ sub crispr_pairs_in_region :Local('crispr_pairs_in_region') Args(0){
 
 
 #used to retrieve pairs or crisprs from an arrayref of exons
+#args should just be flank generally.
 sub _get_exon_attribute {
-    my ( $c, $attr, $exon_ids, $flank ) = @_;
+    my ( $c, $attr, $exon_ids, @args ) = @_;
 
     _send_error($c, 'No exons given to _get_exon_attribute', 500 ) 
         unless defined $exon_ids;
@@ -397,7 +462,7 @@ sub _get_exon_attribute {
 
         #sometimes we get a hash, sometimes an object.
         #if its an object then call as hash
-        my @vals = map { blessed $_ ? $_->as_hash : $_ } $exon->$attr( $flank );
+        my @vals = map { blessed $_ ? $_->as_hash : $_ } $exon->$attr( @args );
         _send_error($c, "None found!", 400) unless @vals;
 
         #store each exons data as an arrayref of hashrefs
