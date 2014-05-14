@@ -181,6 +181,7 @@ sub _check_valid_pair {
         orientation  => $orientation,
         left_crispr  => $first->as_hash,
         right_crispr => $second->as_hash,
+        id           => $first->id . "_" . $second->id,
         db_data      => undef,#optionally populated later
     }
 }

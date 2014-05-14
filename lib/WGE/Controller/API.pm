@@ -153,7 +153,7 @@ sub pair_search :Local('pair_search') {
     if ( exists $params->{csv} and $params->{csv} ) {
         my @csv_data;
 
-        my @fields = qw( exon_id spacer status summary );
+        my @fields = qw( exon_id spacer pair_status summary pair_id );
 
         my @crispr_fields = qw( id location seq off_target_summary );
 
@@ -165,11 +165,11 @@ sub pair_search :Local('pair_search') {
 
         while ( my ( $exon_id, $pairs ) = each %{ $pair_data } ) {
             for my $pair ( @{ $pairs } ) {
-                my ( $status, $summary ) = ( "No data", "No data" );
+                my ( $status, $summary ) = ("Not started", "");
 
                 if ( $pair->{db_data} ) {
-                    $status  = $pair->{db_data}{status} || "No data";
-                    $summary = $pair->{db_data}{off_target_summary} || "No data";
+                    $status  = $pair->{db_data}{status} if $pair->{db_data}{status};
+                    $summary = $pair->{db_data}{off_target_summary} if $pair->{db_data}{off_target_summary};
                 }
 
                 my @row = ( 
@@ -177,21 +177,38 @@ sub pair_search :Local('pair_search') {
                     $pair->{spacer},
                     $status,
                     $summary,
+                    $pair->{id},
                 );
 
-                push @row, map { $pair->{left_crispr}{$_} } @crispr_fields;
-                push @row, map { $pair->{right_crispr}{$_} } @crispr_fields;
+                #add all the individual crispr fields for both crisprs
+                for my $dir ( qw( left_crispr right_crispr ) ) {
+                    #mirror ensembl location format
+                    $pair->{$dir}{location} = $pair->{$dir}{chr_name}  . ":" 
+                                      . $pair->{$dir}{chr_start} . "-" 
+                                      . $pair->{$dir}{chr_end};
+
+                    push @row, map { $pair->{$dir}{$_} || "" } @crispr_fields;
+                }
 
                 push @csv_data, \@row;
             }
         }
 
+        $c->log->debug( "Total CSV rows:" . scalar( @csv_data ) );
+        #print Dumper( \@csv_data );
+
+        #format array of exons properly
+        my $exons = $params->{'exon_id[]'};
+        if ( ref $exons eq 'ARRAY' ) {
+            #limit exon string to 50 characters
+            $exons = substr(join "-", @{ $params->{'exon_id[]'} }, 0, 50 )
+        } 
+
         $c->stash(
-            filename     => "WGE-" . $params->{'exon_id[]'} . "-pairs.tsv", 
+            filename     => "WGE-" . $exons . "-pairs.tsv", 
             data         => \@csv_data,
             current_view => 'CSV',
         );
-        $c->forward('View::CSV');
     }
     else {
         $c->stash->{json_data} = $pair_data;
