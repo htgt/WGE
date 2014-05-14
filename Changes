@@ -1,5 +1,11 @@
 {{$NEXT}}
 
+0.016     2014-05-14 12:00:54 Europe/London
+
+    Added CSV download button for an exon
+    Exons will now be selected on a page refresh
+    Fixes to the individual crispr API for imits
+
 0.015     2014-05-06 13:30:10 Europe/London
 
    Added crispr bookmarking buttons to genoverse view
