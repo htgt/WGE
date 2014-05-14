@@ -75,7 +75,8 @@ sub find_or_create_crispr_pair {
         #checking the list of crisprs against itself for pairs
         my $pairs = $self->pair_finder->find_pairs( \@crisprs, \@crisprs );
 
-        die "Found more than one pair??" if @{ $pairs } > 1;
+        die "Invalid pair\n" if @{ $pairs } == 0;
+        die "Found more than one pair??\n" if @{ $pairs } > 1;
 
         #we were given a valid pair so let's create it
         $pair = $self->resultset('CrisprPair')->create(
