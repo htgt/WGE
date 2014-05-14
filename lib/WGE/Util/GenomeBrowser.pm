@@ -157,8 +157,6 @@ sub fetch_design_data{
     my $design_data = $design->as_hash;
     $design_data->{assigned_genes} = join q{, }, @{ $design_data->{assigned_genes} || [] };
 
-    DEBUG( "Design: " .Dumper($design_data) );
-
     return $design_data;    
 }
 

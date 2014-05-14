@@ -1,14 +1,39 @@
 package WGE::Controller::Gibson;
 use Moose;
+use MooseX::ClassAttribute;
 use namespace::autoclean;
 use Data::Dumper;
 use TryCatch;
 use IO::File;
+
+use Email::Valid;
+use Email::Send;
+use Email::Send::Gmail;
+use Email::Simple::Creator;
+use Config::Any;
+
 use WGE::Util::CreateDesign;
 use WGE::Util::GenomeBrowser qw(fetch_design_data get_region_from_params);
 use WGE::Util::ExportCSV qw(write_design_data_csv);
 
 BEGIN { extends 'Catalyst::Controller' }
+
+# Used for sending email to users when designs are shared with them
+class_has gmail_config => (
+    is         => 'ro',
+    isa        => 'HashRef',
+    lazy_build => 0,
+    builder    => '_build_gmail_config',
+);
+
+sub _build_gmail_config{
+    my $file = $ENV{WGE_GMAIL_CONFIG} 
+        or die "WGE_GMAIL_CONFIG environment variable not set";
+    my $config = Config::Any->load_files({ files => [$file] });
+    my $hashref = $config->[0]->{$file}
+        or die "Could not load config file $file";
+    return $hashref;
+}
 
 #
 # Sets the actions in this controller to be registered with no prefix
@@ -625,7 +650,9 @@ sub share_design :Path('share_design'){
         }
 
         if( my $username = $params->{share_with_user} ){
-            # FIXME: verify email address
+            unless(Email::Valid->address($username)){
+                die "$username is not a valid email address\n";
+            }
             
             $c->model->share_design({ 
                 username => $username,
@@ -633,7 +660,28 @@ sub share_design :Path('share_design'){
             });
             push @messages, "Design shared with $username";
             
-            # FIXME: email user from sanger.htgt@gmail.com
+            my $email = Email::Simple->create(
+                header => [
+                    From    => $self->gmail_config->{name}.'<'.$self->gmail_config->{username}.'>',
+                    To      => $username,
+                    Subject => $c->user->name.' shared a Gibson design with you',
+                ],
+                body => $c->user->name." shared a Gibson design with you in WGE, the Wellcome Trust Sanger Institute\'s Genome Editing tool.\n\n"
+                       ."Follow the link below and login to WGE with your google account to view the design:\n"
+                       .$c->uri_for('/view_gibson_design/', { design_id => 1 })
+            );
+
+            my $sender = Email::Send->new(
+            {   mailer      => 'Gmail',
+                mailer_args => [
+                    username => $self->gmail_config->{username},
+                    password => $self->gmail_config->{password},
+                ]
+            }
+            );
+
+            $sender->send($email);
+
             push @messages, "Email sent to $username";
         }
     }
