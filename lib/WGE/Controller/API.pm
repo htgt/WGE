@@ -195,13 +195,12 @@ sub pair_search :Local('pair_search') {
         }
 
         $c->log->debug( "Total CSV rows:" . scalar( @csv_data ) );
-        #print Dumper( \@csv_data );
 
         #format array of exons properly
         my $exons = $params->{'exon_id[]'};
         if ( ref $exons eq 'ARRAY' ) {
             #limit exon string to 50 characters
-            $exons = substr(join "-", @{ $params->{'exon_id[]'} }, 0, 50 )
+            $exons = substr( join("-", @{ $params->{'exon_id[]'} }), 0, 50 );
         } 
 
         $c->stash(
@@ -413,7 +412,7 @@ sub crispr_pairs_in_region :Local('crispr_pairs_in_region') Args(0){
     else{
         $pairs = crispr_pairs_for_region($schema, $params);
     }
-#$c->log->debug(Dumper($pairs));
+
     if(my $design_id = $c->request->params->{design_id}){
         my $five_f = $c->model->c_retrieve_design_oligo({ design_id => $design_id, oligo_type => '5F' });
         my $three_r = $c->model->c_retrieve_design_oligo({ design_id => $design_id, oligo_type => '3R'});
