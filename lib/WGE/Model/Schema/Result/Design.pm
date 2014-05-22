@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::Design;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::Design::VERSION = '0.016';
+    $WGE::Model::Schema::Result::Design::VERSION = '0.017';
 }
 ## use critic
 
@@ -281,6 +281,13 @@ __PACKAGE__->has_many(
 __PACKAGE__->has_many(
   "oligos",
   "WGE::Model::Schema::Result::DesignOligo",
+  { "foreign.design_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+__PACKAGE__->has_many(
+  "comments",
+  "WGE::Model::Schema::Result::DesignComment",
   { "foreign.design_id" => "self.id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
