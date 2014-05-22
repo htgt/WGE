@@ -28,6 +28,37 @@
   [%- END %]
 </table>
 
+[% IF design.comments.size > 0 %]
+<h2>Comments</h2>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Category</th>
+        <th>Comment</th>
+        <th>Public?</th>
+        <th>Created at</th>
+        <th>Created by</th>
+      </tr>
+    </thead>
+    <tbody>
+      [%- FOR comment IN design.comments %]
+      <tr>
+        <td>[% comment.category %]</td>
+        <td>[% comment.comment_text | html_line_break %]</td>
+        <td>
+          [% IF comment.is_public %]
+          yes
+          [% ELSE %]
+          no
+          [% END %]
+        </td>
+        <td>[% comment.created_by   %]</td>
+        <td>[% comment.created_at   %]</td>
+      </tr>
+      [%- END %]
+    </tbody>
+  </table>
+[% END %]
 
 <h2>Oligos</h2>
 [% IF design.oligos.size > 0 %]
