@@ -279,6 +279,13 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+__PACKAGE__->has_many(
+  "comments",
+  "WGE::Model::Schema::Result::DesignComment",
+  { "foreign.design_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
 sub as_hash {
     my ( $self, $suppress_relations ) = @_;
 
