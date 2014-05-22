@@ -174,7 +174,18 @@ __PACKAGE__->belongs_to(
 # Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 10:25:34
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:IFSyYBmmrv21bjhsbAf5bA
 
+sub as_hash {
+    my $self = shift;
 
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
+    return {
+        id           => $self->id,
+        category     => $self->design_comment_category->name,
+        comment_text => $self->comment_text,
+        is_public    => $self->is_public,
+        created_at   => $self->created_at->iso8601,
+        created_by   => $self->created_by->name
+    }
+}
+
 __PACKAGE__->meta->make_immutable;
 1;
