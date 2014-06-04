@@ -381,7 +381,6 @@ sub crisprs_in_region :Local('crisprs_in_region') Args(0){
         my $three_r = $c->model->c_retrieve_design_oligo({ design_id => $design_id, oligo_type => '3R'});
         $params->{design_start} = $five_f->locus->chr_start;
         $params->{design_end} = $three_r->locus->chr_end;
-        $c->log->debug(Dumper($params));
     }
 
     my $crispr_gff = crisprs_to_gff( $crisprs, $params);
@@ -418,7 +417,6 @@ sub crispr_pairs_in_region :Local('crispr_pairs_in_region') Args(0){
         my $three_r = $c->model->c_retrieve_design_oligo({ design_id => $design_id, oligo_type => '3R'});
         $params->{design_start} = $five_f->locus->chr_start;
         $params->{design_end} = $three_r->locus->chr_end;
-        $c->log->debug(Dumper($params));
     }
 
     my $pairs_gff = crispr_pairs_to_gff( $pairs, $params);

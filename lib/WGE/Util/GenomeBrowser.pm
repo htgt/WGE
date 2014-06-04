@@ -157,7 +157,7 @@ sub fetch_design_data{
     my $design_data = $design->as_hash;
     $design_data->{assigned_genes} = join q{, }, @{ $design_data->{assigned_genes} || [] };
 
-    DEBUG( "Design: " .Dumper($design_data) );
+    TRACE( "Design: " .Dumper($design_data) );
 
     return $design_data;    
 }
@@ -349,7 +349,7 @@ sub bookmarked_pairs_for_region{
         };
         $pair_hash->{db_data} = $db_data;
     }
-    DEBUG Dumper(\@hashes);
+    TRACE Dumper(\@hashes);
     return \@hashes;
 }
 
