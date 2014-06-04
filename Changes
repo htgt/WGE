@@ -1,3 +1,8 @@
+0.019     2014-06-04 13:53:49 Europe/London
+
+    Modifications to Genoverse track show/hide controls
+    Use log4perl configuration from WGE_LOG4PERL_CONFIG
+
 0.018     2014-05-22 10:44:29 Europe/London
 
 0.017     2014-05-22 10:28:35 Europe/London

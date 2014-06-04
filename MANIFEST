@@ -93,6 +93,7 @@ lib/WGE/Util/PersistCrisprs/TSV.pm
 lib/WGE/View/CSV.pm
 lib/WGE/View/JSON.pm
 lib/WGE/View/Web.pm
+log4perl.production.conf~
 mouse_genes_75.yaml
 root/favicon.ico
 root/gibson/create_custom_target_gibson_design.tt
@@ -133,6 +134,7 @@ root/static/css/images/ui-icons_cd0a0a_256x240.png
 root/static/css/jquery-ui-1.9.2.custom.min.css
 root/static/css/style.css
 root/static/genoverse/css/controlPanel.css
+root/static/genoverse/css/controlPanel_no_tracks_menu.css
 root/static/genoverse/css/fileDrop.css
 root/static/genoverse/css/genoverse.css
 root/static/genoverse/css/hoverLabels.css
@@ -153,6 +155,7 @@ root/static/genoverse/js/genomes/node.js
 root/static/genoverse/js/genomes/tomato.js
 root/static/genoverse/js/genoverse.wtsi.js
 root/static/genoverse/js/plugins/controlPanel.js
+root/static/genoverse/js/plugins/controlPanel_no_tracks_menu.js
 root/static/genoverse/js/plugins/fileDrop.js
 root/static/genoverse/js/plugins/hoverLabels.js
 root/static/genoverse/js/plugins/karyotype.js
@@ -228,3 +231,4 @@ t/lib/Test/WGE.pm
 t/release-no-smart-comments.t
 wge.conf
 wge.psgi
+wge_gmail_account.yml~

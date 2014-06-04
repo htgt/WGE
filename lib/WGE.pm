@@ -32,7 +32,7 @@ extends 'Catalyst';
 
 our $VERSION = '0.01';
 
-__PACKAGE__->log(Log::Log4perl::Catalyst->new());
+__PACKAGE__->log(Log::Log4perl::Catalyst->new( $ENV{WGE_LOG4PERL_CONFIG} ));
 
 # Configure the application.
 #
