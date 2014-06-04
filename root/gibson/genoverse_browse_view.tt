@@ -18,7 +18,7 @@
   <table class='table'>
    <thead>
     <tr>
-     <th>Single Crisprs</th><th>Paired Crisprs</th>
+     <th>Single Crisprs</th><th>Paired Crisprs</th><th>Designs</th>
      <th><p id="crispr_filters_heading" [% UNLESS view_single OR view_paired %]class="muted"[% END %]>Crispr Filters</th>
     </tr>
    </thead>
@@ -36,6 +36,13 @@
         Show</input>
         <br />
         <input id="hide_paired" type="radio" name="view_paired" value="0" [% IF not view_paired %]checked[% END %]>
+        Hide</input>
+      </td>
+      <td>
+        <input id="show_designs" type="radio" name="view_designs" value="1" checked>
+        Show</input>
+        <br />
+        <input id="hide_designs" type="radio" name="view_designs" value="0" >
         Hide</input>
       </td>
       <td>
@@ -104,9 +111,21 @@
       enable_filters();
   }
 
+  function hide_designs (){
+      var design_track = get_track('Designs');
+      $(window)[0].genoverse.removeTrack(design_track);
+  }
+
+  function show_designs (){
+      // Insert the tracks at position 3, just below genes track (assuming user has not closed gene and sequence tracks..)
+      var crisprs = $.grep( $(window)[0].genoverse.tracksLibrary, function(n,i){ return n.name == "Designs" });
+
+      $(window)[0].genoverse.addTrack(
+        Genoverse.Track.extend($.extend(true, {},crisprs[0])),3);
+  }
+
   function get_track(name){
-    var tracks = $.grep( $(window)[0].genoverse.tracks, function(n,i){ return n.name == name });
-    return tracks[0];
+    return $(window)[0].genoverse.tracksById[name];
   }
 
   function enable_filters(){
@@ -128,7 +147,10 @@
       if($("#hide_paired")[0].checked == true){
         hide_paired();
       }
-      
+ 
+       if($("#hide_designs")[0].checked == true){
+        hide_designs();
+      }     
       var spinner = "[% c.uri_for( '/static/images/spinner-circle.gif' ) %]";
 
       // override the 'makeMenu' method in order to add bookmarking buttons
@@ -171,20 +193,28 @@
     });
 
     // Handle clicks on the show/hide radio inputs
-    $("#hide_single").click(function (event){
+    $("#hide_single").change(function (event){
       hide_single();
     });
     
-    $("#show_single").click(function (event){
+    $("#show_single").change(function (event){
       show_single();
     });
 
-    $("#hide_paired").click(function (event){
+    $("#hide_paired").change(function (event){
       hide_paired();
     });
     
-    $("#show_paired").click(function (event){
+    $("#show_paired").change(function (event){
       show_paired();
+    });
+
+    $("#hide_designs").change(function (event){
+      hide_designs();
+    });
+    
+    $("#show_designs").change(function (event){
+      show_designs();
     });
 
     $("#flank_size").keypress(function (event){
@@ -214,7 +244,7 @@
         chr       : '[% chromosome %]',
         start     : [% browse_start %] - 200,
         end       : [% browse_end %] + 200,
-        plugins   : [ 'controlPanel', 'karyotype', 'trackControls', 'resizer', 'fileDrop' ],
+        plugins   : [ 'controlPanel_no_tracks_menu', 'karyotype', 'resizer', 'fileDrop' ],
         tracks    : [
           Genoverse.Track.Scalebar,
           Genoverse.Track.extend({
@@ -269,11 +299,11 @@
           }),          
           Genoverse.Track.extend({
             name      : 'Designs',
+            id        : 'Designs',
             url       : "[% c.uri_for('/api/designs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]" ,
             model     : Genoverse.Track.Model.Transcript.GFF3,
             view      : Genoverse.Track.View.Transcript,
-            resizable : 'auto',
-            height    : 150,
+            height    : 50,
 
             populateMenu : function (feature) {
               var link = "<a href='[%c.uri_for('/view_gibson_design')%]?design_id=" + feature.name
@@ -325,6 +355,7 @@
 
           Genoverse.Track.extend({
             name      : 'Crisprs',
+            id        : 'Crisprs',
             url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]" ,
             model     : Genoverse.Track.Model.Transcript.GFF3,
             view      : Genoverse.Track.View.Transcript,
@@ -388,6 +419,7 @@
 [% END %]
           Genoverse.Track.extend({
             name      : 'Crispr Pairs',
+            id        : 'Crispr Pairs',
             url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]" ,
             model     : Genoverse.Track.Model.Transcript.GFF3,
             view      : Genoverse.Track.View.Transcript,
