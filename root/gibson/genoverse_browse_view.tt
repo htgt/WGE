@@ -244,7 +244,7 @@
         chr       : '[% chromosome %]',
         start     : [% browse_start %] - 200,
         end       : [% browse_end %] + 200,
-        plugins   : [ 'controlPanel_no_tracks_menu', 'karyotype', 'resizer', 'fileDrop' ],
+        plugins   : [ 'controlPanel_no_tracks_menu', 'karyotype', 'trackControls', 'resizer', 'fileDrop' ],
         tracks    : [
           Genoverse.Track.Scalebar,
           Genoverse.Track.extend({
@@ -255,7 +255,9 @@
             model     : Genoverse.Track.Model.Sequence.Ensembl,
             view      : Genoverse.Track.View.Sequence,
             resizable : 'auto',
-            100000    : false
+            100000    : false,
+            controls  : 'off',
+            unsortable : true
           }),
           Genoverse.Track.extend({
             name   : 'Genes',
@@ -264,6 +266,8 @@
             url    : 'http://beta.rest.ensembl.org/feature/region/mouse/__CHR__:__START__-__END__?feature=gene;content-type=application/json',
             [% END %]
             height : 200,
+            controls  : 'off',
+            unsortable : true,
             info   : 'Ensembl API genes & transcripts, see <a href="http://beta.rest.ensembl.org/" target="_blank">beta.rest.ensembl.org</a> for more details',
             
             // Different settings for different zoom level
