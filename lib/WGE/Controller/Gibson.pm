@@ -5,7 +5,7 @@ use Data::Dumper;
 use TryCatch;
 use IO::File;
 use WGE::Util::CreateDesign;
-use WGE::Util::GenomeBrowser qw(fetch_design_data get_region_from_params);
+use WGE::Util::GenomeBrowser qw(fetch_design_data get_region_from_params colours);
 use WGE::Util::ExportCSV qw(write_design_data_csv);
 
 BEGIN { extends 'Catalyst::Controller' }
@@ -545,6 +545,7 @@ sub genoverse_browse_view :Path( '/genoverse_browse') : Args(0){
         'view_paired'   => $c->request->params->{'view_paired'},
         'crispr_filter' => $c->request->params->{'crispr_filter'},
         'flank_size'    => $c->request->params->{'flank_size'},
+        'colours'       => colours,
     );
 
     return;
