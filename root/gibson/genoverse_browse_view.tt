@@ -20,6 +20,7 @@
     <tr>
      <th>Single Crisprs</th><th>Paired Crisprs</th><th>Designs</th>
      <th><p id="crispr_filters_heading" [% UNLESS view_single OR view_paired %]class="muted"[% END %]>Crispr Filters</th>
+     <th><p id="crispr_ot_filters_heading" [% UNLESS view_single OR view_paired %]class="muted"[% END %]>Crispr Off-Targets</th>
     </tr>
    </thead>
    <tbody>
@@ -56,9 +57,20 @@
         <input type="radio" name="crispr_filter" value="exon_flanking" [% IF crispr_filter == 'exon_flanking' %]checked[% END %]>
         Exon Flanking Only</input>
         <br />
-        Flanking region: <input type="number" id="flank_size" name="flank_size" value="[% flank_size OR 100 %]" min="1" max="1000"/>
+        Flanking region: <br/><input type="number" id="flank_size" name="flank_size" value="[% flank_size OR 100 %]" min="1" max="1000" style="width: 60px"/>
        </fieldset>
       </td>
+      <td>
+       <fieldset name="crispr_ot_filters" [% UNLESS view_paired OR view_single %]disabled[% END %]>
+        Maximum number of off-targets with:<br />
+        0 mismatches <input type="number" name="0_mismatch" id="0_mismatch" min="1" step="1" style="width: 60px"></input><br />
+        1 mismatches <input type="number" name="1_mismatch" id="1_mismatch" min="0" step="1" style="width: 60px"></input><br />
+        2 mismatches <input type="number" name="2_mismatch" id="2_mismatch" min="0" step="1" style="width: 60px"></input><br />
+        3 mismatches <input type="number" name="3_mismatch" id="3_mismatch" min="0" step="1" style="width: 60px"></input><br />
+        4 mismatches <input type="number" name="4_mismatch" id="4_mismatch" min="0" step="1" style="width: 60px"></input><br />
+        <button type="button" class="btn btn-default" id="apply_ot_filters">Apply Off-Target Filters</button>
+       </fieldset>
+      </td>      
     </tr>
   </tbody>
   </table>
@@ -131,6 +143,24 @@
   function enable_filters(){
       $("[name='crispr_filters']")[0].disabled = false;
       $("#crispr_filters_heading")[0].className = "";
+  }
+
+  function apply_ot_filters(){
+    var ot_profile = {};
+    for (var mismatch_number = 0; mismatch_number < 5; mismatch_number++){
+      var input_id = '#' + mismatch_number + '_mismatch';
+      var input = $(input_id)[0];
+      var value = input.value;
+      if (value !== ""){
+        ot_profile[mismatch_number] = value;
+      }
+    }
+
+    var track = genoverse.tracksById['Filtered Crisprs'];
+    track.ot_profile = ot_profile;
+    track.controller.resetImages();
+    track.controller.imgContainers.empty();
+    track.controller.makeFirstImage();
   }
 
   $(document).ready( function() {
@@ -230,6 +260,10 @@
       $("#browse_start")[0].value = $(window)[0].genoverse.start + 200;
       $("#browse_end")[0].value = $(window)[0].genoverse.end - 200;
       this.form.submit();
+    });
+
+    $("#apply_ot_filters").click(function (event){
+      apply_ot_filters();
     });
   });
 </script>
@@ -361,6 +395,7 @@
             id        : 'Filtered Crisprs',
             url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]" ,
             model     : Genoverse.Track.Model.Transcript.GFF3,
+            ot_profile : {0: 1 },
             view      : Genoverse.Track.View.Transcript.extend({
               drawFeature: function (feature, featureContext, labelContext, scale) {
               // only draw the feature if it has an off-target summary
@@ -368,14 +403,34 @@
                   var ot_summary = feature.ot_summary;
                   // Quote keys in JSON string
                   var new_ot_summary = ot_summary.replace(/(\d{1}):/g,"\"$1\":");
-                  console.log(new_ot_summary);
                   var off_targets = jQuery.parseJSON(new_ot_summary);
-                  console.log(off_targets[1]);
-                  if(off_targets[1] < 5){
+                  var ot_profile = this.track.ot_profile;
+                  if( this.fitsOTProfile(off_targets,ot_profile) ){
                     this.base.apply(this, arguments);
                   }
                 }
-              }
+              },
+
+              fitsOTProfile: function (ot_summary, ot_profile){
+                  for (var mismatch_number = 0; mismatch_number < 5; mismatch_number++){
+                    if (mismatch_number in ot_profile){
+                      // Check it
+                      if (ot_summary[mismatch_number] <= ot_profile[mismatch_number]){
+                        // It fits - continue loop to check next number of mismatches
+                      }
+                      else{
+                        return false;
+                      }
+                    }
+                    else{
+                      // This mismatch number is not included in the ot_profile so we
+                      // assume any number of off-targets in this category is ok
+                    }
+                  }
+                  // If we completed the loop then the summary fits the profile
+                  return true;
+              },
+
             }),
             autoHeight : true,
             height    : 150,
