@@ -33,10 +33,40 @@ use Sub::Exporter -setup => {
         gibson_designs_for_region
         design_oligos_to_gff
         bookmarked_pairs_for_region
+        colours
     ) ]
 };
 
 use Log::Log4perl qw( :easy );
+
+=head2 colours
+
+return hashref of colours for various types of features in genoverse
+
+=cut
+
+sub colours {
+    my %colours = (
+        left_crispr     => '#45A825', # greenish
+        right_crispr    => '#1A8599', # blueish
+        left_in_design  => '#DF3A01', # reddish
+        right_in_design => '#FE9A2E', # orange
+        no_ot_summary   => '#B2B2B2', # grey
+        '5F' => '#68D310',
+        '5R' => '#68D310',
+        'EF' => '#589BDD',
+        'ER' => '#589BDD',
+        '3F' => '#BF249B',
+        '3R' => '#BF249B',
+    );
+    return \%colours;
+}
+
+sub gibson_colour {
+    my $oligo_type_id = shift;
+
+    return colours->{ $oligo_type_id };
+}
 
 =head2 get_region_from_params
 
@@ -435,21 +465,26 @@ sub crisprs_to_gff {
                     . 'Name=' . $crispr_r->id
                 );
             
-            if(my $ot_summary = $crispr_r->off_target_summary){
+            my $ot_summary = $crispr_r->off_target_summary;
+            if($ot_summary){
                 DEBUG("Found off target summary for crispr ".$crispr_r->id);
                 $crispr_format_hash{attributes}.=';OT_Summary='.$ot_summary;
             }
 
             my $crispr_parent_datum = prep_gff_datum( \%crispr_format_hash );
             $crispr_format_hash{'type'} = 'CDS';
-            my $colour = '#45A825'; # greenish
+            my $colour = colours->{left_crispr}; # greenish
             
             if ( defined $design_range ){
                 #if ($crispr_r->chr_start > $params->{'design_start'} 
                 #    and $crispr_r->chr_start < $params->{'design_end'}){
                 if ( $crispr_r->chr_start ~~ $design_range){
-                    $colour = '#DF3A01'; # reddish
+                    $colour = colours->{left_in_design}; # reddish
                 }
+            }
+
+            if (not defined $ot_summary){
+                $colour = colours->{no_ot_summary}; # grey
             }
 
             $crispr_format_hash{'attributes'} =     'ID='
@@ -540,23 +575,16 @@ sub crispr_pairs_to_gff {
             $crispr_format_hash{attributes}.=";left_ot_summary=$left_ot;right_ot_summary=$right_ot";  
 
             my $crispr_pair_parent_datum = prep_gff_datum( \%crispr_format_hash );
-
-            my %colours = (
-                left  => '#45A825', # greenish
-                right => '#1A8599', # blueish
-                left_in_design  => '#AA2424', # reddish
-                right_in_design => '#FE9A2E', # orange
-            );
             
-            my $left_colour = $colours{left};
-            my $right_colour = $colours{right};
+            my $left_colour = colours->{left_crispr};
+            my $right_colour = colours->{right_crispr};
 
             if ( defined $design_range ){
                 if ($left->{chr_start} ~~ $design_range){
-                    $left_colour = $colours{left_in_design};
+                    $left_colour = colours->{left_in_design};
                 }
                 if ($right->{chr_start} ~~ $design_range){
-                    $right_colour = $colours{right_in_design};
+                    $right_colour = colours->{right_in_design};
                 }
             }
 
@@ -782,20 +810,6 @@ sub generate_design_meta_data {
     }
 
     return \%design_meta_data;
-}
-
-sub gibson_colour {
-    my $oligo_type_id = shift;
-
-    my %colours = (
-        '5F' => '#68D310',
-        '5R' => '#68D310',
-        'EF' => '#589BDD',
-        'ER' => '#589BDD',
-        '3F' => '#BF249B',
-        '3R' => '#BF249B',
-    );
-    return $colours{ $oligo_type_id };
 }
 
 sub get_chromosome_id{

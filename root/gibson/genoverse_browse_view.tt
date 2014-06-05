@@ -376,6 +376,7 @@
               var atts = {
                 Start  : feature.start,
                 End    : feature.end,
+                Strand : feature.strand,
                 Name   : feature.name,
                 URL : report_link
               };
@@ -395,7 +396,7 @@
             id        : 'Filtered Crisprs',
             url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]" ,
             model     : Genoverse.Track.Model.Transcript.GFF3,
-            ot_profile : {0: 1 },
+            ot_profile : {},
             view      : Genoverse.Track.View.Transcript.extend({
               drawFeature: function (feature, featureContext, labelContext, scale) {
               // only draw the feature if it has an off-target summary
@@ -444,6 +445,7 @@
               var atts = {
                 Start  : feature.start,
                 End    : feature.end,
+                Strand : feature.strand,
                 Name   : feature.name,
                 URL : report_link
               };
@@ -475,6 +477,7 @@
               var atts = {
                 Start  : feature.start,
                 End    : feature.end,
+                Strand : feature.strand,
                 Name   : feature.name,
                 URL : report_link
               };
@@ -510,6 +513,7 @@
               var atts = {
                 Start  : feature.start,
                 End    : feature.end,
+                Strand : feature.strand,
                 Spacer : feature.spacer,
                 Name   : feature.name,
                 URL    : report_link,
@@ -541,6 +545,7 @@
               var atts = {
                 Start  : feature.start,
                 End    : feature.end,
+                Strand : feature.strand,
                 Spacer : feature.spacer,
                 Name   : feature.name,
                 URL    : report_link,
