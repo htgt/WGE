@@ -79,66 +79,59 @@
 <script type="text/javascript">
   
   // Functions to show and hide sets of tracks
+  function hide_tracks(track_ids){
+      track_ids.map(function(id){
+          var track = get_track(id);
+          if(track){
+            $(window)[0].genoverse.removeTrack(track);
+          }
+      });
+  }
+
+  function show_tracks(track_ids){
+    // Insert the tracks at position 3, just below genes track (assuming user has not closed gene and sequence tracks..)
+      track_ids.map(function(id){
+          var track = get_library_track(id);
+          if(track){
+              $(window)[0].genoverse.addTrack(
+                Genoverse.Track.extend($.extend(true, {},track)),3);  
+          }
+      });
+  }
+
   function hide_single (){
-    var crisprs = $.grep( $(window)[0].genoverse.tracks, function(n,i){ return n.name == "Crisprs" });
-    $(window)[0].genoverse.removeTrack(crisprs[0]);
-    var bookmarked = $.grep( $(window)[0].genoverse.tracks, function(n,i){ return n.name == "Bookmarked Crisprs" });
-    if(bookmarked[0]){
-      $(window)[0].genoverse.removeTrack(bookmarked[0]);
-    }
+      hide_tracks(["Crisprs","Filtered Crisprs","Bookmarked Crisprs"]);
   }
 
   function show_single (){
-      // Insert the tracks at position 3, just below genes track (assuming user has not closed gene and sequence tracks..)
-      var crisprs = $.grep( $(window)[0].genoverse.tracksLibrary, function(n,i){ return n.name == "Crisprs" });
-      var bookmarked = $.grep( $(window)[0].genoverse.tracksLibrary, function(n,i){ return n.name == "Bookmarked Crisprs" });
-      if(bookmarked[0]){
-       $(window)[0].genoverse.addTrack(
-        Genoverse.Track.extend($.extend(true, {},bookmarked[0])),3);
-      }
-
-      $(window)[0].genoverse.addTrack(
-        Genoverse.Track.extend($.extend(true, {},crisprs[0])),3);
+      show_tracks(["Crisprs","Filtered Crisprs","Bookmarked Crisprs"]);
       enable_filters();
   }
 
   function hide_paired (){
-      var crisprs = $.grep( $(window)[0].genoverse.tracks, function(n,i){ return n.name == "Crispr Pairs" });
-      $(window)[0].genoverse.removeTrack(crisprs[0]);
-      var bookmarked = $.grep( $(window)[0].genoverse.tracks, function(n,i){ return n.name == "Bookmarked Crispr Pairs" });
-      if(bookmarked[0]){
-        $(window)[0].genoverse.removeTrack(bookmarked[0]);
-      }
+      hide_tracks(["Crispr Pairs","Filtered Crispr Pairs","Bookmarked Crispr Pairs"]);
   }
 
   function show_paired (){
-      // Insert the tracks at position 3, just below genes track (assuming user has not closed gene and sequence tracks..)
-      var crisprs = $.grep( $(window)[0].genoverse.tracksLibrary, function(n,i){ return n.name == "Crispr Pairs" });
-      var bookmarked = $.grep( $(window)[0].genoverse.tracksLibrary, function(n,i){ return n.name == "Bookmarked Crispr Pairs" });
-      if(bookmarked[0]){
-       $(window)[0].genoverse.addTrack(
-        Genoverse.Track.extend($.extend(true, {},bookmarked[0])),3);
-      }
-      $(window)[0].genoverse.addTrack(
-        Genoverse.Track.extend($.extend(true, {},crisprs[0])),3);
+      show_tracks(["Crispr Pairs","Filtered Crispr Pairs","Bookmarked Crispr Pairs"]);
       enable_filters();
   }
 
   function hide_designs (){
-      var design_track = get_track('Designs');
-      $(window)[0].genoverse.removeTrack(design_track);
+      hide_tracks(["Designs"]);
   }
 
   function show_designs (){
-      // Insert the tracks at position 3, just below genes track (assuming user has not closed gene and sequence tracks..)
-      var crisprs = $.grep( $(window)[0].genoverse.tracksLibrary, function(n,i){ return n.name == "Designs" });
-
-      $(window)[0].genoverse.addTrack(
-        Genoverse.Track.extend($.extend(true, {},crisprs[0])),3);
+      show_tracks(["Designs"]);
   }
 
-  function get_track(name){
-    return $(window)[0].genoverse.tracksById[name];
+  function get_track(id){
+    return $(window)[0].genoverse.tracksById[id];
+  }
+
+  function get_library_track(id){
+    var tracks = $.grep( $(window)[0].genoverse.tracksLibrary, function(n,i){ return n.id== id });
+    return tracks[0];
   }
 
   function enable_filters(){
