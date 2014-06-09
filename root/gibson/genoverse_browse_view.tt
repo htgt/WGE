@@ -152,11 +152,17 @@
       }
     }
 
-    var track = get_track('Filtered Crisprs');
-    track.ot_profile = ot_profile;
-    track.controller.resetImages();
-    track.controller.imgContainers.empty();
-    track.controller.makeFirstImage();
+    var filtered_tracks = ['Filtered Crisprs', 'Filtered Crispr Pairs'];
+    filtered_tracks.map(function (track_id){
+        var track = get_track(track_id);
+        if(track){
+            track.ot_profile = ot_profile;
+            track.controller.resetImages();
+            track.controller.imgContainers.empty();
+            track.controller.makeFirstImage();
+        }
+    });
+
 
   }
 
@@ -265,7 +271,7 @@
   });
 </script>
 
-    <script type="text/javascript" src="[% c.uri_for('/static/genoverse/js/genoverse.wtsi.js')%]"></script>
+    <script type="text/javascript" src="[% c.uri_for('/static/genoverse/js/genoverse.wtsi.js', {i => 1} )%]"></script>
     <script type="text/javascript" src="[% c.uri_for('/static/js/genoverse_custom_tracks.js')%]"></script>
     <script>
        var genoverseConfig = {
@@ -394,7 +400,8 @@
             pair_report_uri : "[%c.uri_for('/crispr_pair')%]",
             view      : Genoverse.Track.View.FilterCrisprPairs,
             spacer_min: 0,
-            spacer_max : 5
+            spacer_max : 5,
+            ot_profile : {}
           }),
           Genoverse.Track.CrisprPairs.extend({
             name      : 'Crispr Pairs',

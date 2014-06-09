@@ -1,6 +1,8 @@
 Genoverse.Track.Crisprs = Genoverse.Track.extend({
     model     : Genoverse.Track.Model.Transcript.GFF3,
-    view      : Genoverse.Track.View.Transcript,
+    view      : Genoverse.Track.View.Transcript.extend({
+      color : '#FFFFFF'
+    }),
     autoHeight : true,
     height    : 150,
     labels    : false,
@@ -58,8 +60,9 @@ Genoverse.Track.CrisprPairs = Genoverse.Track.extend({
 });
 
 Genoverse.Track.View.FilterCrisprs = Genoverse.Track.View.Transcript.extend({
+    color : '#FFFFFF',
     drawFeature: function (feature, featureContext, labelContext, scale) {
-        // only draw the feature if it has an off-target summary
+        // Fade color of feature with off-target summary that does not match profile
         if(feature.ot_summary){
             var ot_summary = feature.ot_summary;
             // Quote keys in JSON string
@@ -69,11 +72,16 @@ Genoverse.Track.View.FilterCrisprs = Genoverse.Track.View.Transcript.extend({
             if( fitsOTProfile(off_targets,ot_profile) ){
                 this.base.apply(this, arguments);
             }
+            else{
+                fadeCDS(feature.cds);
+                this.base.apply(this, arguments); 
+            }
         }
-    },
-
-
-
+        else{
+          // Lack of off-target summary already indicated by grey feature color
+          this.base.apply(this, arguments);
+        }
+    }
 });
 
 function fitsOTProfile(ot_summary, ot_profile){
@@ -102,11 +110,93 @@ function  _quoteJSONKeys(summary_string) {
 }
 
 Genoverse.Track.View.FilterCrisprPairs = Genoverse.Track.View.Transcript.extend({
+    color : '#FFFFFF',
+    // FIXME: decide how to show pairs which are missing ot_summary info
     drawFeature: function (feature, featureContext, labelContext, scale) {
-        // only draw the pair if its spacer is within the specified range
-        if(feature.spacer <= this.track.spacer_max && feature.spacer >= this.track.spacer_min){
-            this.base.apply(this, arguments);
+        // Fade color of feature with off-target summary that does not match profile
+        var left_right = ['left_ot_summary','right_ot_summary'];
+        var ot_profile = this.track.ot_profile;
+        var fits_profile = left_right.map(function (summary_type){
+            var summary_string = feature[summary_type];
+            console.log(feature);
+            console.log(summary_type + ': ' + summary_string);
+            if(summary_string && summary_string != "not computed"){
+                var summary_json = _quoteJSONKeys(summary_string);
+                var off_targets = jQuery.parseJSON(summary_json);
+                if( fitsOTProfile(off_targets,ot_profile) ){
+                    return 1;
+                }
+                else{
+                    return 0;
+                }                    
+            }
+            else{
+                // ot summary not availble
+                return 0;
+            }
+        });
+console.log(fits_profile);
+        if(fits_profile[0] && fits_profile[1]){
+            this.base.apply(this,arguments);
         }
+        else{
+            fadeCDS(feature.cds);
+            this.base.apply(this,arguments);
+        }
+
+
+        // only draw the pair if its spacer is within the specified range
+        //if(feature.spacer <= this.track.spacer_max && feature.spacer >= this.track.spacer_min){
+        //    this.base.apply(this, arguments);
+        //}
+    },
+
+    drawIntron: function (intron, context) {
+        // We have set default view color to white as we do not want lines
+        // around each crispr but we need to set strokeStlye to black to
+        // draw the line connecting the paired crisprs
+        var orig_strokeStyle = context.strokeStyle;
+        context.strokeStyle = '#000000';
+        this.base.apply(this, arguments);
+        context.strokeStyle = orig_strokeStyle;
     }
 })
+
+function fadeCDS(cds_array) {
+    cds_array.map(function (cds){
+        var color;
+        if (cds.orig_color){
+            color = cds.orig_color;
+        }
+        else{
+            color = cds.color;
+            cds.orig_color = color;
+        }
+
+        var new_color = colorTint(color, 0.7);
+        cds.color = new_color;        
+    });
+}
+
+function colorTint(hex, factor) {
+  // Adapted from ColorLuminance function by Craig Buckler at
+  // http://www.sitepoint.com/javascript-generate-lighter-darker-color/
+  
+
+  // validate hex string
+  hex = String(hex).replace(/[^0-9a-f]/gi, '');
+  if (hex.length < 6) {
+    hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+  }
+
+  // convert to decimal and change luminosity
+  var rgb = "#", c, i;
+  for (i = 0; i < 3; i++) {
+    c = parseInt(hex.substr(i*2,2), 16);
+    c = Math.round(Math.min(Math.max(0, c + ( factor * (255 - c) ) ), 255)).toString(16);
+    rgb += ("00"+c).substr(c.length);
+  }
+
+  return rgb;
+}
 
