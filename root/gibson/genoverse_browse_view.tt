@@ -96,6 +96,7 @@
        $(window)[0].genoverse.addTrack(
         Genoverse.Track.extend($.extend(true, {},bookmarked[0])),3);
       }
+
       $(window)[0].genoverse.addTrack(
         Genoverse.Track.extend($.extend(true, {},crisprs[0])),3);
       enable_filters();
@@ -158,11 +159,12 @@
       }
     }
 
-    var track = genoverse.tracksById['Filtered Crisprs'];
+    var track = get_track('Filtered Crisprs');
     track.ot_profile = ot_profile;
     track.controller.resetImages();
     track.controller.imgContainers.empty();
     track.controller.makeFirstImage();
+
   }
 
   $(document).ready( function() {
@@ -270,8 +272,10 @@
   });
 </script>
 
-    <script type="text/javascript" src="[% c.uri_for('/static/genoverse/js/genoverse.wtsi.js')%]">
-       {
+    <script type="text/javascript" src="[% c.uri_for('/static/genoverse/js/genoverse.wtsi.js')%]"></script>
+    <script type="text/javascript" src="[% c.uri_for('/static/js/genoverse_custom_tracks.js')%]"></script>
+    <script>
+       var genoverseConfig = {
         container : '#genoverse', // Where to inject Genoverse (css/jQuery selector)
         // If no genome supplied, it must have at least chromosomeSize, e.g.:
         // chromosomeSize : 249250621, // chromosome 1, human
@@ -360,208 +364,56 @@
             }            
           }),
 [% IF c.user %]
-          Genoverse.Track.extend({
+          Genoverse.Track.Crisprs.extend({
             id        : 'Bookmarked Crisprs',
             name      : 'Bookmarked Crisprs',
             url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]&bookmarked_only=1" ,
-            model     : Genoverse.Track.Model.Transcript.GFF3,
-            view      : Genoverse.Track.View.Transcript,
-            autoHeight : true,
-            height    : 150,
-            labels    : false,
-            threshold : 3000,
-            messages  : { threshold : 'Crisprs not displayed for regions larger than ' },
-
-            populateMenu : function (feature) {
-              var report_link = "<a href='[%c.uri_for('/crispr')%]/" + feature.name 
-                                + "' target='_blank'><font color='#00FFFF'>Crispr Report</font></a>";
-              var atts = {
-                Start  : feature.start,
-                End    : feature.end,
-                Strand : feature.strand,
-                Name   : feature.name,
-                URL : report_link
-              };
-              if (feature.ot_summary){
-                atts['Off-Targets'] = feature.ot_summary;
-              }
-              else {
-                atts['Off-Targets'] = 'not computed';
-              }
-              return atts;
-            }
-
+            crispr_report_uri : "[%c.uri_for('/crispr')%]"
           }),
 [% END %]
-          Genoverse.Track.extend({
+          Genoverse.Track.Crisprs.extend({
             name      : 'Filtered Crisprs',
             id        : 'Filtered Crisprs',
             url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]" ,
-            model     : Genoverse.Track.Model.Transcript.GFF3,
             ot_profile : {},
-            view      : Genoverse.Track.View.Transcript.extend({
-              drawFeature: function (feature, featureContext, labelContext, scale) {
-              // only draw the feature if it has an off-target summary
-                if(feature.ot_summary){
-                  var ot_summary = feature.ot_summary;
-                  // Quote keys in JSON string
-                  var new_ot_summary = ot_summary.replace(/(\d{1}):/g,"\"$1\":");
-                  var off_targets = jQuery.parseJSON(new_ot_summary);
-                  var ot_profile = this.track.ot_profile;
-                  if( this.fitsOTProfile(off_targets,ot_profile) ){
-                    this.base.apply(this, arguments);
-                  }
-                }
-              },
-
-              fitsOTProfile: function (ot_summary, ot_profile){
-                  for (var mismatch_number = 0; mismatch_number < 5; mismatch_number++){
-                    if (mismatch_number in ot_profile){
-                      // Check it
-                      if (ot_summary[mismatch_number] <= ot_profile[mismatch_number]){
-                        // It fits - continue loop to check next number of mismatches
-                      }
-                      else{
-                        return false;
-                      }
-                    }
-                    else{
-                      // This mismatch number is not included in the ot_profile so we
-                      // assume any number of off-targets in this category is ok
-                    }
-                  }
-                  // If we completed the loop then the summary fits the profile
-                  return true;
-              },
-
-            }),
-            autoHeight : true,
-            height    : 150,
-            labels    : false,
-            threshold : 3000,
-            messages  : { threshold : 'Crisprs not displayed for regions larger than ' },
-
-            populateMenu : function (feature) {
-              var report_link = "<a href='[%c.uri_for('/crispr')%]/" + feature.name 
-                                + "' target='_blank'><font color='#00FFFF'>Crispr Report</font></a>";
-              var atts = {
-                Start  : feature.start,
-                End    : feature.end,
-                Strand : feature.strand,
-                Name   : feature.name,
-                URL : report_link
-              };
-              if (feature.ot_summary){
-                atts['Off-Targets'] = feature.ot_summary;
-              }
-              else {
-                atts['Off-Targets'] = 'not computed';
-              }
-              return atts;
-            }
-
+            view      : Genoverse.Track.View.FilterCrisprs,
+            crispr_report_uri : "[%c.uri_for('/crispr')%]"
           }),
-          Genoverse.Track.extend({
+          Genoverse.Track.Crisprs.extend({
             name      : 'Crisprs',
             id        : 'Crisprs',
+            crispr_report_uri : "[% c.uri_for('/crispr') %]",
             url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]" ,
-            model     : Genoverse.Track.Model.Transcript.GFF3,
-            view      : Genoverse.Track.View.Transcript,
-            autoHeight : true,
-            height    : 150,
-            labels    : false,
-            threshold : 3000,
-            messages  : { threshold : 'Crisprs not displayed for regions larger than ' },
-
-            populateMenu : function (feature) {
-              var report_link = "<a href='[%c.uri_for('/crispr')%]/" + feature.name 
-                                + "' target='_blank'><font color='#00FFFF'>Crispr Report</font></a>";
-              var atts = {
-                Start  : feature.start,
-                End    : feature.end,
-                Strand : feature.strand,
-                Name   : feature.name,
-                URL : report_link
-              };
-              if (feature.ot_summary){
-                atts['Off-Targets'] = feature.ot_summary;
-              }
-              else {
-                atts['Off-Targets'] = 'not computed';
-              }
-              return atts;
-            }
-
           }),
 
 [% IF c.user %]
-          Genoverse.Track.extend({
+          Genoverse.Track.CrisprPairs.extend({
             id        : 'Bookmarked Crispr Pairs',
             name      : 'Bookmarked Crispr Pairs',
             url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]&bookmarked_only=1" ,
-            model     : Genoverse.Track.Model.Transcript.GFF3,
-            view      : Genoverse.Track.View.Transcript,
-            autoHeight : true,
-            height    : 150,
-            labels    : false,
-            threshold : 3000,
-            messages  : { threshold : 'Crispr pairs not displayed for regions larger than ' },
-
-            populateMenu : function (feature) {
-              var report_link = "<a href='[%c.uri_for('/crispr_pair')%]/" 
-                                + feature.name 
-                                + "?spacer=" + feature.spacer
-                                + "' target='_blank'><font color='#00FFFF'>Crispr Pair Report</font></a>";              
-              var atts = {
-                Start  : feature.start,
-                End    : feature.end,
-                Strand : feature.strand,
-                Spacer : feature.spacer,
-                Name   : feature.name,
-                URL    : report_link,
-                'Off-Targets: Pairs' : feature.ot_summary || 'not computed',
-                Left   : feature.left_ot_summary,
-                Right  : feature.right_ot_summary
-              };
-              return atts;              
-            }
+            pair_report_uri : "[%c.uri_for('/crispr_pair')%]"
           }),
 [% END %]
-          Genoverse.Track.extend({
+          Genoverse.Track.CrisprPairs.extend({
+            name      : 'Filtered Crispr Pairs',
+            id        : 'Filtered Crispr Pairs',
+            url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]" ,
+            pair_report_uri : "[%c.uri_for('/crispr_pair')%]",
+            view      : Genoverse.Track.View.FilterCrisprPairs,
+            spacer_min: 0,
+            spacer_max : 5
+          }),
+          Genoverse.Track.CrisprPairs.extend({
             name      : 'Crispr Pairs',
             id        : 'Crispr Pairs',
             url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]" ,
-            model     : Genoverse.Track.Model.Transcript.GFF3,
-            view      : Genoverse.Track.View.Transcript,
-            autoHeight : true,
-            height    : 150,
-            labels    : false,
-            threshold : 3000,
-            messages  : { threshold : 'Crispr pairs not displayed for regions larger than ' },
-
-            populateMenu : function (feature) {
-              var report_link = "<a href='[%c.uri_for('/crispr_pair')%]/" 
-                                + feature.name 
-                                + "?spacer=" + feature.spacer
-                                + "' target='_blank'><font color='#00FFFF'>Crispr Pair Report</font></a>";              
-              var atts = {
-                Start  : feature.start,
-                End    : feature.end,
-                Strand : feature.strand,
-                Spacer : feature.spacer,
-                Name   : feature.name,
-                URL    : report_link,
-                'Off-Targets: Pairs' : feature.ot_summary || 'not computed',
-                Left   : feature.left_ot_summary,
-                Right  : feature.right_ot_summary
-              };
-              return atts;              
-            }
+            pair_report_uri : "[%c.uri_for('/crispr_pair')%]"
           }),
-
           Genoverse.Track.Scaleline
         ]
-      }
+      };
+
+      document.addEventListener('DOMContentLoaded', function () { window.genoverse = new Genoverse(genoverseConfig); });
     </script>
     
     <div id="genoverse" class="span12"></div>
