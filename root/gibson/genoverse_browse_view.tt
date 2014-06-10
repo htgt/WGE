@@ -7,6 +7,8 @@
   </h1>
 </div>
 
+<div class="row">
+<div class="span9">
 <form action="[% c.uri_for( '/genoverse_browse' ) %]" class="well">
   <input type="hidden" name="genome" value=[%genome%] />
   <input type="hidden" name="chromosome" value=[%chromosome%] />
@@ -21,7 +23,6 @@
      <th>Single Crisprs</th><th>Paired Crisprs</th><th>Designs</th>
      <th><p id="crispr_filters_heading" [% UNLESS view_single OR view_paired %]class="muted"[% END %]>Crispr Filters</p></th>
      <th><p id="spacer_filters_heading" [% UNLESS view_paired %]class="muted"[% END %]>Spacer Filter</p></th>
-     <th><p id="crispr_ot_filters_heading" [% UNLESS view_single OR view_paired %]class="muted"[% END %]>Crispr Off-Target Filters</p></th>
     </tr>
    </thead>
    <tbody>
@@ -64,11 +65,26 @@
       <td>
        <fieldset name="spacer_filter" [% UNLESS view_paired %]disabled[% END %]>
          Crispr Pair Spacer Length (-10 to 30 bp)<br />
-         Minimum Spacer Length <input type="number" name="spacer_min" id="spacer_min" min="-10" max="30" step="1" style="width: 60px"></input> bp<br />
-         Maximum Spacer Length <input type="number" name="spacer_max" id="spacer_max" min="-10" max="30" step="1" style="width: 60px"></input> bp<br /> 
+         Min Spacer Length <input type="number" name="spacer_min" id="spacer_min" min="-10" max="30" step="1" style="width: 60px"></input> bp<br />
+         Max Spacer Length <input type="number" name="spacer_max" id="spacer_max" min="-10" max="30" step="1" style="width: 60px"></input> bp<br /> 
          <button type="button" class="btn btn-default" id="apply_spacer_filter">Apply Spacer Filter</button>
        </fieldset>
-      </td>      
+      </td>  
+    </tr>
+  </tbody>
+  </table>
+</form>      
+</div>
+<div id="ot_filters_panel" class="span3">
+<form  class="well">
+  <table class='table'>
+   <thead>
+    <tr>
+      <th>Off-Target Filters</th>
+    </tr>
+   </thead>
+   <tbody>
+    <tr>
       <td>
         <fieldset name="crispr_ot_filters" [% UNLESS view_paired OR view_single %]disabled[% END %]>
          Maximum number of off-targets with:<br />
@@ -79,11 +95,13 @@
          4 mismatches <input type="number" name="4_mismatch" id="4_mismatch" min="0" step="1" style="width: 60px"></input><br />
          <button type="button" class="btn btn-default" id="apply_ot_filters">Apply Off-Target Filters</button>
          </fieldset>
-      </td>     
+      </td>
     </tr>
-  </tbody>
+   </tbody>
   </table>
-</form>      
+</form>
+</div>
+</div>
 
 <script type="text/javascript">
   
@@ -297,6 +315,8 @@
       };
     });
 
+    $("#ot_filters_panel").draggable();
+
     // Handle clicks on the show/hide radio inputs
     $("#hide_single").change(function (event){
       hide_single();
@@ -459,6 +479,7 @@
             crispr_report_uri : "[%c.uri_for('/crispr')%]",
             urlParams : { crispr_filter: "[%crispr_filter%]", flank_size: "[%flank_size%]"}          
           }),
+          [% IF 0 %]
           Genoverse.Track.Crisprs.extend({
             name      : 'Crisprs',
             id        : 'Crisprs',
@@ -466,6 +487,7 @@
             url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]" ,
             urlParams : { crispr_filter: "[%crispr_filter%]", flank_size: "[%flank_size%]"}              
           }),
+          [% END %]
 
 [% IF c.user %]
           Genoverse.Track.CrisprPairs.extend({
@@ -485,6 +507,7 @@
             view      : Genoverse.Track.View.FilterCrisprPairs,
             ot_profile : {}
           }),
+          [% IF 0 %]
           Genoverse.Track.CrisprPairs.extend({
             name      : 'Crispr Pairs',
             id        : 'Crispr Pairs',
@@ -492,6 +515,7 @@
             pair_report_uri : "[%c.uri_for('/crispr_pair')%]",
             urlParams : { crispr_filter: "[%crispr_filter%]", flank_size: "[%flank_size%]"} 
           }),
+          [% END %]
           Genoverse.Track.Scaleline
         ]
       };

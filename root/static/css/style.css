@@ -3,3 +3,8 @@ th.group-header {
   vertical-align: middle;
   background: #EFEFEF;
 }
+
+#ot_filters_panel {
+	z-index: 9999;
+	cursor: move;
+}
