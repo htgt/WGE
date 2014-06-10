@@ -26,13 +26,27 @@ Genoverse.Track.Crisprs = Genoverse.Track.extend({
         atts['Off-Targets'] = 'not computed';
       }
       return atts;
-    }
+    },
 
+    reload : function (){
+        reload_track(this);     
+    }
 });
 
 Genoverse.Track.CrisprPairs = Genoverse.Track.extend({
     model     : Genoverse.Track.Model.Transcript.GFF3,
-    view      : Genoverse.Track.View.Transcript,
+    view      : Genoverse.Track.View.Transcript.extend({
+      color : '#FFFFFF',
+      drawIntron: function (intron, context) {
+        // We have set default view color to white as we do not want lines
+        // around each crispr but we need to set strokeStlye to black to
+        // draw the line connecting the paired crisprs
+        var orig_strokeStyle = context.strokeStyle;
+        context.strokeStyle = '#000000';
+        this.base.apply(this, arguments);
+        context.strokeStyle = orig_strokeStyle;
+      }
+    }),
     autoHeight : true,
     height    : 150,
     labels    : false,
@@ -56,7 +70,11 @@ Genoverse.Track.CrisprPairs = Genoverse.Track.extend({
             Right  : feature.right_ot_summary
         };
         return atts;              
-    }
+    },
+
+    reload : function (){
+        reload_track(this);     
+    }    
 });
 
 Genoverse.Track.View.FilterCrisprs = Genoverse.Track.View.Transcript.extend({
@@ -70,6 +88,7 @@ Genoverse.Track.View.FilterCrisprs = Genoverse.Track.View.Transcript.extend({
             var off_targets = jQuery.parseJSON(new_ot_summary);
             var ot_profile = this.track.ot_profile;
             if( fitsOTProfile(off_targets,ot_profile) ){
+                restoreCDS(feature.cds);
                 this.base.apply(this, arguments);
             }
             else{
@@ -134,6 +153,7 @@ Genoverse.Track.View.FilterCrisprPairs = Genoverse.Track.View.Transcript.extend(
             // Both match profile or 1 matches profile and 1 has no ots computed
             // or both have no ots computed
             // Lack of off-target summary already indicated by grey color
+            restoreCDS(feature.cds);
             this.base.apply(this,arguments);
         }
     },
@@ -190,6 +210,15 @@ function fadeCDS(cds_array) {
     });
 }
 
+// Restores items to their original colour
+function restoreCDS(cds_array){
+    cds_array.map(function (cds){
+        if(cds.orig_color){
+            cds.color = cds.orig_color;
+        }
+    });
+}
+
 function colorTint(hex, factor) {
   // Adapted from ColorLuminance function by Craig Buckler at
   // http://www.sitepoint.com/javascript-generate-lighter-darker-color/
@@ -211,3 +240,21 @@ function colorTint(hex, factor) {
   return rgb;
 }
 
+function reload_track(track){
+
+    // update URL with latest params
+    track.model.setURL(track.urlParams, true);
+        
+    var genoverse = track.browser;
+    track.controller.resetImages();
+    
+    // clear out existing data and features for this region so they are regenerated
+    track.model.dataRanges.remove({ x: genoverse.start, w: genoverse.end - genoverse.start + 1, y: 0, h: 1 }); 
+    track.model.features.remove({ x: genoverse.start, w: genoverse.end - genoverse.start + 1, y: 0, h: 1 }); 
+
+    // clear out the image_container divs
+    track.controller.imgContainers.empty();
+
+    // redraw the track
+    track.controller.makeFirstImage();   
+}

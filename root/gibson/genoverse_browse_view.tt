@@ -150,6 +150,34 @@
       $("#crispr_ot_filters_heading")[0].className = "";
   }
 
+  function apply_crispr_filters(){
+      // FIXME: would be better to identify these by track class...
+      var crispr_tracks = ['Crisprs','Filtered Crisprs','Bookmarked Crisprs',
+                           'Crispr Pairs', 'Filtered Crispr Pairs', 'Bookmarked Crispr Pairs'];
+
+      var crispr_filter = $('input[name=crispr_filter]:checked').val();
+      var flank_size = $('#flank_size').val();
+
+      // apply to visible tracks and reload them
+      crispr_tracks.map(function (track_id){
+        var track = get_track(track_id);
+        if(track){
+          track.urlParams.crispr_filter = crispr_filter;
+          track.urlParams.flank_size = flank_size;
+          track.reload();
+        }
+      });
+
+      // apply to library tracks ready for them to be shown
+      crispr_tracks.map(function (track_id){
+        var track = get_library_track(track_id);
+        if(track){
+          track.urlParams.crispr_filter = crispr_filter;
+          track.urlParams.flank_size = flank_size;
+        }
+      });
+  }
+
   function apply_ot_filters(){
     var ot_profile = {};
     for (var mismatch_number = 0; mismatch_number < 5; mismatch_number++){
@@ -162,6 +190,7 @@
     }
 
     var filtered_tracks = ['Filtered Crisprs', 'Filtered Crispr Pairs'];
+    // apply to visible tracks
     filtered_tracks.map(function (track_id){
         var track = get_track(track_id);
         if(track){
@@ -169,6 +198,14 @@
             track.controller.resetImages();
             track.controller.imgContainers.empty();
             track.controller.makeFirstImage();
+        }
+    });
+
+    // apply to library tracks
+    filtered_tracks.map(function (track_id){
+        var track = get_library_track(track_id);
+        if(track){
+            track.ot_profile = ot_profile;
         }
     });
   }
@@ -187,6 +224,16 @@
         track.controller.resetImages();
         track.controller.imgContainers.empty();
         track.controller.makeFirstImage();
+      }
+
+      var library_track = get_library_track('Filtered Crispr Pairs');
+      if(library_track){
+        if(min !== ""){
+          track.spacer_min = parseInt(min);
+        }
+        if(max !== ""){
+          track.spacer_max = parseInt(max);
+        }        
       }
   }
 
@@ -277,17 +324,19 @@
 
     $("#flank_size").keypress(function (event){
       if(event.which == 13){
+        apply_crispr_filters();
         // enter key was pressed
-        $("#browse_start")[0].value = $(window)[0].genoverse.start + 200;
-        $("#browse_end")[0].value = $(window)[0].genoverse.end - 200;
-        this.form.submit();
+        //$("#browse_start")[0].value = $(window)[0].genoverse.start + 200;
+        //$("#browse_end")[0].value = $(window)[0].genoverse.end - 200;
+        //this.form.submit();
       }
     });
 
     $('input[name=crispr_filter]').click(function (event){
-      $("#browse_start")[0].value = $(window)[0].genoverse.start + 200;
-      $("#browse_end")[0].value = $(window)[0].genoverse.end - 200;
-      this.form.submit();
+      apply_crispr_filters();
+      //$("#browse_start")[0].value = $(window)[0].genoverse.start + 200;
+      //$("#browse_end")[0].value = $(window)[0].genoverse.end - 200;
+      //this.form.submit();
     });
 
     $("#apply_ot_filters").click(function (event){
@@ -302,7 +351,7 @@
 </script>
 
     <script type="text/javascript" src="[% c.uri_for('/static/genoverse/js/genoverse.wtsi.js', {i => 1} )%]"></script>
-    <script type="text/javascript" src="[% c.uri_for('/static/js/genoverse_custom_tracks.js')%]"></script>
+    <script type="text/javascript" src="[% c.uri_for('/static/js/genoverse_custom_tracks.js', {i => 1})%]"></script>
     <script>
        var genoverseConfig = {
         container : '#genoverse', // Where to inject Genoverse (css/jQuery selector)
@@ -396,46 +445,52 @@
           Genoverse.Track.Crisprs.extend({
             id        : 'Bookmarked Crisprs',
             name      : 'Bookmarked Crisprs',
-            url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]&bookmarked_only=1" ,
-            crispr_report_uri : "[%c.uri_for('/crispr')%]"
+            url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&bookmarked_only=1" ,
+            crispr_report_uri : "[%c.uri_for('/crispr')%]",
+            urlParams : { crispr_filter: "[%crispr_filter%]", flank_size: "[%flank_size%]"}
           }),
 [% END %]
           Genoverse.Track.Crisprs.extend({
             name      : 'Filtered Crisprs',
             id        : 'Filtered Crisprs',
-            url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]" ,
+            url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]" ,
             ot_profile : {},
             view      : Genoverse.Track.View.FilterCrisprs,
-            crispr_report_uri : "[%c.uri_for('/crispr')%]"
+            crispr_report_uri : "[%c.uri_for('/crispr')%]",
+            urlParams : { crispr_filter: "[%crispr_filter%]", flank_size: "[%flank_size%]"}          
           }),
           Genoverse.Track.Crisprs.extend({
             name      : 'Crisprs',
             id        : 'Crisprs',
             crispr_report_uri : "[% c.uri_for('/crispr') %]",
-            url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]" ,
+            url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]" ,
+            urlParams : { crispr_filter: "[%crispr_filter%]", flank_size: "[%flank_size%]"}              
           }),
 
 [% IF c.user %]
           Genoverse.Track.CrisprPairs.extend({
             id        : 'Bookmarked Crispr Pairs',
             name      : 'Bookmarked Crispr Pairs',
-            url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]&bookmarked_only=1" ,
-            pair_report_uri : "[%c.uri_for('/crispr_pair')%]"
+            url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&bookmarked_only=1" ,
+            pair_report_uri : "[%c.uri_for('/crispr_pair')%]",
+            urlParams : { crispr_filter: "[%crispr_filter%]", flank_size: "[%flank_size%]"} 
           }),
 [% END %]
           Genoverse.Track.CrisprPairs.extend({
             name      : 'Filtered Crispr Pairs',
             id        : 'Filtered Crispr Pairs',
-            url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]" ,
+            url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]" ,
             pair_report_uri : "[%c.uri_for('/crispr_pair')%]",
+            urlParams : { crispr_filter: "[%crispr_filter%]", flank_size: "[%flank_size%]"},
             view      : Genoverse.Track.View.FilterCrisprPairs,
             ot_profile : {}
           }),
           Genoverse.Track.CrisprPairs.extend({
             name      : 'Crispr Pairs',
             id        : 'Crispr Pairs',
-            url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]" ,
-            pair_report_uri : "[%c.uri_for('/crispr_pair')%]"
+            url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]" ,
+            pair_report_uri : "[%c.uri_for('/crispr_pair')%]",
+            urlParams : { crispr_filter: "[%crispr_filter%]", flank_size: "[%flank_size%]"} 
           }),
           Genoverse.Track.Scaleline
         ]
