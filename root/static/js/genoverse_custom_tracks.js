@@ -84,6 +84,71 @@ Genoverse.Track.View.FilterCrisprs = Genoverse.Track.View.Transcript.extend({
     }
 });
 
+Genoverse.Track.View.FilterCrisprPairs = Genoverse.Track.View.Transcript.extend({
+    color : '#FFFFFF',
+    drawFeature: function (feature, featureContext, labelContext, scale) {
+        // only draw the pair if its spacer is within the specified range
+        var min = this.track.spacer_min;
+        var max = this.track.spacer_max;
+        if(min !== undefined || max !== undefined){
+            if(min === undefined){ min = -10; }
+            if(max === undefined){ max = 30; }
+            if((feature.spacer <= max) && (feature.spacer >= min)){
+                // carry on to off target check
+            }
+            else{
+                // don't draw
+                return;
+            }
+        }
+        else{
+            // skip spacer length check
+        }
+
+        // Fade color of feature with off-target summary that does not match profile
+        var left_right = ['left_ot_summary','right_ot_summary'];
+        var ot_profile = this.track.ot_profile;
+        var fits_profile = left_right.map(function (summary_type){
+            var summary_string = feature[summary_type];
+            if(summary_string && summary_string != "not computed"){
+                var summary_json = _quoteJSONKeys(summary_string);
+                var off_targets = jQuery.parseJSON(summary_json);
+                if( fitsOTProfile(off_targets,ot_profile) ){
+                    return 1;
+                }
+                else{
+                    return 0;
+                }                    
+            }
+            else{
+                // ot summary not availble
+                return undefined;
+            }
+        });
+        // If either left or right does not match ot_profile fade the colors
+        if(fits_profile[0] == 0 || fits_profile[1] == 0){
+            fadeCDS(feature.cds);
+            this.base.apply(this,arguments);
+        }
+        else{
+            // Both match profile or 1 matches profile and 1 has no ots computed
+            // or both have no ots computed
+            // Lack of off-target summary already indicated by grey color
+            this.base.apply(this,arguments);
+        }
+    },
+
+    drawIntron: function (intron, context) {
+        // We have set default view color to white as we do not want lines
+        // around each crispr but we need to set strokeStlye to black to
+        // draw the line connecting the paired crisprs
+        var orig_strokeStyle = context.strokeStyle;
+        context.strokeStyle = '#000000';
+        this.base.apply(this, arguments);
+        context.strokeStyle = orig_strokeStyle;
+    }
+})
+
 function fitsOTProfile(ot_summary, ot_profile){
         for (var mismatch_number = 0; mismatch_number < 5; mismatch_number++){
             if (mismatch_number in ot_profile){
@@ -109,59 +174,6 @@ function  _quoteJSONKeys(summary_string) {
       return quoted;
 }
 
-Genoverse.Track.View.FilterCrisprPairs = Genoverse.Track.View.Transcript.extend({
-    color : '#FFFFFF',
-    // FIXME: decide how to show pairs which are missing ot_summary info
-    drawFeature: function (feature, featureContext, labelContext, scale) {
-        // Fade color of feature with off-target summary that does not match profile
-        var left_right = ['left_ot_summary','right_ot_summary'];
-        var ot_profile = this.track.ot_profile;
-        var fits_profile = left_right.map(function (summary_type){
-            var summary_string = feature[summary_type];
-            console.log(feature);
-            console.log(summary_type + ': ' + summary_string);
-            if(summary_string && summary_string != "not computed"){
-                var summary_json = _quoteJSONKeys(summary_string);
-                var off_targets = jQuery.parseJSON(summary_json);
-                if( fitsOTProfile(off_targets,ot_profile) ){
-                    return 1;
-                }
-                else{
-                    return 0;
-                }                    
-            }
-            else{
-                // ot summary not availble
-                return 0;
-            }
-        });
-console.log(fits_profile);
-        if(fits_profile[0] && fits_profile[1]){
-            this.base.apply(this,arguments);
-        }
-        else{
-            fadeCDS(feature.cds);
-            this.base.apply(this,arguments);
-        }
-
-
-        // only draw the pair if its spacer is within the specified range
-        //if(feature.spacer <= this.track.spacer_max && feature.spacer >= this.track.spacer_min){
-        //    this.base.apply(this, arguments);
-        //}
-    },
-
-    drawIntron: function (intron, context) {
-        // We have set default view color to white as we do not want lines
-        // around each crispr but we need to set strokeStlye to black to
-        // draw the line connecting the paired crisprs
-        var orig_strokeStyle = context.strokeStyle;
-        context.strokeStyle = '#000000';
-        this.base.apply(this, arguments);
-        context.strokeStyle = orig_strokeStyle;
-    }
-})
-
 function fadeCDS(cds_array) {
     cds_array.map(function (cds){
         var color;
@@ -182,7 +194,6 @@ function colorTint(hex, factor) {
   // Adapted from ColorLuminance function by Craig Buckler at
   // http://www.sitepoint.com/javascript-generate-lighter-darker-color/
   
-
   // validate hex string
   hex = String(hex).replace(/[^0-9a-f]/gi, '');
   if (hex.length < 6) {

@@ -19,8 +19,9 @@
    <thead>
     <tr>
      <th>Single Crisprs</th><th>Paired Crisprs</th><th>Designs</th>
-     <th><p id="crispr_filters_heading" [% UNLESS view_single OR view_paired %]class="muted"[% END %]>Crispr Filters</th>
-     <th><p id="crispr_ot_filters_heading" [% UNLESS view_single OR view_paired %]class="muted"[% END %]>Crispr Off-Target Filters</th>
+     <th><p id="crispr_filters_heading" [% UNLESS view_single OR view_paired %]class="muted"[% END %]>Crispr Filters</p></th>
+     <th><p id="spacer_filters_heading" [% UNLESS view_paired %]class="muted"[% END %]>Spacer Filter</p></th>
+     <th><p id="crispr_ot_filters_heading" [% UNLESS view_single OR view_paired %]class="muted"[% END %]>Crispr Off-Target Filters</p></th>
     </tr>
    </thead>
    <tbody>
@@ -60,6 +61,14 @@
         Flanking region: <br/><input type="number" id="flank_size" name="flank_size" value="[% flank_size OR 100 %]" min="1" max="1000" style="width: 60px"/>
        </fieldset>
       </td>
+      <td>
+       <fieldset name="spacer_filter" [% UNLESS view_paired %]disabled[% END %]>
+         Crispr Pair Spacer Length (-10 to 30 bp)<br />
+         Minimum Spacer Length <input type="number" name="spacer_min" id="spacer_min" min="-10" max="30" step="1" style="width: 60px"></input> bp<br />
+         Maximum Spacer Length <input type="number" name="spacer_max" id="spacer_max" min="-10" max="30" step="1" style="width: 60px"></input> bp<br /> 
+         <button type="button" class="btn btn-default" id="apply_spacer_filter">Apply Spacer Filter</button>
+       </fieldset>
+      </td>      
       <td>
         <fieldset name="crispr_ot_filters" [% UNLESS view_paired OR view_single %]disabled[% END %]>
          Maximum number of off-targets with:<br />
@@ -162,9 +171,25 @@
             track.controller.makeFirstImage();
         }
     });
-
-
   }
+
+  function apply_spacer_filter(){
+      var min = $('#spacer_min')[0].value;
+      var max = $('#spacer_max')[0].value;
+      var track = get_track('Filtered Crispr Pairs');
+      if(track){
+        if(min !== ""){
+          track.spacer_min = parseInt(min);
+        }
+        if(max !== ""){
+          track.spacer_max = parseInt(max);
+        }
+        track.controller.resetImages();
+        track.controller.imgContainers.empty();
+        track.controller.makeFirstImage();
+      }
+  }
+
 
   $(document).ready( function() {
 
@@ -268,6 +293,11 @@
     $("#apply_ot_filters").click(function (event){
       apply_ot_filters();
     });
+
+    $('#apply_spacer_filter').click(function (event){
+      apply_spacer_filter();
+    });
+
   });
 </script>
 
@@ -399,8 +429,6 @@
             url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&crispr_filter=[%crispr_filter%]&flank_size=[%flank_size%]" ,
             pair_report_uri : "[%c.uri_for('/crispr_pair')%]",
             view      : Genoverse.Track.View.FilterCrisprPairs,
-            spacer_min: 0,
-            spacer_max : 5,
             ot_profile : {}
           }),
           Genoverse.Track.CrisprPairs.extend({
