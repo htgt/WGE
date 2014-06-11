@@ -88,11 +88,12 @@
       <td>
         <fieldset name="crispr_ot_filters" [% UNLESS view_paired OR view_single %]disabled[% END %]>
          Maximum number of off-targets with:<br />
-         0 mismatches <input type="number" name="0_mismatch" id="0_mismatch" min="1" step="1" style="width: 60px"></input><br />
-         1 mismatches <input type="number" name="1_mismatch" id="1_mismatch" min="0" step="1" style="width: 60px"></input><br />
-         2 mismatches <input type="number" name="2_mismatch" id="2_mismatch" min="0" step="1" style="width: 60px"></input><br />
-         3 mismatches <input type="number" name="3_mismatch" id="3_mismatch" min="0" step="1" style="width: 60px"></input><br />
-         4 mismatches <input type="number" name="4_mismatch" id="4_mismatch" min="0" step="1" style="width: 60px"></input><br />
+         0 mismatch <input type="number" name="0_mismatch" id="0_mismatch" min="1" step="1" style="width: 60px"></input><span id="0_mismatch_no_max" class="help-inline"><small>no max</small></span><br />
+         <p class="text-error" id="0_mismatch_input_error" style="display: none;">Enter 1 or more. There is always 1 perfect match to the crispr itself.</p>
+         1 mismatch <input type="number" name="1_mismatch" id="1_mismatch" min="0" step="1" style="width: 60px"></input><span id="1_mismatch_no_max" class="help-inline"><small>no max</small></span><br />
+         2 mismatch <input type="number" name="2_mismatch" id="2_mismatch" min="0" step="1" style="width: 60px"></input><span id="2_mismatch_no_max" class="help-inline"><small>no max</small></span><br />
+         3 mismatch <input type="number" name="3_mismatch" id="3_mismatch" min="0" step="1" style="width: 60px"></input><span id="3_mismatch_no_max" class="help-inline"><small>no max</small></span><br />
+         4 mismatch <input type="number" name="4_mismatch" id="4_mismatch" min="0" step="1" style="width: 60px"></input><span id="4_mismatch_no_max" class="help-inline"><small>no max</small></span><br />
          <button type="button" class="btn btn-default" id="apply_ot_filters">Apply Off-Target Filters</button>
          </fieldset>
       </td>
@@ -367,11 +368,30 @@
       apply_spacer_filter();
     });
 
+    // show/hide help messages when values are entered in mismatch counts
+    $("[id$=mismatch]").bind('keyup mouseup',function (event){
+        var help_span_id = "#" + this.id + "_no_max";
+        if(this.value !== ""){
+            $(help_span_id).hide();
+        }
+        else{
+            $(help_span_id).show();
+        }
+        if(this.id == '0_mismatch'){
+            if(this.value == "0"){
+                $('#0_mismatch_input_error').show();
+            }
+            else{
+                $('#0_mismatch_input_error').hide();
+            }
+        }
+    }); 
+
   });
 </script>
 
     <script type="text/javascript" src="[% c.uri_for('/static/genoverse/js/genoverse.wtsi.js', {i => 1} )%]"></script>
-    <script type="text/javascript" src="[% c.uri_for('/static/js/genoverse_custom_tracks.js', {i => 1})%]"></script>
+    <script type="text/javascript" src="[% c.uri_for('/static/js/genoverse_custom_tracks.js', {i => 2})%]"></script>
     <script>
        var genoverseConfig = {
         container : '#genoverse', // Where to inject Genoverse (css/jQuery selector)

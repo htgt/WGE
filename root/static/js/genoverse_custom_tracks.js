@@ -88,12 +88,13 @@ Genoverse.Track.View.FilterCrisprs = Genoverse.Track.View.Transcript.extend({
             var off_targets = jQuery.parseJSON(new_ot_summary);
             var ot_profile = this.track.ot_profile;
             if( fitsOTProfile(off_targets,ot_profile) ){
-                restoreCDS(feature.cds);
+                //restoreCDS(feature.cds);
                 this.base.apply(this, arguments);
             }
             else{
-                fadeCDS(feature.cds);
-                this.base.apply(this, arguments); 
+                // don't draw
+                //fadeCDS(feature.cds);
+                //this.base.apply(this, arguments); 
             }
         }
         else{
@@ -146,14 +147,15 @@ Genoverse.Track.View.FilterCrisprPairs = Genoverse.Track.View.Transcript.extend(
         });
         // If either left or right does not match ot_profile fade the colors
         if(fits_profile[0] == 0 || fits_profile[1] == 0){
-            fadeCDS(feature.cds);
-            this.base.apply(this,arguments);
+            // don't draw
+            //fadeCDS(feature.cds);
+            //this.base.apply(this,arguments);
         }
         else{
             // Both match profile or 1 matches profile and 1 has no ots computed
             // or both have no ots computed
             // Lack of off-target summary already indicated by grey color
-            restoreCDS(feature.cds);
+            //restoreCDS(feature.cds);
             this.base.apply(this,arguments);
         }
     },
@@ -194,6 +196,7 @@ function  _quoteJSONKeys(summary_string) {
       return quoted;
 }
 
+// Fading not used at the moment but we might want it in future
 function fadeCDS(cds_array) {
     cds_array.map(function (cds){
         var color;
