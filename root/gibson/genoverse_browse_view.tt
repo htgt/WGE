@@ -4,10 +4,13 @@
   <small>[% IF design_id %]design: <strong>[%design_id%]</strong>[% END %]
   chr: [%- chromosome -%]
   assembly: [%- genome -%]</small>
+  <a id="go_to_filters" class="btn btn-default pull-right">Show Options and Filters<i class="icon-chevron-down"></i></a>
   </h1>
 </div>
 
-<div class="row">
+<div class="container-fluid">
+<div id="genoverse" style="margin: 0;" class="span12"></div>   
+<div class="row-fluid">
 <div class="span9">
 <form action="[% c.uri_for( '/genoverse_browse' ) %]" class="well">
   <input type="hidden" name="genome" value=[%genome%] />
@@ -63,19 +66,51 @@
        </fieldset>
       </td>
       <td>
-       <fieldset name="spacer_filter" [% UNLESS view_paired %]disabled[% END %]>
+       <fieldset name="spacer_filters" [% UNLESS view_paired %]disabled[% END %]>
          Crispr Pair Spacer Length<br/>(-10 to 30 bp)<br />
          Min Spacer Length <input type="number" name="spacer_min" id="spacer_min" min="-10" max="30" step="1" style="width: 60px"></input> bp<br />
          Max Spacer Length <input type="number" name="spacer_max" id="spacer_max" min="-10" max="30" step="1" style="width: 60px"></input> bp<br /> 
-         <button type="button" class="btn btn-primary btn-small" id="apply_spacer_filter">Apply Spacer Filter</button>
+         <button type="button" class="btn btn-default btn-mini" id="reset_spacer_filters">Reset</button>
+         <button type="button" class="btn btn-primary btn-small" id="apply_spacer_filters">Apply Spacer Filter</button>
        </fieldset>
       </td>  
     </tr>
   </tbody>
   </table>
-</form>      
-</div>
-<div id="ot_filters_panel" class="span3">
+</form>
+<div class="well">
+ <table><tr>
+ <td style="padding-right: 20px;">
+  <strong>Crispr Colour Key:</strong><br>
+  <div style="background: [%colours.left_crispr%]; width: 20px; height: 20px; float: left"></div>
+  <div style="margin-left: 30px">Off-targets computed</div>
+
+  <div style="background: [%colours.left_in_design%]; width: 20px; height: 20px; float: left"></div>
+  <div style="margin-left: 30px">Off-targets computed and crispr within a design</div>
+
+  <div style="background: [%colours.no_ot_summary%]; width: 20px; height: 20px; float: left"></div>
+  <div style="margin-left: 30px">Off-targets not computed</div>
+ </td>
+ <td>
+  <strong>Crispr Pair Colour Key:</strong><br>
+  <div style="background: [%colours.left_crispr%]; width: 20px; height: 20px; float: left"></div>
+  <div style="background: [%colours.right_crispr%]; width: 20px; height: 20px; float: left"></div>
+  <div style="margin-left: 50px">Crispr pair</div>
+
+  <div style="background: [%colours.left_in_design%]; width: 20px; height: 20px; float: left"></div>
+  <div style="background: [%colours.right_in_design%]; width: 20px; height: 20px; float: left"></div>
+  <div style="margin-left: 50px">Crispr pair within a design</div>
+
+  <div style="background: [%colours.no_ot_summary%]; width: 20px; height: 20px; float: left"></div>
+  <div style="background: [%colours.no_ot_summary%]; width: 20px; height: 20px; float: left"></div>
+  <div style="margin-left: 50px">Crispr pair no off-targets computed</div>
+  </td>
+  </tr></table>
+</div> 
+</div> [%# end of left-hand div %]
+
+<div class="span3">
+<div id="ot_filters_panel">
 <form  class="well">
   <table class='table'>
    <thead>
@@ -103,6 +138,8 @@
   </table>
 </form>
 </div>
+</div> [%# end of right-hand div %]
+</div> [%# end of row div %]
 </div>
 
 <script type="text/javascript">
@@ -174,7 +211,7 @@
 
   function enable_crispr_pair_filters(){
       enable_crispr_filters();
-      $("[name='spacer_filter']")[0].disabled = false;
+      $("[name='spacer_filters']")[0].disabled = false;
       $("#spacer_filters_heading")[0].className = "";    
   }
 
@@ -195,7 +232,7 @@
   }
 
   function disable_crispr_pair_filters(){
-      $("[name='spacer_filter']")[0].disabled = true;
+      $("[name='spacer_filters']")[0].disabled = true;
       $("#spacer_filters_heading")[0].className = "muted";
 
       disable_crispr_filters();        
@@ -270,17 +307,25 @@
       apply_ot_filters();
   }
 
-  function apply_spacer_filter(){
+  function apply_spacer_filters(){
       var min = $('#spacer_min')[0].value;
       var max = $('#spacer_max')[0].value;
       var track = get_track('Crispr Pairs');
       if(track){
-        if(min !== ""){
+        if(min === ""){
+          track.spacer_min = undefined;
+        }
+        else{
           track.spacer_min = parseInt(min);
         }
-        if(max !== ""){
+        
+        if(max === ""){
+          track.spacer_max = undefined;
+        }
+        else{
           track.spacer_max = parseInt(max);
         }
+        
         track.controller.resetImages();
         track.controller.imgContainers.empty();
         track.controller.makeFirstImage();
@@ -297,6 +342,11 @@
       }
   }
 
+  function reset_spacer_filters(){
+    $('#spacer_min').val("");
+    $('#spacer_max').val("");
+    apply_spacer_filters();
+  }
 
   $(document).ready( function() {
 
@@ -409,8 +459,12 @@
       reset_ot_filters();
     });
 
-    $('#apply_spacer_filter').click(function (event){
-      apply_spacer_filter();
+    $('#apply_spacer_filters').click(function (event){
+      apply_spacer_filters();
+    });
+
+    $('#reset_spacer_filters').click(function (event){
+      reset_spacer_filters();
     });
 
     // show/hide help messages when values are entered in mismatch counts
@@ -430,7 +484,11 @@
                 $('#0_mismatch_input_error').hide();
             }
         }
-    }); 
+    });
+
+    $('#go_to_filters').click(function (event){
+      $("html, body").animate({ scrollTop: $(document).height() }, 1000);
+    });
 
   });
 </script>
@@ -439,6 +497,7 @@
     <script type="text/javascript" src="[% c.uri_for('/static/js/genoverse_custom_tracks.js', {i => 2})%]"></script>
     <script>
        var genoverseConfig = {
+        width     : 1060,
         container : '#genoverse', // Where to inject Genoverse (css/jQuery selector)
         // If no genome supplied, it must have at least chromosomeSize, e.g.:
         // chromosomeSize : 249250621, // chromosome 1, human
@@ -568,30 +627,4 @@
       document.addEventListener('DOMContentLoaded', function () { window.genoverse = new Genoverse(genoverseConfig); });
     </script>
     
-    <div id="genoverse" class="span12"></div>
 
-    <strong>Crispr Colour Key:</strong>
-
-      <div class="span6">
-       <div style="background: [%colours.left_crispr%]; width: 20px; height: 20px; float: left"></div>
-       <div style="margin-left: 30px">Off-targets computed</div>
-
-       <div style="background: [%colours.left_in_design%]; width: 20px; height: 20px; float: left"></div>
-       <div style="margin-left: 30px">Off-targets computed and crispr within a design</div>
-
-       <div style="background: [%colours.no_ot_summary%]; width: 20px; height: 20px; float: left"></div>
-       <div style="margin-left: 30px">Off-targets not computed</div>
-
-       <div style="background: [%colours.left_crispr%]; width: 20px; height: 20px; float: left"></div>
-       <div style="background: [%colours.right_crispr%]; width: 20px; height: 20px; float: left"></div>
-       <div style="margin-left: 50px">Crispr pair</div>
-
-       <div style="background: [%colours.left_in_design%]; width: 20px; height: 20px; float: left"></div>
-       <div style="background: [%colours.right_in_design%]; width: 20px; height: 20px; float: left"></div>
-       <div style="margin-left: 50px">Crispr pair within a design</div>
-
-       <div style="background: [%colours.no_ot_summary%]; width: 20px; height: 20px; float: left"></div>
-       <div style="background: [%colours.no_ot_summary%]; width: 20px; height: 20px; float: left"></div>
-       <div style="margin-left: 50px">Crispr pair no off-targets computed</div>
-
-    </div>

@@ -8,7 +8,7 @@
 
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/2.3.2/css/bootstrap.min.css">  
     <link rel="stylesheet" href="[% c.uri_for('static/css/jquery-ui-1.9.2.custom.min.css') %]" />
-    <link rel="stylesheet" href="[% c.uri_for('static/css/style.css', { id => 1 }) %]" />
+    <link rel="stylesheet" href="[% c.uri_for('static/css/style.css', { id => 2 }) %]" />
     <link rel="shortcut icon" type="image/x-icon" href="[% c.uri_for('favicon.ico') %]">
 
     <!-- Grab Google CDN's jQuery. fall back to local if necessary -->
