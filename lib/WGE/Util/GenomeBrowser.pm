@@ -572,10 +572,19 @@ sub crispr_pairs_to_gff {
             my $left_colour = colours->{left_crispr};
             my $right_colour = colours->{right_crispr};
 
+            if ( defined $design_range ){
+                if ($left->{chr_start} ~~ $design_range){
+                    $left_colour = colours->{left_in_design};
+                }
+                if ($right->{chr_start} ~~ $design_range){
+                    $right_colour = colours->{right_in_design};
+                }
+            }
+            
             # We might have single OT summaries without paired OTs
             my $left_ot = $left->{off_target_summary};
             my $right_ot = $right->{off_target_summary};
-            
+
             unless($left_ot){
                 $left_ot = "not computed";
                 $left_colour = colours->{no_ot_summary};
@@ -585,20 +594,11 @@ sub crispr_pairs_to_gff {
                 $right_ot = "not computed";
                 $right_colour = colours->{no_ot_summary};
             }
-            
+
             $crispr_format_hash{attributes}.=";left_ot_summary=$left_ot;right_ot_summary=$right_ot";  
 
             my $crispr_pair_parent_datum = prep_gff_datum( \%crispr_format_hash );
-
-            if ( defined $design_range ){
-                if ($left->{chr_start} ~~ $design_range){
-                    $left_colour = colours->{left_in_design};
-                }
-                if ($right->{chr_start} ~~ $design_range){
-                    $right_colour = colours->{right_in_design};
-                }
-            }
-
+            
             $crispr_format_hash{'type'} = 'CDS';
             $crispr_format_hash{'end'} = $left->{chr_start}+22;
             $crispr_format_hash{'attributes'} =     'ID='
