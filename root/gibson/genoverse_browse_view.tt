@@ -531,8 +531,7 @@
             id        : 'Bookmarked Crisprs',
             name      : 'Bookmarked Crisprs',
             url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&bookmarked_only=1" ,
-            crispr_report_uri : "[%c.uri_for('/crispr')%]",
-            urlParams : { crispr_filter: "[%crispr_filter%]", flank_size: "[%flank_size%]"}
+            crispr_report_uri : "[%c.uri_for('/crispr')%]"
           }),
 [% END %]
           Genoverse.Track.Crisprs.extend({
@@ -550,8 +549,7 @@
             id        : 'Bookmarked Crispr Pairs',
             name      : 'Bookmarked Crispr Pairs',
             url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&bookmarked_only=1" ,
-            pair_report_uri : "[%c.uri_for('/crispr_pair')%]",
-            urlParams : { crispr_filter: "[%crispr_filter%]", flank_size: "[%flank_size%]"} 
+            pair_report_uri : "[%c.uri_for('/crispr_pair')%]"
           }),
 [% END %]
           Genoverse.Track.CrisprPairs.extend({
