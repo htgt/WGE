@@ -64,10 +64,10 @@
       </td>
       <td>
        <fieldset name="spacer_filter" [% UNLESS view_paired %]disabled[% END %]>
-         Crispr Pair Spacer Length (-10 to 30 bp)<br />
+         Crispr Pair Spacer Length<br/>(-10 to 30 bp)<br />
          Min Spacer Length <input type="number" name="spacer_min" id="spacer_min" min="-10" max="30" step="1" style="width: 60px"></input> bp<br />
          Max Spacer Length <input type="number" name="spacer_max" id="spacer_max" min="-10" max="30" step="1" style="width: 60px"></input> bp<br /> 
-         <button type="button" class="btn btn-default" id="apply_spacer_filter">Apply Spacer Filter</button>
+         <button type="button" class="btn btn-primary btn-small" id="apply_spacer_filter">Apply Spacer Filter</button>
        </fieldset>
       </td>  
     </tr>
@@ -80,7 +80,7 @@
   <table class='table'>
    <thead>
     <tr>
-      <th>Off-Target Filters</th>
+      <th id="crispr_ot_filters_heading" [% UNLESS view_single OR view_paired %]class="muted"[% END %]>Off-Target Filters</th>
     </tr>
    </thead>
    <tbody>
@@ -94,7 +94,8 @@
          2 mismatch <input type="number" name="2_mismatch" id="2_mismatch" min="0" step="1" style="width: 60px"></input><span id="2_mismatch_no_max" class="help-inline"><small>no max</small></span><br />
          3 mismatch <input type="number" name="3_mismatch" id="3_mismatch" min="0" step="1" style="width: 60px"></input><span id="3_mismatch_no_max" class="help-inline"><small>no max</small></span><br />
          4 mismatch <input type="number" name="4_mismatch" id="4_mismatch" min="0" step="1" style="width: 60px"></input><span id="4_mismatch_no_max" class="help-inline"><small>no max</small></span><br />
-         <button type="button" class="btn btn-default" id="apply_ot_filters">Apply Off-Target Filters</button>
+         <button type="button" class="btn btn-mini" id="reset_ot_filters">Reset</button>
+         <button type="button" class="btn btn-primary btn-small" id="apply_ot_filters">Apply Off-Target Filters</button>
          </fieldset>
       </td>
     </tr>
@@ -128,21 +129,23 @@
   }
 
   function hide_single (){
-      hide_tracks(["Crisprs","Filtered Crisprs","Bookmarked Crisprs"]);
+      hide_tracks(["Crisprs", "Bookmarked Crisprs"]);
+      disable_crispr_filters();
   }
 
   function show_single (){
-      show_tracks(["Crisprs","Filtered Crisprs","Bookmarked Crisprs"]);
-      enable_filters();
+      show_tracks(["Crisprs", "Bookmarked Crisprs"]);
+      enable_crispr_filters();
   }
 
   function hide_paired (){
-      hide_tracks(["Crispr Pairs","Filtered Crispr Pairs","Bookmarked Crispr Pairs"]);
+      hide_tracks(["Crispr Pairs", "Bookmarked Crispr Pairs"]);
+      disable_crispr_pair_filters();
   }
 
   function show_paired (){
-      show_tracks(["Crispr Pairs","Filtered Crispr Pairs","Bookmarked Crispr Pairs"]);
-      enable_filters();
+      show_tracks(["Crispr Pairs","Bookmarked Crispr Pairs"]);
+      enable_crispr_pair_filters();
   }
 
   function hide_designs (){
@@ -162,17 +165,44 @@
     return tracks[0];
   }
 
-  function enable_filters(){
+  function enable_crispr_filters(){
       $("[name='crispr_filters']")[0].disabled = false;
       $("#crispr_filters_heading")[0].className = "";
       $("[name='crispr_ot_filters")[0].disabled = false;
       $("#crispr_ot_filters_heading")[0].className = "";
   }
 
+  function enable_crispr_pair_filters(){
+      enable_crispr_filters();
+      $("[name='spacer_filter']")[0].disabled = false;
+      $("#spacer_filters_heading")[0].className = "";    
+  }
+
+  function disable_crispr_filters(){
+      // only disable them if neither crisprs or pairs
+      // are shown
+      if ($("#show_single").is(':checked')){
+        return;
+      }
+      if($("#show_paired").is(':checked')){
+        return;
+      }
+
+      $("[name='crispr_filters']")[0].disabled = true;
+      $("#crispr_filters_heading")[0].className = "muted";
+      $("[name='crispr_ot_filters")[0].disabled = true;
+      $("#crispr_ot_filters_heading")[0].className = "muted";      
+  }
+
+  function disable_crispr_pair_filters(){
+      $("[name='spacer_filter']")[0].disabled = true;
+      $("#spacer_filters_heading")[0].className = "muted";
+
+      disable_crispr_filters();        
+  }
+
   function apply_crispr_filters(){
-      // FIXME: would be better to identify these by track class...
-      var crispr_tracks = ['Crisprs','Filtered Crisprs','Bookmarked Crisprs',
-                           'Crispr Pairs', 'Filtered Crispr Pairs', 'Bookmarked Crispr Pairs'];
+      var crispr_tracks = ['Crisprs','Crispr Pairs'];
 
       var crispr_filter = $('input[name=crispr_filter]:checked').val();
       var flank_size = $('#flank_size').val();
@@ -208,7 +238,7 @@
       }
     }
 
-    var filtered_tracks = ['Filtered Crisprs', 'Filtered Crispr Pairs'];
+    var filtered_tracks = ['Crisprs', 'Crispr Pairs'];
     // apply to visible tracks
     filtered_tracks.map(function (track_id){
         var track = get_track(track_id);
@@ -229,10 +259,21 @@
     });
   }
 
+  function reset_ot_filters(){
+      for (var mismatch_number = 0; mismatch_number < 5; mismatch_number++){
+          var input_id = '#' + mismatch_number + '_mismatch';
+          $(input_id).val("");
+
+          var help_span_id = '#' + mismatch_number + '_mismatch_no_max';
+          $(help_span_id).show();           
+      }
+      apply_ot_filters();
+  }
+
   function apply_spacer_filter(){
       var min = $('#spacer_min')[0].value;
       var max = $('#spacer_max')[0].value;
-      var track = get_track('Filtered Crispr Pairs');
+      var track = get_track('Crispr Pairs');
       if(track){
         if(min !== ""){
           track.spacer_min = parseInt(min);
@@ -245,7 +286,7 @@
         track.controller.makeFirstImage();
       }
 
-      var library_track = get_library_track('Filtered Crispr Pairs');
+      var library_track = get_library_track('Crispr Pairs');
       if(library_track){
         if(min !== ""){
           track.spacer_min = parseInt(min);
@@ -364,6 +405,10 @@
       apply_ot_filters();
     });
 
+    $("#reset_ot_filters").click(function (event){
+      reset_ot_filters();
+    });
+
     $('#apply_spacer_filter').click(function (event){
       apply_spacer_filter();
     });
@@ -390,7 +435,7 @@
   });
 </script>
 
-    <script type="text/javascript" src="[% c.uri_for('/static/genoverse/js/genoverse.wtsi.js', {i => 1} )%]"></script>
+    <script type="text/javascript" src="[% c.uri_for('/static/genoverse/js/genoverse.wtsi.js')%]"></script>
     <script type="text/javascript" src="[% c.uri_for('/static/js/genoverse_custom_tracks.js', {i => 2})%]"></script>
     <script>
        var genoverseConfig = {
@@ -491,23 +536,14 @@
           }),
 [% END %]
           Genoverse.Track.Crisprs.extend({
-            name      : 'Filtered Crisprs',
-            id        : 'Filtered Crisprs',
+            name      : 'Crisprs',
+            id        : 'Crisprs',
             url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]" ,
             ot_profile : {},
             view      : Genoverse.Track.View.FilterCrisprs,
             crispr_report_uri : "[%c.uri_for('/crispr')%]",
             urlParams : { crispr_filter: "[%crispr_filter%]", flank_size: "[%flank_size%]"}          
           }),
-          [% IF 0 %]
-          Genoverse.Track.Crisprs.extend({
-            name      : 'Crisprs',
-            id        : 'Crisprs',
-            crispr_report_uri : "[% c.uri_for('/crispr') %]",
-            url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]" ,
-            urlParams : { crispr_filter: "[%crispr_filter%]", flank_size: "[%flank_size%]"}              
-          }),
-          [% END %]
 
 [% IF c.user %]
           Genoverse.Track.CrisprPairs.extend({
@@ -519,23 +555,14 @@
           }),
 [% END %]
           Genoverse.Track.CrisprPairs.extend({
-            name      : 'Filtered Crispr Pairs',
-            id        : 'Filtered Crispr Pairs',
+            name      : 'Crispr Pairs',
+            id        : 'Crispr Pairs',
             url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]" ,
             pair_report_uri : "[%c.uri_for('/crispr_pair')%]",
             urlParams : { crispr_filter: "[%crispr_filter%]", flank_size: "[%flank_size%]"},
             view      : Genoverse.Track.View.FilterCrisprPairs,
             ot_profile : {}
           }),
-          [% IF 0 %]
-          Genoverse.Track.CrisprPairs.extend({
-            name      : 'Crispr Pairs',
-            id        : 'Crispr Pairs',
-            url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]" ,
-            pair_report_uri : "[%c.uri_for('/crispr_pair')%]",
-            urlParams : { crispr_filter: "[%crispr_filter%]", flank_size: "[%flank_size%]"} 
-          }),
-          [% END %]
           Genoverse.Track.Scaleline
         ]
       };
@@ -564,5 +591,9 @@
        <div style="background: [%colours.left_in_design%]; width: 20px; height: 20px; float: left"></div>
        <div style="background: [%colours.right_in_design%]; width: 20px; height: 20px; float: left"></div>
        <div style="margin-left: 50px">Crispr pair within a design</div>
+
+       <div style="background: [%colours.no_ot_summary%]; width: 20px; height: 20px; float: left"></div>
+       <div style="background: [%colours.no_ot_summary%]; width: 20px; height: 20px; float: left"></div>
+       <div style="margin-left: 50px">Crispr pair no off-targets computed</div>
 
     </div>
