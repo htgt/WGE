@@ -95,15 +95,15 @@
   <strong>Crispr Pair Colour Key:</strong><br>
   <div style="background: [%colours.left_crispr%]; width: 20px; height: 20px; float: left"></div>
   <div style="background: [%colours.right_crispr%]; width: 20px; height: 20px; float: left"></div>
-  <div style="margin-left: 50px">Crispr pair</div>
+  <div style="margin-left: 50px">Left and right off-targets computed</div>
 
   <div style="background: [%colours.left_in_design%]; width: 20px; height: 20px; float: left"></div>
   <div style="background: [%colours.right_in_design%]; width: 20px; height: 20px; float: left"></div>
-  <div style="margin-left: 50px">Crispr pair within a design</div>
+  <div style="margin-left: 50px">Left and right off-targets computed and within a design</div>
 
   <div style="background: [%colours.no_ot_summary%]; width: 20px; height: 20px; float: left"></div>
   <div style="background: [%colours.no_ot_summary%]; width: 20px; height: 20px; float: left"></div>
-  <div style="margin-left: 50px">Crispr pair no off-targets computed</div>
+  <div style="margin-left: 50px">Left and right off-targets not computed</div>
   </td>
   </tr></table>
 </div> 
@@ -304,6 +304,8 @@
           var help_span_id = '#' + mismatch_number + '_mismatch_no_max';
           $(help_span_id).show();           
       }
+      $("#0_mismatch_input_error").hide();
+
       apply_ot_filters();
   }
 
