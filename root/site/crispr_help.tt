@@ -105,16 +105,51 @@ $(window).load(function() {
                 <img src="[% c.uri_for('/static/images/about/genoverse_view.png') %]" title="genoverse_view" /></br>
             </p>
             <p>
-                From here you can scroll around and new pairs will be loaded into the window. You can shift click and drag over a region to zoom there.<br/>
-                Clicking on a pair will give you more details on that pair:<br/>
-                <img src="[% c.uri_for('/static/images/about/pair_data.png') %]" title="pair_data" /></br>
-                This also includes a link to the same page the table will show you, which will you give you all the data for that pair.<br/>
+                Scroll left and right and zoom in using controls on the top right of the genome browser or clicking and dragging. You can shift click and drag over a region to zoom there.<br/>
+                <img src="[% c.uri_for('/static/images/about/genoverse_scroll.png') %]" title="genoverse_view" /></br>
             </p>
             <p>
-                You can also change the view to display single crisprs:<br/>
+                We have computed <a href="#off_targets">off-target data</a> for all crisprs shown in colour. Off-targets have not yet been computed for crisprs shown in grey.<br/>
+
+                Clicking on a pair will give you more details on that pair, including off-target counts if available:<br/>
+                <img src="[% c.uri_for('/static/images/about/pair_data.png') %]" title="pair_data" /></br>
+                This menu includes a link to the crispr pair report page, which will you give you all the data for that pair.<br/>
+            </p>
+            <p>
+                Use the controls at the bottom of the screen to display single crisprs:<br/>
                 <img src="[% c.uri_for('/static/images/about/show_single_crisprs.png') %]" title="show_single_crisprs" /></br>
-                This will cause a second track to show up on the browser, which can also be clicked to allow you to easily compare the off target data of two CRISPRs (if they have it):<br/>
-                <img src="[% c.uri_for('/static/images/about/individual_view.png') %]" title="individual_view" /></br>
+                This will cause a second track to show up on the browser, which can also be clicked to show off-target counts and report links for individual CRISPRs:<br/>
+                <img src="[% c.uri_for('/static/images/about/genoverse_single_and_paired.png') %]" title="genoverse_single_and_paired" /></br>
+            </p>
+            <p>
+                You can choose from the following "Crispr Filters" options:
+             <ul>
+                <li>Show All: all crisprs and pairs</li>
+                <li>Exon Only: crisprs and pairs that are within an exon</li>
+                <li>Exon Flanking Only: crisprs and pairs that lie either side of an exon (specify the maximum distance from the exon in "Flanking region" - default is 100 bp)</li>
+             </ul>
+                <img src="[% c.uri_for('/static/images/about/crispr_filters.png') %]" title="crispr_filters" /></br>
+            </p>
+            <p>
+                When crispr pairs are displayed you can filter them so that only those with a spacer in the specified range are shown.
+                <img src="[% c.uri_for('/static/images/about/spacer_filters.png') %]" title="spacer_filters" /></br>
+            </p>
+            <p>
+                Crisprs and crispr pairs can be filtered based on the number of <a href="#off_targets">off-targets</a> they have. Enter the maximum
+                number of off-targets to allow in each of the mismatch categories. Crisprs that we have not computed off-targets for (those shown in grey) will not be removed by this filter.<br/>
+                For example, to see only crisprs which have no off-targets with up to 4 mismatches enter the following then apply the filter.
+                <img src="[% c.uri_for('/static/images/about/strict_ot_filters.png') %]" title="strict_ot_filters" /></br>
+                There will always be 1 or more off-targets in the 0 mismatch (perfect match) category because the off-target computation identifies the original crispr site.<br/>
+                For a more relaxed search increase the number of off-targets allowed with 3 and 4 mismatches and apply the filter again.
+                <img src="[% c.uri_for('/static/images/about/relaxed_ot_filters.png') %]" title="relaxed_ot_filters" /></br>
+
+                You can drag the filter menu anywhere on the page to make it easier to see the effect of the filtering in your region of interest.
+            </p>
+            <p>
+                When this filter is applied to the paired crisprs the off-targets of the left and right crispr are counted independently. If either one of the individual crisprs in the pair does not meet the filter requirements then the pair is hidden.
+                <img src="[% c.uri_for('/static/images/about/pair_ot_filters.png') %]" title="pair_ot_filters" /></br>
+                Click on a pair and go to the "Crispr Pair Report" page to see details of <a href="#pair_process">paired off-targets</a>.
+
             </p>
         </section>
         <hr class="docs-separator" />
@@ -135,13 +170,13 @@ $(window).load(function() {
             <img src="[% c.uri_for('/static/images/about/genoverse_bookmarks.png') %]" title="genoverse_bookmarks" /></br>
             </p>
         </section>
-        <hr class="docs-separator" />        
+        <hr class="docs-separator" />
         <section id="off_targets">
             <h2>Off targets</h2>
             <p>
                 An off target is a site in the genome that may be cut by a given CRISPR, where the site is not the original CRISPR site we intended to cut<a href="#refs"><sup>1</sup></a>.<br/> The site must contain a PAM site (NGG), and the sequence will be similar to the given CRISPR sgRNA.
             </p>
-            <p> 
+            <p>
                 Cutting has been seen with up to 5 mismatches depending on their proximity to the PAM; mismatches closer to the PAM site are less tolerated than those further away.<br/>
                 Cutting has also been seen at a reduced efficiency at NAG PAM sites, but we do not currently look at those when evaluating off targets; this option will be coming in a later version.
             </p>
