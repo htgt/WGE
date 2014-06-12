@@ -24,7 +24,7 @@ sub _require_login {
         $c->flash( error_msg => "You must <a href=\"$login_uri\">log in</a> to use the Gibson Designer" );
         $c->res->redirect($c->uri_for('/gibson_designer'));
     }
-    return; 
+    return;
 }
 
 =head1 NAME
@@ -332,7 +332,7 @@ sub gibson_design_attempts :Path( '/gibson_design_attempts' ) : Args(0) {
     else{
         $user_criteria = 'guest';
     }
-    #TODO make this a extjs grid to enable filtering, sorting etc 
+    #TODO make this a extjs grid to enable filtering, sorting etc
 
     my @design_attempts = $c->model->resultset('DesignAttempt')->search(
         {
@@ -449,7 +449,7 @@ sub view_design :Path( '/view_gibson_design' ) : Args(0) {
         download_link  => $download_link,
     );
 
-    return;    
+    return;
 }
 
 sub view_gibson_designs :Path( '/view_gibson_designs' ) : Args(0) {
@@ -463,7 +463,7 @@ sub view_gibson_designs :Path( '/view_gibson_designs' ) : Args(0) {
 
     if ($action eq "View Design"){
         my $design_id = $c->request->param('design_id');
-        
+
         unless ($design_id){
             $c->stash( error_msg => "Please provide a design id");
             return;
@@ -471,9 +471,9 @@ sub view_gibson_designs :Path( '/view_gibson_designs' ) : Args(0) {
 
         unless ($c->model->resultset('Design')->find({ id => $design_id })){
             $c->stash( error_msg => "Design id $design_id not found");
-            return;            
+            return;
         }
-        
+
         $c->stash->{template} = 'view_design.tt';
 
         my $view_uri = $c->uri_for('view_gibson_design', {design_id => $design_id});
@@ -482,7 +482,7 @@ sub view_gibson_designs :Path( '/view_gibson_designs' ) : Args(0) {
     }
     elsif ($action eq "View Design Attempt"){
         my $attempt_id = $c->request->param('design_attempt_id');
-        
+
         unless ($attempt_id){
             $c->stash( error_msg => "Please provide a design attempt id");
             return;
@@ -490,7 +490,7 @@ sub view_gibson_designs :Path( '/view_gibson_designs' ) : Args(0) {
 
         unless ($c->model->resultset('DesignAttempt')->find({ id => $attempt_id })){
             $c->stash( error_msg => "Design Attempt id $attempt_id not found");
-            return;            
+            return;
         }
 
         $c->stash->{template} = 'view_design_attempt.tt';
@@ -517,7 +517,7 @@ sub download_design :Path( '/download_design' ) : Args(0) {
     $c->response->header( 'Content-Disposition' => "attachment; filename=$filename" );
     $c->response->body( $content );
 
-    return;    
+    return;
 }
 
 sub genoverse_browse_view :Path( '/genoverse_browse') : Args(0){
@@ -540,12 +540,14 @@ sub genoverse_browse_view :Path( '/genoverse_browse') : Args(0){
         'browse_start'  => $region->{'browse_start'},
         'browse_end'    => $region->{'browse_end'},
         'genes'         => $region->{'genes'},
-        'design_id'     => $c->request->params->{'design_id'},           
+        'design_id'     => $c->request->params->{'design_id'},
         'view_single'   => $c->request->params->{'view_single'},
         'view_paired'   => $c->request->params->{'view_paired'},
         'crispr_filter' => $c->request->params->{'crispr_filter'},
         'flank_size'    => $c->request->params->{'flank_size'},
         'colours'       => colours,
+        'crispr_id'     => $c->request->params->{'crispr_id'},
+        'crispr_pair_id' => $c->request->params->{'crispr_pair_id'},
     );
 
     return;

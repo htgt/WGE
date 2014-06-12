@@ -1,6 +1,6 @@
 [% META title="Browse Crisprs" %]
 <div class="page-header">
-  <h1>[%- genes -%] 
+  <h1>[%- genes -%]
   <small>[% IF design_id %]design: <strong>[%design_id%]</strong>[% END %]
   chr: [%- chromosome -%]
   assembly: [%- genome -%]</small>
@@ -9,7 +9,7 @@
 </div>
 
 <div class="container-fluid">
-<div id="genoverse" style="margin: 0;" class="span12"></div>   
+<div id="genoverse" style="margin: 0;" class="span12"></div>
 <div class="row-fluid">
 <div class="span9">
 <form action="[% c.uri_for( '/genoverse_browse' ) %]" class="well">
@@ -69,11 +69,11 @@
        <fieldset name="spacer_filters" [% UNLESS view_paired %]disabled[% END %]>
          Crispr Pair Spacer Length<br/>(-10 to 30 bp)<br />
          Min Spacer Length <input type="number" name="spacer_min" id="spacer_min" min="-10" max="30" step="1" style="width: 60px"></input> bp<br />
-         Max Spacer Length <input type="number" name="spacer_max" id="spacer_max" min="-10" max="30" step="1" style="width: 60px"></input> bp<br /> 
+         Max Spacer Length <input type="number" name="spacer_max" id="spacer_max" min="-10" max="30" step="1" style="width: 60px"></input> bp<br />
          <button type="button" class="btn btn-default btn-mini" id="reset_spacer_filters">Reset</button>
          <button type="button" class="btn btn-primary btn-small" id="apply_spacer_filters">Apply Spacer Filter</button>
        </fieldset>
-      </td>  
+      </td>
     </tr>
   </tbody>
   </table>
@@ -106,7 +106,7 @@
   <div style="margin-left: 50px">Left and right off-targets not computed</div>
   </td>
   </tr></table>
-</div> 
+</div>
 </div> [%# end of left-hand div %]
 
 <div class="span3">
@@ -143,7 +143,7 @@
 </div>
 
 <script type="text/javascript">
-  
+
   // Functions to show and hide sets of tracks
   function hide_tracks(track_ids){
       track_ids.map(function(id){
@@ -160,7 +160,7 @@
           var track = get_library_track(id);
           if(track){
               $(window)[0].genoverse.addTrack(
-                Genoverse.Track.extend($.extend(true, {},track)),3);  
+                Genoverse.Track.extend($.extend(true, {},track)),3);
           }
       });
   }
@@ -212,7 +212,7 @@
   function enable_crispr_pair_filters(){
       enable_crispr_filters();
       $("[name='spacer_filters']")[0].disabled = false;
-      $("#spacer_filters_heading")[0].className = "";    
+      $("#spacer_filters_heading")[0].className = "";
   }
 
   function disable_crispr_filters(){
@@ -228,14 +228,14 @@
       $("[name='crispr_filters']")[0].disabled = true;
       $("#crispr_filters_heading")[0].className = "muted";
       $("[name='crispr_ot_filters")[0].disabled = true;
-      $("#crispr_ot_filters_heading")[0].className = "muted";      
+      $("#crispr_ot_filters_heading")[0].className = "muted";
   }
 
   function disable_crispr_pair_filters(){
       $("[name='spacer_filters']")[0].disabled = true;
       $("#spacer_filters_heading")[0].className = "muted";
 
-      disable_crispr_filters();        
+      disable_crispr_filters();
   }
 
   function apply_crispr_filters(){
@@ -302,7 +302,7 @@
           $(input_id).val("");
 
           var help_span_id = '#' + mismatch_number + '_mismatch_no_max';
-          $(help_span_id).show();           
+          $(help_span_id).show();
       }
       $("#0_mismatch_input_error").hide();
 
@@ -320,14 +320,14 @@
         else{
           track.spacer_min = parseInt(min);
         }
-        
+
         if(max === ""){
           track.spacer_max = undefined;
         }
         else{
           track.spacer_max = parseInt(max);
         }
-        
+
         track.controller.resetImages();
         track.controller.imgContainers.empty();
         track.controller.makeFirstImage();
@@ -340,7 +340,7 @@
         }
         if(max !== ""){
           track.spacer_max = parseInt(max);
-        }        
+        }
       }
   }
 
@@ -360,27 +360,27 @@
       if($("#hide_single")[0].checked == true){
         hide_single();
       }
-      
+
       if($("#hide_paired")[0].checked == true){
         hide_paired();
       }
- 
+
        if($("#hide_designs")[0].checked == true){
         hide_designs();
-      }     
+      }
       var spinner = "[% c.uri_for( '/static/images/spinner-circle.gif' ) %]";
 
       // override the 'makeMenu' method in order to add bookmarking buttons
       // and necessary click handlers
       var old_makeMenu = $(window)[0].genoverse.makeMenu;
-      
+
       $(window)[0].genoverse.makeMenu = function (feature, event, track) {
         console.log(feature);
         // run existing makeMenu code to create popup
         old_makeMenu.apply(this, arguments);
         console.log(feature.menuEl);
 
-        // append the bookmarking button to the popup        
+        // append the bookmarking button to the popup
         var settings;
         if(feature.type == 'Crispr'){
           console.log('this is a crispr - adding bookmark button');
@@ -404,7 +404,7 @@
              'spinner'      : spinner,
              'bookmark_track' : get_track('Bookmarked Crispr Pairs')
           };
-          add_bookmark_button(feature.menuEl,settings);          
+          add_bookmark_button(feature.menuEl,settings);
         }
       };
     });
@@ -415,7 +415,7 @@
     $("#hide_single").change(function (event){
       hide_single();
     });
-    
+
     $("#show_single").change(function (event){
       show_single();
     });
@@ -423,7 +423,7 @@
     $("#hide_paired").change(function (event){
       hide_paired();
     });
-    
+
     $("#show_paired").change(function (event){
       show_paired();
     });
@@ -431,7 +431,7 @@
     $("#hide_designs").change(function (event){
       hide_designs();
     });
-    
+
     $("#show_designs").change(function (event){
       show_designs();
     });
@@ -515,7 +515,7 @@
             name      : 'Sequence',
             [% IF genome == 'GRCm38' %]
             url       : 'http://beta.rest.ensembl.org/sequence/region/mouse/__CHR__:__START__-__END__?content-type=text/plain',
-            [% END %]             
+            [% END %]
             model     : Genoverse.Track.Model.Sequence.Ensembl,
             view      : Genoverse.Track.View.Sequence,
             resizable : 'auto',
@@ -533,7 +533,7 @@
             controls  : 'off',
             unsortable : true,
             info   : 'Ensembl API genes & transcripts, see <a href="http://beta.rest.ensembl.org/" target="_blank">beta.rest.ensembl.org</a> for more details',
-            
+
             // Different settings for different zoom level
             2000000: { // This one applies when > 2M base-pairs per screen
               labels : false
@@ -548,12 +548,12 @@
               model  : Genoverse.Track.Model.Transcript.Ensembl,
               view   : Genoverse.Track.View.Transcript.Ensembl
             },
-            populateMenu : function (feature) {            
+            populateMenu : function (feature) {
               var atts = {
                 ID     : feature.id,
                 Name   : feature.external_name,
                 Description : feature.description,
-                Parent : feature.Parent,                
+                Parent : feature.Parent,
                 Start  : feature.start,
                 End    : feature.end,
                 Strand : feature.strand,
@@ -563,8 +563,8 @@
                 Logic  : feature.logic_name
               };
               return atts;
-            }              
-          }),          
+            }
+          }),
           Genoverse.Track.extend({
             name      : 'Designs',
             id        : 'Designs',
@@ -575,7 +575,7 @@
 
             populateMenu : function (feature) {
               var link = "<a href='[%c.uri_for('/view_gibson_design')%]?design_id=" + feature.name
-                                + "' target='_blank'><font color='#00FFFF'>Design Report</font></a>";           
+                                + "' target='_blank'><font color='#00FFFF'>Design Report</font></a>";
               var atts = {
                 ID     : feature.id,
                 url    : link,
@@ -585,7 +585,7 @@
                 Strand : feature.strand
               };
               return atts;
-            }            
+            }
           }),
 [% IF c.user %]
           Genoverse.Track.Crisprs.extend({
@@ -602,7 +602,8 @@
             ot_profile : {},
             view      : Genoverse.Track.View.FilterCrisprs,
             crispr_report_uri : "[%c.uri_for('/crispr')%]",
-            urlParams : { crispr_filter: "[%crispr_filter%]", flank_size: "[%flank_size%]"}          
+            crispr_id : "[%crispr_id || '' %]",
+            urlParams : { crispr_filter: "[%crispr_filter%]", flank_size: "[%flank_size%]"},
           }),
 
 [% IF c.user %]
@@ -620,7 +621,9 @@
             pair_report_uri : "[%c.uri_for('/crispr_pair')%]",
             urlParams : { crispr_filter: "[%crispr_filter%]", flank_size: "[%flank_size%]"},
             view      : Genoverse.Track.View.FilterCrisprPairs,
-            ot_profile : {}
+            crispr_pair_id : "[%crispr_pair_id || '' %]",
+            ot_profile : {},
+
           }),
           Genoverse.Track.Scaleline
         ]
@@ -628,5 +631,5 @@
 
       document.addEventListener('DOMContentLoaded', function () { window.genoverse = new Genoverse(genoverseConfig); });
     </script>
-    
+
 

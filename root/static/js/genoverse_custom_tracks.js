@@ -10,7 +10,7 @@ Genoverse.Track.Crisprs = Genoverse.Track.extend({
     messages  : { threshold : 'Crisprs not displayed for regions larger than ' },
 
     populateMenu : function (feature) {
-      var report_link = "<a href='" + this.track.crispr_report_uri + "/" + feature.name 
+      var report_link = "<a href='" + this.track.crispr_report_uri + "/" + feature.name
                                 + "' target='_blank'><font color='#00FFFF'>Crispr Report</font></a>";
       var atts = {
           Start  : feature.start,
@@ -29,7 +29,7 @@ Genoverse.Track.Crisprs = Genoverse.Track.extend({
     },
 
     reload : function (){
-        reload_track(this);     
+        reload_track(this);
     }
 });
 
@@ -54,10 +54,10 @@ Genoverse.Track.CrisprPairs = Genoverse.Track.extend({
     messages  : { threshold : 'Crispr pairs not displayed for regions larger than ' },
 
     populateMenu : function (feature) {
-        var report_link = "<a href='" + this.track.pair_report_uri + "/" 
-                                + feature.name 
+        var report_link = "<a href='" + this.track.pair_report_uri + "/"
+                                + feature.name
                                 + "?spacer=" + feature.spacer
-                                + "' target='_blank'><font color='#00FFFF'>Crispr Pair Report</font></a>";              
+                                + "' target='_blank'><font color='#00FFFF'>Crispr Pair Report</font></a>";
         var atts = {
             Start  : feature.start,
             End    : feature.end,
@@ -69,12 +69,12 @@ Genoverse.Track.CrisprPairs = Genoverse.Track.extend({
             Left   : feature.left_ot_summary,
             Right  : feature.right_ot_summary
         };
-        return atts;              
+        return atts;
     },
 
     reload : function (){
-        reload_track(this);     
-    }    
+        reload_track(this);
+    }
 });
 
 Genoverse.Track.View.FilterCrisprs = Genoverse.Track.View.Transcript.extend({
@@ -90,16 +90,22 @@ Genoverse.Track.View.FilterCrisprs = Genoverse.Track.View.Transcript.extend({
             if( fitsOTProfile(off_targets,ot_profile) ){
                 //restoreCDS(feature.cds);
                 this.base.apply(this, arguments);
+                if(feature.name == this.track.crispr_id){
+                    highlight_feature(feature,featureContext,scale);
+                }
             }
             else{
                 // don't draw
                 //fadeCDS(feature.cds);
-                //this.base.apply(this, arguments); 
+                //this.base.apply(this, arguments);
             }
         }
         else{
-          // Lack of off-target summary already indicated by grey feature color
-          this.base.apply(this, arguments);
+            // Lack of off-target summary already indicated by grey feature color
+            this.base.apply(this, arguments);
+            if(feature.name == this.track.crispr_id){
+                highlight_feature(feature,featureContext,scale);
+            }
         }
     }
 });
@@ -138,7 +144,7 @@ Genoverse.Track.View.FilterCrisprPairs = Genoverse.Track.View.Transcript.extend(
                 }
                 else{
                     return 0;
-                }                    
+                }
             }
             else{
                 // ot summary not availble
@@ -157,6 +163,9 @@ Genoverse.Track.View.FilterCrisprPairs = Genoverse.Track.View.Transcript.extend(
             // Lack of off-target summary already indicated by grey color
             //restoreCDS(feature.cds);
             this.base.apply(this,arguments);
+            if(feature.name == this.track.crispr_pair_id){
+                highlight_feature(feature,featureContext,scale);
+            }
         }
     },
 
@@ -209,7 +218,7 @@ function fadeCDS(cds_array) {
         }
 
         var new_color = colorTint(color, 0.7);
-        cds.color = new_color;        
+        cds.color = new_color;
     });
 }
 
@@ -225,7 +234,7 @@ function restoreCDS(cds_array){
 function colorTint(hex, factor) {
   // Adapted from ColorLuminance function by Craig Buckler at
   // http://www.sitepoint.com/javascript-generate-lighter-darker-color/
-  
+
   // validate hex string
   hex = String(hex).replace(/[^0-9a-f]/gi, '');
   if (hex.length < 6) {
@@ -243,21 +252,28 @@ function colorTint(hex, factor) {
   return rgb;
 }
 
+function highlight_feature (feature, context, scale) {
+    console.log('highlighting feature ' + feature.id);
+    context.strokeStyle = 'black';
+    context.lineWidth = 2;
+    context.strokeRect(feature.position[scale].X, feature.position[scale].Y, feature.position[scale].width, feature.position[scale].height);
+}
+
 function reload_track(track){
 
     // update URL with latest params
     track.model.setURL(track.urlParams, true);
-        
+
     var genoverse = track.browser;
     track.controller.resetImages();
-    
+
     // clear out existing data and features for this region so they are regenerated
-    track.model.dataRanges.remove({ x: genoverse.start, w: genoverse.end - genoverse.start + 1, y: 0, h: 1 }); 
-    track.model.features.remove({ x: genoverse.start, w: genoverse.end - genoverse.start + 1, y: 0, h: 1 }); 
+    track.model.dataRanges.remove({ x: genoverse.start, w: genoverse.end - genoverse.start + 1, y: 0, h: 1 });
+    track.model.features.remove({ x: genoverse.start, w: genoverse.end - genoverse.start + 1, y: 0, h: 1 });
 
     // clear out the image_container divs
     track.controller.imgContainers.empty();
 
     // redraw the track
-    track.controller.makeFirstImage();   
+    track.controller.makeFirstImage();
 }
