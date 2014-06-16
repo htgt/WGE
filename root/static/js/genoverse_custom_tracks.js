@@ -86,7 +86,7 @@ Genoverse.Track.View.FilterCrisprs = Genoverse.Track.View.Transcript.extend({
             // Quote keys in JSON string
             var new_ot_summary = _quoteJSONKeys(ot_summary);
             var off_targets = jQuery.parseJSON(new_ot_summary);
-            var ot_profile = this.track.ot_profile;
+            var ot_profile = this.track.ot_profile || {};
             if( fitsOTProfile(off_targets,ot_profile) ){
                 //restoreCDS(feature.cds);
                 this.base.apply(this, arguments);
@@ -133,7 +133,7 @@ Genoverse.Track.View.FilterCrisprPairs = Genoverse.Track.View.Transcript.extend(
 
         // Fade color of feature with off-target summary that does not match profile
         var left_right = ['left_ot_summary','right_ot_summary'];
-        var ot_profile = this.track.ot_profile;
+        var ot_profile = this.track.ot_profile || {};
         var fits_profile = left_right.map(function (summary_type){
             var summary_string = feature[summary_type];
             if(summary_string && summary_string != "not computed"){

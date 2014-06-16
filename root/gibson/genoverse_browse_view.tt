@@ -496,7 +496,7 @@
 </script>
 
     <script type="text/javascript" src="[% c.uri_for('/static/genoverse/js/genoverse.wtsi.js')%]"></script>
-    <script type="text/javascript" src="[% c.uri_for('/static/js/genoverse_custom_tracks.js', {i => 2})%]"></script>
+    <script type="text/javascript" src="[% c.uri_for('/static/js/genoverse_custom_tracks.js', {i => 3})%]"></script>
     <script>
        var genoverseConfig = {
         width     : 1060,
@@ -599,11 +599,10 @@
             name      : 'Crisprs',
             id        : 'Crisprs',
             url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]" ,
-            ot_profile : {},
             view      : Genoverse.Track.View.FilterCrisprs,
             crispr_report_uri : "[%c.uri_for('/crispr')%]",
             crispr_id : "[%crispr_id || '' %]",
-            urlParams : { crispr_filter: "[%crispr_filter%]", flank_size: "[%flank_size%]"},
+            urlParams : { crispr_filter: "[%crispr_filter%]", flank_size: "[%flank_size%]"}
           }),
 
 [% IF c.user %]
@@ -621,9 +620,11 @@
             pair_report_uri : "[%c.uri_for('/crispr_pair')%]",
             urlParams : { crispr_filter: "[%crispr_filter%]", flank_size: "[%flank_size%]"},
             view      : Genoverse.Track.View.FilterCrisprPairs,
-            crispr_pair_id : "[%crispr_pair_id || '' %]",
-            ot_profile : {},
-
+            // NB: custom settings added here seem to be treated as defaults
+            // and get reset by genoverse setMVC function each time user zooms in or out.
+            // urlParams does not get reset - you can change this dynamically and the new
+            // param values are maintained during zooming
+            crispr_pair_id : "[%crispr_pair_id || '' %]"
           }),
           Genoverse.Track.Scaleline
         ]
