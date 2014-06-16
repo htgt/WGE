@@ -1,16 +1,16 @@
 package WGE::Controller::API;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::API::VERSION = '0.019';
+    $WGE::Controller::API::VERSION = '0.020';
 }
 ## use critic
 
 
 use Moose;
 use WGE::Util::GenomeBrowser qw(
-    gibson_designs_for_region 
-    design_oligos_to_gff 
-    crisprs_for_region 
+    gibson_designs_for_region
+    design_oligos_to_gff
+    crisprs_for_region
     crisprs_to_gff
     crispr_pairs_for_region
     crispr_pairs_to_gff
@@ -59,7 +59,7 @@ sub get_all_species :Local('get_all_species') {
 
     my @species = $c->model('DB')->resultset('Species')->all;
 
-    $c->stash->{json_data} = { 
+    $c->stash->{json_data} = {
         map { $_->numerical_id => $_->id } @species
     };
     $c->forward('View::JSON');
@@ -70,14 +70,14 @@ sub get_all_species :Local('get_all_species') {
 sub gene_search :Local('gene_search') {
     my ($self, $c) = @_;
     my $params = $c->req->params;
-    
+
     check_params_exist( $c, $params, [ 'name', 'species' ] );
 
     $c->log->debug('Searching for marker symbol ' . $params->{name} . ' for ' . $params->{species});
 
 
 
-    my @genes = $c->model('DB')->resultset('Gene')->search( 
+    my @genes = $c->model('DB')->resultset('Gene')->search(
         {
             #'marker_symbol' => { ilike => '%'.param("name").'%' },
             'UPPER(marker_symbol)' => { like => '%'.uc( $params->{name} ).'%' },
@@ -95,9 +95,9 @@ sub gene_search :Local('gene_search') {
 sub exon_search :Local('exon_search') {
     my ($self, $c) = @_;
     my $params = $c->req->params;
-    
+
     check_params_exist( $c, $params, [ 'marker_symbol', 'species' ] );
-    
+
     $c->log->debug('Finding exons for gene ' . $params->{marker_symbol});
 
     my $gene = $c->model('DB')->resultset('Gene')->find(
@@ -107,12 +107,12 @@ sub exon_search :Local('exon_search') {
 
     _send_error( $c, "No exons found", 400 ) unless $gene;
 
-    my @exons = map { 
+    my @exons = map {
             {
-                exon_id => $_->ensembl_exon_id, 
+                exon_id => $_->ensembl_exon_id,
                 rank    => $_->rank,
-                len     => $_->chr_end - $_->chr_start,
-            } 
+                len     => ($_->chr_end - $_->chr_start) - 1,
+            }
         } sort { $a->rank <=> $b->rank } $gene->exons;
 
     #return a list of hashrefs with the matching exon ids and ranks
@@ -126,15 +126,15 @@ sub exon_search :Local('exon_search') {
 sub crispr_search :Local('crispr_search') {
     my ($self, $c) = @_;
     my $params = $c->req->params;
-    
+
     check_params_exist( $c, $params, [ 'exon_id[]' ]);
-    
-    $c->stash->{json_data} = _get_exon_attribute( 
-        $c, 
-        "crisprs", 
-        $params->{ 'exon_id[]' }, 
+
+    $c->stash->{json_data} = _get_exon_attribute(
+        $c,
+        "crisprs",
+        $params->{ 'exon_id[]' },
         undef, #species which is optional
-        $params->{ flank } 
+        $params->{ flank }
     );
 
     $c->forward('View::JSON');
@@ -145,13 +145,13 @@ sub crispr_search :Local('crispr_search') {
 sub pair_search :Local('pair_search') {
     my ($self, $c) = @_;
     my $params = $c->req->params;
-    
+
     check_params_exist( $c, $params, [ 'exon_id[]' ]);
-    
-    my $pair_data = _get_exon_attribute( 
-        $c, 
-        "pairs", 
-        $params->{ 'exon_id[]' }, 
+
+    my $pair_data = _get_exon_attribute(
+        $c,
+        "pairs",
+        $params->{ 'exon_id[]' },
         $params->{ flank },
     );
 
@@ -178,8 +178,8 @@ sub pair_search :Local('pair_search') {
                     $summary = $pair->{db_data}{off_target_summary} if $pair->{db_data}{off_target_summary};
                 }
 
-                my @row = ( 
-                    $exon_id, 
+                my @row = (
+                    $exon_id,
                     $pair->{spacer},
                     $status,
                     $summary,
@@ -189,8 +189,8 @@ sub pair_search :Local('pair_search') {
                 #add all the individual crispr fields for both crisprs
                 for my $dir ( qw( left_crispr right_crispr ) ) {
                     #mirror ensembl location format
-                    $pair->{$dir}{location} = $pair->{$dir}{chr_name}  . ":" 
-                                      . $pair->{$dir}{chr_start} . "-" 
+                    $pair->{$dir}{location} = $pair->{$dir}{chr_name}  . ":"
+                                      . $pair->{$dir}{chr_start} . "-"
                                       . $pair->{$dir}{chr_end};
 
                     push @row, map { $pair->{$dir}{$_} || "" } @crispr_fields;
@@ -207,10 +207,10 @@ sub pair_search :Local('pair_search') {
         if ( ref $exons eq 'ARRAY' ) {
             #limit exon string to 50 characters
             $exons = substr( join("-", @{ $params->{'exon_id[]'} }), 0, 50 );
-        } 
+        }
 
         $c->stash(
-            filename     => "WGE-" . $exons . "-pairs.tsv", 
+            filename     => "WGE-" . $exons . "-pairs.tsv",
             data         => \@csv_data,
             current_view => 'CSV',
         );
@@ -313,9 +313,9 @@ sub pair_off_target_search :Local('pair_off_target_search') {
 
 sub design_attempt_status :Chained('/') PathPart('design_attempt_status') Args(1) {
     my ( $self, $c, $da_id ) = @_;
- 
+
     # require authenticated user for this request?
-    
+
     $c->log->debug("Getting status for design attempt $da_id");
 
     my $da = $c->model->c_retrieve_design_attempt( { id => $da_id } );
@@ -364,17 +364,17 @@ sub designs_in_region :Local('designs_in_region') Args(0){
 #
 sub crisprs_in_region :Local('crisprs_in_region') Args(0){
     my ($self, $c) = @_;
-    
+
     my $schema = $c->model->schema;
-    my $params = { 
+    my $params = {
         start_coord       => $c->request->params->{start},
         end_coord         => $c->request->params->{end},
         chromosome_number => $c->request->params->{chr},
         assembly_id       => $c->request->params->{assembly},
         crispr_filter     => $c->request->params->{crispr_filter},
-        flank_size        => $c->request->params->{flank_size},    
+        flank_size        => $c->request->params->{flank_size},
     };
-    
+
     # Show only bookmarked crisprs
     if($c->request->params->{bookmarked_only}){
         $params->{user} = $c->user;
@@ -387,28 +387,27 @@ sub crisprs_in_region :Local('crisprs_in_region') Args(0){
         my $three_r = $c->model->c_retrieve_design_oligo({ design_id => $design_id, oligo_type => '3R'});
         $params->{design_start} = $five_f->locus->chr_start;
         $params->{design_end} = $three_r->locus->chr_end;
-        $c->log->debug(Dumper($params));
     }
 
     my $crispr_gff = crisprs_to_gff( $crisprs, $params);
     $c->response->content_type( 'text/plain' );
     my $body = join "\n", @{$crispr_gff};
-    return $c->response->body( $body );    
+    return $c->response->body( $body );
 }
 
 sub crispr_pairs_in_region :Local('crispr_pairs_in_region') Args(0){
     my ($self, $c) = @_;
-    
+
     my $schema = $c->model->schema;
-    my $params = { 
+    my $params = {
         start_coord       => $c->request->params->{start},
         end_coord         => $c->request->params->{end},
         chromosome_number => $c->request->params->{chr},
         assembly_id       => $c->request->params->{assembly},
         crispr_filter     => $c->request->params->{crispr_filter},
-        flank_size        => $c->request->params->{flank_size},        
+        flank_size        => $c->request->params->{flank_size},
     };
-    
+
     my $pairs;
     # Show only bookmarked crispr pairs
     if($c->request->params->{bookmarked_only}){
@@ -424,13 +423,12 @@ sub crispr_pairs_in_region :Local('crispr_pairs_in_region') Args(0){
         my $three_r = $c->model->c_retrieve_design_oligo({ design_id => $design_id, oligo_type => '3R'});
         $params->{design_start} = $five_f->locus->chr_start;
         $params->{design_end} = $three_r->locus->chr_end;
-        $c->log->debug(Dumper($params));
     }
 
     my $pairs_gff = crispr_pairs_to_gff( $pairs, $params);
     $c->response->content_type( 'text/plain' );
     my $body = join "\n", @{$pairs_gff};
-    return $c->response->body( $body );    
+    return $c->response->body( $body );
 }
 
 
@@ -439,7 +437,7 @@ sub crispr_pairs_in_region :Local('crispr_pairs_in_region') Args(0){
 sub _get_exon_attribute {
     my ( $c, $attr, $exon_ids, @args ) = @_;
 
-    _send_error($c, 'No exons given to _get_exon_attribute', 500 ) 
+    _send_error($c, 'No exons given to _get_exon_attribute', 500 )
         unless defined $exon_ids;
 
     #allow an arrayref or a single array
@@ -488,9 +486,9 @@ sub check_params_exist {
 
 sub _send_error{
     my ($c, $message, $status) = @_;
-    
+
     $status ||= 400;
-    
+
     $c->log->error($message);
     $c->response->status($status);
     $c->stash->{json_data} = { error => $message };

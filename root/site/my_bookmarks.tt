@@ -5,7 +5,7 @@
 
 [% FOREACH species IN ['Human', 'Mouse'] %]
  <div class="well well-large">
-  
+
   <h4>[% species %] Crisprs</h4>
   [% IF bookmarks.$species.crisprs.size %]
   <table class="table table-bordered table-condensed">
@@ -22,7 +22,7 @@
    [% FOREACH crispr IN bookmarks.$species.crisprs %]
    <tr>
     <td><a class="btn btn-info btn-small" href="[% c.uri_for('/genoverse_browse', { crispr_id => crispr.id, view_single => 1 }) %]" title="view in genome browser">View</a></td>
-    <td><a class="btn btn-small" type="crispr_remove_bookmark" id="[% crispr.id %]" title="remove bookmark"><i class="icon-remove"></i></a></td>    
+    <td><a class="btn btn-small" type="crispr_remove_bookmark" id="[% crispr.id %]" title="remove bookmark"><i class="icon-remove"></i></a></td>
     <td><a href="[% c.uri_for('/crispr', crispr.id) %]">[% crispr.id %]</a></td>
     <td class="location">[% ensembl_link(chr_name=crispr.chr_name, chr_start=crispr.chr_start, chr_end=crispr.chr_end) %]</td>
     <td>[% crispr.seq %]</td>
@@ -36,7 +36,7 @@
   <p class="muted">You have no bookmarked [% species %] crisprs</p>
   [% END %]
 
-  
+
   <h4>[% species %] Crispr Pairs</h4>
   [% IF bookmarks.$species.crispr_pairs.size %]
   <table class="table table-bordered table-condensed table-striped">
@@ -60,8 +60,8 @@
    </tr>
    [% FOREACH pair IN bookmarks.$species.crispr_pairs %]
    <tr>
-     <td rowspan="2"><a class="btn btn-info btn-small" href="[% c.uri_for('/genoverse_browse', {crispr_id => pair.left_crispr.id, view_paired => 1}) %]" title="view in genome browser">View</a></td>
-    <td rowspan="2"><a class="btn btn-small" type="crispr_pair_remove_bookmark" id="[% pair.id %]" title="remove bookmark"><i class="icon-remove"></i></a></td>        
+     <td rowspan="2"><a class="btn btn-info btn-small" href="[% c.uri_for('/genoverse_browse', {crispr_pair_id => pair.id, view_paired => 1}) %]" title="view in genome browser">View</a></td>
+    <td rowspan="2"><a class="btn btn-small" type="crispr_pair_remove_bookmark" id="[% pair.id %]" title="remove bookmark"><i class="icon-remove"></i></a></td>
      <td rowspan="2"><a href="[% c.uri_for('/crispr_pair', pair.id) %]">[% pair.id %]</a></td>
      <td rowspan="2">[% pair.spacer %]</td>
      <td rowspan="2">[% pair.status %]</td>
@@ -89,7 +89,7 @@
   <p class="muted">You have no bookmarked [% species %] crispr pairs</p>
   [% END %]
 
-  
+
   <h4>[% species %] Gibson Designs</h4>
   [% IF bookmarks.$species.designs.size %]
   <table class="table table-bordered">
@@ -98,7 +98,7 @@
     <th>ID</th>
     <th>Type</th>
     <th>Genes</th>
-    <th>Created at</th>      
+    <th>Created at</th>
   </tr>
   [% FOREACH design IN bookmarks.$species.designs %]
   <tr>
@@ -124,7 +124,7 @@
     <th>Status</th>
     <th>Designs</th>
     <th>Errors</th>
-    <th>Created at</th>      
+    <th>Created at</th>
   </tr>
   [% FOREACH attempt IN bookmarks.$species.attempts %]
   <tr>
@@ -134,7 +134,7 @@
       [% attempt.design_parameters.five_prime_exon %]
       [% IF attempt.design_parameters.three_prime_exon %]
         - [% attempt.design_parameters.three_prime_exon %]
-      [% END %] 
+      [% END %]
     </td>
     <td>[% attempt.status %]</td>
     <td>
@@ -148,7 +148,7 @@
   [% END %]
   </table>
   [% ELSE %]
-  <p class="muted">You have no [% species %] gibson design attempts</p>  
+  <p class="muted">You have no [% species %] gibson design attempts</p>
   [% END %]
 
   </div>
@@ -172,13 +172,13 @@ function remove_bookmark (uri, id, button){
           button.parentElement.parentElement.nextElementSibling.remove()
         }
         button.parentElement.parentElement.remove();
-      }          
+      }
     }
-  ); 
+  );
  }
 
  $(document).ready( function() {
-   
+
    $("[type='crispr_remove_bookmark']").click(function(event){
       event.preventDefault();
       var uri = '[% c.uri_for('bookmark_crispr') %]';

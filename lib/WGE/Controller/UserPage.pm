@@ -1,7 +1,7 @@
 package WGE::Controller::UserPage;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::UserPage::VERSION = '0.019';
+    $WGE::Controller::UserPage::VERSION = '0.020';
 }
 ## use critic
 
@@ -45,7 +45,7 @@ sub my_bookmarks :Path('/my_bookmarks'){
     $bookmarks->{'Mouse'}->{crispr_pairs} = [map { $_->as_hash({ get_status => 1}) } $c->user->mouse_crispr_pairs];
     $bookmarks->{'Mouse'}->{designs}      = [map { $_->as_hash } $designs_rs->search({ species_id => 'Mouse' }, { order_by => 'created_at DESC' }) ]; 
     $bookmarks->{'Mouse'}->{attempts}     = [map { $_->as_hash({ json_as_hash => 1 }) } $attempts_rs->search({ species_id => 'Mouse' }, { order_by => 'created_at DESC' } ) ];   
-$c->log->debug(Dumper($bookmarks));
+
     $c->stash(
     	bookmarks => $bookmarks,
     );

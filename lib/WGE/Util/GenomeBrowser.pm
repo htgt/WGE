@@ -1,7 +1,7 @@
 package WGE::Util::GenomeBrowser;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::GenomeBrowser::VERSION = '0.019';
+    $WGE::Util::GenomeBrowser::VERSION = '0.020';
 }
 ## use critic
 
@@ -35,14 +35,44 @@ use Sub::Exporter -setup => {
         crisprs_for_region
         crisprs_to_gff
         crispr_pairs_for_region
-        crispr_pairs_to_gff 
+        crispr_pairs_to_gff
         gibson_designs_for_region
         design_oligos_to_gff
         bookmarked_pairs_for_region
+        colours
     ) ]
 };
 
 use Log::Log4perl qw( :easy );
+
+=head2 colours
+
+return hashref of colours for various types of features in genoverse
+
+=cut
+
+sub colours {
+    my %colours = (
+        left_crispr     => '#45A825', # greenish
+        right_crispr    => '#1A8599', # blueish
+        left_in_design  => '#DF3A01', # reddish
+        right_in_design => '#FE9A2E', # orange
+        no_ot_summary   => '#B2B2B2', # grey
+        '5F' => '#68D310',
+        '5R' => '#68D310',
+        'EF' => '#589BDD',
+        'ER' => '#589BDD',
+        '3F' => '#BF249B',
+        '3R' => '#BF249B',
+    );
+    return \%colours;
+}
+
+sub gibson_colour {
+    my $oligo_type_id = shift;
+
+    return colours->{ $oligo_type_id };
+}
 
 =head2 get_region_from_params
 
@@ -57,7 +87,7 @@ af11
 sub get_region_from_params{
     my $schema = shift;
     my $params = shift;
-    
+
     my @required = qw(genome chromosome browse_start browse_end);
     my @missing_params = grep { not defined $params->{$_ } } @required;
 
@@ -65,7 +95,7 @@ sub get_region_from_params{
         if ($params->{'design_id'}){
             # get info for initial display from design oligos...
             my $design_data = fetch_design_data($schema, $params);
-    
+
             my ($start, $end, $chromosome, $genome);
             foreach my $oligo (@{ $design_data->{oligos} || [] }){
                 $chromosome ||= $oligo->{locus}->{chr_name};
@@ -123,6 +153,18 @@ sub get_region_from_params{
                 'browse_end'   => $crispr->chr_start + 500,
             }
         }
+        elsif (my $crispr_pair_id = $params->{'crispr_pair_id'}){
+            my $crispr_pair = $schema->resultset('CrisprPair')->find({ id => $crispr_pair_id });
+            my $crispr = $crispr_pair->left;
+            my $genome = $crispr->species->default_assembly->assembly_id;
+            # Browse to a 1kb region around the crispr
+            return {
+                'genome'       => $genome,
+                'chromosome'   => $crispr->chr_name,
+                'browse_start' => $crispr->chr_start - 500,
+                'browse_end'   => $crispr->chr_start + 500,
+            }
+        }
     }
     else{
         # All region params provided, we just return them
@@ -132,8 +174,8 @@ sub get_region_from_params{
         }
         return \%region;
     }
-    
-    die "No region parameters, design_id, exon_id or crispr_id provided";
+
+    die "No region parameters, design_id, exon_id, crispr_id or crispr_pair_id provided";
 }
 
 =head fetch_design_data
@@ -155,20 +197,20 @@ sub fetch_design_data{
     }
     catch( LIMS2::Exception::Validation $e ) {
         die "Please provide a valid design id\n";
-    } 
+    }
     catch( LIMS2::Exception::NotFound $e ) {
         die "Design $design_id not found\n" ;
     }
-    
+
     my $design_data = $design->as_hash;
     $design_data->{assigned_genes} = join q{, }, @{ $design_data->{assigned_genes} || [] };
 
-    DEBUG( "Design: " .Dumper($design_data) );
+    TRACE( "Design: " .Dumper($design_data) );
 
-    return $design_data;    
+    return $design_data;
 }
 
-=head2 crisprs_for_region 
+=head2 crisprs_for_region
 
 Find crisprs for a specific chromosome region. The search is not design
 related. The method accepts species, chromosome id, start and end coordinates.
@@ -194,14 +236,14 @@ sub crisprs_for_region {
     unless($params->{crispr_filter}){ $params->{crispr_filter} = 'all' }
 
     if ($params->{crispr_filter} eq 'exonic'){
-        
+
         my $genes = _genes_for_region($schema, $params, $species);
 
         my @exons = map { $_->exons } $genes->all;
         my @exon_ids = map { $_->ensembl_exon_id } @exons;
 
         DEBUG("Finding crisprs in exons ".(join ", ", @exon_ids));
-        
+
         #TODO: change exon_flanking stuff to use the flank option CrisprByExon now accepts
         my $exon_crisprs_rs = $schema->resultset('CrisprByExon')->search(
             {},
@@ -211,7 +253,7 @@ sub crisprs_for_region {
         return $exon_crisprs_rs;
     }
     elsif ($params->{crispr_filter} eq 'exon_flanking'){
-        
+
         # default to 100 bp
         my $flank_size = $params->{flank_size} || 100;
 
@@ -264,7 +306,7 @@ sub _genes_for_region {
     # i.e. gene start <= region end && region start <= gene end
 
     my $genes = $schema->resultset('Gene')->search(
-        { 
+        {
             'species_id' => $species->id,
             'chr_name' => $params->{chromosome_number},
             -and => [
@@ -296,7 +338,7 @@ sub crispr_pairs_for_region {
         get_db_data => 1,
         species_id  => $params->{species_numerical_id},
     };
-    
+
     # Find pairs amongst crisprs
     my $pair_finder = WGE::Util::FindPairs->new({ schema => $schema });
     my $pairs = $pair_finder->window_find_pairs($params->{start_coord}, $params->{end_coord}, $crisprs_rs, $options);
@@ -314,7 +356,7 @@ sub bookmarked_pairs_for_region{
     my $params = shift;
 
     # FIXME: this needs to respond to exon and exon-flanking filters
-    
+
     my $species = $schema->resultset('Assembly')->find({ id => $params->{assembly_id} })->species;
 
     # Store species name for gff output
@@ -345,9 +387,9 @@ sub bookmarked_pairs_for_region{
     }
 
     my @hashes = map { $_->as_hash({ get_status => 1 }) } @pairs_in_region;
-    
-    # Add db_data key to the pair hashes so they resemble 
-    # those generated by WGE::Util::FindPairs 
+
+    # Add db_data key to the pair hashes so they resemble
+    # those generated by WGE::Util::FindPairs
     foreach my $pair_hash (@hashes){
         my $db_data = {
             off_target_summary => $pair_hash->{off_target_summary},
@@ -355,11 +397,11 @@ sub bookmarked_pairs_for_region{
         };
         $pair_hash->{db_data} = $db_data;
     }
-    DEBUG Dumper(\@hashes);
+    TRACE Dumper(\@hashes);
     return \@hashes;
 }
 
-=head crisprs_for_region_as_arrayref 
+=head crisprs_for_region_as_arrayref
 
 Return and array of hashrefs properly inflated for the browser.
 This is suitable for serialisation as JSON.
@@ -440,22 +482,27 @@ sub crisprs_to_gff {
                     . 'C_' . $crispr_r->id . ';'
                     . 'Name=' . $crispr_r->id
                 );
-            
-            if(my $ot_summary = $crispr_r->off_target_summary){
+
+            my $ot_summary = $crispr_r->off_target_summary;
+            if($ot_summary){
                 DEBUG("Found off target summary for crispr ".$crispr_r->id);
                 $crispr_format_hash{attributes}.=';OT_Summary='.$ot_summary;
             }
 
             my $crispr_parent_datum = prep_gff_datum( \%crispr_format_hash );
             $crispr_format_hash{'type'} = 'CDS';
-            my $colour = '#45A825'; # greenish
-            
+            my $colour = colours->{left_crispr}; # greenish
+
             if ( defined $design_range ){
-                #if ($crispr_r->chr_start > $params->{'design_start'} 
+                #if ($crispr_r->chr_start > $params->{'design_start'}
                 #    and $crispr_r->chr_start < $params->{'design_end'}){
                 if ( $crispr_r->chr_start ~~ $design_range){
-                    $colour = '#DF3A01'; # reddish
+                    $colour = colours->{left_in_design}; # reddish
                 }
+            }
+
+            if (not defined $ot_summary){
+                $colour = colours->{no_ot_summary}; # grey
             }
 
             $crispr_format_hash{'attributes'} =     'ID='
@@ -474,8 +521,8 @@ sub crisprs_to_gff {
 }
 
 
-=head crispr_pairs_to_gff 
-Returns an array representing a set of strings ready for 
+=head crispr_pairs_to_gff
+Returns an array representing a set of strings ready for
 concatenation to produce a GFF3 format file.
 
 =cut
@@ -524,7 +571,7 @@ sub crispr_pairs_to_gff {
                     . $id . ';'
                     . 'Name=' . $id .';'
                     . 'Spacer=' . $crispr_pair->{spacer}
-                );          
+                );
 
             # Add paired OT summary information if pair has data in DB
             if(my $data = $crispr_pair->{db_data}){
@@ -540,31 +587,35 @@ sub crispr_pairs_to_gff {
                 }
             }
 
-            # We might have single OT summaries without paired OTs
-            my $left_ot = $left->{off_target_summary} || "not computed";
-            my $right_ot = $right->{off_target_summary} || "not computed";
-            $crispr_format_hash{attributes}.=";left_ot_summary=$left_ot;right_ot_summary=$right_ot";  
-
-            my $crispr_pair_parent_datum = prep_gff_datum( \%crispr_format_hash );
-
-            my %colours = (
-                left  => '#45A825', # greenish
-                right => '#1A8599', # blueish
-                left_in_design  => '#AA2424', # reddish
-                right_in_design => '#FE9A2E', # orange
-            );
-            
-            my $left_colour = $colours{left};
-            my $right_colour = $colours{right};
+            my $left_colour = colours->{left_crispr};
+            my $right_colour = colours->{right_crispr};
 
             if ( defined $design_range ){
                 if ($left->{chr_start} ~~ $design_range){
-                    $left_colour = $colours{left_in_design};
+                    $left_colour = colours->{left_in_design};
                 }
                 if ($right->{chr_start} ~~ $design_range){
-                    $right_colour = $colours{right_in_design};
+                    $right_colour = colours->{right_in_design};
                 }
             }
+
+            # We might have single OT summaries without paired OTs
+            my $left_ot = $left->{off_target_summary};
+            my $right_ot = $right->{off_target_summary};
+
+            unless($left_ot){
+                $left_ot = "not computed";
+                $left_colour = colours->{no_ot_summary};
+            }
+
+            unless($right_ot){
+                $right_ot = "not computed";
+                $right_colour = colours->{no_ot_summary};
+            }
+
+            $crispr_format_hash{attributes}.=";left_ot_summary=$left_ot;right_ot_summary=$right_ot";
+
+            my $crispr_pair_parent_datum = prep_gff_datum( \%crispr_format_hash );
 
             $crispr_format_hash{'type'} = 'CDS';
             $crispr_format_hash{'end'} = $left->{chr_start}+22;
@@ -584,7 +635,7 @@ sub crispr_pairs_to_gff {
                     . 'color=' . $right_colour;
 #            $crispr_format_hash{'attributes'} = $crispr_r->pair_id;
             my $crispr_right_datum = prep_gff_datum( \%crispr_format_hash );
-            
+
             push @crisprs_gff, $crispr_pair_parent_datum, $crispr_left_datum, $crispr_right_datum ;
         }
 
@@ -672,7 +723,7 @@ sub design_oligos_to_gff {
         . '-'
         . $params->{'end_coord'} ;
 
-        my $gibson_designs; # collects the primers and coordinates for each design. It is a hashref of arrayrefs. 
+        my $gibson_designs; # collects the primers and coordinates for each design. It is a hashref of arrayrefs.
         $gibson_designs = parse_gibson_designs( $oligo_rs );
         my $design_meta_data;
         $design_meta_data = generate_design_meta_data ( $gibson_designs );
@@ -790,20 +841,6 @@ sub generate_design_meta_data {
     return \%design_meta_data;
 }
 
-sub gibson_colour {
-    my $oligo_type_id = shift;
-
-    my %colours = (
-        '5F' => '#68D310',
-        '5R' => '#68D310',
-        'EF' => '#589BDD',
-        'ER' => '#589BDD',
-        '3F' => '#BF249B',
-        '3R' => '#BF249B',
-    );
-    return $colours{ $oligo_type_id };
-}
-
 sub get_chromosome_id{
     my ($schema, $params) = @_;
 
@@ -819,7 +856,7 @@ sub get_chromosome_id{
         # Add species to params hash for future use
         $params->{species} = $species;
     }
-    
+
     my $chromosome = $schema->resultset('Chromosome')->find({ name => $params->{chromosome_number}, species_id => $species });
     return $chromosome->id;
 }
