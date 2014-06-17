@@ -7,7 +7,7 @@
     $('#gene').autocomplete( {
         autoFocus: true,
         source: function (request, response) {
-          $.get('api/gene_search', { name: request.term, species: get_species() }, 
+          $.get('api/gene_search', { name: request.term, species: get_species() },
             function (data) {
               response(data);
             })
@@ -64,7 +64,7 @@
         var full_url = url.concat("?view_paired=1&exon_id=",exon);
         //window.location.href=full_url;
         window.open(full_url);
-        
+
         return false;
      });
 
@@ -80,9 +80,9 @@
       //open csv download in new window
       window.open( build_url(url, {"csv": 1, "exon_id[]": get_selected_exons()}) );
     });
-    
+
     //if someone selects a species then remove the error class
-    $("#crispr_search").find('input[type=radio]').click(function() { 
+    $("#crispr_search").find('input[type=radio]').click(function() {
       strip_error( $(this) );
     });
 
@@ -91,6 +91,18 @@
     });
 
     process_url();
+
+    $("#table_view_example").click(function(){
+      // Produce table view for BRCA2 pairs
+      $('#radio_human').click();
+      $('#gene').val('BRCA2');
+      exon_search({marker_symbol: 'BRCA2', species: 'Human'});
+      setTimeout(function(){
+        $('#exons').val('ENSE00003666217')
+        $('#search').click();
+        $("html, body").animate({ scrollTop: 650});
+      }, 500);
+    });
 
   });
 
@@ -106,8 +118,8 @@ var q;
         $("#exons").find('option').remove(); //clear old exons
         $("#exon_label").html("Exons for " + data.transcript);
         //add new exons into the form
-        $.each(data.exons, function(i, val) { 
-          var opt = $('<option>', { 
+        $.each(data.exons, function(i, val) {
+          var opt = $('<option>', {
               value: val.exon_id,
               text : val.rank + '. ' + val.exon_id + ' (length ' + val.len + ')'
           }).appendTo($("#exons"));
@@ -167,8 +179,8 @@ var q;
           for ( var i = 0; i < exons.length; i++ )
             selected[exons[i]] = true;
         }
-        exon_search({marker_symbol: opts[1], species: opts[0]}, selected);       
-        
+        exon_search({marker_symbol: opts[1], species: opts[0]}, selected);
+
       }
 
       return 1;
@@ -178,7 +190,7 @@ var q;
   }
 
   function get_selected_pairs() {
-    return $('input[name=pair]:checked').map( function() { 
+    return $('input[name=pair]:checked').map( function() {
       var spl = this.value.split("_");
       return { left_id: spl[0], right_id: spl[1] };
     } );
@@ -192,7 +204,7 @@ var q;
     var table = get_table();
 
     //get the pairs and add them to the table
-    $.get('api/pair_search', { exon_id: exons }, 
+    $.get('api/pair_search', { exon_id: exons },
       function(data) {
         if (data.length == 0) {
           var num_cols = table.find("thead tr:nth-child(2) th").length;
@@ -222,10 +234,10 @@ var q;
                 //if it has no off target data add a button to get it
                 status = $("<button>", {
                   "class": 'btn btn-mini btn-block ots-button',
-                  value: pair_id, 
-                  text: "Find off targets" 
+                  value: pair_id,
+                  text: "Find off targets"
                 });
-                status.click( function(event) {          
+                status.click( function(event) {
                     //stop it from submitting the form
                     event.preventDefault();
 
@@ -244,7 +256,7 @@ var q;
                 summary = 'No data';
               }
 
-              var row = 
+              var row =
                 $("<tr>", { style: "font-size: 13px"})
                  .append( $("<td>", { html: pair.spacer }) )
                  .append( $("<td>", { html: status } ) )
@@ -269,11 +281,11 @@ var q;
         }
         //change the loading button
         $("#search").button('reset');
-        
+
         //todo: change this to be an entire exon search button
         //create_offtargets_button();
       })
-    
+
      .fail(ajax_failed); //create error if its not successful
 
     return table;
@@ -284,12 +296,12 @@ var q;
       // Don't create it again
       return;
     }
-    
+
     $("<button>", { "class": "btn btn-default", id:"exon_targets", text: "Calculate all off targets" })
-      .click(function(event) {          
+      .click(function(event) {
         //stop it from submitting the form
         event.preventDefault();
-        
+
         var selectedpairs = get_selected_pairs();
 
         if ( selectedpairs.length == 0 )
@@ -298,16 +310,16 @@ var q;
         //for now just take the top pair as we only care about one for now
         var temp = selectedpairs[0];
         temp.species = get_species();
-        
+
         //this needs a new API call
-        $.get('api/pair_off_target_search', temp, 
-          function(data) { 
+        $.get('api/pair_off_target_search', temp,
+          function(data) {
             console.log(data);
         });
       })
       .appendTo($("#fields"));
   }
-  
+
   //return whatever species is selected
   function get_species() {
     return $("input:radio[name=species]:checked").val();
@@ -328,11 +340,11 @@ var q;
       summary = "No data";
     }
 
-    return [ 
+    return [
              $("<td>").append( id_link ),
              $("<td>").append( get_ensembl_link(location, get_species()) ),
              $("<td>", { html: crispr.seq }),
-             $("<td>", { html: summary } ) 
+             $("<td>", { html: summary } )
     ];
   }
 
@@ -340,12 +352,12 @@ var q;
     //return table headers for a crispr.
     var fields = [ "ID", "Location", "Seq", "Off targets" ];
 
-    var off_targets_link = 
+    var off_targets_link =
       $("<a>", { href: "[% c.uri_for('crispr_help#summaries_individual') %]", target: "_blank" })
         .append($("<i>", { "class": 'icon-question-sign' }));
 
     //return a list of th elements
-    return $.map(fields, function (name) { 
+    return $.map(fields, function (name) {
       var th = $("<th>", { "html": name });
       //add off targets help link
       if ( name == "Off targets" ) {
@@ -432,15 +444,30 @@ var q;
       return false;
     }
 
-    return true; 
+    return true;
   }
 </script>
 
 <div class="row">
-  <div class="span12">
 
-    <h4>Please note that this application is currently in beta. If you have any problems, please <a href="mailto:[% email %]">let us know</a>.</h4>
+    <div class="span6">
+      <h4>Please note that this application is currently in beta. If you have any problems, please <a href="mailto:[% email %]">let us know</a>.</h4>
     <br/>
+    </div>
+    <div class="span2 pull-right">
+     Example in genome browser:
+     <a href="[% c.uri_for('/genoverse_browse',{view_paired => 1, exon_id => 'ENSE00003666217' }) %]">
+      <img src="[% c.uri_for('/static/images/genoverse_view.png') %]" class="img-polaroid" height="120px" width="120px" title="Example: crispr pairs for BRCA2 in genome browser"/>
+     </a>
+    </div>
+    <div class="span2 pull-right">
+     Example in table:<br/><br/>
+      <a href="#">
+      <img id="table_view_example" src="[% c.uri_for('/static/images/table_view.png') %]" class="img-polaroid" height="120px" width="120px" title="Example: crispr pairs for BRCA2 in table"/>
+      </a>
+    </div>
+
+
     <form role="form" id="crispr_search">
       <fieldset id="fields">
         <div class="control-group" id="species">
