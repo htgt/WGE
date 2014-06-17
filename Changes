@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+0.021     2014-06-17 10:39:44 Europe/London
+
+    Bugfix: jQuery syntax error
+
 0.020     2014-06-16 10:37:11 Europe/London
 
    Added filtering by off-target profile to genoverse view
