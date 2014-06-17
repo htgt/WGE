@@ -205,7 +205,7 @@
   function enable_crispr_filters(){
       $("[name='crispr_filters']")[0].disabled = false;
       $("#crispr_filters_heading")[0].className = "";
-      $("[name='crispr_ot_filters")[0].disabled = false;
+      $("[name='crispr_ot_filters']")[0].disabled = false;
       $("#crispr_ot_filters_heading")[0].className = "";
   }
 
@@ -227,7 +227,7 @@
 
       $("[name='crispr_filters']")[0].disabled = true;
       $("#crispr_filters_heading")[0].className = "muted";
-      $("[name='crispr_ot_filters")[0].disabled = true;
+      $("[name='crispr_ot_filters']")[0].disabled = true;
       $("#crispr_ot_filters_heading")[0].className = "muted";
   }
 
