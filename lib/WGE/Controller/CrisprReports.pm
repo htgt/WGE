@@ -1,4 +1,10 @@
 package WGE::Controller::CrisprReports;
+## no critic(RequireUseStrict,RequireUseWarnings)
+{
+    $WGE::Controller::CrisprReports::VERSION = '0.021';
+}
+## use critic
+
 use Moose;
 use namespace::autoclean;
 use Data::Dumper;

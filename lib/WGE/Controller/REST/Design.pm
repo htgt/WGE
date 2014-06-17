@@ -1,4 +1,10 @@
 package WGE::Controller::REST::Design;
+## no critic(RequireUseStrict,RequireUseWarnings)
+{
+    $WGE::Controller::REST::Design::VERSION = '0.021';
+}
+## use critic
+
 
 use Moose;
 use Try::Tiny;

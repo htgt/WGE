@@ -1,4 +1,10 @@
 package WGE::Util::ExportCSV;
+## no critic(RequireUseStrict,RequireUseWarnings)
+{
+    $WGE::Util::ExportCSV::VERSION = '0.021';
+}
+## use critic
+
 use strict;
 use Data::Dumper;
 use TryCatch;

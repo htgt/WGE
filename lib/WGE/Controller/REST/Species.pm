@@ -1,4 +1,10 @@
 package WGE::Controller::REST::Species;
+## no critic(RequireUseStrict,RequireUseWarnings)
+{
+    $WGE::Controller::REST::Species::VERSION = '0.021';
+}
+## use critic
+
 
 use Moose;
 use Try::Tiny;

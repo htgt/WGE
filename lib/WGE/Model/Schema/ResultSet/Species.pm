@@ -1,5 +1,11 @@
 use utf8;
 package WGE::Model::Schema::ResultSet::Species;
+## no critic(RequireUseStrict,RequireUseWarnings)
+{
+    $WGE::Model::Schema::ResultSet::Species::VERSION = '0.021';
+}
+## use critic
+
 
 use base 'DBIx::Class::ResultSet';
 use Try::Tiny;

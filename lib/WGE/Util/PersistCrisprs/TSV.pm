@@ -1,4 +1,10 @@
 package WGE::Util::PersistCrisprs::TSV;
+## no critic(RequireUseStrict,RequireUseWarnings)
+{
+    $WGE::Util::PersistCrisprs::TSV::VERSION = '0.021';
+}
+## use critic
+
 
 use Moose;
 

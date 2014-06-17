@@ -1,4 +1,10 @@
 package WGE::Exception;
+## no critic(RequireUseStrict,RequireUseWarnings)
+{
+    $WGE::Exception::VERSION = '0.021';
+}
+## use critic
+
 use warnings FATAL => 'all';
 
 use Moose;
