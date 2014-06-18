@@ -141,7 +141,7 @@ $(window).load(function() {
                 For example, to see only crisprs which have no off-targets with up to 4 mismatches enter the following then apply the filter.
                 <img src="[% c.uri_for('/static/images/about/strict_ot_filters.png') %]" title="strict_ot_filters" /></br>
                 There will always be 1 or more off-targets in the 0 mismatch (perfect match) category because the off-target computation identifies the original crispr site.<br/>
-                For a more relaxed search increase the number of off-targets allowed with 3 and 4 mismatches and apply the filter again.
+                For a more relaxed search increase the number of off-targets allowed and apply the filter again. Alternatively, use the "Best.." buttons to see crisprs with off-target counts in the <a href="#ot_distributions">10th, 25th or 50th percentile of our data</a>.
                 <img src="[% c.uri_for('/static/images/about/relaxed_ot_filters.png') %]" title="relaxed_ot_filters" /></br>
 
                 You can drag the filter menu anywhere on the page to make it easier to see the effect of the filtering in your region of interest.
@@ -231,7 +231,7 @@ max_distance: 1000
         <section id="ot_distributions">
             <h2>Off-target count distributions</h2>
             <p>
-            We have calculated the distribution of the individual off-target counts with 0,1,2,3 or 4 mismatches. Off-target counts were available for around 18 million crispr sites in exons and their surrounding regions (200bp either side of the exon) in the human genome.
+            For each crispr we have calculated the number of off-target sites with 0, 1, 2, 3 or 4 mismatches. The histograms below show the distribution of these off-target counts. These distributions are based on approximately 18 million crispr sites in exons and their surrounding regions (200bp either side of the exon) in the human genome.
             <table>
               <tr>
                <th>0 mismatch</th><th>1 mismatch</th><th>2 mismatch</th><th>3 mismatch</th><th>4 mismatch</th>
