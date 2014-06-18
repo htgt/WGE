@@ -77,6 +77,9 @@
     </tr>
   </tbody>
   </table>
+  <a href="[% c.uri_for('/crispr_help') _ '#basic_filters' %]" target="_blank" class="pull-right">
+    <i class="icon-question-sign"></i>Help
+  </a>
 </form>
 <div class="well">
  <table><tr>
@@ -112,7 +115,7 @@
 <div class="span3">
 <div id="ot_filters_panel">
 <form  class="well">
-  <table class='table'>
+  <table class='table' id="ot_filters_table">
    <thead>
     <tr>
       <th id="crispr_ot_filters_heading" [% UNLESS view_single OR view_paired %]class="muted"[% END %]>Off-Target Filters</th>
@@ -122,6 +125,9 @@
     <tr>
       <td>
         <fieldset name="crispr_ot_filters" [% UNLESS view_paired OR view_single %]disabled[% END %]>
+        <button type="button" class="btn btn-mini" id="best_10_percent">Best 10%</button>
+        <button type="button" class="btn btn-mini" id="best_25_percent">Best 25%</button>
+        <button type="button" class="btn btn-mini" id="best_50_percent">Best 50%</button><br/>
          Maximum number of off-targets with:<br />
          0 mismatch <input type="number" name="0_mismatch" id="0_mismatch" min="1" step="1" style="width: 60px"></input><span id="0_mismatch_no_max" class="help-inline"><small>no max</small></span><br />
          <p class="text-error" id="0_mismatch_input_error" style="display: none;">Enter 1 or more. There is always 1 perfect match to the crispr itself.</p>
@@ -132,6 +138,9 @@
          <button type="button" class="btn btn-mini" id="reset_ot_filters">Reset</button>
          <button type="button" class="btn btn-primary btn-small" id="apply_ot_filters">Apply Off-Target Filters</button>
          </fieldset>
+         <a href="[% c.uri_for('/crispr_help') _ '#ot_filters' %]" target="_blank" class="pull-right">
+          <i class="icon-question-sign"></i>Help
+         </a>
       </td>
     </tr>
    </tbody>
@@ -205,7 +214,7 @@
   function enable_crispr_filters(){
       $("[name='crispr_filters']")[0].disabled = false;
       $("#crispr_filters_heading")[0].className = "";
-      $("[name='crispr_ot_filters")[0].disabled = false;
+      $("[name='crispr_ot_filters']")[0].disabled = false;
       $("#crispr_ot_filters_heading")[0].className = "";
   }
 
@@ -227,7 +236,7 @@
 
       $("[name='crispr_filters']")[0].disabled = true;
       $("#crispr_filters_heading")[0].className = "muted";
-      $("[name='crispr_ot_filters")[0].disabled = true;
+      $("[name='crispr_ot_filters']")[0].disabled = true;
       $("#crispr_ot_filters_heading")[0].className = "muted";
   }
 
@@ -307,6 +316,33 @@
       $("#0_mismatch_input_error").hide();
 
       apply_ot_filters();
+  }
+
+  function set_ot_filters(percentile){
+      // Distributions caculated using all human crispr off-target counts
+      // available on 2014-06-17
+      var profiles = { 10: {}, 25: {}, 50: {}, 75: {} };
+
+      // Uses percentiles from WGE::Util::Statistics
+      [% FOREACH p IN [10,25,50,75] %]
+        [% FOREACH mm IN [0,1,2,3,4] %]
+          profiles[ [%p%] ][ [%mm%] ] = [% ot_distributions.$p.$mm %];
+        [% END %]
+      [% END %]
+
+      var profile = profiles[percentile];
+
+      if(!profile){
+        console.log('No off-target profile available for percentile ' + percentile);
+        return;
+      }
+
+      for (var mismatch_number = 0; mismatch_number < 5; mismatch_number++){
+          var input_id = '#' + mismatch_number + '_mismatch';
+          $(input_id).val(profile[mismatch_number]);
+          var help_span_id = '#' + mismatch_number + '_mismatch_no_max';
+          $(help_span_id).hide();
+      }
   }
 
   function apply_spacer_filters(){
@@ -492,6 +528,20 @@
       $("html, body").animate({ scrollTop: $(document).height() }, 1000);
     });
 
+    $('#best_10_percent').click(function(){
+        set_ot_filters(10);
+        apply_ot_filters();
+    });
+
+    $('#best_25_percent').click(function(){
+        set_ot_filters(25);
+        apply_ot_filters();
+    });
+
+    $('#best_50_percent').click(function(){
+        set_ot_filters(50);
+        apply_ot_filters();
+    });
   });
 </script>
 

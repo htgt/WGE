@@ -1,7 +1,7 @@
 package WGE::Controller::Root;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::Root::VERSION = '0.020';
+    $WGE::Controller::Root::VERSION = '0.022';
 }
 ## use critic
 
@@ -12,6 +12,7 @@ use Data::Dumper;
 use Try::Tiny;
 use Bio::Perl qw( revcom_as_string );
 use WGE::Util::CreateDesign;
+use WGE::Util::Statistics qw( human_ot_distributions );
 
 BEGIN { extends 'Catalyst::Controller' }
 
@@ -69,7 +70,9 @@ sub gibson_designer :Path('/gibson_designer') :Args(0) {
 
 sub crispr_help :Path('/crispr_help') :Args(0) {
     my ( $self, $c ) = @_;
-    
+
+    $c->stash( ot_distributions => human_ot_distributions() );
+
     return;
 }
 
@@ -81,7 +84,7 @@ sub gibson_help :Path('/gibson_help') :Args(0) {
 
 sub contact :Path('/contact') :Args(0){
     my ( $self, $c ) = @_;
-    
+
     return;
 }
 

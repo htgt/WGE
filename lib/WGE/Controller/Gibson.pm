@@ -1,7 +1,7 @@
 package WGE::Controller::Gibson;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::Gibson::VERSION = '0.020';
+    $WGE::Controller::Gibson::VERSION = '0.022';
 }
 ## use critic
 
@@ -13,6 +13,7 @@ use IO::File;
 use WGE::Util::CreateDesign;
 use WGE::Util::GenomeBrowser qw(fetch_design_data get_region_from_params colours);
 use WGE::Util::ExportCSV qw(write_design_data_csv);
+use WGE::Util::Statistics qw( human_ot_distributions );
 
 BEGIN { extends 'Catalyst::Controller' }
 
@@ -554,6 +555,7 @@ sub genoverse_browse_view :Path( '/genoverse_browse') : Args(0){
         'colours'       => colours,
         'crispr_id'     => $c->request->params->{'crispr_id'},
         'crispr_pair_id' => $c->request->params->{'crispr_pair_id'},
+        'ot_distributions' => human_ot_distributions(),
     );
 
     return;

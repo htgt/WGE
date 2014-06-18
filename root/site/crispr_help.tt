@@ -46,6 +46,7 @@ $(window).load(function() {
             <li>
                 <ul class="nav nav-list">
                     <li><a href="#summary_explanation">Summaries</a></li>
+                    <li><a href="#ot_distributions">Distributions</a></li>
                     <li><a href="#individual_process">Individual</a></li>
                     <li><a href="#pair_process">Paired</a></li>
                 </ul>
@@ -115,7 +116,7 @@ $(window).load(function() {
                 <img src="[% c.uri_for('/static/images/about/pair_data.png') %]" title="pair_data" /></br>
                 This menu includes a link to the crispr pair report page, which will you give you all the data for that pair.<br/>
             </p>
-            <p>
+            <p id="basic_filters">
                 Use the controls at the bottom of the screen to display single crisprs:<br/>
                 <img src="[% c.uri_for('/static/images/about/show_single_crisprs.png') %]" title="show_single_crisprs" /></br>
                 This will cause a second track to show up on the browser, which can also be clicked to show off-target counts and report links for individual CRISPRs:<br/>
@@ -134,13 +135,13 @@ $(window).load(function() {
                 When crispr pairs are displayed you can filter them so that only those with a spacer in the specified range are shown.
                 <img src="[% c.uri_for('/static/images/about/spacer_filters.png') %]" title="spacer_filters" /></br>
             </p>
-            <p>
+            <p id="ot_filters">
                 Crisprs and crispr pairs can be filtered based on the number of <a href="#off_targets">off-targets</a> they have. Enter the maximum
                 number of off-targets to allow in each of the mismatch categories. Crisprs that we have not computed off-targets for (those shown in grey) will not be removed by this filter.<br/>
                 For example, to see only crisprs which have no off-targets with up to 4 mismatches enter the following then apply the filter.
                 <img src="[% c.uri_for('/static/images/about/strict_ot_filters.png') %]" title="strict_ot_filters" /></br>
                 There will always be 1 or more off-targets in the 0 mismatch (perfect match) category because the off-target computation identifies the original crispr site.<br/>
-                For a more relaxed search increase the number of off-targets allowed with 3 and 4 mismatches and apply the filter again.
+                For a more relaxed search increase the number of off-targets allowed and apply the filter again. Alternatively, use the "Best.." buttons to see crisprs with off-target counts in the <a href="#ot_distributions">10th, 25th or 50th percentile of our data</a>.
                 <img src="[% c.uri_for('/static/images/about/relaxed_ot_filters.png') %]" title="relaxed_ot_filters" /></br>
 
                 You can drag the filter menu anywhere on the page to make it easier to see the effect of the filtering in your region of interest.
@@ -224,6 +225,37 @@ max_distance: 1000
                 <i>closest</i> tells you how close the nearest valid paired off target we found is. A value of 23 means we found a paired off target with a spacer of 23 bases, which is very close (the pair should be avoided if there's a better option.) If you see 'None' in this column it means we did not find a valid pair within the set distance. <br/><b>Note: this value will never be the original pair.</b><br/><br/>
                 <i>total_pairs</i> tells you how many paired off targets we found. <br/><b>Note: we include the original pair in this total, so the minimum value you will see here is 1.</b><br/><br/>
                 <i>max_distance</i> tells you what the maximum allowed spacer was for us to count a paired off target as valid.
+            </p>
+        </section>
+        <hr class="docs-separator" />
+        <section id="ot_distributions">
+            <h2>Off-target count distributions</h2>
+            <p>
+            For each crispr we have calculated the number of off-target sites with 0, 1, 2, 3 or 4 mismatches. The histograms below show the distribution of these off-target counts. These distributions are based on approximately 18 million crispr sites in exons and their surrounding regions (200bp either side of the exon) in the human genome.
+            <table>
+              <tr>
+               <th>0 mismatch</th><th>1 mismatch</th><th>2 mismatch</th><th>3 mismatch</th><th>4 mismatch</th>
+              </tr>
+              <tr>
+              [% FOREACH num IN [0,1,2,3,4] %]
+               <td>
+                <a href="[% c.uri_for('/static/images/distributions/human_' _ num _ 'mm.png') %]">
+                 <img src="[% c.uri_for('/static/images/distributions/human_' _ num _ 'mm.png') %]">
+                </a>
+               </td>
+              [% END %]
+              </tr>
+              <tr>
+              [% FOREACH num IN [0,1,2,3,4] %]
+               <td>
+                10th percentile: [% ot_distributions.10.$num %]<br>
+                25th percentile: [% ot_distributions.25.$num %]<br>
+                50th percentile: [% ot_distributions.50.$num %]<br>
+                75th percentile: [% ot_distributions.75.$num %]<br>
+               </td>
+              [% END %]
+              </tr>
+            </table>
             </p>
         </section>
         <hr class="docs-separator" />

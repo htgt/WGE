@@ -5,6 +5,7 @@ META.yml
 Makefile.PL
 README
 bin/dump_data.pl
+bin/dump_off_target_counts.pl
 bin/dump_schema.pl
 bin/find_crisprs.pl
 bin/get_all_genes.pl
@@ -90,6 +91,7 @@ lib/WGE/Util/OAuthHelper.pm
 lib/WGE/Util/PersistCrisprs.pm
 lib/WGE/Util/PersistCrisprs/Bed.pm
 lib/WGE/Util/PersistCrisprs/TSV.pm
+lib/WGE/Util/Statistics.pm
 lib/WGE/View/CSV.pm
 lib/WGE/View/JSON.pm
 lib/WGE/View/Web.pm
@@ -210,9 +212,16 @@ root/static/images/btn_88x31_built_shadow.png
 root/static/images/btn_88x31_powered.png
 root/static/images/btn_88x31_powered_shadow.png
 root/static/images/catalyst_logo.png
+root/static/images/distributions/human_0mm.png
+root/static/images/distributions/human_1mm.png
+root/static/images/distributions/human_2mm.png
+root/static/images/distributions/human_3mm.png
+root/static/images/distributions/human_4mm.png
+root/static/images/genoverse_view.png
 root/static/images/gibson_designer/vector_construction.png
 root/static/images/sanger-logo.png
 root/static/images/spinner-circle.gif
+root/static/images/table_view.png
 root/static/js/diagram.builder.js
 root/static/js/genoverse_custom_tracks.js
 root/static/js/jquery-ui-1.9.2.custom.min.js
@@ -239,4 +248,3 @@ t/lib/Test/WGE.pm
 t/release-no-smart-comments.t
 wge.conf
 wge.psgi
-wge_gmail_account.yml~
