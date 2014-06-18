@@ -77,6 +77,9 @@
     </tr>
   </tbody>
   </table>
+  <a href="[% c.uri_for('/crispr_help') _ '#basic_filters' %]" target="_blank" class="pull-right">
+    <i class="icon-question-sign"></i>Help
+  </a>
 </form>
 <div class="well">
  <table><tr>
@@ -112,7 +115,7 @@
 <div class="span3">
 <div id="ot_filters_panel">
 <form  class="well">
-  <table class='table'>
+  <table class='table' id="ot_filters_table">
    <thead>
     <tr>
       <th id="crispr_ot_filters_heading" [% UNLESS view_single OR view_paired %]class="muted"[% END %]>Off-Target Filters</th>
@@ -135,6 +138,9 @@
          <button type="button" class="btn btn-mini" id="reset_ot_filters">Reset</button>
          <button type="button" class="btn btn-primary btn-small" id="apply_ot_filters">Apply Off-Target Filters</button>
          </fieldset>
+         <a href="[% c.uri_for('/crispr_help') _ '#ot_filters' %]" target="_blank" class="pull-right">
+          <i class="icon-question-sign"></i>Help
+         </a>
       </td>
     </tr>
    </tbody>
@@ -315,39 +321,17 @@
   function set_ot_filters(percentile){
       // Distributions caculated using all human crispr off-target counts
       // available on 2014-06-17
-      var profiles = {
-        10: {
-          0: 1,
-          1: 0,
-          2: 0,
-          3: 4,
-          4: 71
-        },
-        25: {
-          0: 1,
-          1: 0,
-          2: 0,
-          3: 9,
-          4: 119
-        },
-        50: {
-          0: 1,
-          1: 0,
-          2: 1,
-          3: 17,
-          4: 195
-        },
-        75: {
-          0: 1,
-          1: 0,
-          2: 3,
-          3: 34,
-          4: 347
-        },
-      };
+      var profiles = { 10: {}, 25: {}, 50: {}, 75: {} };
+
+      // Uses percentiles from WGE::Util::Statistics
+      [% FOREACH p IN [10,25,50,75] %]
+        [% FOREACH mm IN [0,1,2,3,4] %]
+          profiles[ [%p%] ][ [%mm%] ] = [% ot_distributions.$p.$mm %];
+        [% END %]
+      [% END %]
 
       var profile = profiles[percentile];
-      console.log(profile);
+
       if(!profile){
         console.log('No off-target profile available for percentile ' + percentile);
         return;

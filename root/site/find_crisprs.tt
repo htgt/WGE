@@ -96,12 +96,11 @@
       // Produce table view for BRCA2 pairs
       $('#radio_human').click();
       $('#gene').val('BRCA2');
-      exon_search({marker_symbol: 'BRCA2', species: 'Human'});
-      setTimeout(function(){
+      $.when( exon_search({marker_symbol: 'BRCA2', species: 'Human'}) ).done(function(){
         $('#exons').val('ENSE00003666217')
         $('#search').click();
         $("html, body").animate({ scrollTop: 650});
-      }, 500);
+      });
     });
 
   });
@@ -112,7 +111,7 @@ var q;
     params = params || {marker_symbol: "Error"};
     select = select || {};
 
-    $.get('api/exon_search', params,
+    return $.get('api/exon_search', params,
       function (data) {
         //console.log(data);
         $("#exons").find('option').remove(); //clear old exons
@@ -450,23 +449,9 @@ var q;
 
 <div class="row">
 
-    <div class="span6">
+    <div class="span7">
       <h4>Please note that this application is currently in beta. If you have any problems, please <a href="mailto:[% email %]">let us know</a>.</h4>
-    <br/>
-    </div>
-    <div class="span2 pull-right">
-     Example in genome browser:
-     <a href="[% c.uri_for('/genoverse_browse',{view_paired => 1, exon_id => 'ENSE00003666217' }) %]">
-      <img src="[% c.uri_for('/static/images/genoverse_view.png') %]" class="img-polaroid" height="120px" width="120px" title="Example: crispr pairs for BRCA2 in genome browser"/>
-     </a>
-    </div>
-    <div class="span2 pull-right">
-     Example in table:<br/><br/>
-      <a href="#">
-      <img id="table_view_example" src="[% c.uri_for('/static/images/table_view.png') %]" class="img-polaroid" height="120px" width="120px" title="Example: crispr pairs for BRCA2 in table"/>
-      </a>
-    </div>
-
+      <br/>
 
     <form role="form" id="crispr_search">
       <fieldset id="fields">
@@ -501,5 +486,20 @@ var q;
       <br/>
     </form>
 
-  </div>
+    </div>
+
+    <div class="span2 pull-right">
+     Example in genome browser:
+     <a href="[% c.uri_for('/genoverse_browse',{view_paired => 1, exon_id => 'ENSE00003666217' }) %]">
+      <img src="[% c.uri_for('/static/images/genoverse_view.png') %]" class="img-polaroid" height="120px" width="120px" title="Example: crispr pairs for BRCA2 in genome browser"/>
+     </a>
+    </div>
+
+    <div class="span2 pull-right">
+     Example in table:<br/><br/>
+      <a href="#">
+      <img id="table_view_example" src="[% c.uri_for('/static/images/table_view.png') %]" class="img-polaroid" height="120px" width="120px" title="Example: crispr pairs for BRCA2 in table"/>
+      </a>
+    </div>
+
 </div>
