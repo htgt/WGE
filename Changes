@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+0.022     2014-06-18 15:49:23 Europe/London
+
+   Added off-target count distribution graphs and filters
+
 0.021     2014-06-17 10:39:44 Europe/London
 
     Bugfix: jQuery syntax error
