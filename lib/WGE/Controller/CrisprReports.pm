@@ -45,7 +45,6 @@ sub crispr_report :Path('/crispr') :Args(1){
     $c->log->info( "Finding crispr $crispr_id" );
 
     my $crispr;
-    my $crispr_pairs;
     #do in a try in case an sql error/dbi is raised
     try {
         $crispr = $c->model('DB')->resultset('Crispr')->find(
