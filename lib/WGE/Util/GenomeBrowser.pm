@@ -1,7 +1,7 @@
 package WGE::Util::GenomeBrowser;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::GenomeBrowser::VERSION = '0.022';
+    $WGE::Util::GenomeBrowser::VERSION = '0.023';
 }
 ## use critic
 
@@ -79,11 +79,14 @@ sub gibson_colour {
 Takes schema and hashref of params (usually from catalyst request) and returns hashref
 containing chromosome name and coordinates
 
-Input params can be coordinates etc, WGE design id or exon id or crispr id
+Input params can be coordinates etc, WGE design id or exon id or crispr id or crispr pair id
+
+FIXME: need some param validation to return errors to user if e.g. crispr_id is not numerical
 
 af11
 
 =cut
+
 sub get_region_from_params{
     my $schema = shift;
     my $params = shift;
@@ -143,7 +146,8 @@ sub get_region_from_params{
             };
         }
         elsif (my $crispr_id = $params->{'crispr_id'}){
-            my $crispr = $schema->resultset('Crispr')->find({ id => $crispr_id });
+            my $crispr = $schema->resultset('Crispr')->find({ id => $crispr_id })
+                or die "Could not find crispr $crispr_id in WGE database";
             my $genome = $crispr->species->default_assembly->assembly_id;
             # Browse to a 1kb region around the crispr
             return {
@@ -155,7 +159,20 @@ sub get_region_from_params{
         }
         elsif (my $crispr_pair_id = $params->{'crispr_pair_id'}){
             my $crispr_pair = $schema->resultset('CrisprPair')->find({ id => $crispr_pair_id });
-            my $crispr = $crispr_pair->left;
+            my $crispr;
+            if($crispr_pair){
+                $crispr = $crispr_pair->left;
+            }
+            else{
+                # Pair does not exist in the database so split the ID and find one
+                # of the individual crisprs
+                my ($crispr_id) = $crispr_pair_id =~ /^(\d+)_/;
+                DEBUG("Finding crispr $crispr_id from non-database pair $crispr_pair_id");
+                $crispr = $schema->resultset('Crispr')->find({ id => $crispr_id });
+            }
+
+            die "Could not find crispr pair $crispr_pair_id in WGE database" unless $crispr;
+
             my $genome = $crispr->species->default_assembly->assembly_id;
             # Browse to a 1kb region around the crispr
             return {
@@ -287,9 +304,6 @@ sub crisprs_for_region {
                 $params->{end_coord},
                 ],
             },
-        },
-        {
-            columns => [qw/id pam_right chr_start off_target_summary/],
         },
     );
     if($user){ return _bookmarked($user, $crisprs_rs) };
