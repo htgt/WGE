@@ -34,13 +34,13 @@
       event.preventDefault();
       var b = document.getElementById("bookmark");
       var uri = "[% c.uri_for('/bookmark_crispr') %]";
- 
+
       toggle_bookmark(b, uri, crispr_id, "Crispr");
     });
 
     var rows = new Array([], [], [], [], []);
     var total_erroneous = 0;
-    $("#offtarget_table .ots").each(function() { 
+    $("#offtarget_table .ots").each(function() {
       var tr = $(this);
 
       //find sequence and get match data
@@ -48,7 +48,7 @@
       var match = crispr_grna.match_str( seq.text().substr(0, 20) );
 
       //update the rows
-      seq.html(match.str + " " + seq.text().substr(20, 3)); 
+      seq.html(match.str + " " + seq.text().substr(20, 3));
       tr.children(".mm").text(match.total);
 
       //exclude 4 because by removing everything else they'll already be sorted
@@ -82,15 +82,32 @@
 </script>
 
 <div class="well">
+
+  <table class="crispr_report_table">
+  <tr>
+    <td><h4>ID: [% crispr.id %]</h4></td>
+    <td>
+       <a class='btn btn-info pull-right' href="[% c.uri_for( '/genoverse_browse', { crispr_id => crispr.id, view_single => 1 }) %]">
+          <i class="icon-eye-open icon-white"></i>
+          View in Genome Browser
+        </a>
+    </td>
+  <tr>
+    <td></td>
+    <td>
   [% IF c.user %]
    <button class="btn btn-info pull-right" id="bookmark">
    [% IF is_bookmarked %]
      Remove Bookmark
-   [% ELSE %] 
+   [% ELSE %]
      Bookmark Crispr
    [% END %]
    </button>
   [% END %]
+    </td>
+  </tr>
+  </table>
+
   <table>
     <tr>
       <td>Species</td>
@@ -101,7 +118,7 @@
       <td class="location">[% ensembl_link(chr_name=crispr.chr_name, chr_start=crispr.chr_start, chr_end=crispr.chr_end) %]</td>
     </tr>
     <tr>
-      <td>Sequence</td> 
+      <td>Sequence</td>
       <td>[% crispr.seq %]</td>
     </tr>
     <tr>
@@ -119,6 +136,60 @@
   </table>
 </div>
 
+
+<div class="accordion" id="accordion">
+  <div class="accordion-group well">
+    <div class="accordion-heading">
+      <p><strong>Found [% crispr_pairs.size %] Related Crispr Pairs</strong></p>
+      <a class="accordion-toggle collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+        <i class='icon-list'></i> Show Crispr Pairs
+      </a>
+    </div>
+    <div id="collapseOne" class="accordion-body collapse">
+      <div class="accordion-inner">
+        <table  class="table table-bordered table-condensed">
+          <tr>
+    <th>ID</th>
+    <th>Spacer</th>
+    <th>Status</th>
+    <th>Summary</th>
+    <th></th>
+    <th>ID</th>
+    <th>Location</th>
+    <th>Sequence</th>
+    <th>Summary</th>
+          </tr>
+   [% FOREACH pair IN crispr_pairs %]
+   <tr>
+     <td rowspan="2"><a href="[% c.uri_for('/crispr_pair', pair.id) %]">[% pair.id %]</a></td>
+     <td rowspan="2">[% pair.spacer %]</td>
+     <td rowspan="2">[% pair.db_data.status %]</td>
+     <td rowspan="2">[% pair.db_data.off_target_summary.remove('[{}"]').replace(':',': ').replace(',\s*', '<br>') %]</td>
+
+      <td>Left</td>
+      <td><a href="[% c.uri_for('/crispr', pair.left_crispr.id) %]">[% pair.left_crispr.id %]</a></td>
+      <td class="location">[% ensembl_link(chr_name=pair.left_crispr.chr_name, chr_start=pair.left_crispr.chr_start, chr_end=pair.left_crispr.chr_end) %]</td>
+      <td>[% pair.left_crispr.seq %]</td>
+      <td>[% pair.left_crispr.off_target_summary.remove('[{}]').replace(', ','<br>') or 'No data' %]</td>
+
+      </tr>
+      <tr>
+
+      <td>Right</td>
+      <td><a href="[% c.uri_for('/crispr', pair.right_crispr.id) %]">[% pair.right_crispr.id %]</a></td>
+      <td class="location">[% ensembl_link(chr_name=pair.right_crispr.chr_name, chr_start=pair.right_crispr.chr_start, chr_end=pair.right_crispr.chr_end) %]</td>
+      <td>[% pair.right_crispr.seq %]</td>
+      <td>[% pair.right_crispr.off_target_summary.remove('[{}]').replace(', ','<br>') or 'No data' %]</td>
+
+   </tr>
+   [% END %]
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h3>Off-Target Sites</h3>
 <p><b>Note</b>: the row highlighted in blue is the original CRISPR</p>
 
 [%# if we have no off targets to show hide the table %]

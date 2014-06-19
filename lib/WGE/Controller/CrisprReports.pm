@@ -6,6 +6,7 @@ use TryCatch;
 use IO::File;
 use Bio::Perl qw( revcom_as_string );
 use List::MoreUtils qw(any);
+use WGE::Util::GenomeBrowser qw(crisprs_for_region);
 
 BEGIN { extends 'Catalyst::Controller' }
 
@@ -20,6 +21,11 @@ sub _build_pair_finder {
 
     return WGE::Util::FindPairs->new;
 }
+
+has pair_finder_with_schema => (
+    is         => 'rw',
+    isa        => 'WGE::Util::FindPairs',
+);
 
 #
 # Sets the actions in this controller to be registered with no prefix
@@ -39,10 +45,11 @@ sub crispr_report :Path('/crispr') :Args(1){
     $c->log->info( "Finding crispr $crispr_id" );
 
     my $crispr;
+    my $crispr_pairs;
     #do in a try in case an sql error/dbi is raised
     try {
-        $crispr = $c->model('DB')->resultset('Crispr')->find( 
-            { id => $crispr_id } 
+        $crispr = $c->model('DB')->resultset('Crispr')->find(
+            { id => $crispr_id }
         );
     }
     catch {
@@ -55,6 +62,36 @@ sub crispr_report :Path('/crispr') :Args(1){
         return;
     }
 
+    $c->log->info( "Finding pairs containing crispr ".$crispr->id );
+
+    # Distance around original crispr to search for pairing
+    # crisprs_for_region returns any crisprs with start in that region
+    my $distance = 23 + $self->pair_finder->max_spacer;
+    my $pair_search_start = $crispr->chr_start - $distance;
+    my $pair_search_end = $crispr->chr_start + $distance;
+
+    $c->log->info( "Finding nearby crisprs in region $pair_search_start to $pair_search_end" );
+    my $species = $c->model('DB')->resultset('Species')->find({ numerical_id => $crispr->species_id });
+    my $assembly_id = $species->species_default_assembly->assembly_id;
+    my $nearby_crisprs = crisprs_for_region($c->model('DB'), {
+        assembly_id       => $assembly_id,
+        chromosome_number => $crispr->chr_name,
+        start_coord       => $pair_search_start,
+        end_coord         => $pair_search_end,
+    });
+
+    $c->log->info("Identifying pairs");
+    my $pair_finder = $self->pair_finder_with_schema;
+    unless($pair_finder){
+        $pair_finder = WGE::Util::FindPairs->new({ schema => $c->model('DB')->schema });
+        $self->pair_finder_with_schema($pair_finder);
+    }
+    my $crispr_pairs = $self->pair_finder_with_schema->find_pairs(
+        [ $crispr ],
+        [ $nearby_crisprs->all ],
+        { get_db_data => 1, species_id => $species->numerical_id },
+    );
+
     $c->log->info( "Stashing off target data" );
 
     my $crispr_hash = $crispr->as_hash( { with_offs => 1, always_pam_right => 1 } );
@@ -64,6 +101,7 @@ sub crispr_report :Path('/crispr') :Args(1){
         crispr         => $crispr_hash,
         crispr_fwd_seq => $fwd_seq,
         species        => $crispr->get_species,
+        crispr_pairs   => $crispr_pairs,
     );
 
     if($c->user){
@@ -71,7 +109,7 @@ sub crispr_report :Path('/crispr') :Args(1){
         $c->stash->{is_bookmarked} = any { $_->crispr_id == $crispr_id } $c->user->user_crisprs;
     }
 
-    return; 
+    return;
 }
 
 sub crispr_bookmark_status :Path('/crispr_bookmark_status'){
@@ -146,7 +184,7 @@ sub bookmark_crispr_pair :Path('bookmark_crispr_pair'){
     my $json_data = {};
 
     if($c->user){
-        my $crispr_pair = $c->model->resultset('CrisprPair')->find( 
+        my $crispr_pair = $c->model->resultset('CrisprPair')->find(
             { left_id => $left_id, right_id => $right_id  }
         );
         unless($crispr_pair){
@@ -163,7 +201,7 @@ sub bookmark_crispr_pair :Path('bookmark_crispr_pair'){
             $c->controller('API')->pair_off_target_search($c);
             $c->log->debug("off target search response: ".Dumper($c->response));
             # FIXME: should get off target status from $c->response->body and present
-            # message or error to user       
+            # message or error to user
         }
 
         try{
@@ -199,7 +237,7 @@ sub crispr_pair_report :Path('/crispr_pair') :Args(1){
     my ( $left_id, $right_id ) = split '_', $id;
 
     # Try to find pair and stats in DB
-    my $crispr_pair = $c->model->resultset('CrisprPair')->find( 
+    my $crispr_pair = $c->model->resultset('CrisprPair')->find(
         { left_id => $left_id, right_id => $right_id  }
     );
 

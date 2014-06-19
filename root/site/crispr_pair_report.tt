@@ -41,13 +41,13 @@
       /*
         TODO: display this l/r data after checking its right
         probably will just put into two columns:
-        mismatches, off target of 
+        mismatches, off target of
       */
 
       //this is pretty hacky, we basically recompute the mismatches,
       //but we do that in the individual page too, so whatever I guess
 
-      //colour both the left and right off target 
+      //colour both the left and right off target
       //seqs[0] is the left, seqs[1] is the right
       var seqs = tr.children(".seq"), mm = tr.children(".mm");
       for ( var i = 0; i < 2; i++ ) {
@@ -98,9 +98,9 @@
 
             //compare the two rows. if the text is the same then hide the later on element
             if (spacer_rows[j].children(".seq").text() == spacer_rows[k].children(".seq").text()) {
-              //we dont want to hide the blue row, so pretend this one was the blue one 
+              //we dont want to hide the blue row, so pretend this one was the blue one
               if (spacer_rows[k].hasClass('info')) spacer_rows[j].addClass('info');
-              
+
               spacer_rows[k].hide();
               break; //we found the duplicate
             }
@@ -110,7 +110,7 @@
     }
 
     //add functionality to off target button
-    $(".ots-button").click( function(event) {          
+    $(".ots-button").click( function(event) {
         //stop it from submitting the form
         event.preventDefault();
 
@@ -126,45 +126,61 @@
 
   });
 
-function check_str(text) { 
+function check_str(text) {
   text_r = text.revcom();
 
   //get all possible matches
   var all = [
-    l_seq.match_str(text,   {"match": "Left Fwd"}), 
-    l_seq.match_str(text_r, {"match": "Left Rev"}), 
-    r_seq.match_str(text,   {"match": "Right Fwd"}), 
+    l_seq.match_str(text,   {"match": "Left Fwd"}),
+    l_seq.match_str(text_r, {"match": "Left Rev"}),
+    r_seq.match_str(text,   {"match": "Right Fwd"}),
     r_seq.match_str(text_r, {"match": "Right Rev"})
   ];
 
-  var smallest = all[0]; 
+  var smallest = all[0];
 
-  for (var i=1; i < all.length; i++) { 
-    if ( all[i].total < smallest.total ) { 
-      smallest = all[i]; 
+  for (var i=1; i < all.length; i++) {
+    if ( all[i].total < smallest.total ) {
+      smallest = all[i];
     }
     else if ( all[i].total == smallest.total ) {
       //TODO: something useful here? this is probably adequate
       console.log("Found identical mismatch counts for " + text);
       smallest.match += ", " + all[i].match;
     }
-  } 
+  }
 
-  return smallest; 
+  return smallest;
 }
 </script>
 
 <div class="well">
-  <h4>Spacer: [% pair.spacer %]</h4>
+
+  <table class="crispr_report_table">
+  <tr>
+    <td><h4>ID: [% pair.id %]</h4></td>
+    <td>
+  <a class='btn btn-info pull-right' href="[% c.uri_for( '/genoverse_browse', { crispr_pair_id => pair.id, view_paired => 1 }) %]">
+      <i class="icon-eye-open icon-white"></i>
+      View in Genome Browser
+  </a>
+    </td>
+  <tr>
+    <td><h4>Spacer: [% pair.spacer %]</h4></td>
+    <td>
   [% IF c.user %]
    <button class="btn btn-info pull-right" id="bookmark">
    [% IF is_bookmarked %]
      Remove Bookmark
-   [% ELSE %] 
+   [% ELSE %]
      Bookmark Crispr Pair
    [% END %]
    </button>
-  [% END %]  
+  [% END %]
+    </td>
+  </tr>
+  </table>
+
   <table class="table table-condensed">
     <thead>
       <tr>
@@ -190,7 +206,7 @@ function check_str(text) {
         <td class="location">[% ensembl_link(chr_name=pair.right_crispr.chr_name, chr_start=pair.right_crispr.chr_start, chr_end=pair.right_crispr.chr_end) %]</td>
       </tr>
       <tr>
-        <th>Sequence</th> 
+        <th>Sequence</th>
         <td>[% pair.left_crispr.seq %]</td>
         <td>[% pair.right_crispr.seq %]</td>
       </tr>
@@ -204,7 +220,7 @@ function check_str(text) {
         <td>[% pair.left_crispr.off_target_summary or 'No data' %]</td>
         <td>[% pair.right_crispr.off_target_summary or 'No data' %]</td>
       </tr>
-      
+
       <tr>
         <th>Status</th>
         <td colspan="2">
@@ -219,6 +235,7 @@ function check_str(text) {
   </table>
 </div>
 
+<h3>Paired Off-Target Sites</h3>
 <p><b>Note</b>: the row highlighted in blue is the original CRISPR pair<br/></p>
 <p><b>Mismatch count</b>: Left/right refers to the CRISPR the off target matched. Fwd/rev is the orientation of the match.</p>
 
