@@ -1,0 +1,136 @@
+[% META title = "Find CRISPR by sequence"; META tab_name = "Find CRISPR by sequence" %]
+[% PROCESS utils.tt %]
+
+<script type="text/javascript">
+$(document).ready(function() {
+    $("#search").click(function(event) {
+        event.preventDefault();
+
+        var seq = $("#seq").val().toUpperCase();
+        var pam_right = get_strand();
+
+        if ( seq.length != 20 ) {
+            create_alert("Sequence length must be 20");
+            return;
+        }
+
+        if ( ! /[ACGT]+/.test(seq) ) {
+            create_alert("Sequence must contain the letters A, C, G or T only");
+            return;
+        }
+
+        //{"seq":"GTGTCAGTGAAACTTACTCT", "pam_right":"0"},
+
+        var table = $("#results_table tbody");
+        $.getJSON(
+            "/api/search_by_seq",
+            {"seq": seq, "pam_right": 2, "get_db_data": 1},
+            function (data) {
+                console.log(data);
+                $("#results").empty();
+
+                //TODO: get chromosome? will have to look up crispr
+
+                table.empty();
+                $("#results_container").show();
+
+                if ( data.length == 0 ) {
+                  table.append( $("<tr><td>No results found</td></tr>") );
+                  return;
+                }
+
+                //http://t87-dev.internal.sanger.ac.uk:3002/genoverse_browse?view_single=1&view_paired=1&crispr_id=104961478
+
+                $.each(data, function(i, val) {
+                    // $("#results").append( $("<a>", {href: "[% c.uri_for('/crispr') %]/" + val, text: val.id}) )
+                    //              .append( $("<br/>") );
+
+                  var row = $("<tr>").append( $("<td>", {text: val.id}) );
+                  var crispr = $("<td>").append( $("<a>", {href: "[% c.uri_for('/crispr') %]/" + val, "class":"button", text: "View CRISPR"}) );
+                  var genoverse = $("<td>").append( $("<a>", {href: "[% c.uri_for('/genoverse_browse?view_single=1&crispr_id=') %]" + val.id, "class":"button", text: "View in Genoverse"}) );
+
+                  row.append( crispr ).append( genoverse ).appendTo( table );
+                });
+
+
+            }
+        );
+    });
+});
+
+function get_species() {
+    return $("input:radio[name=species]:checked").val();
+}
+
+function get_strand() {
+    return $("input:radio[name=strand]:checked").val();
+}
+
+</script>
+
+
+
+<div class="row">
+  <div class="span12">
+
+    <!-- GTGTCAGTGAAACTTACTCT -->
+
+    <h4>Please note that this application is currently in beta. If you have any problems, please <a href="mailto:[% email %]">let us know</a>.</h4>
+    <br/>
+    <div class="well">
+      <h5>To find a CRISPR within WGE please paste a 20bp gRNA into the box below</h5>
+      <p>Your 20bp gRNA sequence should not include the PAM site (CCN/NGG)</p>
+      <p>Sequences longer than 20bp will be truncated</p>
+    </div>
+    <form role="form" id="crispr_search" class="form-horizontal">
+      <fieldset id="fields">
+        <div class="control-group" id="sequence">
+          <label class="control-label">Sequence</label>
+          <div class="controls">
+            <input type="text" maxlength="20" class="form-control span4" id="seq" placeholder="Enter Sequence" />
+          </div>
+        </div>
+        <div class="control-group" id="species">
+          <label class="control-label">Species</label>
+          <div class="controls form-inline">
+              <label class="radio inline">
+                <input type="radio" name="species" id="radio_mouse" value="Mouse" />Mouse
+              </label>
+              <label class="radio inline">
+                <input type="radio" name="species" id="radio_human" value="Human" />Human
+              </label>
+          </div>
+        </div>
+        <div class="control-group" id="strand">
+          <label class="control-label">Strand</label>
+          <div class="controls form-inline">
+            <label class="radio inline">
+              <input type="radio" name="strand" id="radio_plus" value="1" />+
+            </label>
+            <!--
+            <label class="radio inline">
+              <input type="radio" name="strand" id="radio_minus" value="0" />-
+            </label>
+            -->
+          </div>
+        </div>
+        <div class="control-group">
+          <div class="controls">
+            <button class="btn btn-default" id="search" autocomplete="off">Find CRISPRs</button>
+          </div>
+        </div>
+      </fieldset>
+      <br/>
+    </form>
+    <div id="results_container" style="display:none;">
+        <h3>The following crisprs were found:</h3>
+        <div id="results">
+          <table class="table" id="results_table">
+            <tbody>
+              <tr></tr>
+            </tbody>
+          </table>
+        </div>
+    </div>
+  </div>
+</div>

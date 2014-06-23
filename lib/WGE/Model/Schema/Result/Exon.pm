@@ -206,6 +206,14 @@ sub pairs {
 
 }
 
+sub species {
+  return shift->gene->species;
+}
+
+sub species_id {
+  return shift->gene->species_id;
+}
+
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
 1;

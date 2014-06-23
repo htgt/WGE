@@ -17,6 +17,12 @@
   [%- IF pam_right == 1 %]+[% ELSIF pam_right == 0 %]-[% ELSE %][% END -%]
 [%- END -%]
 
+[%- MACRO type BLOCK -%]
+  [%- IF c.exonic.defined and c.genic.defined -%]
+    [%- IF c.exonic == 1 %]Exonic[% ELSIF c.genic == 1 %]Intronic[% ELSE %]Intergenic[% END -%]
+  [%- ELSE %]Not set[% END -%]
+[%- END -%]
+
 [% email = "wge@sanger.ac.uk" %]
 
 <!--

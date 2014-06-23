@@ -14,6 +14,10 @@ sub load_from_hash {
         my $species = ucfirst(lc $species);
 
         while ( my ( $gene_id, $gene ) = each %{ $genes } ) {
+            unless ( $gene->{chr_name} =~ /^(?:[0-9]+|X|Y)$/ ) {
+                say "Skipping $gene_id as chr is " . $gene->{chr_name};
+                next; 
+            }
             my $exons = delete $gene->{ exons };
 
             #create gene entry

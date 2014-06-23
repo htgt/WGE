@@ -7,6 +7,7 @@ use Try::Tiny;
 use Bio::Perl qw( revcom_as_string );
 use WGE::Util::CreateDesign;
 use WGE::Util::Statistics qw( human_ot_distributions );
+use WGE::Util::OffTargetServer;
 
 BEGIN { extends 'Catalyst::Controller' }
 
@@ -78,6 +79,31 @@ sub gibson_help :Path('/gibson_help') :Args(0) {
 
 sub contact :Path('/contact') :Args(0){
     my ( $self, $c ) = @_;
+
+    return;
+}
+
+sub search_by_seq :Path('/search_by_seq') :Args(0) {
+    my ( $self, $c ) = @_;
+
+    #change to has
+    # my $ots = WGE::Util::OffTargetServer->new;
+
+    # $c->stash(
+    #     data => $ots->search_by_seq( "GTGTCAGTGAAACTTACTCT", 0 )
+    # );
+
+    return;
+}
+
+sub find_off_targets :Path('/find_off_targets') :Args(0) {
+    my ( $self, $c ) = @_;
+
+    my $ots = WGE::Util::OffTargetServer->new;
+
+    $c->stash(
+        data => $ots->find_off_targets( 245377736 )
+    );
 
     return;
 }

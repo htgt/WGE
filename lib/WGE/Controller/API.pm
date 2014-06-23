@@ -33,6 +33,16 @@ sub _build_pair_finder {
     return WGE::Util::FindPairs->new;
 }
 
+has ots_server => (
+    is => 'ro',
+    isa => 'WGE::Util::OffTargetServer',
+    lazy_build => 1,
+);
+
+sub _build_ots_server {
+    return WGE::Util::OffTargetServer->new;
+}
+
 
 =head1 NAME
 
@@ -111,6 +121,35 @@ sub exon_search :Local('exon_search') {
 
     #return a list of hashrefs with the matching exon ids and ranks
     $c->stash->{json_data} = { transcript => $gene->canonical_transcript, exons => \@exons };
+    $c->forward('View::JSON');
+
+    return;
+}
+
+sub search_by_seq :Local('search_by_seq') {
+    my ( $self, $c ) = @_;
+
+    my $params = $c->req->params;
+
+    my $get_db_data = delete $params->{get_db_data};
+
+    check_params_exist( $c, $params, [ qw( seq pam_right ) ]);
+
+    my $json = $self->ots_server->search_by_seq(
+        {
+            sequence  => $params->{seq},
+            pam_right => $params->{pam_right},
+        }
+    );
+
+    if ( $get_db_data ) {
+        for my $id ( @{ $json } ) {
+            #replace id with a crispr hash
+            $id = $c->model('DB')->resultset('Crispr')->find( $id )->as_hash;
+        }
+    }
+
+    $c->stash->{json_data} = $json;
     $c->forward('View::JSON');
 
     return;

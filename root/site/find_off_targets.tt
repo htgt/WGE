@@ -1,0 +1,16 @@
+[% META title = "Find Off Targets"; META tab_name = "WGE" %]
+
+<div class="content">
+  <div class="row">
+    <div class="span12">
+        <table class="table">
+        [% FOR z IN data.keys.sort %]
+            <tr>
+                <th>[% z %]</th>
+                <td>[% data.$z %]</td>
+            </tr>
+        [% END %]
+        </table>
+    </div>
+  </div>
+</div>
