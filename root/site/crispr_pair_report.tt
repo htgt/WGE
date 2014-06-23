@@ -127,10 +127,7 @@
 function request_off_targets_for_pair(species, left_id, right_id) {
   return $.get(
     base_url+'api/pair_off_target_search',
-    { 'left_id': left_id, 'right_id': right_id, 'species': species },
-    function(data) {
-      ots_data = data;
-    }
+    { 'left_id': left_id, 'right_id': right_id, 'species': species }
   );
 }
 
