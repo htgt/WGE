@@ -114,17 +114,25 @@
         //stop it from submitting the form
         event.preventDefault();
 
-        $(this).after($("<i>", { class: "icon-ok" })).hide();
-
+        $(this).hide();
+        $('#offtarget_table tr:last').after('<tr><td colspan="9" style="text-align: center" id="progressbar">Computing off-targets now..<div class="progress progress-striped active"><div class="bar" style="width: 100%"></div></div></td></tr>');
         var ids = this.value.split("_");
-        var data = find_off_targets_for_pair(species, ids[0], ids[1]);
-
-        create_alert("Your job has been submitted", "alert-success");
-
-        console.log( data );
+        $.when( request_off_targets_for_pair(species, ids[0], ids[1]) ).done(function (){
+            location.reload();
+        });
     });
 
   });
+
+function request_off_targets_for_pair(species, left_id, right_id) {
+  return $.get(
+    base_url+'api/pair_off_target_search',
+    { 'left_id': left_id, 'right_id': right_id, 'species': species },
+    function(data) {
+      ots_data = data;
+    }
+  );
+}
 
 function check_str(text) {
   text_r = text.revcom();
