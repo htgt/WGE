@@ -5,6 +5,14 @@ use LWP::UserAgent;
 use MooseX::Types::URI qw( Uri );
 use JSON;
 use Data::Dumper;
+use Log::Log4perl qw(:easy);
+
+BEGIN {
+    #try not to override the logger
+    unless ( Log::Log4perl->initialized ) {
+        Log::Log4perl->easy_init( { level => $DEBUG } );
+    }
+}
 
 has ua => (
     is         => 'ro',
@@ -53,6 +61,7 @@ sub find_off_targets {
 
     $ids = [ $ids ] unless ref $ids eq 'ARRAY'; #allow arrayref/scalar
 
+    DEBUG("finding off targets for ", Dumper($ids));
     my $uri = $self->ots_server_uri( "/api/off_targets" );
     $uri->query_form( ids => join ",", @{ $ids } );
 
@@ -64,11 +73,14 @@ sub update_off_targets {
 
     my $results = $self->find_off_targets( $params );
 
+    DEBUG("Results:");
+    DEBUG(Dumper($results));
+
     while ( my ( $id, $data ) = each %{ $results } ) {
 
         my %update = ( off_target_summary => $data->{off_target_summary} );
         #dont update the off targets if we didnt get any (because the crispr has >5000)
-        $update{off_targets} = $data->{off_targets} if @{ $data->{off_targets} } > 0;
+        $update{off_target_ids} = $data->{off_targets} if @{ $data->{off_targets} } > 0;
 
         my $crispr = $model->schema->resultset('Crispr')->find( $id );
         $crispr->update( \%update );

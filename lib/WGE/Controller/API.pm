@@ -296,26 +296,13 @@ sub pair_off_target_search :Local('pair_off_target_search') {
     my $data;
     if ( @ids_to_search ) {
         $c->log->warn( "Finding off targets for: " . join(", ", @ids_to_search) );
-        my ( $job_id, $error );
+        my $error;
         try {
             die "No pair id" unless $pair->id;
             #we now definitely have a pair, so we would begin the search process
-            #something like:
 
-            #we need a create crispr cmd method in the common method too, this won't do.
-            my $cmd = [
-                "/nfs/team87/farm3_lims2_vms/software/Crisprs/paired_crisprs_wge.sh",
-                $pair->id,
-                $params->{species},
-                join( " ", @ids_to_search ),
-            ];
-
-            my $bsub_params = {
-                output_dir => dir( '/lustre/scratch109/sanger/team87/crispr_logs/' ),
-                id         => $pair->id,
-            };
-
-            $job_id = $self->c_run_crispr_search_cmd( $cmd, $bsub_params );
+            $self->ots_server->update_off_targets($c->model('DB'),{ ids => \@ids_to_search });
+            $pair->calculate_off_targets;
         }
         catch {
             $pair->update( { status_id => -1 } );
@@ -327,7 +314,7 @@ sub pair_off_target_search :Local('pair_off_target_search') {
             $data = { success => 0, error => $error };
         }
         else {
-            $data = { success => 1, job_id => $job_id };
+            $data = { success => 1 };
         }
     }
     else {
