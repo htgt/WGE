@@ -47,11 +47,19 @@
             <li [% IF (template.tab_name == 'WGE' OR template.tab_name == undef) %] class="active" [% END %]>
               <a href="[% c.uri_for('/') %]">Home</a>
             </li>
-            <li [% IF (template.tab_name == 'Paired CRISPR Search') %] class="active" [% END %]>
-              <a href="[% c.uri_for('/find_crisprs') %]">Crispr Finder</a>
+
+
+            <li class="dropdown [% IF template.tab_name == 'crispr' %]active[% END %]" >
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">CRISPR Finder<b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="[% c.uri_for('/find_crisprs') %]">Search by Gene</a></li>
+                <li><a href="[% c.uri_for('/search_by_seq') %]">Search by Sequence</a></li>
+                <li><a href="[% c.uri_for('/find_crisprs_id') %]">Search by ID</a></li>
+              </ul>
             </li>
 
-            <li class="dropdown [% IF template.tab_name == 'Gibson' %] active[% END %]" >
+
+            <li class="dropdown [% IF template.tab_name == 'gibson' %]active[% END %]" >
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">Gibson Designer<b class="caret"></b></a>
               <ul class="dropdown-menu">
                 <li><a href="[% c.uri_for('/gibson_designer') %]">Create Design</a></li>
@@ -60,7 +68,7 @@
               </ul>
             </li>
 
-            <li class="dropdown [% IF template.tab_name == 'About the CRISPR finder' %]active[% END %]">
+            <li class="dropdown [% IF template.tab_name == 'help' %]active[% END %]">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">Help<b class="caret"></b></a>
               <ul class="dropdown-menu">
                 <li>
@@ -72,17 +80,17 @@
               </ul>
             </li>
 
-            <li [% IF template.tab_name == 'About WTSI Genome Editing' %] class="active" [% END %]>
+            <li [% IF template.tab_name == 'about' %] class="active" [% END %]>
               <a href="[% c.uri_for('/about') %]">About</a>
             </li>
 
-            <li [% IF template.tab_name == 'Contact' %] class="active" [% END %]>
+            <li [% IF template.tab_name == 'contact' %] class="active" [% END %]>
               <a href="[% c.uri_for('/contact') %]">Contact</a>
             </li>
           </ul>
           <ul class='nav pull-right'>
            [% IF c.user %]
-            <li [% IF (template.tab_name == 'My Bookmarks') %] class="active" [% END %]>
+            <li [% IF (template.tab_name == 'bookmarks') %] class="active" [% END %]>
              <a href="[% c.uri_for('/my_bookmarks') %]">My Bookmarks</a>
             </li>
             <li class="dropdown">
@@ -125,9 +133,9 @@
         </div>
         [% END %]
 
-        [% IF template.tab_name %]
+        [% IF template.header_text %]
         <div class="page-header">
-          <h1>[% template.tab_name %]</h1>
+          <h1>[% template.header_text %]</h1>
         </div>
         [% END %]
 

@@ -96,6 +96,12 @@ sub search_by_seq :Path('/search_by_seq') :Args(0) {
     return;
 }
 
+sub find_crisprs_id :Path('/find_crisprs_id') :Args(0) {
+    my ( $self, $c ) = @_;
+
+    return;
+}
+
 sub find_off_targets :Path('/find_off_targets') :Args(0) {
     my ( $self, $c ) = @_;
 

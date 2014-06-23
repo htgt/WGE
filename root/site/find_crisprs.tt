@@ -1,4 +1,4 @@
-[% META title = "Paired CRISPR Search"; META tab_name = "Paired CRISPR Search" %]
+[% META title = "Paired CRISPR Search"; META tab_name = "crispr"; META header_text = "Paired CRISPR search" %]
 [% PROCESS utils.tt %]
 
 <script type="text/javascript">

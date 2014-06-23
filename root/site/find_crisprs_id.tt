@@ -1,0 +1,62 @@
+[% META title = "Find CRISPR by sequence"; META tab_name = "crispr"; META header_text = "Find CRISPR By ID"; %]
+[% PROCESS utils.tt %]
+
+<script type="text/javascript">
+function is_int(n) { return parseInt(n) == n };
+$(document).ready(function() {
+    $("#crispr_search").click(function(event) {
+        event.preventDefault();
+
+        var val = $("#crispr_id").val();
+
+        if ( val.length == 0 || ! is_int(val) ) {
+          create_alert("Please enter a valid CRISPR ID, e.g. 501037871");
+          return;
+        }
+
+        window.open("[% c.uri_for('/crispr') %]/" + val);
+    });
+
+    $("#pair_search").click(function(event) {
+        event.preventDefault();
+
+        var val = $("#pair_id").val();
+
+        if ( val.length == 0 ) {
+          create_alert("Please enter a valid CRISPR pair ID, e.g. 501037903_501037909");
+          return;
+        }
+
+        window.open("[% c.uri_for('/crispr_pair') %]/" + val);
+    });
+});
+
+</script>
+
+<div class="row">
+  <div class="span12">
+    <div class="well" id="barcode_group">
+      <fieldset>
+        <legend>Individual CRISPR search</legend>
+          <div class="control-group">
+            <div class="form-inline">
+              <input type="text" name="crispr_id" id="crispr_id" placeholder="CRISPR ID" />
+              <input type="button" id="crispr_search" name="action" class="btn btn-primary" value="Find CRISPR" />
+            </div>
+          </div>
+      </fieldset>
+    </div>
+
+    <div class="well">
+      <fieldset>
+        <legend>Paired CRISPR search</legend>
+          <div class="control-group">
+            <div class="form-inline">
+              <input type="text" name="pair_id" id="pair_id" placeholder="CRISPR Pair ID" />
+              <input type="button" id="pair_search" class="btn btn-primary" value="Find Pair" />
+            </div>
+          </div>
+      </fieldset>
+    </div>
+  </div>
+</div>

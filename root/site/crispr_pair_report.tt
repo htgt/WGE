@@ -1,7 +1,6 @@
 [% PROCESS utils.tt %]
 
-[% META title="Crispr Pair Report" %]
-[% META tab_name="Crispr Pair" %]
+[% META title = "CRSIRP Pair Report"; META tab_name = "crispr"; META header_text = "CRISPR Pair Summary" %]
 
 [% RETURN UNLESS pair %]
 <style type="text/css">

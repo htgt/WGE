@@ -1,4 +1,4 @@
-[% META title = "Gibson Designer"; META tab_name = "Gibson Designer" %]
+[% META title = "Gibson Designer"; META tab_name = "gibson"; META header_text = "Gibson Designer"; %]
 [% PROCESS utils.tt %]
 
 <div class="row">
@@ -10,7 +10,7 @@
       <img src="[% c.uri_for('/static/images/gibson_designer/vector_construction.png') %]" title="vector_construction" width="55%" align="right"/>
       <br/><br/>
       <p>
-        The Gibson Designer will find the oligos in either Human or Mouse genomes that can be used to create targeting vectors by Gibson assembly. The Gibson Designer matches the vector design with CRISPR sites appropriate for the creation of exon deletions. 
+        The Gibson Designer will find the oligos in either Human or Mouse genomes that can be used to create targeting vectors by Gibson assembly. The Gibson Designer matches the vector design with CRISPR sites appropriate for the creation of exon deletions.
       </p>
       <br/>
       <h5>Construction of knockout vectors by Gibson assembly</h5>
