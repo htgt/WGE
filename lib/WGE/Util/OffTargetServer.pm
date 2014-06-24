@@ -49,7 +49,7 @@ sub search_by_seq {
     my ( $self, $params ) = @_;
 
     my $uri = $self->ots_server_uri( "api/search" );
-    $uri->query_form( seq => $params->{sequence}, pam_right => $params->{pam_right} );
+    $uri->query_form( seq => $params->{sequence}, pam_right => $params->{pam_right}, species => $params->{species} );
 
     return $self->_get_json( $uri, $params->{as_string} );
 }

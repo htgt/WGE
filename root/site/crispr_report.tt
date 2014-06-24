@@ -1,4 +1,4 @@
-[%- META title="Individual Crispr Report"; tab_name="Crispr off-target list" -%]
+[%- META title = "Individual CRISPR Report"; META tab_name = "crispr"; META header_text = "Individual CRISPR Summary" -%]
 [% PROCESS utils.tt %]
 
 [%# don't show the crispr table if there's no data %]

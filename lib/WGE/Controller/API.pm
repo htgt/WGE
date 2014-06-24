@@ -139,10 +139,12 @@ sub search_by_seq :Local('search_by_seq') {
         {
             sequence  => $params->{seq},
             pam_right => $params->{pam_right},
+            species   => $params->{species},
         }
     );
 
-    if ( $get_db_data ) {
+    #it will be a hash if there was an error
+    if ( ref $json eq 'ARRAY' && $get_db_data ) {
         for my $id ( @{ $json } ) {
             #replace id with a crispr hash
             $id = $c->model('DB')->resultset('Crispr')->find( $id )->as_hash;

@@ -1,4 +1,4 @@
-[% META title = "Contact"; META tab_name = "Contact" %]
+[% META title = "Contact"; META tab_name = "contact"; META header_text = "Contact" %]
 [% PROCESS utils.tt %]
 
 <p class="lead">[% PROCESS contact %]</p>

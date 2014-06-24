@@ -1,4 +1,4 @@
-[% META title = "About WTSI Genome Editing"; META tab_name = "About WTSI Genome Editing" %]
+[% META title = "About WTSI Genome Editing"; META header_text = "About WTSI Genome Editing"; META tab_name = 'about' %]
 [% PROCESS utils.tt %]
 
 <div class="span12">

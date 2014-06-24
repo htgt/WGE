@@ -1,4 +1,4 @@
-[% META title = "Find Off Targets"; META tab_name = "WGE" %]
+[% META title = "Find Off Targets"; META tab_name = "crispr" %]
 
 <div class="content">
   <div class="row">
