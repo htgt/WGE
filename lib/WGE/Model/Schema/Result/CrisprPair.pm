@@ -211,6 +211,8 @@ use Try::Tiny;
 use JSON qw( encode_json );
 with qw( MooseX::Log::Log4perl );
 
+use YAML::Any qw( Load );
+
 sub as_hash {
   my ( $self, $options ) = @_;
 
@@ -235,14 +237,40 @@ sub as_hash {
     $data->{status} = $self->status->status;
   }
 
+  # Add db_data to hash in the same way as FindPairs::find_pairs
+  if ( $options->{db_data} ) {
+    my $db_data = {
+      status_id => $self->status_id,
+      status    => $self->status->status,
+      off_target_summary => $self->off_target_summary,
+    };
+    $data->{db_data} = $db_data;
+    foreach my $dir (qw(left_crispr right_crispr)){
+      #
+      # this is temp -- we should switch db to store in array
+      #
+      if ( $data->{$dir}->{off_target_summary} ) {
+        my @sum;
+        #convert hash to array
+        my $summary = Load( $data->{$dir}->{off_target_summary} );
+
+        while ( my ( $k, $v ) = each %{ $summary } ) {
+            $sum[$k] = $v;
+        }
+
+        $data->{$dir}->{off_target_summary_arr} = \@sum;
+      }
+    }
+  }
+
   return $data;
 }
 
 sub get_species {
   my $self = shift;
 
-  return $self->result_source->schema->resultset('Species')->find( 
-      { numerical_id => $self->species_id } 
+  return $self->result_source->schema->resultset('Species')->find(
+      { numerical_id => $self->species_id }
   )->id;
 }
 
@@ -265,9 +293,9 @@ sub off_targets {
 
     # get 2 entries at a time from the list
     while ( my ($left, $right) = splice( @paired_offs, 0, 2 ) ) {
-      my $data = { 
-        left_crispr  => $left->as_hash, 
-        right_crispr => $right->as_hash 
+      my $data = {
+        left_crispr  => $left->as_hash,
+        right_crispr => $right->as_hash
       };
 
       $data->{spacer} = ($data->{right_crispr}{chr_start} - $data->{left_crispr}{chr_end}) - 1;
@@ -355,12 +383,12 @@ sub _get_all_paired_off_targets {
   #get all off targets
   my @crisprs = $self->result_source->schema->resultset('CrisprOffTargets')->search(
       {},
-      { 
-        bind => [ 
-          '{' . $self->left_id . ',' . $self->right_id . '}', 
-          $self->species_id, 
-          $self->species_id  
-        ] 
+      {
+        bind => [
+          '{' . $self->left_id . ',' . $self->right_id . '}',
+          $self->species_id,
+          $self->species_id
+        ]
       }
   );
 
@@ -388,7 +416,7 @@ sub _get_all_paired_off_targets {
       push @all_offs, $pair->{left_crispr}{id}, $pair->{right_crispr}{id};
 
       #don't include this pair in the closest comparison or we'll always get it
-      next if $pair->{left_crispr}{id} eq $self->left_id 
+      next if $pair->{left_crispr}{id} eq $self->left_id
           and $pair->{right_crispr}{id} eq $self->right_id;
 
       if ( ! defined $closest || $closest->{spacer} > $pair->{spacer} ) {
@@ -405,15 +433,15 @@ sub _get_all_paired_off_targets {
 =head1 _data_missing
 
 Returns false if this crispr is already complete, and a list of crisprs
-in need of off target data if any are missing. 
+in need of off target data if any are missing.
 
 Will update the status of this pair to -2 (bad crispr) if a bad crispr
 is tied to this pair, or to 1 (pending) if there is data missing.
 It is expected that after calling this method you will be updating this crispr,
 or it will be left pending forever
 
-Optionally takes a resultset of crisprs to check. This is 
-for the case where you have already created the crispr resultset 
+Optionally takes a resultset of crisprs to check. This is
+for the case where you have already created the crispr resultset
 for this pair, so there's no point retrieving the crispr data again
 
 =cut
@@ -430,13 +458,13 @@ sub _data_missing {
   }
   else{
     $self->log->warn( "No crisprs provided, searching crispr table" );
-    
+
     my @rows = $self->result_source->schema->resultset('Crispr')->search(
-      { 
+      {
         id         => { -IN => [ $self->left_id, $self->right_id ] },
         species_id => $self->species_id
       },
-      { 
+      {
         select => [
           'id',
           'off_target_summary',
@@ -503,8 +531,8 @@ sub remove_link_to_user_id{
 
     my $link = $schema->resultset($linker_table)->find({ crispr_pair_id => $self->id, user_id => $user_id });
     $link->delete;
-    
-    return; 
+
+    return;
 }
 
 __PACKAGE__->meta->make_immutable;

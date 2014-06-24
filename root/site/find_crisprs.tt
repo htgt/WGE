@@ -227,62 +227,10 @@ var q;
           $.each(data, function(exon_id, crisprs) {
             //each exon has a list of crisprs
             $.each(crisprs, function(idx, pair) {
-              var pair_id = pair.left_crispr.id + "_" + pair.right_crispr.id;
-              var summary = "";
-              var status;
-              if( pair.db_data && pair.db_data["status_id"] != 0 ) {
-                var text = pair.db_data["status"].toString().capitalise();
 
-                status = $("<a>", { href: "[% c.uri_for('/crispr_pair') %]/"+pair_id, text: text });
+              var row = get_pair_row(pair);
 
-                //get json object from summarydata
-                var summary_obj = $.parseJSON(pair.db_data["off_target_summary"]);
-                for (var key in summary_obj) {
-                  summary += key + ": " + (summary_obj[key] || 'none') + "<br/>";
-                }
-              }
-              else {
-                //if it has no off target data add a button to get it
-                status = $("<button>", {
-                  "class": 'btn btn-mini btn-block ots-button',
-                  value: pair_id,
-                  text: "Find off targets"
-                });
-                status.click( function(event) {
-                    //stop it from submitting the form
-                    event.preventDefault();
-
-                    //should define this function elsewhere instead of each time...
-
-                    //create a link to view the pair and hide the submit button
-                    var a = $("<a>", { href: "[% c.uri_for('/crispr_pair') %]/"+pair_id, text: "Pending" });
-                    $(this).after(a).hide();
-
-                    var ids = this.value.split("_");
-                    var data = find_off_targets_for_pair(get_species(), ids[0], ids[1]);
-
-                    console.log( data );
-                });
-
-                summary = 'No data';
-              }
-
-              var row =
-                $("<tr>", { style: "font-size: 13px"})
-                 .append( $("<td>", { html: pair.spacer }) )
-                 .append( $("<td>", { html: status } ) )
-                 .append( $("<td>", { html: summary }) )
-                 .append( get_crispr_row(pair.left_crispr) )
-                 .append( get_crispr_row(pair.right_crispr) )
-                 .appendTo( table.find("tbody") );
-
-              //colour rows if there are bad crisprs or similar
-              if ( pair.db_data ) {
-                if ( pair.db_data["status_id"] == -2 || pair.db_data["status_id"] == -1 ) {
-                  row.addClass('error');
-                }
-              }
-
+              row.appendTo( table.find("tbody") );
               //add a column to the left of each group
               if ( idx == 0 ) {
                 row.prepend( $("<td>", { html: exon_id, rowspan: crisprs.length }) );
@@ -300,6 +248,73 @@ var q;
      .fail(ajax_failed); //create error if its not successful
 
     return table;
+  }
+
+  function get_pair_row(pair){
+    var pair_id = pair.left_crispr.id + "_" + pair.right_crispr.id;
+    var summary = "";
+    var status;
+    if( pair.db_data && pair.db_data["status_id"] != 0 ) {
+      var text = pair.db_data["status"].toString().capitalise();
+
+      status = $("<a>", { href: "[% c.uri_for('/crispr_pair') %]/"+pair_id, text: text });
+
+      //get json object from summarydata
+      var summary_obj = $.parseJSON(pair.db_data["off_target_summary"]);
+      for (var key in summary_obj) {
+        summary += key + ": " + (summary_obj[key] || 'none') + "<br/>";
+      }
+    }
+    else {
+      //if it has no off target data add a button to get it
+      status = $("<button>", {
+        "class": 'btn btn-mini btn-block ots-button',
+        value: pair_id,
+        text: "Find off targets"
+      });
+      status.click( function(event) {
+        //stop it from submitting the form
+        event.preventDefault();
+
+        //should define this function elsewhere instead of each time...
+
+        //create a link to view the pair and hide the submit button
+        var a = $("<a>", { href: "[% c.uri_for('/crispr_pair') %]/"+pair_id, text: "Pending" });
+        var progressbar = "<div class=\"progress progress-striped active\"><div class=\"bar\" style=\"width: 100%\"></div></div>";
+        $(this).after(a, progressbar).hide();
+        var old_row = $(this).closest('tr');
+
+        var ids = this.value.split("_");
+        $.when( find_off_targets_for_pair(get_species(), ids[0], ids[1]) ).done(function(){
+          $.get('api/pair', {'id': pair_id}, function (data){
+            if(data.success){
+              var row = get_pair_row(data.crispr_pair);
+              //replace current row with new
+              old_row.after(row).hide();
+            }
+          });
+        });
+      });
+
+    summary = 'No data';
+    }
+
+    var row =
+      $("<tr>", { style: "font-size: 13px"})
+      .append( $("<td>", { html: pair.spacer }) )
+      .append( $("<td>", { html: status } ) )
+      .append( $("<td>", { html: summary }) )
+      .append( get_crispr_row(pair.left_crispr) )
+      .append( get_crispr_row(pair.right_crispr) );
+
+    //colour rows if there are bad crisprs or similar
+    if ( pair.db_data ) {
+      if ( pair.db_data["status_id"] == -2 || pair.db_data["status_id"] == -1 ) {
+        row.addClass('error');
+      }
+    }
+
+    return row;
   }
 
   function create_offtargets_button(){

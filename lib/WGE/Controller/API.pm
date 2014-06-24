@@ -332,6 +332,30 @@ sub pair_off_target_search :Local('pair_off_target_search') {
     return;
 }
 
+# FIXME: we have a crispr_pair getter in REST module too but it requires login..
+sub pair :Local('pair'){
+    my ( $self, $c ) = @_;
+
+    my $params = $c->req->params;
+    my $data = {};
+
+    check_params_exist( $c, $params, [ qw( id ) ] );
+    my $id = $params->{id};
+
+    my $pair = $c->model('DB')->resultset('CrisprPair')->find({ id => $id });
+    if($pair){
+        $data = { success => 1, crispr_pair => $pair->as_hash({ db_data => 1 }) };
+    }
+    else{
+        $data = { success => 0, error => "crispr pair $id not found"};
+    }
+
+
+    $c->stash->{json_data} = $data;
+    $c->forward('View::JSON');
+
+    return;
+}
 
 sub design_attempt_status :Chained('/') PathPart('design_attempt_status') Args(1) {
     my ( $self, $c, $da_id ) = @_;

@@ -6,7 +6,7 @@
 //result_obj is optional, used if you want additional data in the returned result
 String.prototype.match_str = function(q, result_obj) {
   //make sure the lengths are the same, technically we don't need this though we'd just truncate
-  if (q.length != this.length) { 
+  if (q.length != this.length) {
     return { "str": "error - size mismatch", "total": -1 };
   }
 
@@ -64,7 +64,7 @@ function close_alerts() {
   $("div.alert.alert-dismissable > .close").each(function(i,button){ button.click() });
 }
 
-// function to add a bookmarking button to the crispr and crispr pair 
+// function to add a bookmarking button to the crispr and crispr pair
 // popup menus in the genoverse browse view
 function add_bookmark_button(menu, settings){
     $.get(settings.status_uri + "/" + settings.id,
@@ -87,14 +87,14 @@ function add_bookmark_button(menu, settings){
 
           // remove existing button (bookmark state may have changed)
           $('[name=' + settings.id + ']').remove();
-          
+
           // add the new button
           menu.append('<button name="' + settings.id + '">' + button_text + '</button>');
 
           // add ajax request to button
           $('[name=' + settings.id + ']').click(function (event){
             toggle_bookmark(this, settings.bookmark_uri, settings.id, settings.type, settings.spinner, settings.bookmark_track);
-          });                       
+          });
         }
       }
     );
@@ -106,8 +106,8 @@ function refresh_track(track){
     track.controller.resetImages();
 
     // clear out existing data and features for this region so they are regenerated
-    track.model.dataRanges.remove({ x: genoverse.start, w: genoverse.end - genoverse.start + 1, y: 0, h: 1 }); 
-    track.model.features.remove({ x: genoverse.start, w: genoverse.end - genoverse.start + 1, y: 0, h: 1 }); 
+    track.model.dataRanges.remove({ x: genoverse.start, w: genoverse.end - genoverse.start + 1, y: 0, h: 1 });
+    track.model.features.remove({ x: genoverse.start, w: genoverse.end - genoverse.start + 1, y: 0, h: 1 });
 
     // clear out the image_container divs
     track.controller.imgContainers.empty();
@@ -187,23 +187,17 @@ function get_ensembl_link(location, species) {
 
 //make a crispr object so all this type of stuff is in one place
 function find_off_targets_for_pair(species, left_id, right_id) {
-  var ots_data;
-  $.get(
-    base_url+'api/pair_off_target_search', 
-    { 'left_id': left_id, 'right_id': right_id, 'species': species }, 
-    function(data) {
-      ots_data = data;
-    } 
+  return $.get(
+    base_url+'api/pair_off_target_search',
+    { 'left_id': left_id, 'right_id': right_id, 'species': species }
   );
-
-  return ots_data;
 }
 
 // function find_pairs(exons) {
 //   var pair_data;
 //   $.get('api/pair_search', { exon_id: exons }, function(data) {
 //     pair_data = data;
-//   })  
+//   })
 //   .fail(ajax_failed); //create error if its not successful
 
 //   return pair_data;
@@ -234,4 +228,4 @@ function build_url(url, params) {
 
   //don't return ? if there's no options
   return url + (encoded.length ? "?" + encoded.join("&") : "");
-} 
+}
