@@ -11,7 +11,7 @@ $(document).ready(function() {
         var species = get_species(); //get on click so if they change it its ok
 
         if ( seq.length != 20 ) {
-            create_alert("Sequence length must be 20");
+            create_alert("Sequence length must be 20 (" + seq.length + " provided)");
             return;
         }
 
@@ -26,11 +26,9 @@ $(document).ready(function() {
         $("#results_container").show();
         $("#spinner").show();
 
-        //{"seq":"GTGTCAGTGAAACTTACTCT", "pam_right":"0"},
-
         $.getJSON(
             "/api/search_by_seq",
-            {"seq": seq, "pam_right": 1, "get_db_data": 1, "species": species},
+            {"seq": seq, "pam_right": 2, "get_db_data": 1, "species": species},
             function (data) {
                 console.log(data);
                 $("#spinner").hide();
@@ -98,7 +96,7 @@ function get_strand() {
           <div class="control-group" id="sequence">
             <label class="control-label">Sequence</label>
             <div class="controls">
-              <input type="text" maxlength="20" class="form-control span4" id="seq" placeholder="Enter Sequence" />
+              <input type="text" class="form-control span4" id="seq" placeholder="Enter Sequence" />
             </div>
           </div>
           <div class="control-group" id="species">
