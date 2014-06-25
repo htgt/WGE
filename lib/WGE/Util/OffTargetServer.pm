@@ -73,9 +73,6 @@ sub update_off_targets {
 
     my $results = $self->find_off_targets( $params );
 
-    DEBUG("Results:");
-    DEBUG(Dumper($results));
-
     while ( my ( $id, $data ) = each %{ $results } ) {
 
         my %update = ( off_target_summary => $data->{off_target_summary} );
