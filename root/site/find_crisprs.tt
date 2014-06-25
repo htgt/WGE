@@ -104,6 +104,11 @@
       });
     });
 
+    $("#dialog").dialog({
+      autoOpen: false,
+      modal: true
+    });
+
   });
 
   //Trigger example table creation if url contains show_example=1
@@ -233,16 +238,29 @@ var q;
               row.appendTo( table.find("tbody") );
               //add a column to the left of each group
               if ( idx == 0 ) {
-                row.prepend( $("<td>", { html: exon_id, rowspan: crisprs.length }) );
+                var exon_ots_button = $("<button>", {
+                  "class": 'btn btn-mini btn-block exon-ots-button',
+                  value: exon_id,
+                  text: "Compute All Off-Targets"
+                });
+                exon_ots_button.click(function(event){
+                    event.preventDefault();
+                    $.get('api/exon_off_target_search', { id: exon_id }, function(data){
+                      console.log(data);
+                      var text = data.pair_count + " pairs and " + data.crispr_count + " individual crisprs submitted for off-target calculation";
+                      $("#dialog").text(text);
+                      $("#dialog").dialog("open")
+                    });
+                });
+                var td = $("<td>", { html: exon_id, rowspan: crisprs.length });
+                exon_ots_button.appendTo(td);
+                row.prepend( td );
               }
             });
           });
         }
         //change the loading button
         $("#search").button('reset');
-
-        //todo: change this to be an entire exon search button
-        //create_offtargets_button();
       })
 
      .fail(ajax_failed); //create error if its not successful
@@ -529,4 +547,6 @@ var q;
       </a>
     </div>
 
+    <div id="dialog" title="Off-Target Calculation Started" class="ui-dialog">
+    </div>
 </div>

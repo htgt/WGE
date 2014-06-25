@@ -16,6 +16,8 @@ use Path::Class;
 use Try::Tiny;
 
 use WGE::Util::FindPairs;
+use WGE::Util::OffTargetServer;
+use WGE::Util::FindOffTargets;
 
 BEGIN { extends 'Catalyst::Controller' }
 
@@ -28,8 +30,6 @@ has pair_finder => (
 );
 
 sub _build_pair_finder {
-    my $self = shift;
-
     return WGE::Util::FindPairs->new;
 }
 
@@ -43,6 +43,15 @@ sub _build_ots_server {
     return WGE::Util::OffTargetServer->new;
 }
 
+has ot_finder => (
+    is => 'ro',
+    isa => 'WGE::Util::FindOffTargets',
+    lazy_build => 1,
+);
+
+sub _build_ot_finder {
+    return WGE::Util::FindOffTargets->new;
+}
 
 =head1 NAME
 
@@ -265,66 +274,22 @@ sub pair_off_target_search :Local('pair_off_target_search') {
 
     check_params_exist( $c, $params, [ qw( species left_id right_id ) ] );
 
-    my ( $pair, $crisprs ) = $c->model('DB')->find_or_create_crispr_pair( $params );
+    my $data = $self->ot_finder->run_pair_off_target_search($c->model('DB'),$params);
 
-    #see what the current pair status is, and decide what to do
+    $c->stash->{json_data} = $data;
+    $c->forward('View::JSON');
 
-    #if its -2 we want to skip, not continue
-    if ( $pair->status_id > 0 ) {
-        #LOG HERE
-        #someone else has already started this one, so don't do anything
-        $c->stash->{json_data} = { 'error' => 'Job already started!' };
-        $c->forward('View::JSON');
-        return;
-    }
-    elsif ( $pair->status_id == -2 ) {
-        #skip it!
-        $c->stash->{json_data} = { 'error' => 'Pair has bad crispr' };
-        $c->forward('View::JSON');
-        return;
-    }
+    return;
+}
 
-    #pair is ready to start
+sub exon_off_target_search :Local('exon_off_target_search'){
+    my ( $self, $c ) = @_;
 
-    #its now pending so update the db accordingly
-    $pair->update( { status_id => 1 } );
+    my $params = $c->req->params;
 
-    #if we already have the crisprs pass them on so the method doesn't have to
-    #fetch them again
-    my @ids_to_search = $pair->_data_missing( $crisprs );
+    check_params_exist( $c, $params, [ qw( id )] );
 
-    my $data;
-    if ( @ids_to_search ) {
-        $c->log->warn( "Finding off targets for: " . join(", ", @ids_to_search) );
-        my $error;
-        try {
-            die "No pair id" unless $pair->id;
-            #we now definitely have a pair, so we would begin the search process
-
-            $self->ots_server->update_off_targets($c->model('DB'),{ ids => \@ids_to_search });
-            $pair->calculate_off_targets;
-        }
-        catch {
-            $pair->update( { status_id => -1 } );
-            $error = $_;
-        };
-
-        if ( $error ) {
-            $c->log->warn( "Error getting off targets:" . $error );
-            $data = { success => 0, error => $error };
-        }
-        else {
-            $data = { success => 1 };
-        }
-    }
-    else {
-        $c->log->debug( "Individual crisprs already have off targets, calculating paired offs" );
-        #just calculate paired off targets as we already have all the crispr data
-        $pair->calculate_off_targets;
-        $data = { success => 1 };
-    }
-
-    $data->{pair_status} = $pair->status_id;
+    my $data = $self->ot_finder->update_exon_off_targets($c->model('DB'),$params);
 
     $c->stash->{json_data} = $data;
     $c->forward('View::JSON');
