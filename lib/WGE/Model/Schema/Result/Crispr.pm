@@ -83,12 +83,14 @@ __PACKAGE__->table("crisprs");
 =head2 exonic
 
   data_type: 'boolean'
-  is_nullable: 1
+  default_value: false
+  is_nullable: 0
 
 =head2 genic
 
   data_type: 'boolean'
-  is_nullable: 1
+  default_value: false
+  is_nullable: 0
 
 =cut
 
@@ -115,9 +117,9 @@ __PACKAGE__->add_columns(
   "off_target_summary",
   { data_type => "text", is_nullable => 1 },
   "exonic",
-  { data_type => "boolean", is_nullable => 1 },
+  { data_type => "boolean", default_value => \"false", is_nullable => 0 },
   "genic",
-  { data_type => "boolean", is_nullable => 1 },
+  { data_type => "boolean", default_value => \"false", is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -165,11 +167,13 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-04-14 10:58:20
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:XZrdxdr4Rn6M/6RCR93lLQ
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-06-26 14:36:43
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:sQ2JyXAHYaiy3id/bpC9BQ
 
 
 __PACKAGE__->set_primary_key('id');
+
+__PACKAGE__->might_have( ots_pending => 'WGE::Model::Schema::Result::CrisprOtPending', 'crispr_id' );
 
 with 'WGE::Util::CrisprRole';
 
@@ -192,7 +196,7 @@ sub as_hash {
 
   #if they want off targets return them as a list of hashes
   if ( $options->{with_offs} ) {
-    #pass options along to as hash 
+    #pass options along to as hash
     $data->{off_targets} = [ map { $_->as_hash( $options ) } $self->off_targets ];
   }
 
@@ -235,8 +239,8 @@ sub remove_link_to_user_id{
 
     my $link = $schema->resultset($linker_table)->find({ crispr_id => $self->id, user_id => $user_id });
     $link->delete;
-    
-    return; 
+
+    return;
 }
 __PACKAGE__->meta->make_immutable;
 1;
