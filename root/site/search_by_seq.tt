@@ -27,7 +27,7 @@ $(document).ready(function() {
         $("#spinner").show();
 
         $.getJSON(
-            "/api/search_by_seq",
+            "[% c.uri_for('/api/search_by_seq') %]",
             {"seq": seq, "pam_right": 2, "get_db_data": 1, "species": species},
             function (data) {
                 console.log(data);
