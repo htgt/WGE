@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::Crispr;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::Crispr::VERSION = '0.024';
+    $WGE::Model::Schema::Result::Crispr::VERSION = '0.025';
 }
 ## use critic
 
@@ -192,6 +192,8 @@ sub as_hash {
     species_id         => $self->species_id,
     pam_right          => $self->pam_right,
     off_target_summary => $self->off_target_summary,
+    exonic             => $self->exonic,
+    genic              => $self->genic,
   };
 
   #if they want off targets return them as a list of hashes

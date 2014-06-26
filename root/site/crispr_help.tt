@@ -1,4 +1,4 @@
-[% META title = "CRISPR finder help"; META tab_name = "About the CRISPR finder" %]
+[% META title = "CRISPR finder help"; META tab_name = "help"; META header_text = "How to use the CRISPR finder" %]
 
 [% PROCESS utils.tt %]
 

@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::CrisprOffTargets;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::CrisprOffTargets::VERSION = '0.024';
+    $WGE::Model::Schema::Result::CrisprOffTargets::VERSION = '0.025';
 }
 ## use critic
 
@@ -58,6 +58,8 @@ __PACKAGE__->add_columns(
         species_id
         off_target_ids
         off_target_summary
+        exonic
+        genic
     )
 );
 
@@ -75,7 +77,9 @@ sub as_hash {
         chr_end            => $self->chr_end,
         pam_right          => $self->pam_right,
         pam_start          => $self->pam_start,
-        species_id         => $self->species_id
+        species_id         => $self->species_id,
+        exonic             => $self->exonic,
+        genic              => $self->genic,
     };
 
     if ( $options->{always_pam_right} and $self->pam_left ) {

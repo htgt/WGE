@@ -1,4 +1,4 @@
-[% META title = "Gibson Design"; META tab_name = "Gibson" %]
+[% META title = "Gibson Design"; META tab_name = "gibson" %]
 [% IF c.session.species %]<h2><small>Species: [% c.session.species %]</small></h2>[% END %]
 [% PROCESS utils.tt %]
 [% PROCESS gibson_help %]

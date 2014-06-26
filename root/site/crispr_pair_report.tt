@@ -1,7 +1,6 @@
 [% PROCESS utils.tt %]
 
-[% META title="Crispr Pair Report" %]
-[% META tab_name="Crispr Pair" %]
+[% META title = "CRISPR Pair Report"; META tab_name = "crispr"; META header_text = "CRISPR Pair Summary" %]
 
 [% RETURN UNLESS pair %]
 <style type="text/css">
@@ -114,14 +113,12 @@
         //stop it from submitting the form
         event.preventDefault();
 
-        $(this).after($("<i>", { class: "icon-ok" })).hide();
-
+        $(this).hide();
+        $('#offtarget_table tr:last').after('<tr><td colspan="9" style="text-align: center" id="progressbar">Computing off-targets now..<div class="progress progress-striped active"><div class="bar" style="width: 100%"></div></div></td></tr>');
         var ids = this.value.split("_");
-        var data = find_off_targets_for_pair(species, ids[0], ids[1]);
-
-        create_alert("Your job has been submitted", "alert-success");
-
-        console.log( data );
+        $.when( find_off_targets_for_pair(species, ids[0], ids[1]) ).done(function (){
+            location.reload();
+        });
     });
 
   });

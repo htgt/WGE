@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::Exon;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::Exon::VERSION = '0.024';
+    $WGE::Model::Schema::Result::Exon::VERSION = '0.025';
 }
 ## use critic
 
@@ -210,6 +210,14 @@ sub pairs {
 
   return wantarray ? @{ $pairs } : $pairs;
 
+}
+
+sub species {
+  return shift->gene->species;
+}
+
+sub species_id {
+  return shift->gene->species_id;
 }
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

@@ -1,4 +1,4 @@
-[% META title="View Design"; META tab_name = 'Designs' %]
+[% META title="View Design"; META tab_name = 'gibson'; META header_text = 'Design Summary'; %]
 
 <p>
   <a href="[% c.uri_for( '/view_gibson_designs' ) %]" class="btn btn-primary">
@@ -12,7 +12,7 @@
   <a class='btn btn-primary' href="[% c.uri_for( '/genoverse_browse', { design_id => design.id }) %]">
     <i class="icon-eye-open icon-white"></i>
     View in Genome Browser
-  </a>  
+  </a>
   <a class='btn btn-primary' href="[% download_link %]">
     <i class="icon-download-alt icon-white"></i>
     Download CSV

@@ -71,6 +71,7 @@ requires:
   MooseX::NonMoose: 0
   MooseX::SimpleConfig: 0
   MooseX::Types::Path::Class: 0
+  MooseX::Types::URI: 0
   Path::Class: 0
   Pod::Usage: 0
   Smart::Comments: 0
@@ -86,10 +87,11 @@ requires:
   WebAppCommon::FormValidator::Constraint: 0
   WebAppCommon::Util::EnsEMBL: 0
   YAML::Any: 0
+  autodie: 0
   base: 0
   feature: 0
   namespace::autoclean: 0
   strict: 0
   utf8: 0
   warnings: 0
-version: 0.024
+version: 0.025

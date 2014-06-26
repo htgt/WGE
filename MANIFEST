@@ -13,6 +13,7 @@ bin/get_crisprs.pl
 bin/get_crisprs/Makefile
 bin/get_crisprs/get_all_crisprs
 bin/get_crisprs/get_all_crisprs.cpp
+bin/label_crisprs.pl
 bin/load_genes.pl
 bin/loxp_pairs.pl
 bin/loxp_pairs_report.pl
@@ -85,9 +86,11 @@ lib/WGE/Util/CrisprRole.pm
 lib/WGE/Util/EnsEMBL.pm
 lib/WGE/Util/ExportCSV.pm
 lib/WGE/Util/FindCrisprs.pm
+lib/WGE/Util/FindOffTargets.pm
 lib/WGE/Util/FindPairs.pm
 lib/WGE/Util/GenomeBrowser.pm
 lib/WGE/Util/OAuthHelper.pm
+lib/WGE/Util/OffTargetServer.pm
 lib/WGE/Util/PersistCrisprs.pm
 lib/WGE/Util/PersistCrisprs/Bed.pm
 lib/WGE/Util/PersistCrisprs/TSV.pm
@@ -114,10 +117,13 @@ root/site/crispr_help.tt
 root/site/crispr_pair_report.tt
 root/site/crispr_report.tt
 root/site/find_crisprs.tt
+root/site/find_crisprs_id.tt
+root/site/find_off_targets.tt
 root/site/gibson_designer.tt
 root/site/gibson_help.tt
 root/site/index.tt
 root/site/my_bookmarks.tt
+root/site/search_by_seq.tt
 root/site/utils.tt
 root/static/css/images/ui-bg_flat_0_aaaaaa_40x100.png
 root/static/css/images/ui-bg_flat_75_ffffff_40x100.png

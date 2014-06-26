@@ -1,7 +1,7 @@
 package WGE::Model::DB;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::DB::VERSION = '0.024';
+    $WGE::Model::DB::VERSION = '0.025';
 }
 ## use critic
 
@@ -66,6 +66,13 @@ sub txn_do {
     my ( $self, $code_ref, @args ) = @_;
 
     return $self->schema->txn_do( $code_ref, $self, @args );
+}
+
+#can't use handles because we don't define $self->schema...
+sub txn_rollback {
+    my ( $self, @args ) = @_;
+
+    return $self->schema->txn_rollback( @args );
 }
 
 sub check_params {

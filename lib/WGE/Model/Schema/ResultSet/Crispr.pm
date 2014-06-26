@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::ResultSet::Crispr;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::ResultSet::Crispr::VERSION = '0.024';
+    $WGE::Model::Schema::ResultSet::Crispr::VERSION = '0.025';
 }
 ## use critic
 
@@ -31,33 +31,6 @@ sub search_by_loci {
             chr_end   => { '<' => $obj->chr_end },
         },
         $options
-    );
-}
-
-=head crisprs_for_region
-
-Find all the single crisprs in and around the target region.
-
-=cut
-sub crisprs_for_region {
-    my ( $self, $species_id, $chr_name, $chr_start, $chr_end ) = @_;
-
-    $self->log->debug("Getting crisprs for $chr_name:${chr_start}-${chr_end}");
-
-    # we use 90 because the spaced between the crisprs in a pair can be 50 bases.
-    # 50 + the size of 2 crisprs is around 90
-    # that should bring back all the possible crisprs we want ( and some we do not want
-    # which we must filter out )
-    return $self->search(
-        {
-            'species_id'  => $species_id,
-            'chr_name'    => $chr_name,
-            # need all the crisprs starting with values >= start_coord
-            # and whose start values are <= end_coord
-            'chr_start'   => {
-                -between => [ $chr_start - 90, $chr_end + 90 ],
-            },
-        },
     );
 }
 
