@@ -252,8 +252,8 @@ var q;
                       $("#dialog").dialog("open")
                     });
                 });
-                var td = $("<td>", { html: exon_id, rowspan: crisprs.length });
-                exon_ots_button.appendTo(td);
+                var td = $("<td>", { html: exon_id, rowspan: crisprs.length, class: "exon_column_td" });
+                //exon_ots_button.appendTo(td);
                 row.prepend( td );
               }
             });
@@ -307,6 +307,11 @@ var q;
           $.get('api/pair', {'id': pair_id}, function (data){
             if(data.success){
               var row = get_pair_row(data.crispr_pair);
+              // add exon ID column to the new row if old row had one
+              var exon_column_td = old_row.find(".exon_column_td");
+              if (exon_column_td){
+                row.prepend(exon_column_td);
+              }
               //replace current row with new
               old_row.after(row).hide();
             }
