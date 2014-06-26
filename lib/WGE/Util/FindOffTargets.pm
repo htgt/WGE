@@ -6,6 +6,7 @@ use Log::Log4perl qw(:easy);
 use WGE::Util::OffTargetServer;
 use WGE::Util::GenomeBrowser qw(get_region_from_params crispr_pairs_for_region);
 use TryCatch;
+use List::MoreUtils qw(uniq);
 
 has log => (
     is         => 'rw',
@@ -93,9 +94,12 @@ sub run_pair_off_target_search{
 sub update_region_off_targets{
     my ( $self, $model, $params ) = @_;
 
+    # Sort the pairs so they are processed in the same order as they
+    # appear in the crispr pair table
+    $params->{sort_pairs} = 1;
     my $pairs = crispr_pairs_for_region($model->schema, $params);
 
-    my %crispr_ids_to_process;
+    my @crispr_ids_to_process;
     my @pairs_to_process_now;
     my @pairs_to_process_later;
 
@@ -127,13 +131,15 @@ sub update_region_off_targets{
         #fetch them again
         my @ids_to_search = $pair->_data_missing( $crisprs );
         if(@ids_to_search){
-            map { $crispr_ids_to_process{$_} = 1 } @ids_to_search;
+            push @crispr_ids_to_process, @ids_to_search;
             push @pairs_to_process_later, $pair;
         }
         else{
             push @pairs_to_process_now, $pair;
         }
     }
+
+    @crispr_ids_to_process = uniq @crispr_ids_to_process;
 
     my $pairs_now_pid = fork();
     if($pairs_now_pid){
@@ -158,9 +164,9 @@ sub update_region_off_targets{
     }
     elsif($crisprs_pid == 0){
     	# child
-        if(%crispr_ids_to_process){
+        if(@crispr_ids_to_process){
     	    # Send all crispr IDs to off-target server
-    	    $self->ots_server->update_off_targets($model, { ids => [ keys %crispr_ids_to_process ], species => $params->{species} });
+    	    $self->ots_server->update_off_targets($model, { ids => [ @crispr_ids_to_process ], species => $params->{species} });
     	    # Wait and then calculate ots for pairs which have now had crispr data added
     	    foreach my $pair(@pairs_to_process_later){
     		    $self->log->debug("Calculating OTs for pair ".$pair->id);
@@ -174,7 +180,7 @@ sub update_region_off_targets{
     }
 
     # Return some info about what has been submitted for OT calculation
-    my $crispr_count = scalar keys %crispr_ids_to_process;
+    my $crispr_count = @crispr_ids_to_process;
     my $pair_count = @pairs_to_process_now + @pairs_to_process_later;
 
     $self->log->debug("crispr count: $crispr_count");

@@ -345,6 +345,7 @@ sub crispr_pairs_for_region {
     my $options = {
         get_db_data => 1,
         species_id  => $params->{species_numerical_id},
+        sort_pairs  => $params->{sort_pairs},
     };
 
     # Find pairs amongst crisprs

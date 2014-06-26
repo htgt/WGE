@@ -6,6 +6,7 @@ use MooseX::Types::URI qw( Uri );
 use JSON;
 use Data::Dumper;
 use Log::Log4perl qw(:easy);
+use List::MoreUtils qw(uniq natatime);
 
 BEGIN {
     #try not to override the logger
@@ -72,26 +73,37 @@ sub find_off_targets {
 sub update_off_targets {
     my ( $self, $model, $params ) = @_;
 
-    # FIXME: break down long lists of ids into chunks
+    # FIXME:
     # check and update crispr_ots_pending table to avoid repeat submissions
+    my %all_results;
 
-    my $results = $self->find_off_targets( $params );
+    # Go through list of IDs 10 at a time
+    my @all_ids = uniq @{ $params->{ids} };
+    my $it = natatime 10, @all_ids;
+    while (my @ids = $it->()){
+        my $count = scalar @ids;
 
-    while ( my ( $id, $data ) = each %{ $results } ) {
+        $params->{ids} = \@ids;
+        my $results = $self->find_off_targets( $params );
 
-        if($id eq "error"){
-            die "Off-target server error: ".$data;
+        while ( my ( $id, $data ) = each %{ $results } ) {
+
+            if($id eq "error"){
+                die "Off-target server error: ".$data;
+            }
+
+            $all_results{$id} = $data;
+
+            my %update = ( off_target_summary => $data->{off_target_summary} );
+            #dont update the off targets if we didnt get any (because the crispr has >5000)
+            $update{off_target_ids} = $data->{off_targets} if @{ $data->{off_targets} } > 0;
+
+            my $crispr = $model->schema->resultset('Crispr')->find( $id );
+            $crispr->update( \%update );
         }
-
-        my %update = ( off_target_summary => $data->{off_target_summary} );
-        #dont update the off targets if we didnt get any (because the crispr has >5000)
-        $update{off_target_ids} = $data->{off_targets} if @{ $data->{off_targets} } > 0;
-
-        my $crispr = $model->schema->resultset('Crispr')->find( $id );
-        $crispr->update( \%update );
     }
 
-    return $results;
+    return \%all_results;
 }
 
 1;
