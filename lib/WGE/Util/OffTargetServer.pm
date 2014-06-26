@@ -58,12 +58,13 @@ sub find_off_targets {
     my ( $self, $params ) = @_;
 
     my $ids = $params->{ids};
+    die "No species provided" unless $params->{species};
 
     $ids = [ $ids ] unless ref $ids eq 'ARRAY'; #allow arrayref/scalar
 
     DEBUG("finding off targets for ", Dumper($ids));
     my $uri = $self->ots_server_uri( "/api/off_targets" );
-    $uri->query_form( ids => join ",", @{ $ids } );
+    $uri->query_form( species => $params->{species}, ids => join ",", @{ $ids } );
 
     return $self->_get_json( $uri, $params->{as_string} );
 }
@@ -71,9 +72,16 @@ sub find_off_targets {
 sub update_off_targets {
     my ( $self, $model, $params ) = @_;
 
+    # FIXME: break down long lists of ids into chunks
+    # check and update crispr_ots_pending table to avoid repeat submissions
+
     my $results = $self->find_off_targets( $params );
 
     while ( my ( $id, $data ) = each %{ $results } ) {
+
+        if($id eq "error"){
+            die "Off-target server error: ".$data;
+        }
 
         my %update = ( off_target_summary => $data->{off_target_summary} );
         #dont update the off targets if we didnt get any (because the crispr has >5000)

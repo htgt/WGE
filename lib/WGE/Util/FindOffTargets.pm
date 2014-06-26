@@ -63,7 +63,7 @@ sub run_pair_off_target_search{
             die "No pair id" unless $pair->id;
             #we now definitely have a pair, so we would begin the search process
 
-            $self->ots_server->update_off_targets($model,{ ids => \@ids_to_search });
+            $self->ots_server->update_off_targets($model,{ ids => \@ids_to_search, species => $pair->species->id });
             $pair->calculate_off_targets;
         }
         catch {
@@ -93,25 +93,17 @@ sub run_pair_off_target_search{
 sub update_region_off_targets{
     my ( $self, $model, $params ) = @_;
 
-    my $region_params = {
-    	start_coord => $params->{browse_start},
-    	end_coord   => $params->{browse_end},
-    	assembly_id => $params->{genome},
-    	chromosome_number => $params->{chromosome},
-    };
-
-
-    my $pairs = crispr_pairs_for_region($model->schema, $region_params);
+    my $pairs = crispr_pairs_for_region($model->schema, $params);
 
     my %crispr_ids_to_process;
     my @pairs_to_process_now;
     my @pairs_to_process_later;
-$self->log->debug(Dumper($region_params));
+
     foreach my $pair (@{ $pairs }){
     	my $pair_params = {
     		left_id  => $pair->{left_crispr}->{id},
     		right_id => $pair->{right_crispr}->{id},
-    		species  => $region_params->{species},
+    		species  => $params->{species},
     	};
 
     	my ( $pair, $crisprs ) = $model->find_or_create_crispr_pair( $pair_params );
@@ -166,13 +158,16 @@ $self->log->debug(Dumper($region_params));
     }
     elsif($crisprs_pid == 0){
     	# child
-    	# Send all crispr IDs to off-target server
-    	$self->ots_server->update_off_targets($model, { ids => [ keys %crispr_ids_to_process ] });
-    	# Wait and then calculate ots for pairs which have now had crispr data added
-    	foreach my $pair(@pairs_to_process_later){
-    		$self->log->debug("Calculating OTs for pair ".$pair->id);
-    		$pair->calculate_off_targets;
-    	}
+        if(%crispr_ids_to_process){
+    	    # Send all crispr IDs to off-target server
+    	    $self->ots_server->update_off_targets($model, { ids => [ keys %crispr_ids_to_process ], species => $params->{species} });
+    	    # Wait and then calculate ots for pairs which have now had crispr data added
+    	    foreach my $pair(@pairs_to_process_later){
+    		    $self->log->debug("Calculating OTs for pair ".$pair->id);
+    		    $pair->calculate_off_targets;
+    	    }
+        }
+        exit 0;
     }
     else{
     	die "could not fork - $!";
@@ -210,7 +205,14 @@ sub update_exon_off_targets{
     	$region->{browse_end} = $region->{browse_end} + $params->{flank};
     }
 
-    my $result = $self->update_region_off_targets($model, $region);
+    my $region_params = {
+        start_coord => $region->{browse_start},
+        end_coord   => $region->{browse_end},
+        assembly_id => $region->{genome},
+        chromosome_number => $region->{chromosome},
+    };
+
+    my $result = $self->update_region_off_targets($model, $region_params);
     return $result;
 }
 

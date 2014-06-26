@@ -297,6 +297,20 @@ sub exon_off_target_search :Local('exon_off_target_search'){
     return;
 }
 
+sub region_off_target_search :Local('region_off_target_search'){
+    my ( $self, $c ) = @_;
+    my $params = $c->req->params;
+
+    check_params_exist( $c, $params, [ qw( start_coord end_coord assembly_id chromosome_number )] );
+
+    my $data = $self->ot_finder->update_region_off_targets($c->model('DB'),$params);
+
+    $c->stash->{json_data} = $data;
+    $c->forward('View::JSON');
+
+    return;
+}
+
 # FIXME: we have a crispr_pair getter in REST module too but it requires login..
 sub pair :Local('pair'){
     my ( $self, $c ) = @_;
