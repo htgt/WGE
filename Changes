@@ -1,3 +1,9 @@
+0.024     2014-06-26 14:22:03 Europe/London
+
+    Added ability to search by a guide RNA sequence
+    Off-target searching now uses the new off target server
+    Submitting off target job now polls for updates
+
 0.023     2014-06-19 15:28:33 Europe/London
 
    Show related pairs on crispr report page
