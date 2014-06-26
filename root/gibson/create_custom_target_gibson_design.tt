@@ -1,4 +1,4 @@
-[% META title = "Create Custom Target Gibson Design"; META tab_name = "Gibson" %]
+[% META title = "Create Custom Target Gibson Design"; META tab_name = "gibson" %]
 
 [% IF c.session.species %]<h2><small>Species: [% c.session.species %]</small></h2>[% END %]
 

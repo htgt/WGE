@@ -1,0 +1,154 @@
+[% META title = "Find CRISPR by sequence"; META tab_name = "crispr"; META header_text = "Find CRISPR by sequence"; %]
+[% PROCESS utils.tt %]
+
+<script type="text/javascript">
+$(document).ready(function() {
+    $("#search").click(function(event) {
+        event.preventDefault();
+
+        var seq = $("#seq").val().toUpperCase();
+        var pam_right = get_strand();
+        var species = get_species(); //get on click so if they change it its ok
+
+        if ( seq.length != 20 ) {
+            create_alert("Sequence length must be 20 (" + seq.length + " provided)");
+            return;
+        }
+
+        if ( ! /[ACGT]+/.test(seq) ) {
+            create_alert("Sequence must contain the letters A, C, G or T only");
+            return;
+        }
+
+        var table = $("#results_table tbody");
+
+        table.empty(); //delete anything that is in the table
+        $("#results_container").show();
+        $("#spinner").show();
+
+        $.getJSON(
+            "/api/search_by_seq",
+            {"seq": seq, "pam_right": 2, "get_db_data": 1, "species": species},
+            function (data) {
+                console.log(data);
+                $("#spinner").hide();
+                $("#results_table").show();
+
+                if ( data.error ) {
+                  create_alert( data.error );
+                  return;
+                }
+
+                if ( data.length == 0 ) {
+                  var num_cols = $("#results_table thead th").length;
+                  table.append( $("<tr><td colspan='" + num_cols + "' style='text-align:center'>No results found</td></tr>") );
+                  return;
+                }
+
+                $.each(data, function(i, val) {
+                  var location = val.chr_name + ":" + val.chr_start + "-" + val.chr_end;
+
+                  var row = $("<tr>");
+                  var cells = [
+                    $("<td>").append( $("<a>", {href: "[% c.uri_for('/crispr') %]/" + val.id, text: val.id}) ),
+                    $("<td>").append( get_ensembl_link(location, species) ),
+                    $("<td>", {text: val.genic ? "Yes" : "No"}),
+                    $("<td>", {text: val.exonic ? "Yes" : "No"}),
+                    $("<td>").append( $("<a>", {href: "[% c.uri_for('/genoverse_browse', {view_single => 1}) %]&crispr_id=" + val.id, "class":"btn", target:"_blank", text: "View in Genoverse"}) ),
+                  ];
+
+                  row.append( cells ).appendTo( table );
+                });
+            }
+        ).fail(function() { create_alert("Error: Searching failed"); $("#spinner").hide(); $("#results_container").hide(); $("#results_table").hide(); });
+    });
+});
+
+function get_species() {
+    return $("input:radio[name=species]:checked").val();
+}
+
+function get_strand() {
+    return $("input:radio[name=strand]:checked").val();
+}
+
+</script>
+
+
+
+<div class="row">
+  <div class="span8 offset2">
+
+    <!-- GTGTCAGTGAAACTTACTCT -->
+
+    <h4>Please note that this application is currently in beta. If you have any problems, please <a href="mailto:[% email %]">let us know</a>.</h4>
+    <br/>
+    <div class="well">
+      <div style="text-align:center">
+        <h5>To find a CRISPR within WGE please paste a 20bp gRNA into the box below</h5>
+        <p>Your 20bp gRNA sequence should not include the PAM site (CCN/NGG). Sequences longer than 20bp will be truncated</p>
+      </div>
+
+      <hr />
+
+      <form role="form" id="crispr_search" class="form-horizontal">
+        <fieldset id="fields">
+          <div class="control-group" id="sequence">
+            <label class="control-label">Sequence</label>
+            <div class="controls">
+              <input type="text" class="form-control span4" id="seq" placeholder="Enter Sequence" />
+            </div>
+          </div>
+          <div class="control-group" id="species">
+            <label class="control-label">Species</label>
+            <div class="controls form-inline">
+                <label class="radio inline">
+                  <input type="radio" name="species" id="radio_mouse" value="Mouse" />Mouse
+                </label>
+                <label class="radio inline">
+                  <input type="radio" name="species" id="radio_human" value="Human" />Human
+                </label>
+            </div>
+          </div>
+          <!--
+          <div class="control-group" id="strand">
+            <label class="control-label">Strand</label>
+            <div class="controls form-inline">
+              <label class="radio inline">
+                <input type="radio" name="strand" id="radio_plus" value="1" />+
+              </label>
+              <label class="radio inline">
+                <input type="radio" name="strand" id="radio_minus" value="0" />-
+              </label>
+            </div>
+          </div>
+          -->
+          <div class="control-group">
+            <div class="controls">
+              <button class="btn btn-default" id="search" autocomplete="off">Find CRISPRs</button>
+            </div>
+          </div>
+        </fieldset>
+      </form>
+    </div>
+    <div class="well" id="results_container" style="display:none;">
+      <div style="text-align: center; margin: 20px auto;" id="spinner">
+        <img src="[% c.uri_for( '/static/images/spinner-circle.gif' ) %]"/>
+      </div>
+        <!-- <h3>The following crisprs were found:</h3> -->
+      <div id="results">
+        <table class="table" id="results_table" style="display:none;">
+          <thead>
+            <th>Crispr ID</th>
+            <th>EnsEMBL</th>
+            <th>In gene</th>
+            <th>In exon</th>
+            <th></th>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

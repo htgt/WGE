@@ -16,6 +16,8 @@ use Path::Class;
 use Try::Tiny;
 
 use WGE::Util::FindPairs;
+use WGE::Util::OffTargetServer;
+use WGE::Util::FindOffTargets;
 
 BEGIN { extends 'Catalyst::Controller' }
 
@@ -28,11 +30,28 @@ has pair_finder => (
 );
 
 sub _build_pair_finder {
-    my $self = shift;
-
     return WGE::Util::FindPairs->new;
 }
 
+has ots_server => (
+    is => 'ro',
+    isa => 'WGE::Util::OffTargetServer',
+    lazy_build => 1,
+);
+
+sub _build_ots_server {
+    return WGE::Util::OffTargetServer->new;
+}
+
+has ot_finder => (
+    is => 'ro',
+    isa => 'WGE::Util::FindOffTargets',
+    lazy_build => 1,
+);
+
+sub _build_ot_finder {
+    return WGE::Util::FindOffTargets->new;
+}
 
 =head1 NAME
 
@@ -111,6 +130,37 @@ sub exon_search :Local('exon_search') {
 
     #return a list of hashrefs with the matching exon ids and ranks
     $c->stash->{json_data} = { transcript => $gene->canonical_transcript, exons => \@exons };
+    $c->forward('View::JSON');
+
+    return;
+}
+
+sub search_by_seq :Local('search_by_seq') {
+    my ( $self, $c ) = @_;
+
+    my $params = $c->req->params;
+
+    my $get_db_data = delete $params->{get_db_data};
+
+    check_params_exist( $c, $params, [ qw( seq pam_right ) ]);
+
+    my $json = $self->ots_server->search_by_seq(
+        {
+            sequence  => $params->{seq},
+            pam_right => $params->{pam_right},
+            species   => $params->{species},
+        }
+    );
+
+    #it will be a hash if there was an error
+    if ( ref $json eq 'ARRAY' && $get_db_data ) {
+        for my $id ( @{ $json } ) {
+            #replace id with a crispr hash
+            $id = $c->model('DB')->resultset('Crispr')->find( $id )->as_hash;
+        }
+    }
+
+    $c->stash->{json_data} = $json;
     $c->forward('View::JSON');
 
     return;
@@ -224,79 +274,7 @@ sub pair_off_target_search :Local('pair_off_target_search') {
 
     check_params_exist( $c, $params, [ qw( species left_id right_id ) ] );
 
-    my ( $pair, $crisprs ) = $c->model('DB')->find_or_create_crispr_pair( $params );
-
-    #see what the current pair status is, and decide what to do
-
-    #if its -2 we want to skip, not continue
-    if ( $pair->status_id > 0 ) {
-        #LOG HERE
-        #someone else has already started this one, so don't do anything
-        $c->stash->{json_data} = { 'error' => 'Job already started!' };
-        $c->forward('View::JSON');
-        return;
-    }
-    elsif ( $pair->status_id == -2 ) {
-        #skip it!
-        $c->stash->{json_data} = { 'error' => 'Pair has bad crispr' };
-        $c->forward('View::JSON');
-        return;
-    }
-
-    #pair is ready to start
-
-    #its now pending so update the db accordingly
-    $pair->update( { status_id => 1 } );
-
-    #if we already have the crisprs pass them on so the method doesn't have to
-    #fetch them again
-    my @ids_to_search = $pair->_data_missing( $crisprs );
-
-    my $data;
-    if ( @ids_to_search ) {
-        $c->log->warn( "Finding off targets for: " . join(", ", @ids_to_search) );
-        my ( $job_id, $error );
-        try {
-            die "No pair id" unless $pair->id;
-            #we now definitely have a pair, so we would begin the search process
-            #something like:
-
-            #we need a create crispr cmd method in the common method too, this won't do.
-            my $cmd = [
-                "/nfs/team87/farm3_lims2_vms/software/Crisprs/paired_crisprs_wge.sh",
-                $pair->id,
-                $params->{species},
-                join( " ", @ids_to_search ),
-            ];
-
-            my $bsub_params = {
-                output_dir => dir( '/lustre/scratch109/sanger/team87/crispr_logs/' ),
-                id         => $pair->id,
-            };
-
-            $job_id = $self->c_run_crispr_search_cmd( $cmd, $bsub_params );
-        }
-        catch {
-            $pair->update( { status_id => -1 } );
-            $error = $_;
-        };
-
-        if ( $error ) {
-            $c->log->warn( "Error getting off targets:" . $error );
-            $data = { success => 0, error => $error };
-        }
-        else {
-            $data = { success => 1, job_id => $job_id };
-        }
-    }
-    else {
-        $c->log->debug( "Individual crisprs already have off targets, calculating paired offs" );
-        #just calculate paired off targets as we already have all the crispr data
-        $pair->calculate_off_targets;
-        $data = { success => 1 };
-    }
-
-    $data->{pair_status} = $pair->status_id;
+    my $data = $self->ot_finder->run_pair_off_target_search($c->model('DB'),$params);
 
     $c->stash->{json_data} = $data;
     $c->forward('View::JSON');
@@ -304,6 +282,59 @@ sub pair_off_target_search :Local('pair_off_target_search') {
     return;
 }
 
+sub exon_off_target_search :Local('exon_off_target_search'){
+    my ( $self, $c ) = @_;
+
+    my $params = $c->req->params;
+
+    check_params_exist( $c, $params, [ qw( id )] );
+
+    my $data = $self->ot_finder->update_exon_off_targets($c->model('DB'),$params);
+
+    $c->stash->{json_data} = $data;
+    $c->forward('View::JSON');
+
+    return;
+}
+
+sub region_off_target_search :Local('region_off_target_search'){
+    my ( $self, $c ) = @_;
+    my $params = $c->req->params;
+
+    check_params_exist( $c, $params, [ qw( start_coord end_coord assembly_id chromosome_number )] );
+
+    my $data = $self->ot_finder->update_region_off_targets($c->model('DB'),$params);
+
+    $c->stash->{json_data} = $data;
+    $c->forward('View::JSON');
+
+    return;
+}
+
+# FIXME: we have a crispr_pair getter in REST module too but it requires login..
+sub pair :Local('pair'){
+    my ( $self, $c ) = @_;
+
+    my $params = $c->req->params;
+    my $data = {};
+
+    check_params_exist( $c, $params, [ qw( id ) ] );
+    my $id = $params->{id};
+
+    my $pair = $c->model('DB')->resultset('CrisprPair')->find({ id => $id });
+    if($pair){
+        $data = { success => 1, crispr_pair => $pair->as_hash({ db_data => 1 }) };
+    }
+    else{
+        $data = { success => 0, error => "crispr pair $id not found"};
+    }
+
+
+    $c->stash->{json_data} = $data;
+    $c->forward('View::JSON');
+
+    return;
+}
 
 sub design_attempt_status :Chained('/') PathPart('design_attempt_status') Args(1) {
     my ( $self, $c, $da_id ) = @_;

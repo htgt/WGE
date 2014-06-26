@@ -45,7 +45,6 @@ sub crispr_report :Path('/crispr') :Args(1){
     $c->log->info( "Finding crispr $crispr_id" );
 
     my $crispr;
-    my $crispr_pairs;
     #do in a try in case an sql error/dbi is raised
     try {
         $crispr = $c->model('DB')->resultset('Crispr')->find(
@@ -236,6 +235,11 @@ sub crispr_pair_report :Path('/crispr_pair') :Args(1){
 
     my ( $left_id, $right_id ) = split '_', $id;
 
+    unless ( $left_id && $right_id ) {
+        $c->stash( error_msg => "Pair ID must be in the format left-crispr-id_right-crispr-id, e.g. 501037871_501037879" );
+        return;
+    }
+
     # Try to find pair and stats in DB
     my $crispr_pair = $c->model->resultset('CrisprPair')->find(
         { left_id => $left_id, right_id => $right_id  }
@@ -257,10 +261,15 @@ sub crispr_pair_report :Path('/crispr_pair') :Args(1){
         $species = $left_crispr->get_species;
     }
 
-    $c->stash( {
-        pair          => $pair,
-        species       => $species,
-    } );
+    if ( $pair ) {
+        $c->stash( {
+            pair          => $pair,
+            species       => $species,
+        } );
+    }
+    else {
+        $c->stash( error_msg => "Couldn't find CRISPR pair '$id'" );
+    }
 
     if($c->user){
         $c->log->debug("Finding bookmarks for ".$c->user->name);

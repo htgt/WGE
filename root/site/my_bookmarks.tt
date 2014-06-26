@@ -1,7 +1,6 @@
 [% PROCESS utils.tt %]
 
-[% META title="My WGE Bookmarks" %]
-[% META tab_name="My Bookmarks" %]
+[% META title = "My WGE Bookmarks"; META tab_name = "bookmarks"; META header_text = "My Bookmarks"; %]
 
 [% FOREACH species IN ['Human', 'Mouse'] %]
  <div class="well well-large">

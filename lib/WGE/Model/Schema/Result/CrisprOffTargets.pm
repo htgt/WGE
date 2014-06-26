@@ -52,6 +52,8 @@ __PACKAGE__->add_columns(
         species_id
         off_target_ids
         off_target_summary
+        exonic
+        genic
     )
 );
 
@@ -69,7 +71,9 @@ sub as_hash {
         chr_end            => $self->chr_end,
         pam_right          => $self->pam_right,
         pam_start          => $self->pam_start,
-        species_id         => $self->species_id
+        species_id         => $self->species_id,
+        exonic             => $self->exonic,
+        genic              => $self->genic,
     };
 
     if ( $options->{always_pam_right} and $self->pam_left ) {

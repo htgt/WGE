@@ -62,6 +62,13 @@ sub txn_do {
     return $self->schema->txn_do( $code_ref, $self, @args );
 }
 
+#can't use handles because we don't define $self->schema...
+sub txn_rollback {
+    my ( $self, @args ) = @_;
+
+    return $self->schema->txn_rollback( @args );
+}
+
 sub check_params {
     my ( $self, @args ) = @_;
 

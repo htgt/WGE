@@ -57,6 +57,11 @@ sub window_find_pairs{
     my $max_pair_span = 23 + $self->max_spacer + 23;
     my $shift = $window_size - $max_pair_span;
 
+    # We don't want find_pairs to sort the pairs - we need to gather and unique pair
+    # lists for all windows first
+    my $sort_pairs = $options->{sort_pairs};
+    $options->{sort_pairs} = 0;
+
     my @all_pairs;
     while ($start < $end ){
         $self->log->debug("pair window start: $start");
@@ -66,7 +71,12 @@ sub window_find_pairs{
         $start+=$shift;
     }
 
-    my %unique = map { $_->{left_crispr}{id} . ":" . $_->{right_crispr}{id} => $_ } @all_pairs;
+    my %unique = map { $_->{left_crispr}{id} . "_" . $_->{right_crispr}{id} => $_ } @all_pairs;
+
+    # Now we can sort the pairs if required
+    if($sort_pairs){
+        return $self->_sort_pairs(\%unique);
+    }
     return [ values %unique ];
 }
 
@@ -77,10 +87,10 @@ sub find_pairs {
 
     #make sure we get a species and schema if we are getting db data
     if ( $options->{get_db_data} ) {
-        die "You must provide a species id if you want db data" 
+        die "You must provide a species id if you want db data"
             unless defined $options->{species_id};
 
-        die "You must provide a schema if you want db data" 
+        die "You must provide a schema if you want db data"
             unless defined $self->schema;
     }
 
@@ -120,7 +130,7 @@ sub find_pairs {
     if ( $options->{get_db_data} ) {
         $self->log->warn("Retrieving DB pair data");
         my $db_data = $self->schema->resultset('CrisprPair')->fast_search_by_ids( {
-            ids        => [ keys %pairs ], 
+            ids        => [ keys %pairs ],
             species_id => $options->{species_id}
         } );
 
@@ -135,17 +145,7 @@ sub find_pairs {
     #allow the user to specify if they want the pairs sorted.
     #default is no for better performance
     if ( $options->{sort_pairs} ) {
-        $self->log->debug( "Sorting pairs" );
-        
-        #return by sorted keys (as a lower key corresponds to a lower chr position)
-        return [ 
-            map { $pairs{$_} } 
-                sort { 
-                    my ( $a1, $a2 ) = split "_", $a; #ids are like: 1_2 
-                    my ( $b1, $b2 ) = split "_", $b; 
-                    return $a1 <=> $b1 || $a2 <=> $b2
-                } keys %pairs 
-        ];
+        return $self->_sort_pairs(\%pairs);
     }
     else {
         return [ values %pairs ];
@@ -186,6 +186,22 @@ sub _check_valid_pair {
     }
 }
 
+sub _sort_pairs {
+
+    my ($self, $pairs) = @_;
+
+    $self->log->debug( "Sorting pairs" );
+
+    #return by sorted keys (as a lower key corresponds to a lower chr position)
+    return [
+        map { $pairs->{$_} }
+            sort {
+                my ( $a1, $a2 ) = split "_", $a; #ids are like: 1_2
+                my ( $b1, $b2 ) = split "_", $b;
+                return $a1 <=> $b1 || $a2 <=> $b2
+            } keys %$pairs
+    ];
+}
 1;
 
 __END__
