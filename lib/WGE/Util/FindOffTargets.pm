@@ -1,7 +1,7 @@
 package WGE::Util::FindOffTargets;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::FindOffTargets::VERSION = '0.026';
+    $WGE::Util::FindOffTargets::VERSION = '0.027';
 }
 ## use critic
 
@@ -11,7 +11,7 @@ use Data::Dumper;
 use Log::Log4perl qw(:easy);
 use WGE::Util::OffTargetServer;
 use WGE::Util::GenomeBrowser qw(get_region_from_params crispr_pairs_for_region);
-use TryCatch;
+use Try::Tiny;
 use List::MoreUtils qw(uniq);
 
 has log => (
@@ -64,13 +64,13 @@ sub run_pair_off_target_search{
 
     my $data;
     if ( @ids_to_search ) {
-        $self->log->warn( "Finding off targets for: " . join(", ", @ids_to_search) );
+        $self->log->warn( "Finding off targets for: " . join(", ", @ids_to_search) . " (".$pair->get_species.")" );
         my $error;
         try {
             die "No pair id" unless $pair->id;
             #we now definitely have a pair, so we would begin the search process
 
-            $self->ots_server->update_off_targets($model,{ ids => \@ids_to_search, species => $pair->species->id });
+            $self->ots_server->update_off_targets($model,{ ids => \@ids_to_search, species => $pair->get_species });
             $pair->calculate_off_targets;
         }
         catch {
@@ -202,12 +202,12 @@ sub update_exon_off_targets{
     my $id = $params->{id};
 
     my $region;
-    try{
+    try {
         $region = get_region_from_params($model, {exon_id => $id});
     }
-    catch ($e){
-        return { error_msg => "Could not get coordinates for exon $id - $e" };
-    }
+    catch {
+        return { error_msg => "Could not get coordinates for exon $id - $_" };
+    };
 
     # subtract 22 so we find crisprs that start before exon but end within it
     $region->{browse_start} = $region->{browse_start} - 22;

@@ -1,3 +1,7 @@
+0.027     2014-07-02 09:53:33 Europe/London
+
+    Bugfix: Try::Tiny syntax used in a TryCatch file, causing weird errors when finding off targets
+
 0.026     2014-06-26 15:35:50 Europe/London
 
     Bugfix: added c.uri_for around API call
