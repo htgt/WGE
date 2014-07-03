@@ -80,6 +80,9 @@ Genoverse.Track.CrisprPairs = Genoverse.Track.extend({
 Genoverse.Track.View.FilterCrisprs = Genoverse.Track.View.Transcript.extend({
     color : '#FFFFFF',
     drawFeature: function (feature, featureContext, labelContext, scale) {
+        if(feature.id == 'C_204404712'){
+            console.log(feature);
+        }
         // Fade color of feature with off-target summary that does not match profile
         if(feature.ot_summary){
             var ot_summary = feature.ot_summary;
@@ -270,6 +273,7 @@ function reload_track(track){
     // clear out existing data and features for this region so they are regenerated
     track.model.dataRanges.remove({ x: genoverse.start, w: genoverse.end - genoverse.start + 1, y: 0, h: 1 });
     track.model.features.remove({ x: genoverse.start, w: genoverse.end - genoverse.start + 1, y: 0, h: 1 });
+    track.model.featuresById = {};
 
     // clear out the image_container divs
     track.controller.imgContainers.empty();

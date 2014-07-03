@@ -4,7 +4,8 @@
   <small>[% IF design_id %]design: <strong>[%design_id%]</strong>[% END %]
   chr: [%- chromosome -%]
   assembly: [%- genome -%]</small>
-  <a id="go_to_filters" class="btn btn-default pull-right">Show Options and Filters<i class="icon-chevron-down"></i></a>
+  <a id="go_to_filters" class="btn btn-default pull-right">Show Options and Filters <i class="icon-chevron-down"></i></a><br>
+  <a id="reload_tracks" class="btn btn-default pull-right">Reload Tracks <i class="icon-refresh"></i></a>
   </h1>
 </div>
 
@@ -149,6 +150,18 @@
 </div>
 </div> [%# end of right-hand div %]
 </div> [%# end of row div %]
+</div>
+
+<div class="modal" id="dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display:none">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Off-Target Computation Status</h3>
+  </div>
+  <div class="modal-body" id="dialog_content">
+  </div>
+  <div class="modal-body">
+    This may take several minutes. Click "Reload Tracks" to refresh the view and show the latest off-target information.
+  </div>
 </div>
 
 <script type="text/javascript">
@@ -386,13 +399,33 @@
     apply_spacer_filters();
   }
 
+  function reload_crispr_tracks(){
+    var tracks = ['Crisprs', 'Bookmarked Crisprs', 'Crispr Pairs', 'Bookmarked Crispr Pairs'];
+    tracks.map(function (track_id){
+      var track = get_track(track_id);
+      if(track){
+        track.reload();
+      }
+    });
+  }
+
   $(document).ready( function() {
 
-    // All tracks are loaded by default on page refresh
-    // Hide the ones we don't want to see
-    // We are doing it this way because using the hidden attribute
-    // on the genoverse tracks caused "call stack size exceeded" error
     Genoverse.on('afterInit', function () {
+
+      // Change the text of the region summary button
+      $(".summary").text("Compute Off-Targets");
+
+      // Close selection and refresh tracks when modal is closed
+      $("#dialog").on('hidden', function(){
+        $(window)[0].genoverse.cancelSelect();
+        reload_crispr_tracks();
+      });
+
+      // All tracks are loaded by default on page refresh
+      // Hide the ones we don't want to see
+      // We are doing it this way because using the hidden attribute
+      // on the genoverse tracks caused "call stack size exceeded" error
       if($("#hide_single")[0].checked == true){
         hide_single();
       }
@@ -528,6 +561,10 @@
       $("html, body").animate({ scrollTop: $(document).height() }, 1000);
     });
 
+    $('#reload_tracks').click(function (event){
+      reload_crispr_tracks();
+    });
+
     $('#best_10_percent').click(function(){
         set_ot_filters(10);
         apply_ot_filters();
@@ -558,6 +595,20 @@
         chr       : '[% chromosome %]',
         start     : [% browse_start %] - 200,
         end       : [% browse_end %] + 200,
+        summary   : function(start, end) {
+          var params = {
+            start_coord: start,
+            end_coord: end,
+            chromosome_number: '[% chromosome %]',
+            assembly_id: '[% genome %]'
+          };
+          $.get('api/region_off_target_search', params, function(data){
+            console.log(data);
+            var text = data.pair_count + " pairs and " + data.crispr_count + " individual crisprs submitted for off-target calculation";
+            $("#dialog_content").text(text);
+            $("#dialog").modal();
+          });
+        },
         plugins   : [ 'controlPanel_no_tracks_menu', 'karyotype', 'trackControls', 'resizer', 'fileDrop' ],
         tracks    : [
           Genoverse.Track.Scalebar,
