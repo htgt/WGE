@@ -444,10 +444,8 @@
       var old_makeMenu = $(window)[0].genoverse.makeMenu;
 
       $(window)[0].genoverse.makeMenu = function (feature, event, track) {
-        console.log(feature);
         // run existing makeMenu code to create popup
         old_makeMenu.apply(this, arguments);
-        console.log(feature.menuEl);
 
         // append the bookmarking button to the popup
         var settings;
@@ -600,7 +598,8 @@
             start_coord: start,
             end_coord: end,
             chromosome_number: '[% chromosome %]',
-            assembly_id: '[% genome %]'
+            assembly_id: '[% genome %]',
+            all_singles: 1
           };
           $.get('api/region_off_target_search', params, function(data){
             console.log(data);

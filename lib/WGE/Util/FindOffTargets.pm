@@ -4,7 +4,7 @@ use Moose;
 use Data::Dumper;
 use Log::Log4perl qw(:easy);
 use WGE::Util::OffTargetServer;
-use WGE::Util::GenomeBrowser qw(get_region_from_params crispr_pairs_for_region);
+use WGE::Util::GenomeBrowser qw(get_region_from_params crispr_pairs_for_region crisprs_for_region);
 use TryCatch;
 use List::MoreUtils qw(uniq);
 
@@ -102,6 +102,7 @@ sub update_region_off_targets{
     my @crispr_ids_to_process;
     my @pairs_to_process_now;
     my @pairs_to_process_later;
+    my %crispr_id_seen;
 
     foreach my $pair (@{ $pairs }){
     	my $pair_params = {
@@ -109,6 +110,10 @@ sub update_region_off_targets{
     		right_id => $pair->{right_crispr}->{id},
     		species  => $params->{species},
     	};
+
+        # Store IDs so we don't process them again as individual crisprs
+        $crispr_id_seen{$pair->{left_crispr}->{id}} = 1;
+        $crispr_id_seen{$pair->{right_crispr}->{id}} = 1;
 
     	my ( $pair, $crisprs ) = $model->find_or_create_crispr_pair( $pair_params );
 
@@ -136,6 +141,19 @@ sub update_region_off_targets{
         }
         else{
             push @pairs_to_process_now, $pair;
+        }
+    }
+
+    if($params->{all_singles}){
+        # Get IDs of any crisprs which we have not already seen in a pair
+        my $crispr_rs = crisprs_for_region($model->schema,$params);
+        my $unpaired_crispr_rs = $crispr_rs->search({ id => {'not in' => [ keys %crispr_id_seen ]} });
+
+        #  and which do not already have ot summary
+        while (my $crispr = $unpaired_crispr_rs->next){
+            unless ( defined $crispr->get_column( 'off_target_summary' ) ){
+                push @crispr_ids_to_process, $crispr->id;
+            }
         }
     }
 

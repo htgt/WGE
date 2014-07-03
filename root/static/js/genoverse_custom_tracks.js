@@ -9,7 +9,10 @@ Genoverse.Track.Crisprs = Genoverse.Track.extend({
     threshold : 3000,
     messages  : { threshold : 'Crisprs not displayed for regions larger than ' },
 
-    populateMenu : function (feature) {
+    populateMenu : function (f) {
+      // get up to date feature object
+      var feature = this.track.model.featuresById[f.id];
+
       var report_link = "<a href='" + this.track.crispr_report_uri + "/" + feature.name
                                 + "' target='_blank'><font color='#00FFFF'>Crispr Report</font></a>";
       var atts = {
@@ -53,7 +56,9 @@ Genoverse.Track.CrisprPairs = Genoverse.Track.extend({
     threshold : 3000,
     messages  : { threshold : 'Crispr pairs not displayed for regions larger than ' },
 
-    populateMenu : function (feature) {
+    populateMenu : function (f) {
+        // get up to date feature object
+        var feature = this.track.model.featuresById[f.id];
         var report_link = "<a href='" + this.track.pair_report_uri + "/"
                                 + feature.name
                                 + "?spacer=" + feature.spacer
@@ -80,9 +85,6 @@ Genoverse.Track.CrisprPairs = Genoverse.Track.extend({
 Genoverse.Track.View.FilterCrisprs = Genoverse.Track.View.Transcript.extend({
     color : '#FFFFFF',
     drawFeature: function (feature, featureContext, labelContext, scale) {
-        if(feature.id == 'C_204404712'){
-            console.log(feature);
-        }
         // Fade color of feature with off-target summary that does not match profile
         if(feature.ot_summary){
             var ot_summary = feature.ot_summary;
