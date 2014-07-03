@@ -5,7 +5,7 @@ use Data::Dumper;
 use Log::Log4perl qw(:easy);
 use WGE::Util::OffTargetServer;
 use WGE::Util::GenomeBrowser qw(get_region_from_params crispr_pairs_for_region);
-use Try::Tiny;
+use TryCatch;
 use List::MoreUtils qw(uniq);
 
 has log => (
@@ -67,10 +67,10 @@ sub run_pair_off_target_search{
             $self->ots_server->update_off_targets($model,{ ids => \@ids_to_search, species => $pair->get_species });
             $pair->calculate_off_targets;
         }
-        catch {
+        catch ($e){
             $pair->update( { status_id => -1 } );
-            $error = $_;
-        };
+            $error = $e;
+        }
 
         if ( $error ) {
             $self->log->warn( "Error getting off targets:" . $error );
@@ -199,9 +199,9 @@ sub update_exon_off_targets{
     try {
         $region = get_region_from_params($model, {exon_id => $id});
     }
-    catch {
-        return { error_msg => "Could not get coordinates for exon $id - $_" };
-    };
+    catch ($e) {
+        return { error_msg => "Could not get coordinates for exon $id - $e" };
+    }
 
     # subtract 22 so we find crisprs that start before exon but end within it
     $region->{browse_start} = $region->{browse_start} - 22;
