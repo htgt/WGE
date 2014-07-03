@@ -241,10 +241,8 @@ var q;
             $.each(crisprs, function(idx, pair) {
 
               var row = get_pair_row(pair);
-              var ots_button = row.find(".ots-button");
-              if(ots_button){
+              if(row.has(".ots-button").length){
                   console.log("found row contaning ots button");
-                  console.log(ots_button);
                   missing_pair_ots = true;
               }
 
@@ -256,8 +254,10 @@ var q;
               }
             });
             // Add the exon OT search button if any pairs are missing ot data
-            var exon_ots_button = create_exon_ots_button(exon_id);
-            exon_ots_button.appendTo(exon_column_td);
+            if(missing_pair_ots){
+              var exon_ots_button = create_exon_ots_button(exon_id);
+              exon_ots_button.appendTo(exon_column_td);
+            }
           });
         }
         //change the loading button
