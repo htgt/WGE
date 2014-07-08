@@ -10,6 +10,7 @@
 </div>
 
 <div class="container-fluid">
+<div class="well">Navigation Tips - <strong>Zoom:</strong> use "+" and "-" buttons. <strong>Move:</strong> drag or scroll with the mouse. <strong>Select region:</strong> hold shift key and drag with the mouse</div>
 <div id="genoverse" style="margin: 0;" class="span12"></div>
 <div class="row-fluid">
 <div class="span9">
