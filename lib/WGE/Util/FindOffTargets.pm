@@ -115,7 +115,15 @@ sub update_region_off_targets{
         $crispr_id_seen{$pair->{left_crispr}->{id}} = 1;
         $crispr_id_seen{$pair->{right_crispr}->{id}} = 1;
 
-    	my ( $pair, $crisprs ) = $model->find_or_create_crispr_pair( $pair_params );
+    	my ( $pair, $crisprs );
+        try{
+            ( $pair, $crisprs ) = $model->find_or_create_crispr_pair( $pair_params );
+        }
+        catch($e){
+            return { error_msg => "Could not find or create crispr pair "
+                                  .$pair->{left_crispr}->{id}."_".$pair->{right_crispr}->{id}
+                                  .". Error: $e" };
+        }
 
         #see what the current pair status is, and decide what to do
 
@@ -135,6 +143,7 @@ sub update_region_off_targets{
         #if we already have the crisprs pass them on so the method doesn't have to
         #fetch them again
         my @ids_to_search = $pair->_data_missing( $crisprs );
+
         if(@ids_to_search){
             push @crispr_ids_to_process, @ids_to_search;
             push @pairs_to_process_later, $pair;
@@ -158,6 +167,18 @@ sub update_region_off_targets{
     }
 
     @crispr_ids_to_process = uniq @crispr_ids_to_process;
+
+    # Return some info about what has been submitted for OT calculation
+    my $crispr_count = @crispr_ids_to_process;
+    my $pair_count = @pairs_to_process_now + @pairs_to_process_later;
+
+    $self->log->debug("crispr count: $crispr_count");
+    $self->log->debug("pairs to process now: ".scalar(@pairs_to_process_now));
+    $self->log->debug("pairs to process later: ".scalar(@pairs_to_process_later));
+
+    if($crispr_count > 100){
+        die "Will not submit $crispr_count crisprs for off-target calculation (maximum: 100 crisprs). Please submit a smaller region.";
+    }
 
     my $pairs_now_pid = fork();
     if($pairs_now_pid){
@@ -196,14 +217,6 @@ sub update_region_off_targets{
     else{
     	die "could not fork - $!";
     }
-
-    # Return some info about what has been submitted for OT calculation
-    my $crispr_count = @crispr_ids_to_process;
-    my $pair_count = @pairs_to_process_now + @pairs_to_process_later;
-
-    $self->log->debug("crispr count: $crispr_count");
-    $self->log->debug("pairs to process now: ".scalar(@pairs_to_process_now));
-    $self->log->debug("pairs to process later: ".scalar(@pairs_to_process_later));
 
     return { crispr_count => $crispr_count, pair_count => $pair_count };
 }
