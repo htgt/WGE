@@ -20,6 +20,7 @@ bin/loxp_pairs_report.pl
 bin/persist_crisprs.pl
 bin/promotor_region_crisprs.pl
 bin/update_crispr_pair.pl
+human_21_partial.csv~
 human_genes_75.yaml
 lib/Catalyst/Authentication/Credential/OAuth2.pm
 lib/WGE.pm
@@ -246,7 +247,12 @@ t/00-compile.t
 t/001_controller_root.t
 t/002_controller_api.t
 t/003_util.t
+t/data/crispr_pairs_in_region.gff~
+t/data/crispr_pairs_in_region_exonic.gff~
+t/data/crispr_pairs_in_region_flanking.gff~
 t/data/crisprs.yaml
+t/data/crisprs_in_region_exonic.gff~
+t/data/crisprs_in_region_flanking.gff~
 t/data/genes.yaml
 t/fixtures/design_fixtures.sql
 t/fixtures/reference_fixtures.sql
