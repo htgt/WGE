@@ -1,7 +1,7 @@
 package WGE::Controller::REST::Crispr;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::REST::Crispr::VERSION = '0.027';
+    $WGE::Controller::REST::Crispr::VERSION = '0.028';
 }
 ## use critic
 
@@ -78,10 +78,19 @@ sub crisprs_by_exon_GET {
 
     my @exon_ids = ( ref $exons ) ? @{ $exons } : ( $exons );
 
-    my @crisprs = map { $_->as_hash } $c->model('DB')->resultset('CrisprByExon')->search(
-        {},
-        { bind => [ '{' . join( ",", @exon_ids ) . '}', $flank, $species_id ] }
-    );
+    my @crisprs;
+    for my $exon ( @exon_ids ) {
+        for my $crispr ( $c->model('DB')->resultset('Exon')->find( { ensembl_exon_id => $exon } )->crisprs ) {
+            my $z = $crispr->as_hash;
+            $z->{ensembl_exon_id} = $exon;
+            push @crisprs, $z;
+        }
+    }
+
+    #my @crisprs = map { $_->as_hash } $c->model('DB')->resultset('CrisprByExon')->search(
+    #    {},
+    #    { bind => [ '{' . join( ",", @exon_ids ) . '}', $flank, $species_id ] }
+    #);
 
     return $self->status_ok( $c, entity => \@crisprs );
 }

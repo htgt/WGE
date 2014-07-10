@@ -1,7 +1,7 @@
 package WGE::Controller::API;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::API::VERSION = '0.027';
+    $WGE::Controller::API::VERSION = '0.028';
 }
 ## use critic
 
@@ -492,6 +492,8 @@ sub _get_exon_attribute {
         #sometimes we get a hash, sometimes an object.
         #if its an object then call as hash
         my @vals = map { blessed $_ ? $_->as_hash : $_ } $exon->$attr( @args );
+        $_->{ensembl_exon_id} = $exon_id for @vals;
+
         _send_error($c, "None found!", 400) unless @vals;
 
         #store each exons data as an arrayref of hashrefs

@@ -1,3 +1,7 @@
+0.028     2014-07-10 10:32:43 Europe/London
+
+    Changed use of CrisprByExon to Exon->crisprs
+
 0.027     2014-07-02 09:53:33 Europe/London
 
     Bugfix: Try::Tiny syntax used in a TryCatch file, causing weird errors when finding off targets
