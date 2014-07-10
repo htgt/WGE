@@ -168,12 +168,24 @@ sub crisprs {
     )->species;
   }
 
+  return $self->result_source->schema->resultset('Crispr')->search(
+        {
+            'species_id'  => $species->numerical_id,
+            'chr_name'    => $self->chr_name,
+            # need all the crisprs starting with values >= start_coord
+            # and whose start values are <= end_coord
+            'chr_start'   => {
+                -between => [ ($self->chr_start-$flank) - 22, $self->chr_end+$flank ],
+            },
+        },
+  );
+
   #find all crisprs for this exon
   #maybe we should change CrisprByExon to not take a list
-  return $self->result_source->schema->resultset('CrisprByExon')->search(
-    {},
-    { bind => [ '{'.$self->ensembl_exon_id.'}', $flank, $species->numerical_id ] }
-  );
+  #return $self->result_source->schema->resultset('CrisprByExon')->search(
+  #  {},
+  #  { bind => [ '{'.$self->ensembl_exon_id.'}', $flank, $species->numerical_id ] }
+  #);
 }
 
 sub pairs {
