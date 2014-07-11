@@ -83,12 +83,14 @@ __PACKAGE__->table("crisprs_human");
 =head2 exonic
 
   data_type: 'boolean'
-  is_nullable: 1
+  default_value: false
+  is_nullable: 0
 
 =head2 genic
 
   data_type: 'boolean'
-  is_nullable: 1
+  default_value: false
+  is_nullable: 0
 
 =cut
 
@@ -115,9 +117,9 @@ __PACKAGE__->add_columns(
   "off_target_summary",
   { data_type => "text", is_nullable => 1 },
   "exonic",
-  { data_type => "boolean", is_nullable => 1 },
+  { data_type => "boolean", default_value => \"false", is_nullable => 0 },
   "genic",
-  { data_type => "boolean", is_nullable => 1 },
+  { data_type => "boolean", default_value => \"false", is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -201,8 +203,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-04-15 09:58:51
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:yH3Q7vrdsK5F6A2hozplHg
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-07-11 10:01:18
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:GgsoXvCSgQ5Nkt52tNZBaQ
 
 
 
