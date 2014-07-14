@@ -215,6 +215,8 @@ sub fetch_design_data{
 
     my $design_data = $design->as_hash;
     $design_data->{assigned_genes} = join q{, }, @{ $design_data->{assigned_genes} || [] };
+    my $design_attempt = $design->design_attempt;
+    $design_data->{design_attempt} = $design_attempt->id if $design_attempt;
 
     TRACE( "Design: " .Dumper($design_data) );
 

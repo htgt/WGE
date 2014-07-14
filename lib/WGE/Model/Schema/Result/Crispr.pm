@@ -167,8 +167,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-06-26 14:36:43
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:sQ2JyXAHYaiy3id/bpC9BQ
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-07-11 10:01:18
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:S3u51wVLyee0mamjOCZqnQ
 
 
 __PACKAGE__->set_primary_key('id');

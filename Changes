@@ -1,5 +1,14 @@
 {{$NEXT}}
 
+0.030     2014-07-14 07:22:43 Europe/London
+
+    Updated to use JSON type columns.
+    Added design instance link to designs page.
+
+0.029     2014-07-10 16:37:56 Europe/London
+
+    Genoverse exon only filter uses exonic flag instead of CrisprByExon
+
 0.028     2014-07-10 10:32:43 Europe/London
 
     Changed use of CrisprByExon to Exon->crisprs
