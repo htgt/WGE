@@ -283,3 +283,38 @@ function reload_track(track){
     // redraw the track
     track.controller.makeFirstImage();
 }
+
+// function to add a bookmarking button to the crispr and crispr pair
+// popup menus in the genoverse browse view
+function add_bookmark_button(menu, settings){
+    $.get(settings.status_uri + "/" + settings.id,
+      function (data){
+        console.log(data);
+        if(data.error){
+          console.log("Could not add bookmark button: " + data.error);
+          return;
+        }
+        else{
+          close_alerts();
+          var button_text;
+          if(data.is_bookmarked){
+            button_text = 'Remove Bookmark';
+          }
+          else{
+            button_text = 'Bookmark ' + settings.type;
+          }
+
+          // remove existing button (bookmark state may have changed)
+          $('[name=' + settings.id + ']').remove();
+
+          // add the new button
+          menu.append('<button name="' + settings.id + '">' + button_text + '</button>');
+
+          // add ajax request to button
+          $('[name=' + settings.id + ']').click(function (event){
+            toggle_bookmark(this, settings.bookmark_uri, settings.id, settings.type, settings.spinner, settings.bookmark_track);
+          });
+        }
+      }
+    );
+}
