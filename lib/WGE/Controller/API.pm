@@ -1,7 +1,7 @@
 package WGE::Controller::API;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::API::VERSION = '0.029';
+    $WGE::Controller::API::VERSION = '0.030';
 }
 ## use critic
 
@@ -353,8 +353,7 @@ sub design_attempt_status :Chained('/') PathPart('design_attempt_status') Args(1
     my $status = $da->status;
     my $design_links;
     if ( $status eq 'success' ) {
-        my @design_ids = split( ' ', $da->design_ids );
-        for my $design_id ( @design_ids ) {
+        for my $design_id ( @{ $da->design_ids } ) {
             my $link = $c->uri_for('/view_gibson_design', { design_id => $design_id } )->as_string;
             $design_links .= '<a href="' . $link . '">'. $design_id .'</a><br>';
         }

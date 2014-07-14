@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::Crispr;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::Crispr::VERSION = '0.029';
+    $WGE::Model::Schema::Result::Crispr::VERSION = '0.030';
 }
 ## use critic
 
@@ -89,12 +89,14 @@ __PACKAGE__->table("crisprs");
 =head2 exonic
 
   data_type: 'boolean'
-  is_nullable: 1
+  default_value: false
+  is_nullable: 0
 
 =head2 genic
 
   data_type: 'boolean'
-  is_nullable: 1
+  default_value: false
+  is_nullable: 0
 
 =cut
 
@@ -121,9 +123,9 @@ __PACKAGE__->add_columns(
   "off_target_summary",
   { data_type => "text", is_nullable => 1 },
   "exonic",
-  { data_type => "boolean", is_nullable => 1 },
+  { data_type => "boolean", default_value => \"false", is_nullable => 0 },
   "genic",
-  { data_type => "boolean", is_nullable => 1 },
+  { data_type => "boolean", default_value => \"false", is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -171,8 +173,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-04-14 10:58:20
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:XZrdxdr4Rn6M/6RCR93lLQ
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-07-11 10:01:18
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:S3u51wVLyee0mamjOCZqnQ
 
 
 __PACKAGE__->set_primary_key('id');

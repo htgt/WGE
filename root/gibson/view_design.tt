@@ -26,6 +26,14 @@
     <th>[% title %]</th> <td>[% design.$accessor %]</td>
   </tr>
   [%- END %]
+  [% IF design.exists('design_attempt') %]
+  <tr>
+    <th>Design Attempt</th>
+    <td>
+    <a href="[% c.uri_for( '/design_attempt', design.design_attempt, 'view' ) %]">[% design.design_attempt %]</a>
+    </td>
+  </tr>
+  [% END %]
 </table>
 
 [% IF design.comments.size > 0 %]

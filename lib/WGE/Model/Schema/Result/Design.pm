@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::Design;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::Design::VERSION = '0.029';
+    $WGE::Model::Schema::Result::Design::VERSION = '0.030';
 }
 ## use critic
 
@@ -98,7 +98,7 @@ __PACKAGE__->table("designs");
 
 =head2 design_parameters
 
-  data_type: 'text'
+  data_type: 'json'
   is_nullable: 1
 
 =head2 cassette_first
@@ -139,7 +139,7 @@ __PACKAGE__->add_columns(
   "target_transcript",
   { data_type => "text", is_nullable => 1 },
   "design_parameters",
-  { data_type => "text", is_nullable => 1 },
+  { data_type => "json", is_nullable => 1 },
   "cassette_first",
   { data_type => "boolean", default_value => \"true", is_nullable => 0 },
 );
@@ -264,8 +264,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 10:25:34
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:lfF/5uZlS5MWBzu4dD19fg
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-07-11 13:28:31
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:35xPcGbwQTC1jrwWsBgtXw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
@@ -358,6 +358,23 @@ sub _oligos_fasta {
     $seq_io->write_seq( $strand == 1 ? $seq : $seq->revcom );
 
     return $fasta;
+}
+
+=head2 design_attempt
+
+Find the design attempt record linked to this design and return it.
+Returns undef if no design attempt record found.
+
+=cut
+sub design_attempt {
+    my $self = shift;
+
+    my $schema = $self->result_source->schema;
+    my $design_attempts = $schema->resultset('DesignAttempt')->search_literal(
+        '? = ANY ( design_ids )', $self->id
+    );
+
+    return $design_attempts->first;
 }
 
 __PACKAGE__->meta->make_immutable;

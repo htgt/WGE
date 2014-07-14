@@ -1,7 +1,7 @@
 package WGE::Util::GenomeBrowser;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::GenomeBrowser::VERSION = '0.029';
+    $WGE::Util::GenomeBrowser::VERSION = '0.030';
 }
 ## use critic
 
@@ -221,6 +221,8 @@ sub fetch_design_data{
 
     my $design_data = $design->as_hash;
     $design_data->{assigned_genes} = join q{, }, @{ $design_data->{assigned_genes} || [] };
+    my $design_attempt = $design->design_attempt;
+    $design_data->{design_attempt} = $design_attempt->id if $design_attempt;
 
     TRACE( "Design: " .Dumper($design_data) );
 
