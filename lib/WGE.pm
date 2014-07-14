@@ -23,7 +23,7 @@ use Catalyst qw/
     Authorization::Roles
     Session
     Session::Store::FastMmap
-    Session::State::Cookie    
+    Session::State::Cookie
 /;
 
 use Log::Log4perl::Catalyst;
@@ -32,7 +32,7 @@ extends 'Catalyst';
 
 our $VERSION = '0.01';
 
-__PACKAGE__->log(Log::Log4perl::Catalyst->new( $ENV{WGE_LOG4PERL_CONFIG} ));
+__PACKAGE__->log(Log::Log4perl::Catalyst->new( $ENV{WGE_LOG4PERL_CONFIG}, autoflush => 1 ));
 
 # Configure the application.
 #
@@ -55,7 +55,7 @@ __PACKAGE__->config(
         INCLUDE_PATH => [
             __PACKAGE__->path_to( 'root' ),
             __PACKAGE__->path_to( 'root', 'gibson' ),
-            __PACKAGE__->path_to( 'root', 'site' ),          
+            __PACKAGE__->path_to( 'root', 'site' ),
             $ENV{SHARED_WEBAPP_TT_DIR} || '/opt/t87/global/software/perl/lib/perl5/WebAppCommon/shared_templates',
             ],
     },
@@ -104,15 +104,14 @@ __PACKAGE__->config(
                     class         => 'DBIx::Class',
                     user_model    => 'DB::User',
                     id_field      => 'name',
-                },                
-            }            
+                },
+            }
         }
     }
 );
 
 # Start the application
 __PACKAGE__->setup();
-
 
 =head1 NAME
 

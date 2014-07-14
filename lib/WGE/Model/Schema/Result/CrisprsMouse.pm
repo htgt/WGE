@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::CrisprsMouse;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::CrisprsMouse::VERSION = '0.030';
+    $WGE::Model::Schema::Result::CrisprsMouse::VERSION = '0.031';
 }
 ## use critic
 
@@ -214,6 +214,8 @@ __PACKAGE__->has_many(
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+__PACKAGE__->might_have( ots_pending => 'WGE::Model::Schema::Result::CrisprOtPending', 'crispr_id' );
+
 __PACKAGE__->many_to_many("users", "user_crisprs_mice", "user");
 
 __PACKAGE__->meta->make_immutable;

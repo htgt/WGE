@@ -106,8 +106,12 @@ $(window).load(function() {
                 <img src="[% c.uri_for('/static/images/about/genoverse_view.png') %]" title="genoverse_view" /></br>
             </p>
             <p>
-                Scroll left and right and zoom in using controls on the top right of the genome browser or clicking and dragging. You can shift click and drag over a region to zoom there.<br/>
+                Use the controls on the top right of the genome browser to move left and right or zoom in. You can also move left and right by dragging or scrolling with the mouse.<br/>
                 <img src="[% c.uri_for('/static/images/about/genoverse_scroll.png') %]" title="genoverse_view" /></br>
+            </p>
+            <p>
+                To select a region hold the shift key and drag over the region with the mouse. This will give you the option to submit all crispr and pairs in the region for <a href="#off_targets">off-target computation</a><br/>
+                <img src="[% c.uri_for('/static/images/about/genoverse_select_region.png') %]" title="genoverse_view" /></br>
             </p>
             <p>
                 We have computed <a href="#off_targets">off-target data</a> for all crisprs shown in colour. Off-targets have not yet been computed for crisprs shown in grey.<br/>

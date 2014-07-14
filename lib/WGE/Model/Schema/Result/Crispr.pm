@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::Crispr;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::Crispr::VERSION = '0.030';
+    $WGE::Model::Schema::Result::Crispr::VERSION = '0.031';
 }
 ## use critic
 
@@ -179,6 +179,8 @@ __PACKAGE__->has_many(
 
 __PACKAGE__->set_primary_key('id');
 
+__PACKAGE__->might_have( ots_pending => 'WGE::Model::Schema::Result::CrisprOtPending', 'crispr_id' );
+
 with 'WGE::Util::CrisprRole';
 
 sub as_hash {
@@ -200,7 +202,7 @@ sub as_hash {
 
   #if they want off targets return them as a list of hashes
   if ( $options->{with_offs} ) {
-    #pass options along to as hash 
+    #pass options along to as hash
     $data->{off_targets} = [ map { $_->as_hash( $options ) } $self->off_targets ];
   }
 
@@ -243,8 +245,8 @@ sub remove_link_to_user_id{
 
     my $link = $schema->resultset($linker_table)->find({ crispr_id => $self->id, user_id => $user_id });
     $link->delete;
-    
-    return; 
+
+    return;
 }
 __PACKAGE__->meta->make_immutable;
 1;

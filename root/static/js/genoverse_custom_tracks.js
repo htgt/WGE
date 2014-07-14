@@ -9,7 +9,10 @@ Genoverse.Track.Crisprs = Genoverse.Track.extend({
     threshold : 3000,
     messages  : { threshold : 'Crisprs not displayed for regions larger than ' },
 
-    populateMenu : function (feature) {
+    populateMenu : function (f) {
+      // get up to date feature object
+      var feature = this.track.model.featuresById[f.id];
+
       var report_link = "<a href='" + this.track.crispr_report_uri + "/" + feature.name
                                 + "' target='_blank'><font color='#00FFFF'>Crispr Report</font></a>";
       var atts = {
@@ -53,7 +56,9 @@ Genoverse.Track.CrisprPairs = Genoverse.Track.extend({
     threshold : 3000,
     messages  : { threshold : 'Crispr pairs not displayed for regions larger than ' },
 
-    populateMenu : function (feature) {
+    populateMenu : function (f) {
+        // get up to date feature object
+        var feature = this.track.model.featuresById[f.id];
         var report_link = "<a href='" + this.track.pair_report_uri + "/"
                                 + feature.name
                                 + "?spacer=" + feature.spacer
@@ -267,7 +272,7 @@ function reload_track(track){
     var genoverse = track.browser;
     track.controller.resetImages();
 
-    // clear out existing data and features for this region so they are regenerated
+    // clear out all existing data and features so they are regenerated
     track.model.dataRanges = new track.model.dataRanges.constructor;
     track.model.features = new track.model.features.constructor;
     track.model.featuresById = {};
@@ -277,4 +282,39 @@ function reload_track(track){
 
     // redraw the track
     track.controller.makeFirstImage();
+}
+
+// function to add a bookmarking button to the crispr and crispr pair
+// popup menus in the genoverse browse view
+function add_bookmark_button(menu, settings){
+    $.get(settings.status_uri + "/" + settings.id,
+      function (data){
+        console.log(data);
+        if(data.error){
+          console.log("Could not add bookmark button: " + data.error);
+          return;
+        }
+        else{
+          close_alerts();
+          var button_text;
+          if(data.is_bookmarked){
+            button_text = 'Remove Bookmark';
+          }
+          else{
+            button_text = 'Bookmark ' + settings.type;
+          }
+
+          // remove existing button (bookmark state may have changed)
+          $('[name=' + settings.id + ']').remove();
+
+          // add the new button
+          menu.append('<button name="' + settings.id + '">' + button_text + '</button>');
+
+          // add ajax request to button
+          $('[name=' + settings.id + ']').click(function (event){
+            toggle_bookmark(this, settings.bookmark_uri, settings.id, settings.type, settings.spinner, settings.bookmark_track);
+          });
+        }
+      }
+    );
 }

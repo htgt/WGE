@@ -1,7 +1,7 @@
 package WGE::Util::CrisprRole;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::CrisprRole::VERSION = '0.030';
+    $WGE::Util::CrisprRole::VERSION = '0.031';
 }
 ## use critic
 
@@ -12,7 +12,7 @@ use List::MoreUtils qw(any);
 requires qw( chr_start pam_right species_id result_source );
 
 #these methods are required by multiple resultsets,
-#to use them just add 
+#to use them just add
 #with 'WGE::Util::CrisprRole'
 
 #CHECK THESE NUMBERS!! we want either the start or end of sgrna
@@ -32,8 +32,8 @@ sub chr_end {
 sub get_species {
     my $self = shift;
 
-    return $self->result_source->schema->resultset('Species')->find( 
-        { numerical_id => $self->species_id } 
+    return $self->result_source->schema->resultset('Species')->find(
+        { numerical_id => $self->species_id }
     )->id;
 }
 
@@ -41,9 +41,9 @@ sub get_species {
 sub species {
     my $self = shift;
 
-    return $self->result_source->schema->resultset('Species')->find( 
-        { numerical_id => $self->species_id } 
-    );	
+    return $self->result_source->schema->resultset('Species')->find(
+        { numerical_id => $self->species_id }
+    );
 }
 
 1;

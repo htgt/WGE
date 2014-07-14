@@ -48,6 +48,7 @@ lib/WGE/Model/Schema/Result/Crispr.pm
 lib/WGE/Model/Schema/Result/CrisprByExon.pm
 lib/WGE/Model/Schema/Result/CrisprByGene.pm
 lib/WGE/Model/Schema/Result/CrisprOffTargets.pm
+lib/WGE/Model/Schema/Result/CrisprOtPending.pm
 lib/WGE/Model/Schema/Result/CrisprPair.pm
 lib/WGE/Model/Schema/Result/CrisprPairStatus.pm
 lib/WGE/Model/Schema/Result/CrisprPairsHuman.pm
@@ -184,6 +185,7 @@ root/static/images/about/full_table.png
 root/static/images/about/genoverse_bookmarks.png
 root/static/images/about/genoverse_controls.png
 root/static/images/about/genoverse_scroll.png
+root/static/images/about/genoverse_select_region.png
 root/static/images/about/genoverse_single_and_paired.png
 root/static/images/about/genoverse_view.png
 root/static/images/about/gibson_advanced_options.png

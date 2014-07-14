@@ -1,7 +1,7 @@
 package WGE::Util::FindOffTargets;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::FindOffTargets::VERSION = '0.030';
+    $WGE::Util::FindOffTargets::VERSION = '0.031';
 }
 ## use critic
 
@@ -10,8 +10,8 @@ use Moose;
 use Data::Dumper;
 use Log::Log4perl qw(:easy);
 use WGE::Util::OffTargetServer;
-use WGE::Util::GenomeBrowser qw(get_region_from_params crispr_pairs_for_region);
-use Try::Tiny;
+use WGE::Util::GenomeBrowser qw(get_region_from_params crispr_pairs_for_region crisprs_for_region);
+use TryCatch;
 use List::MoreUtils qw(uniq);
 
 has log => (
@@ -73,10 +73,10 @@ sub run_pair_off_target_search{
             $self->ots_server->update_off_targets($model,{ ids => \@ids_to_search, species => $pair->get_species });
             $pair->calculate_off_targets;
         }
-        catch {
+        catch ($e){
             $pair->update( { status_id => -1 } );
-            $error = $_;
-        };
+            $error = $e;
+        }
 
         if ( $error ) {
             $self->log->warn( "Error getting off targets:" . $error );
@@ -108,6 +108,7 @@ sub update_region_off_targets{
     my @crispr_ids_to_process;
     my @pairs_to_process_now;
     my @pairs_to_process_later;
+    my %crispr_id_seen;
 
     foreach my $pair (@{ $pairs }){
     	my $pair_params = {
@@ -116,7 +117,19 @@ sub update_region_off_targets{
     		species  => $params->{species},
     	};
 
-    	my ( $pair, $crisprs ) = $model->find_or_create_crispr_pair( $pair_params );
+        # Store IDs so we don't process them again as individual crisprs
+        $crispr_id_seen{$pair->{left_crispr}->{id}} = 1;
+        $crispr_id_seen{$pair->{right_crispr}->{id}} = 1;
+
+    	my ( $pair, $crisprs );
+        try{
+            ( $pair, $crisprs ) = $model->find_or_create_crispr_pair( $pair_params );
+        }
+        catch($e){
+            return { error_msg => "Could not find or create crispr pair "
+                                  .$pair->{left_crispr}->{id}."_".$pair->{right_crispr}->{id}
+                                  .". Error: $e" };
+        }
 
         #see what the current pair status is, and decide what to do
 
@@ -136,6 +149,7 @@ sub update_region_off_targets{
         #if we already have the crisprs pass them on so the method doesn't have to
         #fetch them again
         my @ids_to_search = $pair->_data_missing( $crisprs );
+
         if(@ids_to_search){
             push @crispr_ids_to_process, @ids_to_search;
             push @pairs_to_process_later, $pair;
@@ -145,7 +159,36 @@ sub update_region_off_targets{
         }
     }
 
+    if($params->{all_singles}){
+        # Get IDs of any crisprs which we have not already seen in a pair
+        my $crispr_rs = crisprs_for_region($model->schema,$params);
+        my $unpaired_crispr_rs = $crispr_rs->search({ id => {'not in' => [ keys %crispr_id_seen ]} });
+
+        #  and which do not already have ot summary
+        while (my $crispr = $unpaired_crispr_rs->next){
+            unless ( defined $crispr->get_column( 'off_target_summary' ) ){
+                push @crispr_ids_to_process, $crispr->id;
+            }
+        }
+    }
+
     @crispr_ids_to_process = uniq @crispr_ids_to_process;
+
+    # Return some info about what has been submitted for OT calculation
+    my $crispr_count = @crispr_ids_to_process;
+    my $pair_count = @pairs_to_process_now + @pairs_to_process_later;
+
+    $self->log->debug("crispr count: $crispr_count");
+    $self->log->debug("pairs to process now: ".scalar(@pairs_to_process_now));
+    $self->log->debug("pairs to process later: ".scalar(@pairs_to_process_later));
+
+    if($crispr_count > 100){
+        # reset pair status to "not started" before die
+        foreach my $pair (@pairs_to_process_now, @pairs_to_process_later){
+            $pair->update( { status_id => 0 } );
+        }
+        die "Will not submit $crispr_count crisprs for off-target calculation (maximum: 100 crisprs). Please submit a smaller region.\n";
+    }
 
     my $pairs_now_pid = fork();
     if($pairs_now_pid){
@@ -156,7 +199,12 @@ sub update_region_off_targets{
     	# Calculate ots for pairs which already have crispr data
     	foreach my $pair (@pairs_to_process_now){
     		$self->log->debug("Calculating OTs for pair ".$pair->id);
-    		$pair->calculate_off_targets;
+            try{
+    		    $pair->calculate_off_targets;
+            }
+            catch ($e){
+                $self->log->debug("region off-target first child process error for pair ".$pair->id.": $e");
+            }
     	}
     	exit 0;
     }
@@ -172,11 +220,22 @@ sub update_region_off_targets{
     	# child
         if(@crispr_ids_to_process){
     	    # Send all crispr IDs to off-target server
-    	    $self->ots_server->update_off_targets($model, { ids => [ @crispr_ids_to_process ], species => $params->{species} });
+            try{
+    	        $self->ots_server->update_off_targets($model, { ids => [ @crispr_ids_to_process ], species => $params->{species} });
+            }
+            catch ($e){
+                $self->log->debug("region off-target second child process error submitting individual crisprs: $e");
+                die;
+            }
     	    # Wait and then calculate ots for pairs which have now had crispr data added
     	    foreach my $pair(@pairs_to_process_later){
     		    $self->log->debug("Calculating OTs for pair ".$pair->id);
-    		    $pair->calculate_off_targets;
+                try{
+                   $pair->calculate_off_targets;
+                }
+                catch ($e){
+                   $self->log->debug("region off-target second child process error for pair ".$pair->id.": $e");
+                }
     	    }
         }
         exit 0;
@@ -184,14 +243,6 @@ sub update_region_off_targets{
     else{
     	die "could not fork - $!";
     }
-
-    # Return some info about what has been submitted for OT calculation
-    my $crispr_count = @crispr_ids_to_process;
-    my $pair_count = @pairs_to_process_now + @pairs_to_process_later;
-
-    $self->log->debug("crispr count: $crispr_count");
-    $self->log->debug("pairs to process now: ".scalar(@pairs_to_process_now));
-    $self->log->debug("pairs to process later: ".scalar(@pairs_to_process_later));
 
     return { crispr_count => $crispr_count, pair_count => $pair_count };
 }
@@ -205,9 +256,9 @@ sub update_exon_off_targets{
     try {
         $region = get_region_from_params($model, {exon_id => $id});
     }
-    catch {
-        return { error_msg => "Could not get coordinates for exon $id - $_" };
-    };
+    catch ($e) {
+        return { error_msg => "Could not get coordinates for exon $id - $e" };
+    }
 
     # subtract 22 so we find crisprs that start before exon but end within it
     $region->{browse_start} = $region->{browse_start} - 22;

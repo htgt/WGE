@@ -3,6 +3,17 @@
 
 <script type="text/javascript">
   $(document).ready(function() {
+    // add event handler to reload crispr pair table after off-target searches
+    // have been submitted
+    $("#dialog").hide();
+    $("#dialog").on('hidden', function(){
+      if( form_valid() ) {
+        $("#search").button('loading');
+        $("#crispr_table").remove(); //we want to keep the headings tbh. fine for now
+        get_pairs();
+      }
+    });
+
     //add autocomplete to the gene box
     $('#gene').autocomplete( {
         autoFocus: true,
@@ -103,12 +114,6 @@
         $("html, body").animate({ scrollTop: 650});
       });
     });
-
-    $("#dialog").dialog({
-      autoOpen: false,
-      modal: true
-    });
-
   });
 
   //Trigger example table creation if url contains show_example=1
@@ -230,33 +235,29 @@ var q;
           //console.log(data);
           //add each crispr to the table, its a hash of arrays.
           $.each(data, function(exon_id, crisprs) {
+            var missing_pair_ots = false;
+            var exon_column_td;
             //each exon has a list of crisprs
             $.each(crisprs, function(idx, pair) {
 
               var row = get_pair_row(pair);
+              if(row.has(".ots-button").length){
+                  console.log("found row contaning ots button");
+                  missing_pair_ots = true;
+              }
 
               row.appendTo( table.find("tbody") );
               //add a column to the left of each group
               if ( idx == 0 ) {
-                var exon_ots_button = $("<button>", {
-                  "class": 'btn btn-mini btn-block exon-ots-button',
-                  value: exon_id,
-                  text: "Compute All Off-Targets"
-                });
-                exon_ots_button.click(function(event){
-                    event.preventDefault();
-                    $.get('api/exon_off_target_search', { id: exon_id }, function(data){
-                      console.log(data);
-                      var text = data.pair_count + " pairs and " + data.crispr_count + " individual crisprs submitted for off-target calculation";
-                      $("#dialog").text(text);
-                      $("#dialog").dialog("open")
-                    });
-                });
-                var td = $("<td>", { html: exon_id, rowspan: crisprs.length, class: "exon_column_td" });
-                //exon_ots_button.appendTo(td);
-                row.prepend( td );
+                exon_column_td = $("<td>", { html: exon_id, rowspan: crisprs.length, class: "exon_column_td" });
+                row.prepend( exon_column_td );
               }
             });
+            // Add the exon OT search button if any pairs are missing ot data
+            if(missing_pair_ots){
+              var exon_ots_button = create_exon_ots_button(exon_id);
+              exon_ots_button.appendTo(exon_column_td);
+            }
           });
         }
         //change the loading button
@@ -340,33 +341,23 @@ var q;
     return row;
   }
 
-  function create_offtargets_button(){
-    if( $("#exon_targets").length ){
-      // Don't create it again
-      return;
-    }
+  function create_exon_ots_button(exon_id){
+    var exon_ots_button = $("<button>", {
+      "class": 'btn btn-mini btn-block exon-ots-button',
+      value: exon_id,
+      text: "Compute All Off-Targets"
+    });
 
-    $("<button>", { "class": "btn btn-default", id:"exon_targets", text: "Calculate all off targets" })
-      .click(function(event) {
-        //stop it from submitting the form
-        event.preventDefault();
-
-        var selectedpairs = get_selected_pairs();
-
-        if ( selectedpairs.length == 0 )
-          return;
-
-        //for now just take the top pair as we only care about one for now
-        var temp = selectedpairs[0];
-        temp.species = get_species();
-
-        //this needs a new API call
-        $.get('api/pair_off_target_search', temp,
-          function(data) {
-            console.log(data);
-        });
-      })
-      .appendTo($("#fields"));
+    exon_ots_button.click(function(event){
+      event.preventDefault();
+      $.get('api/exon_off_target_search', { id: exon_id }, function(data){
+        console.log(data);
+        var text = data.pair_count + " pairs and " + data.crispr_count + " individual crisprs submitted for off-target calculation";
+        $("#dialog_content").text(text);
+        $("#dialog").modal();
+      });
+    });
+    return exon_ots_button;
   }
 
   //return whatever species is selected
@@ -552,6 +543,16 @@ var q;
       </a>
     </div>
 
-    <div id="dialog" title="Off-Target Calculation Started" class="ui-dialog">
-    </div>
+<div class="modal" id="dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Off-Target Computation Status</h3>
+  </div>
+  <div class="modal-body" id="dialog_content">
+  </div>
+  <div class="modal-body">
+    This may take several minutes. Click "Show in table" to refresh the table and show the latest off-target information.
+  </div>
+</div>
+
 </div>

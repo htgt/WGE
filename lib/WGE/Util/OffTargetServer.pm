@@ -1,7 +1,7 @@
 package WGE::Util::OffTargetServer;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::OffTargetServer::VERSION = '0.030';
+    $WGE::Util::OffTargetServer::VERSION = '0.031';
 }
 ## use critic
 
@@ -13,6 +13,7 @@ use JSON;
 use Data::Dumper;
 use Log::Log4perl qw(:easy);
 use List::MoreUtils qw(uniq natatime);
+use TryCatch;
 
 BEGIN {
     #try not to override the logger
@@ -87,10 +88,21 @@ sub update_off_targets {
     my @all_ids = uniq @{ $params->{ids} };
     my $it = natatime 10, @all_ids;
     while (my @ids = $it->()){
-        my $count = scalar @ids;
 
-        $params->{ids} = \@ids;
-        my $results = $self->find_off_targets( $params );
+        my $new_ids = $self->_ids_not_pending($model,\@ids);
+        $self->_set_to_pending($model,$new_ids);
+        $params->{ids} = $new_ids;
+
+        my $results;
+        try {
+            $results = $self->find_off_targets( $params );
+        }
+        catch ($e){
+            $self->_set_to_not_pending($model,$new_ids);
+            die "Could not do crispr off-target search - $e";
+        }
+
+        $self->_set_to_not_pending($model,$new_ids);
 
         while ( my ( $id, $data ) = each %{ $results } ) {
 
@@ -110,6 +122,39 @@ sub update_off_targets {
     }
 
     return \%all_results;
+}
+
+# Methods to check and alter the CrisprOtPending status table
+sub _ids_not_pending{
+    my ($self, $model, $ids) = @_;
+    my @new_ids;
+    foreach my $id (@{ $ids || [] }){
+        if($model->schema->resultset('CrisprOtPending')->find($id)){
+            next;
+        }
+        else{
+            push @new_ids, $id;
+        }
+    }
+    return \@new_ids;
+}
+
+sub _set_to_pending{
+    my ($self, $model, $ids) = @_;
+    foreach my $id (@{ $ids || [] }){
+        $model->schema->resultset('CrisprOtPending')->create({ crispr_id => $id });
+    }
+    return;
+}
+
+sub _set_to_not_pending{
+    my ($self, $model, $ids) = @_;
+    foreach my $id (@{ $ids || [] }){
+        if(my $pending = $model->schema->resultset('CrisprOtPending')->find($id)){
+            $pending->delete();
+        }
+    }
+    return;
 }
 
 1;
