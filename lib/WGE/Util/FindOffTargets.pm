@@ -219,7 +219,7 @@ sub update_region_off_targets{
             }
             catch ($e){
                 $self->log->debug("region off-target second child process error submitting individual crisprs: $e");
-                die;
+                exit 0;
             }
     	    # Wait and then calculate ots for pairs which have now had crispr data added
     	    foreach my $pair(@pairs_to_process_later){

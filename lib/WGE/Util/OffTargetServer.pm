@@ -74,18 +74,16 @@ sub find_off_targets {
 sub update_off_targets {
     my ( $self, $model, $params ) = @_;
 
-    # FIXME:
-    # check and update crispr_ots_pending table to avoid repeat submissions
     my %all_results;
 
     # Go through list of IDs 10 at a time
     my @all_ids = uniq @{ $params->{ids} };
     my $it = natatime 10, @all_ids;
     while (my @ids = $it->()){
-
-        my $new_ids = $self->_ids_not_pending($model,\@ids);
-        $self->_set_to_pending($model,$new_ids);
+        # check and update crispr_ots_pending table to avoid repeat submissions
+        my $new_ids = $self->_get_new_and_set_pending($model,\@ids);
         $params->{ids} = $new_ids;
+        next unless @$new_ids;
 
         my $results;
         try {
@@ -119,6 +117,24 @@ sub update_off_targets {
 }
 
 # Methods to check and alter the CrisprOtPending status table
+sub _get_new_and_set_pending{
+    my ($self, $model, $ids) = @_;
+
+    # Set IDs to pending as soon as we determine they are not already pending
+    # to avoid clashes
+    my @new_ids;
+    foreach my $id (@{ $ids || [] }){
+        if($model->schema->resultset('CrisprOtPending')->find($id)){
+            next;
+        }
+        else{
+            $model->schema->resultset('CrisprOtPending')->create({ crispr_id => $id });
+            push @new_ids, $id;
+        }
+    }
+    return \@new_ids;
+}
+
 sub _ids_not_pending{
     my ($self, $model, $ids) = @_;
     my @new_ids;

@@ -612,9 +612,6 @@
           $(".summary").html('<img alt="Waiting" src="' + spinner + '" height="30" width="30">');
           $.get('api/region_off_target_search', params, function(data){
             console.log(data);
-            // remove spinner and restore button text
-            $(".summary").html("");
-            $(".summary").text(button_text);
             if(data.error_msg){
               $("#dialog_content").text("Off-target computation failed with error: <br>" + data.error_msg);
               $("#dialog_success").hide();
@@ -625,6 +622,10 @@
               $("#dialog_success").show();
             }
             $("#dialog").modal();
+          }).always( function() {
+            // remove spinner and restore button text
+            $(".summary").html("");
+            $(".summary").text(button_text);
           });
         },
         plugins   : [ 'controlPanel_no_tracks_menu', 'karyotype', 'trackControls', 'resizer', 'fileDrop' ],
