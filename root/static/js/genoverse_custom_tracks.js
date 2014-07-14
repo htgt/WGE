@@ -272,9 +272,9 @@ function reload_track(track){
     var genoverse = track.browser;
     track.controller.resetImages();
 
-    // clear out existing data and features for this region so they are regenerated
-    track.model.dataRanges.remove({ x: genoverse.start, w: genoverse.end - genoverse.start + 1, y: 0, h: 1 });
-    track.model.features.remove({ x: genoverse.start, w: genoverse.end - genoverse.start + 1, y: 0, h: 1 });
+    // clear out all existing data and features so they are regenerated
+    track.model.dataRanges = new track.model.dataRanges.constructor;
+    track.model.features = new track.model.features.constructor;
     track.model.featuresById = {};
 
     // clear out the image_container divs

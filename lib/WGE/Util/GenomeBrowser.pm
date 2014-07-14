@@ -246,24 +246,7 @@ sub crisprs_for_region {
 
     unless($params->{crispr_filter}){ $params->{crispr_filter} = 'all' }
 
-    if ($params->{crispr_filter} eq 'exonic'){
-
-        my $genes = _genes_for_region($schema, $params, $species);
-
-        my @exons = map { $_->exons } $genes->all;
-        my @exon_ids = map { $_->ensembl_exon_id } @exons;
-
-        DEBUG("Finding crisprs in exons ".(join ", ", @exon_ids));
-
-        #TODO: change exon_flanking stuff to use the flank option CrisprByExon now accepts
-        my $exon_crisprs_rs = $schema->resultset('CrisprByExon')->search(
-            {},
-            { bind => [ '{' . join( ",", @exon_ids ) . '}', 0, $species->numerical_id ] }
-        );
-        if($user){ return _bookmarked($user, $exon_crisprs_rs) };
-        return $exon_crisprs_rs;
-    }
-    elsif ($params->{crispr_filter} eq 'exon_flanking'){
+    if ($params->{crispr_filter} eq 'exon_flanking'){
 
         # default to 100 bp
         my $flank_size = $params->{flank_size} || 100;
@@ -286,9 +269,8 @@ sub crisprs_for_region {
         return $flanking_crisprs_rs;
     }
 
-    # Or default to getting all crisprs in region
-    my $crisprs_rs = $schema->resultset('Crispr')->search(
-        {
+    # Default to getting all crisprs in region
+    my $search_params = {
             'species_id'  => $species->numerical_id,
             'chr_name'    => $params->{chromosome_number} ,
             # need all the crisprs starting with values >= start_coord
@@ -298,8 +280,15 @@ sub crisprs_for_region {
                 $params->{end_coord},
                 ],
             },
-        },
-    );
+        };
+
+    # Add exonic flag filter if applicable
+    if($params->{crispr_filter} eq 'exonic'){
+        $search_params->{exonic} = 1;
+    }
+
+    my $crisprs_rs = $schema->resultset('Crispr')->search($search_params);
+
     if($user){ return _bookmarked($user, $crisprs_rs) };
     return $crisprs_rs;
 }
