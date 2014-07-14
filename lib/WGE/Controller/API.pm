@@ -13,7 +13,7 @@ use WGE::Util::GenomeBrowser qw(
 use namespace::autoclean;
 use Data::Dumper;
 use Path::Class;
-use Try::Tiny;
+use TryCatch;
 
 use WGE::Util::FindPairs;
 use WGE::Util::OffTargetServer;
@@ -303,7 +303,19 @@ sub region_off_target_search :Local('region_off_target_search'){
 
     check_params_exist( $c, $params, [ qw( start_coord end_coord assembly_id chromosome_number )] );
 
-    my $data = $self->ot_finder->update_region_off_targets($c->model('DB'),$params);
+    my $data;
+    if($params->{end_coord} - $params->{start_coord} > 3000){
+        # 3 kb max search region (3 kb is also the max size for which genoverse will display crisprs)
+        $data->{error_msg} = "Off-target search region is too large. You must select a region less than 3kb.";
+    }
+    else{
+        try{
+            $data = $self->ot_finder->update_region_off_targets($c->model('DB'),$params);
+        }
+        catch ($e){
+            $data->{error_msg} = "Off-target search failed with error: $e";
+        }
+    }
 
     $c->stash->{json_data} = $data;
     $c->forward('View::JSON');

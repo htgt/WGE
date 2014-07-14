@@ -10,7 +10,12 @@
 </div>
 
 <div class="container-fluid">
-<div class="well">Navigation Tips - <strong>Zoom:</strong> use "+" and "-" buttons. <strong>Move:</strong> drag or scroll with the mouse. <strong>Select region:</strong> hold shift key and drag with the mouse</div>
+<div class="alert alert-info"><strong>Zoom:</strong> use "+" and "-" buttons. <strong>Move:</strong> drag or scroll with the mouse. <strong>Select region:</strong> hold shift key and drag with the mouse.
+  <a href="[% c.uri_for('/crispr_help') _ '#genoverse_view' %]" target="_blank">
+    <i class="icon-question-sign"></i>Help
+  </a>
+  <button type="button" class="close" data-dismiss="alert">×</button>
+</div>
 <div id="genoverse" style="margin: 0;" class="span12"></div>
 <div class="row-fluid">
 <div class="span9">
@@ -160,7 +165,7 @@
   </div>
   <div class="modal-body" id="dialog_content">
   </div>
-  <div class="modal-body">
+  <div class="modal-body" id="dialog_success">
     This may take several minutes. Click "Reload Tracks" to refresh the view and show the latest off-target information.
   </div>
 </div>
@@ -602,10 +607,23 @@
             assembly_id: '[% genome %]',
             all_singles: 1
           };
+          var button_text = $(".summary").text();
+          var spinner = "[% c.uri_for( '/static/images/spinner-circle.gif' ) %]";
+          $(".summary").html('<img alt="Waiting" src="' + spinner + '" height="30" width="30">');
           $.get('api/region_off_target_search', params, function(data){
             console.log(data);
-            var text = data.pair_count + " pairs and " + data.crispr_count + " individual crisprs submitted for off-target calculation";
-            $("#dialog_content").text(text);
+            // remove spinner and restore button text
+            $(".summary").html("");
+            $(".summary").text(button_text);
+            if(data.error_msg){
+              $("#dialog_content").text("Off-target computation failed with error: <br>" + data.error_msg);
+              $("#dialog_success").hide();
+            }
+            else{
+              var text = data.pair_count + " pairs and " + data.crispr_count + " individual crisprs submitted for off-target calculation";
+              $("#dialog_content").text(text);
+              $("#dialog_success").show();
+            }
             $("#dialog").modal();
           });
         },

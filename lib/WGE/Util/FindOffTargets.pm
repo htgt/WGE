@@ -177,7 +177,11 @@ sub update_region_off_targets{
     $self->log->debug("pairs to process later: ".scalar(@pairs_to_process_later));
 
     if($crispr_count > 100){
-        die "Will not submit $crispr_count crisprs for off-target calculation (maximum: 100 crisprs). Please submit a smaller region.";
+        # reset pair status to "not started" before die
+        foreach my $pair (@pairs_to_process_now, @pairs_to_process_later){
+            $pair->update( { status_id => 0 } );
+        }
+        die "Will not submit $crispr_count crisprs for off-target calculation (maximum: 100 crisprs). Please submit a smaller region.\n";
     }
 
     my $pairs_now_pid = fork();
@@ -189,7 +193,12 @@ sub update_region_off_targets{
     	# Calculate ots for pairs which already have crispr data
     	foreach my $pair (@pairs_to_process_now){
     		$self->log->debug("Calculating OTs for pair ".$pair->id);
-    		$pair->calculate_off_targets;
+            try{
+    		    $pair->calculate_off_targets;
+            }
+            catch ($e){
+                $self->log->debug("region off-target first child process error for pair ".$pair->id.": $e");
+            }
     	}
     	exit 0;
     }
@@ -205,11 +214,22 @@ sub update_region_off_targets{
     	# child
         if(@crispr_ids_to_process){
     	    # Send all crispr IDs to off-target server
-    	    $self->ots_server->update_off_targets($model, { ids => [ @crispr_ids_to_process ], species => $params->{species} });
+            try{
+    	        $self->ots_server->update_off_targets($model, { ids => [ @crispr_ids_to_process ], species => $params->{species} });
+            }
+            catch ($e){
+                $self->log->debug("region off-target second child process error submitting individual crisprs: $e");
+                die;
+            }
     	    # Wait and then calculate ots for pairs which have now had crispr data added
     	    foreach my $pair(@pairs_to_process_later){
     		    $self->log->debug("Calculating OTs for pair ".$pair->id);
-    		    $pair->calculate_off_targets;
+                try{
+                   $pair->calculate_off_targets;
+                }
+                catch ($e){
+                   $self->log->debug("region off-target second child process error for pair ".$pair->id.": $e");
+                }
     	    }
         }
         exit 0;
