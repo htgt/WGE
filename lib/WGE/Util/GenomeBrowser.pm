@@ -485,7 +485,7 @@ sub crisprs_to_gff {
 
             my $ot_summary = $crispr_r->off_target_summary;
             if($ot_summary){
-                DEBUG("Found off target summary for crispr ".$crispr_r->id);
+                TRACE("Found off target summary for crispr ".$crispr_r->id);
                 $crispr_format_hash{attributes}.=';OT_Summary='.$ot_summary;
             }
 
@@ -575,7 +575,7 @@ sub crispr_pairs_to_gff {
 
             # Add paired OT summary information if pair has data in DB
             if(my $data = $crispr_pair->{db_data}){
-                DEBUG("Found db_data for crispr pair ".$id);
+                TRACE("Found db_data for crispr pair ".$id);
                 if(defined $data->{off_target_summary}){
                     $crispr_format_hash{attributes}.=';OT_Summary='.$data->{off_target_summary};
                 }
