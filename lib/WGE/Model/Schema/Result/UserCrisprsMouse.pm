@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::UserCrisprsMouse;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::UserCrisprsMouse::VERSION = '0.031';
+    $WGE::Model::Schema::Result::UserCrisprsMouse::VERSION = '0.032';
 }
 ## use critic
 
