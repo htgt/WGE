@@ -38,8 +38,8 @@ around BUILDARGS => sub {
     confess "Could not access $config_file: $!" unless stat $config_file;
     confess "WGE_DB must be set" unless $db_name;
 
-    my $config = Config::Any->load_files( 
-        { files => [ $config_file ], use_ext => 1, flatten_to_hash => 1 } 
+    my $config = Config::Any->load_files(
+        { files => [ $config_file ], use_ext => 1, flatten_to_hash => 1 }
     );
 
     my $db_config = $config->{$config_file}->{$db_name}
@@ -55,6 +55,14 @@ around BUILDARGS => sub {
 
     return $data;
 };
+
+sub clear_schema {
+    my ( $self ) = @_;
+
+    $self->schema->storage->disconnect;
+
+    return;
+}
 
 sub txn_do {
     my ( $self, $code_ref, @args ) = @_;
@@ -159,8 +167,8 @@ sub _chr_id_for {
 }
 
 #get all plugins
-my @plugins = Module::Pluggable::Object->new( 
-    search_path => [ 'WebAppCommon::Plugin', 'WGE::Model::Plugin' ]  
+my @plugins = Module::Pluggable::Object->new(
+    search_path => [ 'WebAppCommon::Plugin', 'WGE::Model::Plugin' ]
 )->plugins;
 
 #load roles

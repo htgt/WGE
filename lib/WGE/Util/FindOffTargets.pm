@@ -94,6 +94,8 @@ sub run_pair_off_target_search{
 sub update_region_off_targets{
     my ( $self, $model, $params ) = @_;
 
+    $self->log->debug("Searching for region off-targets: ".Dumper($params));
+
     # Sort the pairs so they are processed in the same order as they
     # appear in the crispr pair table
     $params->{sort_pairs} = 1;
@@ -184,12 +186,20 @@ sub update_region_off_targets{
         die "Will not submit $crispr_count crisprs for off-target calculation (maximum: 100 crisprs). Please submit a smaller region.\n";
     }
 
+    # Parent will not wait for child processes
+    # Don't create zombie processes
+    local $SIG{CHLD} = 'IGNORE';
+
+    $self->log->debug("Starting first forked process");
     my $pairs_now_pid = fork();
     if($pairs_now_pid){
     	# parent
+        $self->log->debug("Pair OT processing pid: $pairs_now_pid");
     }
     elsif($pairs_now_pid == 0){
     	# child
+        $model->clear_schema; # Force re-connect
+
     	# Calculate ots for pairs which already have crispr data
     	foreach my $pair (@pairs_to_process_now){
     		$self->log->debug("Calculating OTs for pair ".$pair->id);
@@ -206,12 +216,16 @@ sub update_region_off_targets{
     	die "could not fork - $!";
     }
 
+    $self->log->debug("Starting second forked process");
     my $crisprs_pid = fork();
     if($crisprs_pid){
     	# parent
+        $self->log->debug("Crispr OT processing pid: $crisprs_pid");
     }
     elsif($crisprs_pid == 0){
     	# child
+        $model->clear_schema; # Force re-connect
+
         if(@crispr_ids_to_process){
     	    # Send all crispr IDs to off-target server
             try{
@@ -237,13 +251,14 @@ sub update_region_off_targets{
     else{
     	die "could not fork - $!";
     }
-
+    $self->log->debug("Returning from OT search parent process");
     return { crispr_count => $crispr_count, pair_count => $pair_count };
 }
 
 sub update_exon_off_targets{
     my ( $self, $model, $params ) = @_;
 
+    $self->log->debug("Searching for exon off-targets: ".Dumper($params));
     my $id = $params->{id};
 
     my $region;
