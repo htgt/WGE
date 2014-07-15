@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::Crispr;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::Crispr::VERSION = '0.032';
+    $WGE::Model::Schema::Result::Crispr::VERSION = '0.033';
 }
 ## use critic
 
@@ -183,6 +183,7 @@ __PACKAGE__->might_have( ots_pending => 'WGE::Model::Schema::Result::CrisprOtPen
 
 with 'WGE::Util::CrisprRole';
 
+use YAML::Any;
 sub as_hash {
   my ( $self, $options ) = @_;
 
@@ -204,6 +205,19 @@ sub as_hash {
   if ( $options->{with_offs} ) {
     #pass options along to as hash
     $data->{off_targets} = [ map { $_->as_hash( $options ) } $self->off_targets ];
+  }
+
+  #should get rid of this eventually, it doesnt make it much easier
+  if ( $self->off_target_summary ) {
+    my @sum;
+    #convert hash to array
+    my $summary = Load( $self->off_target_summary );
+
+    while ( my ( $k, $v ) = each %{ $summary } ) {
+      $sum[$k] = $v;
+    }
+
+    $data->{off_target_summary_arr} = \@sum;
   }
 
   return $data;
