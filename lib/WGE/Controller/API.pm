@@ -289,7 +289,8 @@ sub exon_off_target_search :Local('exon_off_target_search'){
 
     check_params_exist( $c, $params, [ qw( id )] );
 
-    my $data = $self->ot_finder->update_exon_off_targets($c->model('DB'),$params);
+    # Pass $c to the method as it spawns child processes which need to detach the request
+    my $data = $self->ot_finder->update_exon_off_targets($c->model('DB'),$params, $c);
 
     $c->stash->{json_data} = $data;
     $c->forward('View::JSON');
@@ -310,7 +311,8 @@ sub region_off_target_search :Local('region_off_target_search'){
     }
     else{
         try{
-            $data = $self->ot_finder->update_region_off_targets($c->model('DB'),$params);
+            # Pass $c to the method as it spawns child processes which need to detach the request
+            $data = $self->ot_finder->update_region_off_targets($c->model('DB'),$params, $c);
         }
         catch ($e){
             $data->{error_msg} = "Off-target search failed with error: $e";
@@ -535,4 +537,42 @@ sub _send_error{
     return;
 }
 
+# Use this to check that forking is working as expected
+sub fork_test :Local('fork_test') Args(0){
+   my ($self, $c) = @_;
+
+   $c->log->debug("preparing for first fork");
+   local $SIG{CHLD} = 'IGNORE';
+
+   my $pid1 = fork;
+   if($pid1){
+       $c->log->debug("i have a first child with id $pid1");
+   }
+   elsif($pid1 == 0){
+       $c->log->debug("i am the first child process");
+       $c->detach();
+       exit 0;
+   }
+   else{
+       die "could not fork - $!";
+   }
+
+   $c->log->debug("preparing for second fork");
+   my $pid2 = fork;
+   if($pid2){
+       $c->log->debug("i have a second child with id $pid2");
+   }
+   elsif($pid2 == 0){
+       $c->log->debug("i am the second child process");
+       $c->detach();
+       exit 0;
+   }
+   else{
+       die "could not fork - $!";
+   }
+   $c->log->debug("..and back in the parent again");
+   $c->stash->{json_data} = { fork_test => "complete" };
+   $c->log->debug("i have stashed json_data");
+   $c->forward('View::JSON');
+}
 1;
