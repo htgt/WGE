@@ -17,3 +17,7 @@ th.group-header {
 .crispr_report_table {
 	width : 100%;
 }
+
+.modal {
+	display : none;
+}
