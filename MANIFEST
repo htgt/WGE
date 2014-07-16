@@ -113,6 +113,9 @@ root/gibson/view_design_attempt.tt
 root/gibson/view_gibson_designs.tt
 root/site/404.tt
 root/site/about.tt
+root/site/api/exon_off_target_search.tt
+root/site/api/fork_test.tt
+root/site/api/region_off_target_search.tt
 root/site/contact.tt
 root/site/crispr_help.tt
 root/site/crispr_pair_report.tt

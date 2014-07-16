@@ -1,7 +1,7 @@
 package WGE::Util::FindOffTargets;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::FindOffTargets::VERSION = '0.033';
+    $WGE::Util::FindOffTargets::VERSION = '0.034';
 }
 ## use critic
 
@@ -97,8 +97,10 @@ sub run_pair_off_target_search{
     return $data;
 }
 
+# Provide $c if you call this from the webapp
+# as child processes must detach the request
 sub update_region_off_targets{
-    my ( $self, $model, $params ) = @_;
+    my ( $self, $model, $params, $c ) = @_;
 
     $self->log->debug("Searching for region off-targets: ".Dumper($params));
 
@@ -204,6 +206,8 @@ sub update_region_off_targets{
     }
     elsif($pairs_now_pid == 0){
     	# child
+        sleep 1; # pause so child doesn't detach before parent
+        $self->log->debug("child process for pairs");
         $model->clear_schema; # Force re-connect
 
     	# Calculate ots for pairs which already have crispr data
@@ -216,6 +220,7 @@ sub update_region_off_targets{
                 $self->log->debug("region off-target first child process error for pair ".$pair->id.": $e");
             }
     	}
+        _detach_request($c);
     	exit 0;
     }
     else{
@@ -230,6 +235,8 @@ sub update_region_off_targets{
     }
     elsif($crisprs_pid == 0){
     	# child
+        sleep 1; # pause so child doesn't detach before parent
+        $self->log->debug("child process for crisprs");
         $model->clear_schema; # Force re-connect
 
         if(@crispr_ids_to_process){
@@ -239,6 +246,7 @@ sub update_region_off_targets{
             }
             catch ($e){
                 $self->log->debug("region off-target second child process error submitting individual crisprs: $e");
+                _detach_request($c);
                 exit 0;
             }
     	    # Wait and then calculate ots for pairs which have now had crispr data added
@@ -252,6 +260,7 @@ sub update_region_off_targets{
                 }
     	    }
         }
+        _detach_request($c);
         exit 0;
     }
     else{
@@ -261,8 +270,10 @@ sub update_region_off_targets{
     return { crispr_count => $crispr_count, pair_count => $pair_count };
 }
 
+# Provide $c if you call this from the webapp
+# as child processes must detach the request
 sub update_exon_off_targets{
-    my ( $self, $model, $params ) = @_;
+    my ( $self, $model, $params, $c ) = @_;
 
     $self->log->debug("Searching for exon off-targets: ".Dumper($params));
     my $id = $params->{id};
@@ -290,8 +301,15 @@ sub update_exon_off_targets{
         chromosome_number => $region->{chromosome},
     };
 
-    my $result = $self->update_region_off_targets($model, $region_params);
+    my $result = $self->update_region_off_targets($model, $region_params, $c);
     return $result;
 }
 
+sub _detach_request{
+    my ($c) = @_;
+    if($c){
+        $c->detach();
+    }
+    return;
+}
 1;

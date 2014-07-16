@@ -1,3 +1,7 @@
+0.034     2014-07-16 10:30:42 Europe/London
+
+   Another attempt to fix forking
+
 0.033     2014-07-15 12:49:44 Europe/London
     Further attempts to fix forking
     Added off_target_summary_arr to crispr as_hash method
