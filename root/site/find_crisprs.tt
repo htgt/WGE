@@ -5,7 +5,6 @@
   $(document).ready(function() {
     // add event handler to reload crispr pair table after off-target searches
     // have been submitted
-    $("#dialog").hide();
     $("#dialog").on('hidden', function(){
       if( form_valid() ) {
         $("#search").button('loading');
