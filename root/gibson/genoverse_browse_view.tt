@@ -100,6 +100,10 @@
 
   <div style="background: [%colours.no_ot_summary%]; width: 20px; height: 20px; float: left"></div>
   <div style="margin-left: 30px">Off-targets not computed</div>
+
+  <div style="background: [%colours.pam%]; width: 10px; height: 20px; float: left"></div>
+  <div style="margin-left: 30px">PAM site</div>
+
  </td>
  <td>
   <strong>Crispr Pair Colour Key:</strong><br>
