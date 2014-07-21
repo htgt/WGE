@@ -1,7 +1,7 @@
 package WGE::Util::GenomeBrowser;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::GenomeBrowser::VERSION = '0.034';
+    $WGE::Util::GenomeBrowser::VERSION = '0.035';
 }
 ## use critic
 
@@ -58,6 +58,7 @@ sub colours {
         left_in_design  => '#DF3A01', # reddish
         right_in_design => '#FE9A2E', # orange
         no_ot_summary   => '#B2B2B2', # grey
+        pam             => '#DDC808', # yellowish
         '5F' => '#68D310',
         '5R' => '#68D310',
         'EF' => '#589BDD',
@@ -474,6 +475,7 @@ sub crisprs_to_gff {
         . $params->{'end_coord'} ;
 
         while ( my $crispr_r = $crisprs_rs->next ) {
+            my $parent_id = 'C_' . $crispr_r->id;
             my %crispr_format_hash = (
                 'seqid' => $params->{'chromosome_number'},
                 'source' => 'WGE',
@@ -485,7 +487,7 @@ sub crisprs_to_gff {
 #                'strand' => '.',
                 'phase' => '.',
                 'attributes' => 'ID='
-                    . 'C_' . $crispr_r->id . ';'
+                    . $parent_id . ';'
                     . 'Name=' . $crispr_r->id
                 );
 
@@ -496,6 +498,9 @@ sub crisprs_to_gff {
             }
 
             my $crispr_parent_datum = prep_gff_datum( \%crispr_format_hash );
+
+            # Make 2 different CDS features, one for PAM and
+            # one for the crispr without PAM
             $crispr_format_hash{'type'} = 'CDS';
             my $colour = colours->{left_crispr}; # greenish
 
@@ -511,13 +516,37 @@ sub crisprs_to_gff {
                 $colour = colours->{no_ot_summary}; # grey
             }
 
+            my ($pam_start, $pam_end);
+            if($crispr_r->pam_right){
+                $crispr_format_hash{'end'} = $crispr_r->chr_end - 2;
+                $pam_start =  $crispr_r->chr_end - 2;
+                $pam_end = $crispr_r->chr_end;
+            }
+            else{
+                $crispr_format_hash{'start'} = $crispr_r->chr_start + 2;
+                $pam_start = $crispr_r->chr_start;
+                $pam_end = $crispr_r->chr_start + 2;
+            }
+
+            # This is the crispr without PAM
             $crispr_format_hash{'attributes'} =     'ID='
-                    . $crispr_r->id . ';'
-                    . 'Parent=C_' . $crispr_r->id . ';'
+                    . 'Cr_' . $crispr_r->id . ';'
+                    . 'Parent=' . $parent_id . ';'
                     . 'Name=' . $crispr_r->id . ';'
                     . 'color=' . $colour;
             my $crispr_child_datum = prep_gff_datum( \%crispr_format_hash );
-            push @crisprs_gff, $crispr_parent_datum, $crispr_child_datum ;
+
+            # This is the PAM
+            $crispr_format_hash{start} = $pam_start;
+            $crispr_format_hash{end} = $pam_end;
+            $crispr_format_hash{'attributes'} = 'ID='
+                    . 'PAM_' . $crispr_r->id . ';'
+                    . 'Parent=' . $parent_id . ';'
+                    . 'Name=' . $crispr_r->id . ';'
+                    . 'color=' . colours->{pam} ;
+            my $pam_child_datum = prep_gff_datum( \%crispr_format_hash );
+
+            push @crisprs_gff, $crispr_parent_datum, $crispr_child_datum, $pam_child_datum ;
         }
 
 

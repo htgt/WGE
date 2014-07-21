@@ -1,3 +1,8 @@
+0.035     2014-07-21 16:12:44 Europe/London
+
+    Genoverse - added PAM site colouring
+    Bugfix: do not cache User resultset as it was not being cleared in all fastcgi processes
+
 0.034     2014-07-16 10:30:42 Europe/London
 
    Another attempt to fix forking

@@ -1,7 +1,7 @@
 package WGE::Model::FormValidator::Constraint;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::FormValidator::Constraint::VERSION = '0.034';
+    $WGE::Model::FormValidator::Constraint::VERSION = '0.035';
 }
 ## use critic
 
@@ -40,4 +40,9 @@ sub existing_crispr_pair {
 sub bookmark_action {
 	return shift->in_set( 'add', 'remove' );
 }
+
+override existing_user => sub {
+	return shift->existing_row( 'User', 'name');
+};
+
 1;
