@@ -421,7 +421,8 @@
 
   $(document).ready( function() {
 
-    Genoverse.on('afterInit', function () {
+    console.log(Genoverse);
+    Genoverse.on('afterInit', Genoverse, function () {
 
       // Change the text of the region summary button
       $(".summary").text("Compute Off-Targets");
@@ -590,7 +591,7 @@
   });
 </script>
 
-    <script type="text/javascript" src="[% c.uri_for('/static/genoverse/js/genoverse.wtsi.js')%]"></script>
+    <script type="text/javascript" src="[% c.uri_for('/Genoverse/js/genoverse.combined.js')%]"></script>
     <script type="text/javascript" src="[% c.uri_for('/static/js/genoverse_custom_tracks.js', {i => 3})%]"></script>
     <script>
        var genoverseConfig = {
@@ -632,7 +633,7 @@
             $(".summary").text(button_text);
           });
         },
-        plugins   : [ 'controlPanel_no_tracks_menu', 'karyotype', 'trackControls', 'resizer', 'fileDrop' ],
+        plugins   : [ 'controlPanelWGE', 'karyotype', 'trackControls', 'resizer', 'fileDrop' ],
         tracks    : [
           Genoverse.Track.Scalebar,
           Genoverse.Track.extend({
