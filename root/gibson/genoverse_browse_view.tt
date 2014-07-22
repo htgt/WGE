@@ -581,7 +581,7 @@
           Genoverse.Track.extend({
             name      : 'Sequence',
             [% IF genome == 'GRCm38' %]
-            url       : 'http://beta.rest.ensembl.org/sequence/region/mouse/__CHR__:__START__-__END__?content-type=text/plain',
+            url       : 'http://rest.ensembl.org/sequence/region/mouse/__CHR__:__START__-__END__?content-type=text/plain',
             [% END %]
             model     : Genoverse.Track.Model.Sequence.Ensembl,
             view      : Genoverse.Track.View.Sequence,
@@ -594,7 +594,7 @@
             name   : 'Genes',
             //FIXME: should pass species to this template so we do not rely on assembly
             [% IF genome == 'GRCm38' %]
-            url    : 'http://beta.rest.ensembl.org/feature/region/mouse/__CHR__:__START__-__END__?feature=gene;content-type=application/json',
+            url    : 'http://rest.ensembl.org/overlap/region/mouse/__CHR__:__START__-__END__?feature=gene;feature=transcript;feature=exon;feature=cds;content-type=application/json',
             [% END %]
             height : 200,
             controls  : 'off',
