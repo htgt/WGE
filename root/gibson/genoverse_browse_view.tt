@@ -533,7 +533,7 @@
 
 </script>
 
-    <script type="text/javascript" src="[% c.uri_for('/Genoverse/js/genoverse.combined.js')%]"></script>
+    <script type="text/javascript" src="[% c.uri_for('/Genoverse/js/genoverse.combined.js', {i => 1})%]"></script>
     <script type="text/javascript" src="[% c.uri_for('/static/js/genoverse_custom_tracks.js', {i => 5})%]"></script>
     <script>
        var genoverseConfig = {
