@@ -531,69 +531,10 @@
     });
   });
 
-  // code that needs to run AFTER genoverse is loaded and initialized
-  $(window).load( function () {
-      // Change the text of the region summary button
-      $(".summary").text("Compute Off-Targets");
-
-      // All tracks are loaded by default on page refresh
-      // Hide the ones we don't want to see
-      // We are doing it this way because using the hidden attribute
-      // on the genoverse tracks caused "call stack size exceeded" error
-      if($("#hide_single")[0].checked == true){
-        hide_single();
-      }
-
-      if($("#hide_paired")[0].checked == true){
-        hide_paired();
-      }
-
-       if($("#hide_designs")[0].checked == true){
-        hide_designs();
-      }
-
-      var spinner = "[% c.uri_for( '/static/images/spinner-circle.gif' ) %]";
-
-      // override the 'makeMenu' method in order to add bookmarking buttons
-      // and necessary click handlers
-      var old_makeMenu = $(window)[0].genoverse.makeMenu;
-
-      $(window)[0].genoverse.makeMenu = function (feature, event, track) {
-        // run existing makeMenu code to create popup
-        old_makeMenu.apply(this, arguments);
-
-        // append the bookmarking button to the popup
-        var settings;
-        if(feature.type == 'Crispr'){
-          console.log('this is a crispr - adding bookmark button');
-          settings = {
-             'id'           : feature.name,
-             'type'         : 'Crispr',
-             'status_uri'   : "[% c.uri_for('/crispr_bookmark_status') %]",
-             'bookmark_uri' : "[% c.uri_for('/bookmark_crispr') %]",
-             'spinner'      : spinner,
-             'bookmark_track' : get_track('Bookmarked Crisprs')
-          };
-          add_bookmark_button(feature.menuEl,settings);
-        }
-        else if(feature.type == 'crispr_pair'){
-          console.log('this is a crispr pair - adding bookmark button');
-          settings = {
-             'id'           : feature.name,
-             'type'         : 'Crispr Pair',
-             'status_uri'   : "[% c.uri_for('/crispr_pair_bookmark_status') %]",
-             'bookmark_uri' : "[% c.uri_for('/bookmark_crispr_pair') %]",
-             'spinner'      : spinner,
-             'bookmark_track' : get_track('Bookmarked Crispr Pairs')
-          };
-          add_bookmark_button(feature.menuEl,settings);
-        }
-      };
-  });
 </script>
 
     <script type="text/javascript" src="[% c.uri_for('/Genoverse/js/genoverse.combined.js')%]"></script>
-    <script type="text/javascript" src="[% c.uri_for('/Genoverse/js/wge_custom_tracks.js', {i => 1})%]"></script>
+    <script type="text/javascript" src="[% c.uri_for('/static/js/genoverse_custom_tracks.js', {i => 5})%]"></script>
     <script>
        var genoverseConfig = {
         width     : 1060,
@@ -649,7 +590,7 @@
             controls  : 'off',
             unsortable : true
           }),
-          Genoverse.Track.extend({
+          Genoverse.Track.Genes.extend({
             name   : 'Genes',
             //FIXME: should pass species to this template so we do not rely on assembly
             [% IF genome == 'GRCm38' %]
@@ -658,38 +599,7 @@
             height : 200,
             controls  : 'off',
             unsortable : true,
-            info   : 'Ensembl API genes & transcripts, see <a href="http://beta.rest.ensembl.org/" target="_blank">beta.rest.ensembl.org</a> for more details',
-
-            // Different settings for different zoom level
-            2000000: { // This one applies when > 2M base-pairs per screen
-              labels : false
-            },
-            100000: { // more than 100K but less then 2M
-              labels : true,
-              model  : Genoverse.Track.Model.Gene.Ensembl,
-              view   : Genoverse.Track.View.Gene.Ensembl
-            },
-            1: { // > 1 base-pair, but less then 100K
-              labels : true,
-              model  : Genoverse.Track.Model.Transcript.Ensembl,
-              view   : Genoverse.Track.View.Transcript.Ensembl
-            },
-            populateMenu : function (feature) {
-              var atts = {
-                ID     : feature.id,
-                Name   : feature.external_name,
-                Description : feature.description,
-                Parent : feature.Parent,
-                Start  : feature.start,
-                End    : feature.end,
-                Strand : feature.strand,
-                Type   : feature.feature_type,
-                Biotype: feature.biotype,
-                Source : feature.source,
-                Logic  : feature.logic_name
-              };
-              return atts;
-            }
+            info   : 'Ensembl API genes & transcripts, see <a href="http://beta.rest.ensembl.org/" target="_blank">beta.rest.ensembl.org</a> for more details'
           }),
           Genoverse.Track.extend({
             name      : 'Designs',
@@ -756,7 +666,69 @@
         ]
       };
 
-      document.addEventListener('DOMContentLoaded', function () { window.genoverse = new Genoverse(genoverseConfig); });
+      document.addEventListener('DOMContentLoaded', function () {
+        window.genoverse = new Genoverse(genoverseConfig);
+
+        // code that needs to run AFTER genoverse is loaded and initialized
+        window.genoverse.on('afterInit', function (){
+          // Change the text of the region summary button
+          $(".summary").text("Compute Off-Targets");
+
+          // All tracks are loaded by default on page refresh
+          // Hide the ones we don't want to see
+          // We are doing it this way because using the hidden attribute
+          // on the genoverse tracks caused "call stack size exceeded" error
+          if($("#hide_single")[0].checked == true){
+            hide_single();
+          }
+
+          if($("#hide_paired")[0].checked == true){
+            hide_paired();
+          }
+
+           if($("#hide_designs")[0].checked == true){
+            hide_designs();
+          }
+
+          var spinner = "[% c.uri_for( '/static/images/spinner-circle.gif' ) %]";
+
+          // override the 'makeMenu' method in order to add bookmarking buttons
+          // and necessary click handlers
+          var old_makeMenu = $(window)[0].genoverse.makeMenu;
+
+          $(window)[0].genoverse.makeMenu = function (feature, event, track) {
+            // run existing makeMenu code to create popup
+            old_makeMenu.apply(this, arguments);
+
+            // append the bookmarking button to the popup
+            var settings;
+            if(feature.type == 'Crispr'){
+              console.log('this is a crispr - adding bookmark button');
+              settings = {
+                 'id'           : feature.name,
+                 'type'         : 'Crispr',
+                 'status_uri'   : "[% c.uri_for('/crispr_bookmark_status') %]",
+                 'bookmark_uri' : "[% c.uri_for('/bookmark_crispr') %]",
+                 'spinner'      : spinner,
+                 'bookmark_track' : get_track('Bookmarked Crisprs')
+              };
+              add_bookmark_button(feature.menuEl,settings);
+            }
+            else if(feature.type == 'crispr_pair'){
+              console.log('this is a crispr pair - adding bookmark button');
+              settings = {
+                 'id'           : feature.name,
+                 'type'         : 'Crispr Pair',
+                 'status_uri'   : "[% c.uri_for('/crispr_pair_bookmark_status') %]",
+                 'bookmark_uri' : "[% c.uri_for('/bookmark_crispr_pair') %]",
+                 'spinner'      : spinner,
+                 'bookmark_track' : get_track('Bookmarked Crispr Pairs')
+              };
+              add_bookmark_button(feature.menuEl,settings);
+            }
+          };
+        });
+      });
     </script>
 
 
