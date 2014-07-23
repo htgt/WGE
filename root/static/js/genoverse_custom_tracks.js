@@ -1,3 +1,36 @@
+Genoverse.Track.Genes = Genoverse.Track.extend({
+    // Different settings for different zoom level
+    2000000: { // This one applies when > 2M base-pairs per screen
+      labels : false
+    },
+    100000: { // more than 100K but less then 2M
+      labels : true,
+      model  : Genoverse.Track.Model.Gene.Ensembl,
+      view   : Genoverse.Track.View.Gene.Ensembl
+    },
+    1: { // > 1 base-pair, but less then 100K
+      labels : true,
+      model  : Genoverse.Track.Model.Transcript.Ensembl,
+      view   : Genoverse.Track.View.Transcript.Ensembl
+    },
+    populateMenu : function (feature) {
+      var atts = {
+        ID     : feature.id,
+        Name   : feature.external_name,
+        Description : feature.description,
+        Parent : feature.Parent,
+        Start  : feature.start,
+        End    : feature.end,
+        Strand : feature.strand,
+        Type   : feature.feature_type,
+        Biotype: feature.biotype,
+        Source : feature.source,
+        Logic  : feature.logic_name
+      };
+      return atts;
+    }
+});
+
 Genoverse.Track.Crisprs = Genoverse.Track.extend({
     model     : Genoverse.Track.Model.Transcript.GFF3,
     view      : Genoverse.Track.View.Transcript.extend({
@@ -183,7 +216,7 @@ Genoverse.Track.View.FilterCrisprPairs = Genoverse.Track.View.Transcript.extend(
         this.base.apply(this, arguments);
         context.strokeStyle = orig_strokeStyle;
     }
-})
+});
 
 function fitsOTProfile(ot_summary, ot_profile){
         for (var mismatch_number = 0; mismatch_number < 5; mismatch_number++){
