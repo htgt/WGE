@@ -1,7 +1,7 @@
 package WGE::View::CSV;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::View::CSV::VERSION = '0.035';
+    $WGE::View::CSV::VERSION = '0.036';
 }
 ## use critic
 
