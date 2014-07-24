@@ -1,7 +1,7 @@
 package WGE::Util::GenomeBrowser;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::GenomeBrowser::VERSION = '0.036';
+    $WGE::Util::GenomeBrowser::VERSION = '0.037';
 }
 ## use critic
 
@@ -651,30 +651,58 @@ sub crispr_pairs_to_gff {
             $crispr_format_hash{attributes}.=";left_ot_summary=$left_ot;right_ot_summary=$right_ot";
 
             my $crispr_pair_parent_datum = prep_gff_datum( \%crispr_format_hash );
+            push @crisprs_gff, $crispr_pair_parent_datum;
 
-            $crispr_format_hash{'type'} = 'CDS';
-            $crispr_format_hash{'end'} = $left->{chr_start}+22;
-            $crispr_format_hash{'attributes'} =     'ID='
-                    . $left->{id} . ';'
+            my $crispr_display_info = {
+                left => {
+                    crispr => $left,
+                    colour => $left_colour,
+                },
+                right => {
+                    crispr => $right,
+                    colour => $right_colour,
+                }
+            };
+
+            foreach my $side ( qw(left right) ){
+                my $crispr = $crispr_display_info->{$side}->{crispr};
+
+                my ($pam_start, $pam_end);
+                if($crispr->{pam_right}){
+                    $crispr_format_hash{'start'} = $crispr->{chr_start};
+                    $crispr_format_hash{'end'} = $crispr->{chr_end} - 2;
+                    $pam_start =  $crispr->{chr_end} - 2;
+                    $pam_end = $crispr->{chr_end};
+                }
+                else{
+                    $crispr_format_hash{'start'} = $crispr->{chr_start} + 2;
+                    $crispr_format_hash{'end'} = $crispr->{chr_end};
+                    $pam_start = $crispr->{chr_start};
+                    $pam_end = $crispr->{chr_start} + 2;
+                }
+
+                # This is the crispr without PAM
+                $crispr_format_hash{'type'} = 'CDS';
+                $crispr_format_hash{'attributes'} =     'ID='
+                    . $crispr->{id} . ';'
                     . 'Parent=' . $id . ';'
-                    . 'Name=' . $left->{id} . ';'
-                    . 'color=' . $left_colour;
-            my $crispr_left_datum = prep_gff_datum( \%crispr_format_hash );
+                    . 'Name=' . $crispr->{id} . ';'
+                    . 'color=' .$crispr_display_info->{$side}->{colour};
+                my $crispr_datum = prep_gff_datum( \%crispr_format_hash );
 
-            $crispr_format_hash{'start'} = $right->{chr_start};
-            $crispr_format_hash{'end'} = $right->{chr_start}+22;
-            $crispr_format_hash{'attributes'} =     'ID='
-                    . $right->{id} . ';'
-                    . 'Parent=' . $id . ';'
-                    . 'Name=' . $right->{id} . ';'
-                    . 'color=' . $right_colour;
-#            $crispr_format_hash{'attributes'} = $crispr_r->pair_id;
-            my $crispr_right_datum = prep_gff_datum( \%crispr_format_hash );
+                # This is the PAM
+                $crispr_format_hash{start} = $pam_start;
+                $crispr_format_hash{end} = $pam_end;
+                $crispr_format_hash{'attributes'} = 'ID='
+                        . 'PAM_' . $crispr->{id} . ';'
+                        . 'Parent=' . $id . ';'
+                        . 'Name=' . $crispr->{id} . ';'
+                        . 'color=' . colours->{pam} ;
+                my $pam_child_datum = prep_gff_datum( \%crispr_format_hash );
 
-            push @crisprs_gff, $crispr_pair_parent_datum, $crispr_left_datum, $crispr_right_datum ;
+                push @crisprs_gff, $crispr_datum, $pam_child_datum;
+            }
         }
-
-
     return \@crisprs_gff;
 }
 
