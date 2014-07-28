@@ -13,10 +13,15 @@ use Path::Class;
 use YAML qw( LoadFile );
 use URI;
 use Try::Tiny;
- 
+
 use WGE;
 use WGE::Model::DB;
 use Test::WWW::Mechanize::Catalyst;
+use JSON qw(decode_json);
+
+# Hide debug output during tests
+use Log::Log4perl qw(:easy);
+Log::Log4perl->easy_init( { level => $OFF } );
 
 has schema => (
     is => 'rw',
@@ -30,6 +35,12 @@ has mech => (
 );
 
 has fixture_folder => (
+    is       => 'rw',
+    required => 1,
+    default  => sub { dir( $Bin, "fixtures") },
+);
+
+has data_folder => (
     is       => 'rw',
     required => 1,
     default  => sub { dir( $Bin, "data") },
@@ -71,12 +82,12 @@ sub _build_mech {
 sub _build_schema {
     my $self = shift;
 
-    my $schema; 
+    my $schema;
 
-    try { 
+    try {
         $schema = WGE::Model::DB->new();
     };
-    
+
     #schema was called before the mech has been initialised so the config
     #isn't loaded for some reason. force the mech to initialize and re-try.
     unless ( $schema ) {
@@ -91,45 +102,57 @@ sub _build_schema {
     return $schema;
 }
 
-sub fixture_data {
-    my ( $self, $name ) = @_;
-
-    #add .yaml extension if its not there already
-    if ( $name !~ /\.yaml$/ ) { 
-        $name .= ".yaml";
-    }
-
-    return LoadFile( $self->fixture_folder->file( $name )->stringify );
+sub json_data {
+    my ($self, $name) = @_;
+    my $path = $self->data_folder->file($name)->stringify;
+    open (my $fh, "<", $path )
+        or die "Cannot open json data file $path";
+    return decode_json(<$fh>);
 }
 
-#accepts an optional array of hashrefs of { file => filename, resultset => name }
 sub load_fixtures {
-    my ( $self, $fixtures ) = @_;
+    my $self = shift;
 
-    #default behaviour is to load ALL
-    unless ( defined $fixtures ) {
-        $fixtures = [
-            { file => 'genes',   resultset => 'Gene'       , delete_related => [qw(Exon)]},
-            { file => 'crisprs', resultset => 'Crispr'     , delete_related => [qw(CrisprsHuman CrisprsMouse)]},
-        ];
+    # clear database using clean_db.sql then load fixture sql files
+    #my @sql_files = qw(clean_db reference_fixtures design_fixtures);
+    my @sql_files = qw(clean_db reference_fixtures );
+
+    foreach my $file (@sql_files){
+        my $file_name = $file.".sql";
+        my $fh = $self->fixture_folder->file($file_name)->open;
+        my $sql = join " ", <$fh>;
+        $self->schema->storage->dbh->do($sql);
     }
 
-    #we want to ideally store how many were in each file so we can
-    #verify they all went in.
+    # load human and mouse crispr.csv fixtures in correct order
+    foreach my $species ( qw(human mouse) ){
+        foreach my $table ( qw(genes exons) ){
+            my $file_name = $species . "_" . $table . ".csv";
+            my $fh = $self->fixture_folder->file($file_name)->open;
+            $self->pg_copy_fh_to_table($fh, $table);
 
-    for my $fixture ( @{ $fixtures } ) {
-        my $data = $self->fixture_data( $fixture->{file} );
-        
-        # Clear out old fixture data before loading new
-        if (my $related = $fixture->{delete_related}){
-            foreach my $table (@$related){
-        	    $self->schema->resultset( $table )->delete_all;
-            }
         }
-        $self->schema->resultset( $fixture->{resultset} )->delete_all;
-        $self->schema->resultset( $fixture->{resultset} )->load_from_hash( $data, 1 );
-    }
 
+        foreach my $table ( qw(crisprs crispr_pairs) ){
+            my $file_name = $species . "_" . $table . ".csv";
+            my $child_table = $table . "_" . $species;
+            my $fh = $self->fixture_folder->file($file_name)->open;
+            $self->pg_copy_fh_to_table($fh, $child_table);
+        }
+
+    }
+    return;
+}
+
+sub pg_copy_fh_to_table{
+    my ( $self, $fh, $table_name ) = @_;
+
+    my $dbh = $self->schema->storage->dbh;
+    $dbh->do("COPY $table_name from STDIN with delimiter ';' csv header");
+    foreach my $line(<$fh>){
+        $dbh->pg_putcopydata($line);
+    }
+    $dbh->pg_putcopyend();
     return;
 }
 
@@ -137,16 +160,16 @@ sub add_ajax_headers {
     my ( $self ) = @_;
 
     $self->mech->add_header(
-        'X-Requested-With' => 'XMLHttpRequest', 
-        'Content-Type'     => 'application/json', 
-        'Accept'           => 'application/json, text/javascript, */*' 
+        'X-Requested-With' => 'XMLHttpRequest',
+        'Content-Type'     => 'application/json',
+        'Accept'           => 'application/json, text/javascript, */*'
     );
 }
 
 sub delete_ajax_headers {
     my ( $self ) = @_;
 
-    $self->mech->delete_header( 
+    $self->mech->delete_header(
         'X-Requested-With',
         'Content-Type',
         'Accept',
