@@ -18,10 +18,13 @@ use WGE;
 use WGE::Model::DB;
 use Test::WWW::Mechanize::Catalyst;
 use JSON qw(decode_json);
+use Catalyst::Authentication::Credential::OAuth2;
+use Test::MockModule;
+
 
 # Hide debug output during tests
 use Log::Log4perl qw(:easy);
-Log::Log4perl->easy_init( { level => $OFF } );
+Log::Log4perl->easy_init( { level => $OFF} );
 
 has schema => (
     is => 'rw',
@@ -52,6 +55,12 @@ has appdir => (
     default => sub { dir( $Bin, '../' ) },
 );
 
+has authenticated_mech => (
+    is       => 'rw',
+    required => 1,
+    builder  => '_build_authenticated_mech',
+);
+
 sub _build_mech {
     my $self = shift;
 
@@ -76,6 +85,26 @@ sub _build_mech {
     return Test::WWW::Mechanize::Catalyst->new(
         catalyst_app => 'WGE',
     );
+}
+
+sub _build_authenticated_mech {
+    my $self = shift;
+
+    # Override the authenticate method so it does not try to access google
+    my $module = new Test::MockModule('Catalyst::Authentication::Credential::OAuth2');
+    $module->mock('authenticate' => sub {
+        my ($self, $c, $realm) = @_;
+        return $realm->find_user(
+            { name => 'test_user@gmail.com' },
+            $c
+        );
+    });
+
+    # Build a new mech object and access set_user controller to trigger authentication
+    my $mech = $self->_build_mech;
+    $mech->get('/set_user');
+
+    return $mech;
 }
 
 #note that you must run load_fixtures manually.
