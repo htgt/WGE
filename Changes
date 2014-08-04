@@ -1,5 +1,34 @@
 {{$NEXT}}
 
+0.037     2014-07-24 15:08:33 Europe/London
+
+    Genoverse - added PAM site colouring to crispr pairs
+
+0.036     2014-07-23 10:02:54 Europe/London
+
+    Now uses latest version of Genvoerse from WebApp-Common shared_static 
+
+0.035     2014-07-21 16:12:44 Europe/London
+
+    Genoverse - added PAM site colouring
+    Bugfix: do not cache User resultset as it was not being cleared in all fastcgi processes
+
+0.034     2014-07-16 10:30:42 Europe/London
+
+   Another attempt to fix forking
+
+0.033     2014-07-15 12:49:44 Europe/London
+    Further attempts to fix forking
+    Added off_target_summary_arr to crispr as_hash method
+
+0.032     2014-07-14 16:34:56 Europe/London
+
+   Attempt to fix off-target server error (could not recreate it in devel)
+
+0.031     2014-07-14 15:05:45 Europe/London
+
+    Added exon/region off-target computation
+
 0.030     2014-07-14 07:22:43 Europe/London
 
     Updated to use JSON type columns.
