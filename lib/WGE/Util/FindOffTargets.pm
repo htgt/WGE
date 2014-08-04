@@ -7,6 +7,7 @@ use WGE::Util::OffTargetServer;
 use WGE::Util::GenomeBrowser qw(get_region_from_params crispr_pairs_for_region crisprs_for_region);
 use TryCatch;
 use List::MoreUtils qw(uniq);
+use LIMS2::Exception;
 
 has log => (
     is         => 'rw',
@@ -27,6 +28,32 @@ has ots_server => (
 
 sub _build_ots_server {
     return WGE::Util::OffTargetServer->new;
+}
+
+sub run_individual_off_target_search {
+    my ( $self, $model, $species, $ids ) = @_;
+
+    #allow arrayref or scalar
+    $ids = [ $ids ] if ref $ids ne 'ARRAY';
+
+    if ( @{$ids} > 100 ) {
+        LIMS2::Exception->throw( "Can only search for 100 crispr off targets at a time" );
+    }
+
+    #find all ids that don't have
+    my @data_missing = map { $_->id }
+                        grep { ! $_->off_target_summary }
+                            $model->schema->resultset('Crispr')->search( id => {-IN => $ids} );
+
+    return unless @data_missing;
+
+    my $db_species = $data_missing[0]->species;
+
+    if ( $db_species ne $species ) {
+        LIMS2::Exception->throw( "Provided species does not match CRISPR ids!" );
+    }
+
+    $self->ots_server->update_off_targets($model, { ids => \@data_missing, species => $species } );
 }
 
 sub run_pair_off_target_search{

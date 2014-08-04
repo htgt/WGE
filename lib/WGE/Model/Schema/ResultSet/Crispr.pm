@@ -28,6 +28,34 @@ sub search_by_loci {
     );
 }
 
+=head crisprs_for_region
+
+Find all the single crisprs in and around the target region.
+
+=cut
+sub crisprs_for_region {
+    my ( $self, $opts ) = @_;
+
+    #$self->log->debug("Getting crisprs for $chr_name:${chr_start}-${chr_end}");
+
+    # we use 90 because the spaced between the crisprs in a pair can be 50 bases.
+    # 50 + the size of 2 crisprs is around 90
+    # that should bring back all the possible crisprs we want ( and some we do not want
+    # which we must filter out )
+    return $self->search(
+        {
+            'species_id'  => $opts->{species_id},
+            'chr_name'    => $opts->{chr_name},
+            # need all the crisprs starting with values >= start_coord
+            # and whose start values are <= end_coord
+            'chr_start'   => {
+                -between => [ $opts->{chr_start}-22, $opts->{chr_end} ],
+            },
+        },
+    );
+}
+
+
 sub all_pairs {
     my $self = shift;
 
@@ -36,11 +64,11 @@ sub all_pairs {
 
     #this might be more efficient but if we're going to do something like this,
     #we may as well do raw sql.
-    
+
     # my ( @left_crisprs, @right_crisprs );
     # for my $crispr ( $self->all ) {
-    #     if ( $crispr->pam_right ) { 
-    #         push @right_crisprs, $crispr->id 
+    #     if ( $crispr->pam_right ) {
+    #         push @right_crisprs, $crispr->id
     #     }
     #     else {
     #         push @left_crisprs, $crispr->id;

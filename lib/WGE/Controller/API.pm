@@ -267,6 +267,22 @@ sub pair_search :Local('pair_search') {
     return;
 }
 
+sub individual_off_target_search :Local('individual_off_target_search') {
+    my ( $self, $c ) = @_;
+
+    my $params = $c->req->params;
+    check_params_exist( $c, $params, [ qw( species ids ) ] );
+
+
+
+    my $data = $self->ot_finder->run_individual_off_target_search( $c->model('DB'), $params );
+
+    $c->stash->{json_data} = $data;
+    $c->forward('View::JSON');
+
+    return;
+}
+
 sub pair_off_target_search :Local('pair_off_target_search') {
     my ( $self, $c ) = @_;
 
