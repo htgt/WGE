@@ -127,8 +127,6 @@
     }
   });
 
-var q;
-
   function exon_search(params, select) {
     params = params || {marker_symbol: "Error"};
     select = select || {};
