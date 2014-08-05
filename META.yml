@@ -5,6 +5,7 @@ author:
 build_requires:
   File::Find: 0
   File::Temp: 0
+  Test::MockModule: 0
   Test::More: 0.88
   Test::WWW::Mechanize::Catalyst: 0
   URI: 0
@@ -54,6 +55,7 @@ requires:
   IO::Handle: 0
   IO::String: 0
   JSON: 0
+  LIMS2::Exception: 0
   LIMS2::Exception::InvalidState: 0
   LIMS2::REST::Client: 0
   LIMS2::Util::EnsEMBL: 0
@@ -94,4 +96,4 @@ requires:
   strict: 0
   utf8: 0
   warnings: 0
-version: 0.037
+version: 0.038

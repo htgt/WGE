@@ -1,8 +1,36 @@
 [% META title = "Find CRISPR by sequence"; META tab_name = "crispr"; META header_text = "Find CRISPR by sequence"; %]
 [% PROCESS utils.tt %]
 
+<style type="text/css">
+.wordwrap {
+   white-space: pre-wrap;      /* CSS3 */
+   white-space: -moz-pre-wrap; /* Firefox */
+   white-space: -pre-wrap;     /* Opera <7 */
+   white-space: -o-pre-wrap;   /* Opera 7 */
+   word-wrap: break-word;      /* IE */
+}
+</style>
+
 <script type="text/javascript">
+var searching = false;
 $(document).ready(function() {
+    $("#bulk").click(function(event) {
+      process_text();
+    });
+
+    $("#reset").click(function(event) {
+      //empty results
+      $("#results_table tbody").empty();
+      $("#results_container").hide();
+
+      //hide this button
+      $(this).hide();
+
+      $("#bulk_placeholder").text(""); //clear previous text
+      $("#seq_block").val(""); //clear text field
+      $("#bulk_form").children().show(); //re-display form
+    });
+
     $("#search").click(function(event) {
         event.preventDefault();
 
@@ -15,7 +43,7 @@ $(document).ready(function() {
             return;
         }
 
-        if ( ! /[ACGT]+/.test(seq) ) {
+        if ( ! /^[ACGT]+$/.test(seq) ) {
             create_alert("Sequence must contain the letters A, C, G or T only");
             return;
         }
@@ -26,50 +54,238 @@ $(document).ready(function() {
         $("#results_container").show();
         $("#spinner").show();
 
-        $.getJSON(
-            "[% c.uri_for('/api/search_by_seq') %]",
-            {"seq": seq, "pam_right": 2, "get_db_data": 1, "species": species},
-            function (data) {
-                console.log(data);
-                $("#spinner").hide();
-                $("#results_table").show();
-
-                if ( data.error ) {
-                  create_alert( data.error );
-                  return;
-                }
-
-                if ( data.length == 0 ) {
-                  var num_cols = $("#results_table thead th").length;
-                  table.append( $("<tr><td colspan='" + num_cols + "' style='text-align:center'>No results found</td></tr>") );
-                  return;
-                }
-
-                $.each(data, function(i, val) {
-                  var location = val.chr_name + ":" + val.chr_start + "-" + val.chr_end;
-
-                  var row = $("<tr>");
-                  var cells = [
-                    $("<td>").append( $("<a>", {href: "[% c.uri_for('/crispr') %]/" + val.id, text: val.id}) ),
-                    $("<td>").append( get_ensembl_link(location, species) ),
-                    $("<td>", {text: val.genic ? "Yes" : "No"}),
-                    $("<td>", {text: val.exonic ? "Yes" : "No"}),
-                    $("<td>").append( $("<a>", {href: "[% c.uri_for('/genoverse_browse', {view_single => 1}) %]&crispr_id=" + val.id, "class":"btn", target:"_blank", text: "View in Genoverse"}) ),
-                  ];
-
-                  row.append( cells ).appendTo( table );
-                });
-            }
-        ).fail(function() { create_alert("Error: Searching failed"); $("#spinner").hide(); $("#results_container").hide(); $("#results_table").hide(); });
+        get_seq_data({ "seq": seq, "species": species, "on_completion": add_matches_to_table});
     });
+
+    $("#seq_block").change(function(event) {
+      var s = $(this);
+      //strip all whitespace from the box
+      s.val( s.val().replace(/\s/g, "") );
+    });
+
+  var s = "GCATCAGTGGATGGTCGCCCCGGATTGGGGACCCGAATCCCTGGCTGCAGATCGACTTAATGAAGAAGCATCGGAT";
+  //process_text(s);
 });
+
+//args must have seq and species
+//by default we don't consider PAM sequence and we get db data
+function get_seq_data(args) {
+    args.pam_right = (args.pam_right === undefined) ? 2: args.pam_right;
+    args.get_db_data = (args.get_db_data === undefined) ? 1 : args.get_db_data;
+
+    $.getJSON(
+        "[% c.uri_for('/api/search_by_seq') %]",
+        {"seq": args.seq, "pam_right": args.pam_right, "get_db_data": args.get_db_data, "species": args.species},
+        function (data) {
+            //console.log(data);
+
+            //allow optional method to run when finished
+            if (args.on_completion !== undefined) {
+                args.data = data;
+                args.on_completion(args);
+            }
+        }
+    ).fail(function() {
+        create_alert("Error: Searching failed");
+        $("#spinner").hide();
+        $("#results_container").hide();
+        $("#results_table").hide();
+    });
+}
+
+function add_matches_to_table(args) {
+    if (args.data === undefined) return;
+
+    $("#spinner").hide();
+
+    if ( args.data.error ) {
+      create_alert( args.data.error );
+      $("#results_container").hide();
+      return;
+    }
+
+    $("#results_table").show();
+
+    var table = $("#results_table tbody");
+
+    if ( args.data.length == 0 ) {
+      var num_cols = $("#results_table thead th").length;
+      $("<tr>").append(
+        $("<td>", { "colspan": num_cols, "style": "text-align:center;", text: "No results found" })
+      ).appendTo(table);
+
+      return;
+    }
+
+    //add every returned result into the table and make the text highlight on user selection
+    $.each(args.data, function(i, val) {
+      var row = process_row(i, val, args.species)
+      if ( args.hover_text !== undefined && args.original_text !== undefined ) {
+        //use a closure to keep track of the right text to substitute
+        row.hover(
+          function(event) { if (!searching) $("#bulk_placeholder").html(args.hover_text) },
+          function(event) { if (!searching) $("#bulk_placeholder").html(args.original_text)}
+        );
+      }
+
+      row.appendTo(table);
+    });
+}
+
+function process_row(i, val, species) {
+    var location = val.chr_name + ":" + val.chr_start + "-" + val.chr_end;
+
+    var row = $("<tr>");
+    var cells = [
+      $("<td>").append( $("<a>", {href: "[% c.uri_for('/crispr') %]/" + val.id, text: val.id}) ),
+      $("<td>").append( get_ensembl_link(location, species) ),
+      $("<td>", {text: val.genic ? "Yes" : "No"}),
+      $("<td>", {text: val.exonic ? "Yes" : "No"}),
+      $("<td>", {text: val.off_target_summary || "-"}),
+      $("<td>").append( $("<a>", {href: "[% c.uri_for('/genoverse_browse', {view_single => 1}) %]&crispr_id=" + val.id, "class":"btn", target:"_blank", text: "View in Genoverse"}) ),
+    ];
+
+    return row.append( cells );
+}
+
+
+function process_text() {
+  var species = get_bulk_species();
+
+  if ( ! species ) {
+    create_alert("Please select a species");
+    return;
+  }
+
+  var text = $("#seq_block").val().replace(/\s/g, "").toUpperCase();
+  if ( ! /^[ACGT]+$/.test(text) ) {
+    create_alert("Sequence must contain the letters A, C, G or T only");
+    return;
+  }
+
+  var crisprs = find_crisprs(text);
+  //console.log(crisprs);
+
+  if ( ! crisprs.length ) {
+    create_alert("Couldn't find any CRISPRs in the provided sequence.");
+    return;
+  }
+
+  $("#bulk_form").children().hide();
+  $("#bulk_placeholder").text(text);
+
+  var table = $("#results_table tbody");
+  table.empty(); //delete anything that is in the table
+  $("#results_container").show();
+
+  var it = new Iterator(crisprs);
+
+  searching = true; //set global var to let other funcs know we're looping
+
+  search_by_seq(text, it, species);
+}
 
 function get_species() {
     return $("input:radio[name=species]:checked").val();
 }
 
+//should make this 1 method really but im still undecided on the layout
+function get_bulk_species() {
+    return $("input:radio[name=bulk_species]:checked").val();
+}
+
 function get_strand() {
     return $("input:radio[name=strand]:checked").val();
+}
+
+function find_crisprs(text) {
+  var crisprs = [];
+  var res = {"left": /CC[ACGT]([ACGT]{20})/g, "right": /([ACGT]{20})[ACGT]GG/g};
+
+  for (var key in res) {
+    var re = res[key];
+    while ( (match = re.exec(text)) != null ) {
+      //console.log("idx:" + match.index);
+      //console.log(match);
+      re.lastIndex -= 22;
+
+      crisprs.push({"start": match.index, "grna": match[1], "type": key});
+    }
+  }
+
+  crisprs.sort( function(a, b) { return a.start - b.start } );
+  return crisprs;
+}
+
+/*
+  Note: the ids will all be sequential, so we could just get the first and the last ids, the rest are obvious
+*/
+
+function search_by_seq(text, crispr_iterator, species) {
+  if( ! crispr_iterator.hasNext() ) return;
+  var crispr = crispr_iterator.next();
+
+  var split = highlight_crispr(text, crispr);
+
+  $("#bulk_placeholder").html( split.pre + split.full_crispr + split.post );
+
+  get_seq_data({
+    "seq": split.grna,
+    "species": species,
+    "on_completion": function(args) {
+        //add this text to the table row so we can show which crispr they are hovering over
+        args.hover_text = split.pre + split.full_crispr + split.post;
+        args.original_text = text;
+        //display this data in the table
+        add_matches_to_table(args);
+
+        //if we have more crisprs call this function recursively
+        if ( crispr_iterator.hasNext() ) {
+          search_by_seq(text, crispr_iterator, species);
+        }
+        else {
+          searching = false; //we are no longer searching
+          //we have no more crisprs so restore the text
+          $("#bulk_placeholder").text( text );
+          $("#reset").show();
+          console.log("finished processing text");
+        }
+    }
+  });
+}
+
+function highlight_crispr(text, crispr) {
+  var pre  = text.substring( 0, crispr.start );
+  var pam, grna;
+  if ( crispr.type == "left" ) {
+    pam  = text.substring( crispr.start, crispr.start + 3 );
+    grna = text.substring( crispr.start + 3, crispr.start + 23 );
+    //console.log("l: " + pam + grna)
+  }
+  else if ( crispr.type == "right" ) {
+    pam  = text.substring( crispr.start + 20, crispr.start + 23);
+    grna = text.substring( crispr.start, crispr.start + 20 );
+    //console.log("r:" + grna + pam);
+  }
+  else {
+    console.log("Unknown type:" + crispr.type);
+    return;
+  }
+
+  pam = "<span class='pam' style='color:#00B236'>" + pam + "</span>";
+  var mid = crispr.type == "left" ? pam + grna : grna + pam;
+  mid = "<span class='selected_crispr' style='color:#FF1C19'>" + mid + "</span>";
+  var post = text.substring( crispr.start + 23 );
+
+  return { "pre": pre, "full_crispr": mid, "post": post, "grna": grna, "pam": pam };
+}
+
+function Iterator(list) {
+  this.list = list;
+  this.index = 0;
+  this.hasNext = function() { return this.index < this.list.length; };
+  this.next = function() { return this.list[this.index++]; };
+  this.reset = function() { this.index = 0; };
 }
 
 </script>
@@ -77,7 +293,7 @@ function get_strand() {
 
 
 <div class="row">
-  <div class="span8 offset2">
+  <div class="span10 offset1">
 
     <!-- GTGTCAGTGAAACTTACTCT -->
 
@@ -131,6 +347,30 @@ function get_strand() {
         </fieldset>
       </form>
     </div>
+
+    <div class="well">
+        <div id="bulk_placeholder" class="wordwrap"></div><br/>
+        <button class="btn" id="reset" style="display:none;">Search Again</button>
+            <div id="bulk_form">
+                <textarea class="input-xxlarge" rows="5" name="seq_block" id="seq_block" placeholder="Paste sequence here"></textarea>
+                <div class="control-group" id="bulk_species">
+                  <div class="controls form-inline">
+                      <label class="radio inline">
+                        <input type="radio" name="bulk_species" id="radio_mouse" value="Mouse" />Mouse
+                      </label>
+                      <label class="radio inline">
+                        <input type="radio" name="bulk_species" id="radio_human" value="Human" />Human
+                      </label>
+                  </div>
+                </div>
+                <div class="control-group">
+                    <div class="controls">
+                        <button class="btn" id="bulk">Find CRISPRs</button>
+                    </div>
+                </div>
+            </div>
+    </div>
+
     <div class="well" id="results_container" style="display:none;">
       <div style="text-align: center; margin: 20px auto;" id="spinner">
         <img src="[% c.uri_for( '/static/images/spinner-circle.gif' ) %]"/>
@@ -143,6 +383,7 @@ function get_strand() {
             <th>EnsEMBL</th>
             <th>In gene</th>
             <th>In exon</th>
+            <th>Off Targets</th>
             <th></th>
           </thead>
           <tbody>
@@ -150,5 +391,6 @@ function get_strand() {
         </table>
       </div>
     </div>
+
   </div>
 </div>

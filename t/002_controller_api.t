@@ -1,4 +1,4 @@
-use Test::More import => [ '!pass' ], tests => 33;
+use Test::More import => [ '!pass' ], tests => 38;
 
 use strict;
 use warnings;
@@ -16,17 +16,8 @@ use Data::Dumper;
 
 #move these tests to another file not requiring model stuff
 my $test = Test::WGE->new;
-$test->load_fixtures; #should be a test in itself
 
-#test fixtures loaded correctly. kind of weird to do it in here to be honest
-ok my @genes = $test->schema->resultset('Gene')->all, 'Can get genes';
-#is scalar( @genes ), scalar( map { keys %{ $_ }  } values %{ $genes } ), 'Correct number of genes inserted';
-is scalar( @genes ), 4, 'Correct number of genes inserted';
-
-ok my @crisprs = $test->schema->resultset('Crispr')->all, 'Can get crisprs';
-#is scalar( @crisprs ), scalar( keys %{ $crisprs } ), 'Correct number of crisprs inserted';
-is scalar( @crisprs ), 50, 'Correct number of crisprs inserted';
-
+$test->load_fixtures();
 
 #add headers to make the next requests valid ajax
 $test->add_ajax_headers;
@@ -35,20 +26,29 @@ $test->add_ajax_headers;
 #need to test actual model stuff in separate file too probably
 #
 
+# get species
+{
+    my $tests = [
+        { name => 'get species', data => {}, expect => { 1 => "Human", 2 => "Mouse"} },
+    ];
+    # FIXME: does not work - why??
+    #test_json('/api/get_all_species', $tests);
+}
+
 #gene_search
 {
     my $tests = [
         { name => 'gene name error', data => {}, expect => { error => "Error: Name is required"} },
-        { 
-            name   => 'gene species error ', 
-            data   => { name => 'PRSS3' }, 
-            expect => {error => "Error: Species is required"} 
+        {
+            name   => 'gene species error ',
+            data   => { name => 'APP' },
+            expect => {error => "Error: Species is required"}
         },
-        { name => 'PRSS3 gene', data => { name => 'PRSS3', species => 'Human' }, expect => ["PRSS3"] },
-        { 
-            name   => 'PRSS3 case insensitive gene', 
-            data   => { name => 'pRss3', species => 'Human' }, 
-            expect => ["PRSS3"] 
+        { name => 'CBX1 gene', data => { name => 'CBX1', species => 'Human' }, expect => ["CBX1"] },
+        {
+            name   => 'CBX1 case insensitive gene',
+            data   => { name => 'cbx1', species => 'Human' },
+            expect => ["CBX1"]
         },
         { name => 'empty gene list', data => { name => 'FAKE', species => 'Human' }, expect => [] },
     ];
@@ -61,31 +61,27 @@ $test->add_ajax_headers;
     #why does this use marker_symbol not name.
     my $tests = [
         { name => 'exon name error', data => {}, expect => { error => "Error: Marker_symbol is required" } },
-        { 
-            name   => 'exon species error', 
-            data   => { marker_symbol => 'PRSS3' }, 
-            expect => {error => "Error: Species is required"} 
+        {
+            name   => 'exon species error',
+            data   => { marker_symbol => 'CBX1' },
+            expect => {error => "Error: Species is required"}
         },
-        { 
-            name   => 'invalid gene error', 
-            data   => { species => 'Mouse', marker_symbol => 'FAKE' }, 
+        {
+            name   => 'invalid gene error',
+            data   => { species => 'Human', marker_symbol => 'FAKE' },
             expect => { error => "No exons found" }
         },
-        { 
-            name   => 'PRSS3 exons', 
-            data   => { species => 'Mouse', marker_symbol => 'Gnai3' }, 
-            expect => { 
-              transcript => 'ENSMUST00000000001',
+        {
+            name   => 'CBX1 exons',
+            data   => { species => 'Human', marker_symbol => 'CBX1' },
+            expect => {
+              transcript => 'ENST00000393408',
               exons => [
-                { exon_id => "ENSMUSE00000334714", rank => 1, len => 258, },
-                { exon_id => "ENSMUSE00000276500", rank => 2, len => 42, },
-                { exon_id => "ENSMUSE00000276490", rank => 3, len => 141, },
-                { exon_id => "ENSMUSE00000276482", rank => 4, len => 157, },
-                { exon_id => "ENSMUSE00000565003", rank => 5, len => 128, },
-                { exon_id => "ENSMUSE00000565001", rank => 6, len => 129, },
-                { exon_id => "ENSMUSE00000565000", rank => 7, len => 153, },
-                { exon_id => "ENSMUSE00000404895", rank => 8, len => 209, },
-                { exon_id => "ENSMUSE00000363317", rank => 9, len => 2036, },
+                { exon_id => "ENSE00001515177", rank => 1, len => 442, },
+                { exon_id => "ENSE00002771605", rank => 2, len => 175, },
+                { exon_id => "ENSE00002887933", rank => 3, len => 176, },
+                { exon_id => "ENSE00000735651", rank => 4, len => 93, },
+                { exon_id => "ENSE00001824299", rank => 5, len => 1526, },
               ]
             }
         },
@@ -96,32 +92,82 @@ $test->add_ajax_headers;
 
 #pair_search
 {
+  # FIXME: test exon with no pairs error
     my $tests = [
         { name => 'empty exons error', data => {}, expect => { error => "Error: Exon_id[] is required" } },
         {
-            name   => 'invalid exon error', 
-            data   => { 'exon_id[]' => 'ENSE0' }, 
+            name   => 'invalid exon error',
+            data   => { 'exon_id[]' => 'ENSE0' },
             expect => { error => "Invalid exon id" }
         },
         {
-            name => 'exon with no pairs error', 
-            data => { 'exon_id[]' => 'ENSE00001382843' }, 
-            expect => { error => "None found!" }
+            name => 'single exon pairs',
+            data => { 'exon_id[]' => 'ENSE00000735651' },
+            expect => $test->json_data('single_exon_pairs_expected.json'),
         },
         {
-            name => 'single exon pairs', 
-            data => { 'exon_id[]' => 'ENSMUSE00000578254' }, 
-            expect => get_single_exon_pairs_expected(),
-        },
-        {
-            name => 'multiple exon pairs', 
-            data => { 'exon_id[]' => [ qw( ENSMUSE00000109902 ENSMUSE00000758105 ) ] }, 
-            expect => get_multiple_exon_pairs_expected(),
+            name => 'multiple exon pairs',
+            data => { 'exon_id[]' => [ qw(ENSE00002771605 ENSE00002887933) ] },
+            expect => $test->json_data('multiple_exon_pairs_expected.json'),
         },
     ];
 
     test_json( '/api/pair_search', $tests );
 }
+
+#pair off-target search
+
+#design attempt status
+
+#designs in region
+
+# crisprs/pairs in region
+{
+    my $chr = 17;
+    my $start = 46153000;
+    my $end = 46154000;
+    my $assembly = "GRCh37";
+
+    my $tests = [
+        {
+            name => 'all crisprs in region',
+            data => { chr => $chr, start => $start, end => $end, assembly => $assembly },
+            expect => "crisprs_in_region.txt",
+        },
+        {
+            name => 'exonic crisprs in region',
+            data => { crispr_filter => 'exonic', chr => $chr, start => $start, end => $end, assembly => $assembly },
+            expect => "crisprs_in_region_exonic.txt",
+        },
+        {
+            name => 'exon flanking crisprs in region',
+            data => { crispr_filter => 'exon_flanking', flank_size => 50, chr => $chr, start => $start, end => $end, assembly => $assembly },
+            expect => "crisprs_in_region_flanking.txt",
+        },
+    ];
+    test_gff('/api/crisprs_in_region', $tests);
+
+    my $pairs_test = [
+        {
+            name => 'all crisprs pairs in region',
+            data => { chr => $chr, start => $start, end => $end, assembly => $assembly },
+            expect => "crispr_pairs_in_region.txt",
+        },
+        {
+            name => 'exonic crispr pairs in region',
+            data => { crispr_filter => 'exonic', chr => $chr, start => $start, end => $end, assembly => $assembly },
+            expect => "crispr_pairs_in_region_exonic.txt",
+        },
+        {
+            name => 'exon flanking crispr pairs in region',
+            data => { crispr_filter => 'exon_flanking', flank_size => 50, chr => $chr, start => $start, end => $end, assembly => $assembly },
+            expect => "crispr_pairs_in_region_flanking.txt",
+        },
+    ];
+    test_gff('/api/crispr_pairs_in_region', $pairs_test);
+}
+
+
 
 #pass an arrayref of hashrefs with name, data & expect:
 #{ name => '', data => {}, expect => {} },
@@ -141,37 +187,59 @@ sub test_json {
         #     print Dumper( from_json( $test->mech->content ) );
         # }
 
-        is_deeply( 
-            from_json( $test->mech->content ), 
-            $item->{expect}, 
-            $item->{name} . " value as expected ($url_base)" 
+        is_deeply(
+            from_json( $test->mech->content ),
+            $item->{expect},
+            $item->{name} . " value as expected ($url_base)"
+        );
+    }
+}
+
+sub test_gff {
+    my ( $url_base, $tests ) = @_;
+
+    for my $item ( @{ $tests } ) {
+        #use my injected error_ok method if error is in the name cause that means we WANT an error 400/500
+        my $method = ( $item->{name} =~ /error/ ) ? 'error_ok' : 'get_ok';
+
+        $test->mech->$method( $test->get_uri($url_base, $item->{data}), 'Can get '.$item->{name} );
+
+        my $expected_gff_path = $test->data_folder->file($item->{expect});
+        open (my $fh, "<", $expected_gff_path) or die "Cannot open $expected_gff_path - $!";
+        my %expected = map { $_ => 1 } grep { chomp $_ } <$fh>;
+        my %got = map { $_ => 1 } (split "\n", $test->mech->content);
+
+        is_deeply(
+            \%got,
+            \%expected,
+            $item->{name} . " gff response as expected ($url_base)"
         );
     }
 }
 
 #crispr_search
-#this isn't actually used as all we care about is pairs. the tests are here, if we do 
+#this isn't actually used as all we care about is pairs. the tests are here, if we do
 # {
 #     my $tests = [
 #         { name => 'empty exons error', data => {}, expect => { error => "Error: Exon_id[] is required" } },
-#         { 
-#             name   => 'invalid exon error', 
-#             data   => { 'exon_id[]' => 'ENSE0' }, 
-#             expect => { error => "Invalid exon id" } 
+#         {
+#             name   => 'invalid exon error',
+#             data   => { 'exon_id[]' => 'ENSE0' },
+#             expect => { error => "Invalid exon id" }
 #         },
-#         { 
-#             name   => 'exon with no crisprs', 
-#             data   => { 'exon_id[]' => 'ENSE00001382843' }, 
-#             expect => { ENSE00001382843 => [] } 
+#         {
+#             name   => 'exon with no crisprs',
+#             data   => { 'exon_id[]' => 'ENSE00001382843' },
+#             expect => { ENSE00001382843 => [] }
 #         },
-#         { 
-#             name   => 'single exon crisprs', 
-#             data   => { 'exon_id[]' => 'ENSMUSE00000578254' }, 
+#         {
+#             name   => 'single exon crisprs',
+#             data   => { 'exon_id[]' => 'ENSMUSE00000578254' },
 #             expect => get_single_exon_crisprs_expected(),
 #         },
-#         { 
-#             name   => 'multiple exon crisprs', 
-#             data   => { 'exon_id[]' => [ qw( ENSMUSE00000109902 ENSMUSE00000758105 ) ] }, 
+#         {
+#             name   => 'multiple exon crisprs',
+#             data   => { 'exon_id[]' => [ qw( ENSMUSE00000109902 ENSMUSE00000758105 ) ] },
 #             expect => get_multiple_exon_crisprs_expected(),
 #         }
 #     ];
@@ -179,97 +247,4 @@ sub test_json {
 #     test_json( '/api/crispr_search', $tests );
 # }
 
-#tests that have really long data get methods here so you dont have to scroll past loads of stuff
-sub get_single_exon_pairs_expected {
-    return {
-        ENSMUSE00000578254 => [
-                                    {
-                                      'right_crispr' => {
-                                                          'chr_start' => 78348577,
-                                                          'chr_end' => 78348599,
-                                                          'pam_right' => 1,
-                                                          'chr_name' => '11',
-                                                          'seq' => 'CTACTTCGTGGATGACCGGCTGG',
-                                                          'off_target_summary' => undef,
-                                                          'ensembl_exon_id' => 'ENSMUSE00000578254',
-                                                          'id' => 11094334,
-                                                          'species_id' => 2,
-                                                        },
-                                      'orientation' => 0,
-                                      'left_crispr' => {
-                                                         'chr_start' => 78348550,
-                                                         'chr_end' => 78348572,
-                                                         'pam_right' => 0,
-                                                         'chr_name' => '11',
-                                                         'seq' => 'CCCGTATGAGACCCAGTCTGACA',
-                                                         'off_target_summary' => undef,
-                                                         'ensembl_exon_id' => 'ENSMUSE00000578254',
-                                                         'id' => 11094280,
-                                                         'species_id' => 2,
-                                                       },
-                                      'spacer' => 4
-                                    },
-        ]
-    };
-}
 
-sub get_multiple_exon_pairs_expected {
-    return {
-'ENSMUSE00000758105' => [
-                                    {
-                                      'right_crispr' => {
-                                                          'chr_start' => 78343542,
-                                                          'chr_end' => 78343564,
-                                                          'pam_right' => 1,
-                                                          'chr_name' => '11',
-                                                          'seq' => 'CGAGGATCTGCGGCCCCGCGAGG',
-                                                          'off_target_summary' => undef,
-                                                          'ensembl_exon_id' => 'ENSMUSE00000758105',
-                                                          'id' => 11094141,
-                                                          'species_id' => 2,
-                                                        },
-                                      'orientation' => 0,
-                                      'left_crispr' => {
-                                                         'chr_start' => 78343490,
-                                                         'chr_end' => 78343512,
-                                                         'pam_right' => 0,
-                                                         'chr_name' => '11',
-                                                         'seq' => 'CCCCCTTCCCCTGGCTCCAGCCG',
-                                                         'off_target_summary' => undef,
-                                                         'ensembl_exon_id' => 'ENSMUSE00000758105',
-                                                         'id' => 11094149,
-                                                         'species_id' => 2,                                                         
-                                                       },
-                                      'spacer' => 29
-                                    },
-                                  ],
-          'ENSMUSE00000109902' => [
-                                    {
-                                      'right_crispr' => {
-                                                          'chr_start' => 78347818,
-                                                          'chr_end' => 78347840,
-                                                          'pam_right' => 1,
-                                                          'chr_name' => '11',
-                                                          'seq' => 'GGGACCTGGACCCCAATGCAGGG',
-                                                          'off_target_ids' => undef,
-                                                          'ensembl_exon_id' => 'ENSMUSE00000109902',
-                                                          'id' => 11094222,
-                                                          'species_id' => 2,
-                                                        },
-                                      'orientation' => 0,
-                                      'left_crispr' => {
-                                                         'chr_start' => 78347805,
-                                                         'chr_end' => 78347827,
-                                                         'pam_right' => 0,
-                                                         'chr_name' => '11',
-                                                         'seq' => 'CCCATCAACCGGCGGGACCTGGA',
-                                                         'off_target_ids' => undef,
-                                                         'ensembl_exon_id' => 'ENSMUSE00000109902',
-                                                         'id' => 11094231,
-                                                         'species_id' => 2,
-                                                       },
-                                      'spacer' => -10
-                                    },
-        ]
-    };
-}

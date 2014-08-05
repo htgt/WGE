@@ -1,7 +1,7 @@
 package WGE::Controller::API;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::API::VERSION = '0.037';
+    $WGE::Controller::API::VERSION = '0.038';
 }
 ## use critic
 
@@ -269,6 +269,22 @@ sub pair_search :Local('pair_search') {
         $c->stash->{json_data} = $pair_data;
         $c->forward('View::JSON');
     }
+
+    return;
+}
+
+sub individual_off_target_search :Local('individual_off_target_search') {
+    my ( $self, $c ) = @_;
+
+    my $params = $c->req->params;
+    check_params_exist( $c, $params, [ qw( species ids ) ] );
+
+
+
+    my $data = $self->ot_finder->run_individual_off_target_search( $c->model('DB'), $params );
+
+    $c->stash->{json_data} = $data;
+    $c->forward('View::JSON');
 
     return;
 }

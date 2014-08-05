@@ -122,11 +122,11 @@ function toggle_bookmark(button, path, id, item_name, spinner, bookmark_track){
 function get_ensembl_link(location, species) {
   //get ensembl species name
   var ens_species;
-  switch( species ) {
-    case "Mouse":
+  switch( species.toLowerCase() ) {
+    case "mouse":
       ens_species = "Mus_Musculus";
       break;
-    case "Human":
+    case "human":
       ens_species = "Homo_sapiens";
       break;
     default:
@@ -141,6 +141,16 @@ function find_off_targets_for_pair(species, left_id, right_id) {
   return $.get(
     base_url+'api/pair_off_target_search',
     { 'left_id': left_id, 'right_id': right_id, 'species': species }
+  );
+}
+
+function find_off_targets_for_individual(species, ids) {
+  if ( $.isArray(ids) )
+    ids = ids.join(",");
+
+  return $.get(
+    base_url+'api/pair_off_target_search',
+    { 'ids': ids, 'species': species }
   );
 }
 
