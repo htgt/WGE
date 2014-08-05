@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+0.040     2014-08-05 15:39:23 Europe/London
+
+    Bugfix: exon lengths off by two
+
 0.039     2014-08-05 12:07:47 Europe/London
 
     Bugfix: some paired off targets were hidden when they should not be
