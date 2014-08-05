@@ -1,3 +1,7 @@
+0.039     2014-08-05 12:07:47 Europe/London
+
+    Bugfix: some paired off targets were hidden when they should not be
+
 0.038     2014-08-05 09:20:43 Europe/London
 
     Added ability to paste a large sequence and find all CRISPRs within it
