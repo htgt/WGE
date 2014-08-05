@@ -124,7 +124,7 @@ sub exon_search :Local('exon_search') {
             {
                 exon_id => $_->ensembl_exon_id,
                 rank    => $_->rank,
-                len     => ($_->chr_end - $_->chr_start) - 1,
+                len     => ($_->chr_end - $_->chr_start) + 1,
             }
         } sort { $a->rank <=> $b->rank } $gene->exons;
 
