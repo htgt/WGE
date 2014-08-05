@@ -37,12 +37,6 @@
     $("#offtarget_table .ots").each(function() {
       var tr = $(this);
 
-      /*
-        TODO: display this l/r data after checking its right
-        probably will just put into two columns:
-        mismatches, off target of
-      */
-
       //this is pretty hacky, we basically recompute the mismatches,
       //but we do that in the individual page too, so whatever I guess
 
@@ -82,31 +76,11 @@
       var spacer_rows = rows[keys[i]];
       for ( var j = 0; j < spacer_rows.length; j++ ) {
         spacer_rows[j].insertAfter( tbl_top );
-
-        /*
-          HACK:
-          we hide rows that are duplicated. (happens in CC-GG crisprs)
-          this needs to be fixed at the CRISPR level, at which point
-          we can remove this code.
-        */
-        //if this guy is visible, see if it has a duplicate.
-        //if so hide it
-        if (spacer_rows[j].is(':visible')) {
-          for ( var k = 0; k < spacer_rows.length; k++ ) {
-            if ( k == j ) continue;
-
-            //compare the two rows. if the text is the same then hide the later on element
-            if (spacer_rows[j].children(".seq").text() == spacer_rows[k].children(".seq").text()) {
-              //we dont want to hide the blue row, so pretend this one was the blue one
-              if (spacer_rows[k].hasClass('info')) spacer_rows[j].addClass('info');
-
-              spacer_rows[k].hide();
-              break; //we found the duplicate
-            }
-          }
-        }
       }
     }
+
+    //move the original one to the top of the table
+    $("#offtarget_table .info").insertAfter( tbl_top );
 
     //add functionality to off target button
     $(".ots-button").click( function(event) {
@@ -242,7 +216,7 @@ function check_str(text) {
     <th colspan="4">Left Crispr</th>
     <th colspan="4">Right Crispr</th>
   </tr>
-  <tr>
+  <tr id="spacer_row">
     <th></th>
     <th>Location</th>
     <th>Sequence</th>
