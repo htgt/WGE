@@ -1,7 +1,7 @@
 package WGE::Controller::REST::CrisprPair;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::REST::CrisprPair::VERSION = '0.039';
+    $WGE::Controller::REST::CrisprPair::VERSION = '0.040';
 }
 ## use critic
 

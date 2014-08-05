@@ -1,7 +1,7 @@
 package WGE::Controller::REST::Design;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::REST::Design::VERSION = '0.039';
+    $WGE::Controller::REST::Design::VERSION = '0.040';
 }
 ## use critic
 

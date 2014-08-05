@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::DesignOligoLoci;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::DesignOligoLoci::VERSION = '0.039';
+    $WGE::Model::Schema::Result::DesignOligoLoci::VERSION = '0.040';
 }
 ## use critic
 

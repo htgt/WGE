@@ -1,7 +1,7 @@
 package WGE::Model::DB;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::DB::VERSION = '0.039';
+    $WGE::Model::DB::VERSION = '0.040';
 }
 ## use critic
 

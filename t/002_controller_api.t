@@ -77,11 +77,11 @@ $test->add_ajax_headers;
             expect => {
               transcript => 'ENST00000393408',
               exons => [
-                { exon_id => "ENSE00001515177", rank => 1, len => 442, },
-                { exon_id => "ENSE00002771605", rank => 2, len => 175, },
-                { exon_id => "ENSE00002887933", rank => 3, len => 176, },
-                { exon_id => "ENSE00000735651", rank => 4, len => 93, },
-                { exon_id => "ENSE00001824299", rank => 5, len => 1526, },
+                { exon_id => "ENSE00001515177", rank => 1, len => 444, },
+                { exon_id => "ENSE00002771605", rank => 2, len => 177, },
+                { exon_id => "ENSE00002887933", rank => 3, len => 178, },
+                { exon_id => "ENSE00000735651", rank => 4, len => 95, },
+                { exon_id => "ENSE00001824299", rank => 5, len => 1528, },
               ]
             }
         },
