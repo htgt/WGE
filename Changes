@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+0.038     2014-08-05 09:20:43 Europe/London
+
+    Added ability to paste a large sequence and find all CRISPRs within it
+
 0.037     2014-07-24 15:08:33 Europe/London
 
     Genoverse - added PAM site colouring to crispr pairs
