@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+0.041     2014-08-12 09:34:32 Europe/London
+
+    Genoverse now uses grch37 ensembl rest api for human    
+
 0.040     2014-08-05 15:39:23 Europe/London
 
     Bugfix: exon lengths off by two
