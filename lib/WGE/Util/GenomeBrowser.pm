@@ -46,13 +46,21 @@ return hashref of colours for various types of features in genoverse
 =cut
 
 sub colours {
-    my %colours = (
+=head
         left_crispr     => '#45A825', # greenish
         right_crispr    => '#1A8599', # blueish
         left_in_design  => '#DF3A01', # reddish
         right_in_design => '#FE9A2E', # orange
         no_ot_summary   => '#B2B2B2', # grey
         pam             => '#DDC808', # yellowish
+=cut
+    my %colours = (
+        left_crispr     => '#45A825', # greenish
+        right_crispr    => '#52CCCC', # bright blue
+        left_in_design  => '#DF3A01', # reddish
+        right_in_design => '#FE9A2E', # orange
+        no_ot_summary   => '#B2B2B2', # grey
+        pam             => '#1A8599', # blue
         '5F' => '#68D310',
         '5R' => '#68D310',
         'EF' => '#589BDD',
