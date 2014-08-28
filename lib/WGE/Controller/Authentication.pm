@@ -23,7 +23,7 @@ WGE::Controller::Authentication - Controller to handle user authentication
 sub login :Path('/login') :Args(0) {
     my ( $self, $c ) = @_;
 
-    # Generate random string to verify that google's response 
+    # Generate random string to verify that google's response
     # relates to this session
     my $state = rand_chars( set => 'alphanumeric', min => 30, max => 30);
     $c->session->{state} = $state;
