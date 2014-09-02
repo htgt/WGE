@@ -1,7 +1,7 @@
 package WGE::Util::GenomeBrowser;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::GenomeBrowser::VERSION = '0.041';
+    $WGE::Util::GenomeBrowser::VERSION = '0.042';
 }
 ## use critic
 
@@ -52,13 +52,17 @@ return hashref of colours for various types of features in genoverse
 =cut
 
 sub colours {
+    # Change left_in_design and right_in_design to show
+    # crisprs which overlap a design
+    # Using the normal crispr colours for these at the moment
+    # as it seems unnecessary to hightlight them
     my %colours = (
         left_crispr     => '#45A825', # greenish
-        right_crispr    => '#1A8599', # blueish
-        left_in_design  => '#DF3A01', # reddish
-        right_in_design => '#FE9A2E', # orange
+        right_crispr    => '#52CCCC', # bright blue
+        left_in_design  => '#45A825', # greenish
+        right_in_design => '#52CCCC', # bright blue
         no_ot_summary   => '#B2B2B2', # grey
-        pam             => '#DDC808', # yellowish
+        pam             => '#1A8599', # blue
         '5F' => '#68D310',
         '5R' => '#68D310',
         'EF' => '#589BDD',

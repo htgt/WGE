@@ -24,7 +24,7 @@ use Test::MockModule;
 
 # Hide debug output during tests
 use Log::Log4perl qw(:easy);
-Log::Log4perl->easy_init( { level => $OFF} );
+Log::Log4perl->easy_init( { level => $OFF } );
 
 has schema => (
     is => 'rw',
@@ -32,9 +32,9 @@ has schema => (
 );
 
 has mech => (
-    is       => 'rw',
-    required => 1,
-    builder  => '_build_mech',
+    is         => 'rw',
+    lazy_build => 1,
+    builder    => '_build_mech',
 );
 
 has fixture_folder => (
@@ -56,9 +56,10 @@ has appdir => (
 );
 
 has authenticated_mech => (
-    is       => 'rw',
-    required => 1,
-    builder  => '_build_authenticated_mech',
+    is         => 'rw',
+    lazy_build => 1,
+    builder    => '_build_authenticated_mech',
+    predicate  => 'has_authenticated_mech',
 );
 
 sub _build_mech {
@@ -90,14 +91,17 @@ sub _build_mech {
 sub _build_authenticated_mech {
     my $self = shift;
 
+    # NB: Do not run load_fixtures after getting authenticated_mech as it will
+    # delete the test_user and cause session restore errors
+    # FIXME: should enforce this or load test_user with fixed ID in fixtures
+
     # Override the authenticate method so it does not try to access google
     my $module = new Test::MockModule('Catalyst::Authentication::Credential::OAuth2');
     $module->mock('authenticate' => sub {
         my ($self, $c, $realm) = @_;
-        return $realm->find_user(
-            { name => 'test_user@gmail.com' },
-            $c
-        );
+        $c->delete_session("starting new session for tests");
+        my $user = $realm->find_user({ name => 'test_user@gmail.com' }, $c);
+        return $user;
     });
 
     # Build a new mech object and access set_user controller to trigger authentication
