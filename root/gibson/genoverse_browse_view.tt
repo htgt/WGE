@@ -95,9 +95,6 @@
   <div style="background: [%colours.left_crispr%]; width: 20px; height: 20px; float: left"></div>
   <div style="margin-left: 30px">Off-targets computed</div>
 
-  <div style="background: [%colours.left_in_design%]; width: 20px; height: 20px; float: left"></div>
-  <div style="margin-left: 30px">Off-targets computed and crispr within a design</div>
-
   <div style="background: [%colours.no_ot_summary%]; width: 20px; height: 20px; float: left"></div>
   <div style="margin-left: 30px">Off-targets not computed</div>
 
@@ -111,13 +108,10 @@
   <div style="background: [%colours.right_crispr%]; width: 20px; height: 20px; float: left"></div>
   <div style="margin-left: 50px">Left and right off-targets computed</div>
 
-  <div style="background: [%colours.left_in_design%]; width: 20px; height: 20px; float: left"></div>
-  <div style="background: [%colours.right_in_design%]; width: 20px; height: 20px; float: left"></div>
-  <div style="margin-left: 50px">Left and right off-targets computed and within a design</div>
-
   <div style="background: [%colours.no_ot_summary%]; width: 20px; height: 20px; float: left"></div>
   <div style="background: [%colours.no_ot_summary%]; width: 20px; height: 20px; float: left"></div>
   <div style="margin-left: 50px">Left and right off-targets not computed</div>
+
   </td>
   </tr></table>
 </div>
