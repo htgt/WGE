@@ -443,11 +443,17 @@ sub view_design :Path( '/view_gibson_design' ) : Args(0) {
 
     my $download_link = $c->uri_for('/download_design',{ design_id => $design_data->{id}});
 
+    my %UCSC_BLAT_DB = (
+        Mouse => 'mm10',
+        Human => 'hg38',
+    );
+
     $c->stash(
         design         => $design_data,
         display_design => \@DISPLAY_DESIGN,
         species        => $species_id,
         download_link  => $download_link,
+        ucsc_db        => $UCSC_BLAT_DB{ $species_id },
     );
 
     return;
