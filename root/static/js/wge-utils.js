@@ -2,6 +2,13 @@
   we need some kind of order to this...
 */
 
+//replicate perl's "str" x 5 function
+String.prototype.x = function(n) {
+  var s = "";
+  for ( var i = 0; i < n; i++ ) s += this;
+  return s;
+}
+
 //utility function to highlight a string
 //result_obj is optional, used if you want additional data in the returned result
 String.prototype.match_str = function(q, result_obj) {
@@ -189,4 +196,50 @@ function build_url(url, params) {
 
   //don't return ? if there's no options
   return url + (encoded.length ? "?" + encoded.join("&") : "");
+}
+
+//generates an object mapping amino acids to their codons
+function create_aa_map() {
+  var nucs = ['T', 'C', 'A', 'G'];
+  var amino_acids = "FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG";
+
+  var acid_to_codons = {};
+
+  var x = 0; //used to keep track of which amino acid we're on
+  //create all possible codons
+  for ( var i = 0; i < nucs.length; i++ ) {
+    for ( var j = 0; j < nucs.length; j++ ) {
+      for ( var k = 0; k < nucs.length; k++ ) {
+        var codon = nucs[i] + nucs[j] + nucs[k];
+        var aa = amino_acids.charAt(x++);
+
+        if ( ! acid_to_codons[aa] ) acid_to_codons[aa] = []; //nitialize empty array
+
+        acid_to_codons[aa].push(codon);
+      }
+    }
+  }
+
+  return acid_to_codons;
+}
+
+function silent_mutations() {
+  var acid_to_codons = create_aa_map();
+
+  var silent_mutations = {};
+  for ( var aa in acid_to_codons ) {
+    if ( ! acid_to_codons.hasOwnProperty(aa) ) continue;
+
+    var codons = acid_to_codons[aa];
+    for ( var i = 0; i < codons.length; i++ ) {
+      var codon = codons[i];
+
+      //get all possible variants for this amino acid, excluding this codon
+      silent_mutations[codon] = $.grep(codons, function(n) { return n != codon });
+    }
+  }
+
+  acid_to_codons = {}; //don't need this any longer
+
+  return silent_mutations;
 }

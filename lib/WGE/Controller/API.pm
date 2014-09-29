@@ -14,10 +14,12 @@ use namespace::autoclean;
 use Data::Dumper;
 use Path::Class;
 use TryCatch;
+use POSIX qw( floor );
 
 use WGE::Util::FindPairs;
 use WGE::Util::OffTargetServer;
 use WGE::Util::FindOffTargets;
+use WebAppCommon::Util::EnsEMBL;
 
 BEGIN { extends 'Catalyst::Controller' }
 
@@ -483,6 +485,192 @@ sub crispr_pairs_in_region :Local('crispr_pairs_in_region') Args(0){
     $c->response->content_type( 'text/plain' );
     my $body = join "\n", @{$pairs_gff};
     return $c->response->body( $body );
+}
+
+sub val_in_range {
+    my ( $val, $min, $max ) = @_;
+
+    return ( $val >= $min ) && ( $val <= $max );
+};
+
+sub translation_for_region :Local('translation_for_region') Args(0) {
+    my ( $self, $c ) = @_;
+
+    my $params = $c->request->params;
+
+    my $ensembl = WebAppCommon::Util::EnsEMBL->new( species => $params->{species} );
+
+    $c->log->debug( $params->{chr_name} . ":" . $params->{chr_start} . "-" . $params->{chr_end} );
+
+    my $slice = $ensembl->slice_adaptor->fetch_by_region(
+        'chromosome',
+        $params->{chr_name},
+        $params->{chr_start},
+        $params->{chr_end},
+    );
+
+    my @genes = @{ $slice->get_all_Genes_by_type('protein_coding') };
+    #my @genes = @{ $slice->get_all_Genes };
+
+    $c->log->debug( "Found " . scalar( @genes ) . " genes for region" );
+
+    my @features;
+    for my $gene ( @genes ) {
+        my $transcript = $gene->canonical_transcript;
+        my $translation = $transcript->translation;
+
+        next unless $translation;
+
+        #ensembl doesn't add the stop codon
+        my $trans_seq = $translation->seq . "*";
+        my $nuc_seq = $transcript->translateable_seq;
+
+        $c->log->debug( "Nuc seq: " . $nuc_seq );
+        $c->log->debug( "Nucleotide length: " . length($nuc_seq) . ", 3: " . (length($nuc_seq)/3) );
+        $c->log->debug( "Transcript length:" . length($trans_seq) );
+
+        die "Number of nucleotides does not match the number of amino acids??"
+            unless length( $nuc_seq ) / 3 == length( $trans_seq );
+
+        my $rank = 0;
+        my $start_index = 1;
+        for my $exon ( @{ $transcript->get_all_Exons } ) {
+            ++$rank;
+            my $start = $exon->coding_region_start( $transcript );
+            my $end   = $exon->coding_region_end( $transcript );
+            next unless $start and $end; #skip non coding exons
+
+            #skip unless the exon is within our window --
+            # we can't do this because we actually NEED to process every exon first.
+            #could do this at the end, but whats the point, may as well include all the data.
+            #next unless val_in_range( $params->{chr_start}, $start, $end )
+            #         || val_in_range( $start, $params->{chr_start}, $params->{chr_end} );
+
+            #see if there are bases spanning two exons,
+            #and extract them if so
+
+            my ( $start_base, $end_base );
+            if ( $exon->phase > 0 ) {
+                #for start we have to take it off 3 to get the actual
+                #number of nucleotides in this exon
+                my $num_nucs = 3 - $exon->phase;
+
+                #there is an amino acid at the start we need to take
+                my $data = {
+                    aa  => substr( $trans_seq, 0, 1 ),
+                    len => $num_nucs,
+                    codon => substr( $nuc_seq, 0, 3 ), #first 3 bases are the complete nucleotide
+                };
+
+                #also remove it from the sequences as we don't want it in the counts
+                $trans_seq = substr( $trans_seq, 1 );
+                $nuc_seq = substr( $nuc_seq, 3 );
+                if ( $exon->strand == 1 ) {
+                    $start += $num_nucs;
+                    $start_base = $data;
+                }
+                elsif ( $exon->strand == -1 ) {
+                    $end -= $num_nucs;
+                    $end_base = $data;
+                }
+                else {
+                    die "Unknown strand";
+                }
+            }
+
+            if ( $exon->end_phase > 0 ) {
+                #we don't truncate the trans_seq here cause the next exon needs the
+                #amino acid too.
+                #my $data = { aa => substr( $trans_seq, 0, 1 ), len => $exon->end_phase };
+                if ( $exon->strand == 1 ) {
+                    $end -= $exon->end_phase;
+                    #$end_base = $data;
+                }
+                elsif ( $exon->strand == -1 ) {
+                    $start += $exon->end_phase;
+                    #$start_base = $data; #display on the other side
+                }
+                else {
+                    die "Unknown strand";
+                }
+            }
+
+            my $length = ($end - $start) + 1;
+
+            die "something has gone horribly wrong" if $length % 3 != 0;
+
+            my $num_amino_acids = $length / 3;
+
+            # $c->log->debug("Exon length $length, taking $num_amino_acids, rank $rank");
+            # $c->log->debug("start phase: " . $exon->phase . ", end_phase: " . $exon->end_phase);
+
+            die length($trans_seq) . " bases left, want $num_amino_acids"
+                if $num_amino_acids > length( $trans_seq );
+
+            #remove the first x bases from our transcript sequence string
+            my $seq = substr( $trans_seq, 0, $num_amino_acids );
+            $trans_seq = substr( $trans_seq, $num_amino_acids );
+
+            #also extract the equivalent nucleotides
+            my $nucleotides = substr( $nuc_seq, 0, $num_amino_acids * 3 );
+            $nuc_seq = substr( $nuc_seq, $num_amino_acids * 3 );
+
+            #first base of what is left is now the 'end base' we're interested in
+            my $additional_aa = 0;
+            if ( $exon->end_phase > 0 ) {
+                $additional_aa = 1; #so we can identify if we need to add one more to start index
+                #we don't truncate the trans_seq here cause the next exon needs the
+                #amino acid too.
+                my $data = {
+                    aa  => substr( $trans_seq, 0, 1 ),
+                    len => $exon->end_phase,
+                    codon => substr( $nuc_seq, 0, 3 ),
+                };
+                if ( $exon->strand == 1 ) {
+                    $end_base = $data;
+                }
+                elsif ( $exon->strand == -1 ) {
+                    $start_base = $data; #display on the other side
+                }
+                else {
+                    die "Unknown strand";
+                }
+            }
+
+            # $c->log->debug($seq . " (" . length($seq) . ")");
+            # $c->log->debug($trans_seq . " (" . length($trans_seq) . ")");
+
+            push @features, {
+                id              => $exon->stable_id,
+                transcript      => $transcript->stable_id,
+                protein         => $translation->stable_id,
+                gene            => $gene->stable_id,
+                chr_name        => $params->{chr_name},
+                start           => $start,
+                end             => $end,
+                strand          => $transcript->strand,
+                start_base      => $start_base,
+                end_base        => $end_base,
+                sequence        => $seq,
+                nucleotides     => $nucleotides,
+                start_phase     => $exon->phase,
+                end_phase       => $exon->end_phase,
+                rank            => $rank,
+                start_index     => $start_index,
+                num_amino_acids => $num_amino_acids,
+            };
+
+            $start_index += $num_amino_acids + $additional_aa;
+        }
+
+        $c->log->debug("$rank exons processed");
+        $c->log->debug( length( $trans_seq ) . " bases left of transcript!") if $trans_seq;
+    }
+
+    $c->stash->{json_data} = \@features;
+    $c->forward('View::JSON');
+
+    return;
 }
 
 
