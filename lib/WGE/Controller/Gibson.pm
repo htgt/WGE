@@ -41,8 +41,6 @@ sub gibson_design_gene_pick :Regex('gibson_design_gene_pick/(.*)'){
 
     my ($species) = @{ $c->req->captures };
 
-    $c->log->debug("Species: $species");
-
     # Allow species to be missing if session species already set
     if ($species) {
         unless($species eq "Human" or $species eq "Mouse"){
