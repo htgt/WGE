@@ -1,4 +1,4 @@
-[%# 
+[%#
     to use this do:
     PROCESS utils
 %]
@@ -8,7 +8,13 @@
   [%- location = "${chr_name}:${chr_start}-${chr_end}" -%]
   [%# the default string is ':-' so thats why we check its > 2 %]
   [% IF location.length > 2 %]
-    <a href='http://www.ensembl.org/[% species %]/psychic?q=[% location %]'>[% location %]</a>
+    [% SWITCH species %]
+    [%  CASE 'Mouse' %]
+        [% ens_species = 'Mus_Musculus' %]
+    [%  CASE ['Human', 'Grch38'] %]
+        [% ens_species = 'Homo_Sapiens' %]
+    [% END %]
+    <a href='http://www.ensembl.org/[% ens_species %]/psychic?q=[% location %]'>[% location %]</a>
   [% END %]
 [%- END -%]
 
@@ -26,7 +32,7 @@
 [% email = "wge@sanger.ac.uk" %]
 
 <!--
-To use these you must run: 
+To use these you must run:
 PROCESS contact
 
 inside a template toolkit directive

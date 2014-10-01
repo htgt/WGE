@@ -5,89 +5,91 @@
 [% FOREACH species IN ['Human', 'Mouse'] %]
  <div class="well well-large">
 
-  <h4>[% species %] Crisprs</h4>
-  [% IF bookmarks.$species.crisprs.size %]
-  <table class="table table-bordered table-condensed">
-   <tr>
-    <th></th>
-    <th></th>
-    <th>ID</th>
-    <th>Location</th>
-    <th>Sequence</th>
-    <th>Strand</th>
-    <th>Off-target summary</th>
-    <th>Total off-targets</th>
-   </tr>
-   [% FOREACH crispr IN bookmarks.$species.crisprs %]
-   <tr>
-    <td><a class="btn btn-info btn-small" href="[% c.uri_for('/genoverse_browse', { crispr_id => crispr.id, view_single => 1 }) %]" title="view in genome browser">View</a></td>
-    <td><a class="btn btn-small" type="crispr_remove_bookmark" id="[% crispr.id %]" title="remove bookmark"><i class="icon-remove"></i></a></td>
-    <td><a href="[% c.uri_for('/crispr', crispr.id) %]">[% crispr.id %]</a></td>
-    <td class="location">[% ensembl_link(chr_name=crispr.chr_name, chr_start=crispr.chr_start, chr_end=crispr.chr_end) %]</td>
-    <td>[% crispr.seq %]</td>
-    <td>[% display_strand(pam_right=crispr.pam_right) %]</td>
-    <td>[% crispr.off_target_summary or 'No data' %]</td>
-    <td id="total_offs">[% crispr.off_targets.size or 'No data' %]</td>
-   </tr>
-   [% END %]
-  </table>
-  [% ELSE %]
-  <p class="muted">You have no bookmarked [% species %] crisprs</p>
+  [% FOREACH assembly IN bookmarks.$species.assembly.keys %]
+
+    <h4>[% species %] Crisprs ([% assembly %])</h4>
+    [% IF bookmarks.$species.assembly.$assembly.crisprs.size %]
+    <table class="table table-bordered table-condensed">
+     <tr>
+      <th></th>
+      <th></th>
+      <th>ID</th>
+      <th>Location</th>
+      <th>Sequence</th>
+      <th>Strand</th>
+      <th>Off-target summary</th>
+      <th>Total off-targets</th>
+     </tr>
+     [% FOREACH crispr IN bookmarks.$species.assembly.$assembly.crisprs %]
+     <tr>
+      <td><a class="btn btn-info btn-small" href="[% c.uri_for('/genoverse_browse', { crispr_id => crispr.id, view_single => 1 }) %]" title="view in genome browser">View</a></td>
+      <td><a class="btn btn-small" type="crispr_remove_bookmark" id="[% crispr.id %]" title="remove bookmark"><i class="icon-remove"></i></a></td>
+      <td><a href="[% c.uri_for('/crispr', crispr.id) %]">[% crispr.id %]</a></td>
+      <td class="location">[% ensembl_link(chr_name=crispr.chr_name, chr_start=crispr.chr_start, chr_end=crispr.chr_end) %]</td>
+      <td>[% crispr.seq %]</td>
+      <td>[% display_strand(pam_right=crispr.pam_right) %]</td>
+      <td>[% crispr.off_target_summary or 'No data' %]</td>
+      <td id="total_offs">[% crispr.off_targets.size or 'No data' %]</td>
+     </tr>
+     [% END %]
+    </table>
+    [% ELSE %]
+    <p class="muted">You have no bookmarked [% species %] crisprs</p>
+    [% END %]
+
+    <h4>[% species %] Crispr Pairs ([% assembly %])</h4>
+    [% IF bookmarks.$species.assembly.$assembly.crispr_pairs.size %]
+    <table class="table table-bordered table-condensed table-striped">
+     <tr>
+      <th colspan="6" class="group-header">Pair</th>
+      <th colspan="5" class="group-header">Individual Crisprs</th>
+     </tr>
+     <tr>
+      <th></th>
+      <th></th>
+      <th>ID</th>
+      <th>Spacer</th>
+      <th>Status</th>
+      <th>Summary</th>
+      <th></th>
+      <th>ID</th>
+      <th>Location</th>
+      <th>Sequence</th>
+      <th>Summary</th>
+
+     </tr>
+     [% FOREACH pair IN bookmarks.$species.assembly.$assembly.crispr_pairs %]
+     <tr>
+       <td rowspan="2"><a class="btn btn-info btn-small" href="[% c.uri_for('/genoverse_browse', {crispr_pair_id => pair.id, view_paired => 1}) %]" title="view in genome browser">View</a></td>
+      <td rowspan="2"><a class="btn btn-small" type="crispr_pair_remove_bookmark" id="[% pair.id %]" title="remove bookmark"><i class="icon-remove"></i></a></td>
+       <td rowspan="2"><a href="[% c.uri_for('/crispr_pair', pair.id) %]">[% pair.id %]</a></td>
+       <td rowspan="2">[% pair.spacer %]</td>
+       <td rowspan="2">[% pair.status %]</td>
+       <td rowspan="2">[% pair.off_target_summary.remove('[{}"]').replace(':',': ').replace(',\s*', '<br>') %]</td>
+
+        <td>Left</td>
+        <td><a href="[% c.uri_for('/crispr', pair.left_crispr.id) %]">[% pair.left_crispr.id %]</a></td>
+        <td class="location">[% ensembl_link(chr_name=pair.left_crispr.chr_name, chr_start=pair.left_crispr.chr_start, chr_end=pair.left_crispr.chr_end) %]</td>
+        <td>[% pair.left_crispr.seq %]</td>
+        <td>[% pair.left_crispr.off_target_summary.remove('[{}]').replace(', ','<br>') or 'No data' %]</td>
+
+        </tr>
+        <tr>
+
+        <td>Right</td>
+        <td><a href="[% c.uri_for('/crispr', pair.right_crispr.id) %]">[% pair.right_crispr.id %]</a></td>
+        <td class="location">[% ensembl_link(chr_name=pair.right_crispr.chr_name, chr_start=pair.right_crispr.chr_start, chr_end=pair.right_crispr.chr_end) %]</td>
+        <td>[% pair.right_crispr.seq %]</td>
+        <td>[% pair.right_crispr.off_target_summary.remove('[{}]').replace(', ','<br>') or 'No data' %]</td>
+
+     </tr>
+     [% END %]
+    </table>
+    [% ELSE %]
+    <p class="muted">You have no bookmarked [% species %] crispr pairs</p>
+    [% END %]
+
   [% END %]
-
-
-  <h4>[% species %] Crispr Pairs</h4>
-  [% IF bookmarks.$species.crispr_pairs.size %]
-  <table class="table table-bordered table-condensed table-striped">
-   <tr>
-    <th colspan="6" class="group-header">Pair</th>
-    <th colspan="5" class="group-header">Individual Crisprs</th>
-   </tr>
-   <tr>
-    <th></th>
-    <th></th>
-    <th>ID</th>
-    <th>Spacer</th>
-    <th>Status</th>
-    <th>Summary</th>
-    <th></th>
-    <th>ID</th>
-    <th>Location</th>
-    <th>Sequence</th>
-    <th>Summary</th>
-
-   </tr>
-   [% FOREACH pair IN bookmarks.$species.crispr_pairs %]
-   <tr>
-     <td rowspan="2"><a class="btn btn-info btn-small" href="[% c.uri_for('/genoverse_browse', {crispr_pair_id => pair.id, view_paired => 1}) %]" title="view in genome browser">View</a></td>
-    <td rowspan="2"><a class="btn btn-small" type="crispr_pair_remove_bookmark" id="[% pair.id %]" title="remove bookmark"><i class="icon-remove"></i></a></td>
-     <td rowspan="2"><a href="[% c.uri_for('/crispr_pair', pair.id) %]">[% pair.id %]</a></td>
-     <td rowspan="2">[% pair.spacer %]</td>
-     <td rowspan="2">[% pair.status %]</td>
-     <td rowspan="2">[% pair.off_target_summary.remove('[{}"]').replace(':',': ').replace(',\s*', '<br>') %]</td>
-
-      <td>Left</td>
-      <td><a href="[% c.uri_for('/crispr', pair.left_crispr.id) %]">[% pair.left_crispr.id %]</a></td>
-      <td class="location">[% ensembl_link(chr_name=pair.left_crispr.chr_name, chr_start=pair.left_crispr.chr_start, chr_end=pair.left_crispr.chr_end) %]</td>
-      <td>[% pair.left_crispr.seq %]</td>
-      <td>[% pair.left_crispr.off_target_summary.remove('[{}]').replace(', ','<br>') or 'No data' %]</td>
-
-      </tr>
-      <tr>
-
-      <td>Right</td>
-      <td><a href="[% c.uri_for('/crispr', pair.right_crispr.id) %]">[% pair.right_crispr.id %]</a></td>
-      <td class="location">[% ensembl_link(chr_name=pair.right_crispr.chr_name, chr_start=pair.right_crispr.chr_start, chr_end=pair.right_crispr.chr_end) %]</td>
-      <td>[% pair.right_crispr.seq %]</td>
-      <td>[% pair.right_crispr.off_target_summary.remove('[{}]').replace(', ','<br>') or 'No data' %]</td>
-
-   </tr>
-   [% END %]
-  </table>
-  [% ELSE %]
-  <p class="muted">You have no bookmarked [% species %] crispr pairs</p>
-  [% END %]
-
 
   <h4>[% species %] Gibson Designs</h4>
   [% IF bookmarks.$species.designs.size %]

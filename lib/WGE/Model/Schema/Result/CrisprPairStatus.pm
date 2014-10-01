@@ -86,6 +86,21 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+=head2 crispr_pairs_grch38s
+
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::CrisprPairsGrch38>
+
+=cut
+
+__PACKAGE__->has_many(
+  "crispr_pairs_grch38s",
+  "WGE::Model::Schema::Result::CrisprPairsGrch38",
+  { "foreign.status_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
 =head2 crispr_pairs_humans
 
 Type: has_many
@@ -117,8 +132,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-02-18 14:32:58
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:aciMkUHuNbMMsbpoQfmN8A
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-10-01 12:22:23
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:RJ6xNtUQLkkgMIbGL4vIuw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

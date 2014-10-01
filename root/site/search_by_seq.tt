@@ -14,6 +14,9 @@
 <script type="text/javascript">
 var searching = false;
 $(document).ready(function() {
+    //colour assemblies with code from wge-utils
+    colour_species();
+
     $("#bulk").click(function(event) {
       process_text();
     });
@@ -62,9 +65,6 @@ $(document).ready(function() {
       //strip all whitespace from the box
       s.val( s.val().replace(/\s/g, "") );
     });
-
-  var s = "GCATCAGTGGATGGTCGCCCCGGATTGGGGACCCGAATCCCTGGCTGCAGATCGACTTAATGAAGAAGCATCGGAT";
-  //process_text(s);
 });
 
 //args must have seq and species
@@ -161,6 +161,11 @@ function process_text() {
   if ( ! /^[ACGT]+$/.test(text) ) {
     create_alert("Sequence must contain the letters A, C, G or T only");
     return;
+  }
+
+  if ( text.length > 250 ) {
+      create_alert("Sequence length must be less than 250 (" + text.length + " provided)");
+      return;
   }
 
   var crisprs = find_crisprs(text);
@@ -294,15 +299,47 @@ function Iterator(list) {
 
 <div class="row">
   <div class="span10 offset1">
-
-    <!-- GTGTCAGTGAAACTTACTCT -->
-
     <h4>Please note that this application is currently in beta. If you have any problems, please <a href="mailto:[% email %]">let us know</a>.</h4>
     <br/>
+
     <div class="well">
-      <div style="text-align:center">
-        <h5>To find a CRISPR within WGE please paste a 20bp gRNA into the box below</h5>
-        <p>Your 20bp gRNA sequence should not include the PAM site (CCN/NGG). Sequences longer than 20bp will be truncated</p>
+      <div>
+        <h5 style="text-align:center">Find CRISPRs in genomic sequence</h5>
+      </div>
+      <form role="form" id="crispr_search" class="form-horizontal">
+        <fieldset id="fields">
+          <div id="bulk_placeholder" class="wordwrap"></div><br/>
+          <button class="btn" id="reset" style="display:none;">Search Again</button>
+              <div id="bulk_form">
+                  <label class="control-label">Sequence</label>
+                  <div class="controls">
+                    <textarea class="input-xxlarge" rows="5" name="seq_block" id="seq_block" placeholder="Paste sequence here (max 250bp)"></textarea>
+                  </div>
+                  <label class="control-label">Species</label>
+                  <div class="control-group" id="bulk_species">
+                    <div class="controls">
+                      [% FOR s IN species %]
+                        <label class="radio">
+                          <input type="radio" name="bulk_species" value="[% s.id %]" />
+                          <div class="species_label">[% s.display_name %]</div>
+                        </label>
+                      [% END %]
+                    </div>
+                  </div>
+                  <div class="control-group">
+                      <div class="controls">
+                          <button class="btn" id="bulk">Find CRISPRs</button>
+                      </div>
+                  </div>
+              </div>
+          </fieldset>
+        </form>
+    </div>
+
+    <div class="well">
+      <div>
+        <h5 style="text-align:center">Find CRISPR from gRNA</h5>
+        <p>To find a single CRISPR within WGE please paste a 20bp gRNA into the box below. Your gRNA sequence should not include the PAM site (CCN/NGG)</p>
       </div>
 
       <hr />
@@ -317,13 +354,13 @@ function Iterator(list) {
           </div>
           <div class="control-group" id="species">
             <label class="control-label">Species</label>
-            <div class="controls form-inline">
-                <label class="radio inline">
-                  <input type="radio" name="species" id="radio_mouse" value="Mouse" />Mouse
+            <div class="controls">
+              [% FOR s IN species %]
+                <label class="radio">
+                  <input type="radio" name="bulk_species" value="[% s.id %]" />
+                  <div class="species_label">[% s.display_name %]</div>
                 </label>
-                <label class="radio inline">
-                  <input type="radio" name="species" id="radio_human" value="Human" />Human
-                </label>
+              [% END %]
             </div>
           </div>
           <!--
@@ -346,29 +383,6 @@ function Iterator(list) {
           </div>
         </fieldset>
       </form>
-    </div>
-
-    <div class="well">
-        <div id="bulk_placeholder" class="wordwrap"></div><br/>
-        <button class="btn" id="reset" style="display:none;">Search Again</button>
-            <div id="bulk_form">
-                <textarea class="input-xxlarge" rows="5" name="seq_block" id="seq_block" placeholder="Paste sequence here"></textarea>
-                <div class="control-group" id="bulk_species">
-                  <div class="controls form-inline">
-                      <label class="radio inline">
-                        <input type="radio" name="bulk_species" id="radio_mouse" value="Mouse" />Mouse
-                      </label>
-                      <label class="radio inline">
-                        <input type="radio" name="bulk_species" id="radio_human" value="Human" />Human
-                      </label>
-                  </div>
-                </div>
-                <div class="control-group">
-                    <div class="controls">
-                        <button class="btn" id="bulk">Find CRISPRs</button>
-                    </div>
-                </div>
-            </div>
     </div>
 
     <div class="well" id="results_container" style="display:none;">

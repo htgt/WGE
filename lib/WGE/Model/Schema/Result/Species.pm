@@ -211,8 +211,19 @@ __PACKAGE__->might_have(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
-sub name{
-  my ($self) = @_;
+sub as_hash {
+  my ( $self ) = @_;
+
+  return {
+    id           => $self->id,
+    numerical_id => $self->numerical_id,
+    display_name => $self->display_name,
+    active       => $self->active,
+  };
+}
+
+sub name {
+  my ( $self ) = @_;
 
   return $self->id;
 }

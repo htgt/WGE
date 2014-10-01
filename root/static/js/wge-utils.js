@@ -127,7 +127,8 @@ function get_ensembl_link(location, species) {
       ens_species = "Mus_Musculus";
       break;
     case "human":
-      ens_species = "Homo_sapiens";
+    case "grch38":
+      ens_species = "Homo_Sapiens";
       break;
     default:
       console.log("Invalid species");
@@ -189,4 +190,24 @@ function build_url(url, params) {
 
   //don't return ? if there's no options
   return url + (encoded.length ? "?" + encoded.join("&") : "");
+}
+
+function colour_species() {
+  var species_colours = {
+    'GRCh37':  '#55bb33',
+    'GRCh38':  '#ffcc77',
+    'GRCm38':  '#eeaaaa',
+    'default': '#CCCCCC',
+  };
+    //split Human (GRCh37) into ['Human (', 'GRCh37', ')']
+    $(".species_label").each(function() {
+      var self = $(this);
+
+      var m = self.text().match(/([^(]+\()([A-Za-z\d]+)(\).*)/);
+      var assembly = m[2];
+
+      var colour = species_colours[assembly] || colours['default'];
+
+      self.html(m[1] + "<span style='color:" + colour + "'>" + assembly + "</span>" + m[3]);
+    });
 }

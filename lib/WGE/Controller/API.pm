@@ -122,6 +122,7 @@ sub exon_search :Local('exon_search') {
 
     my @exons = map {
             {
+                id      => $_->id,
                 exon_id => $_->ensembl_exon_id,
                 rank    => $_->rank,
                 len     => ($_->chr_end - $_->chr_start) + 1,
@@ -421,6 +422,7 @@ sub crisprs_in_region :Local('crisprs_in_region') Args(0){
 
     my $schema = $c->model->schema;
     my $params = {
+        species_id        => $c->request->params->{species_id},
         start_coord       => $c->request->params->{start},
         end_coord         => $c->request->params->{end},
         chromosome_number => $c->request->params->{chr},
@@ -454,6 +456,7 @@ sub crispr_pairs_in_region :Local('crispr_pairs_in_region') Args(0){
 
     my $schema = $c->model->schema;
     my $params = {
+        species_id        => $c->request->params->{species_id},
         start_coord       => $c->request->params->{start},
         end_coord         => $c->request->params->{end},
         chromosome_number => $c->request->params->{chr},
@@ -506,7 +509,26 @@ sub _get_exon_attribute {
     my %data;
     for my $exon_id ( @exon_ids ) {
         #make sure the exon exists
-        my $exon = $c->model('DB')->resultset('Exon')->find( { ensembl_exon_id => $exon_id } );
+
+        my $exon;
+        if ( $c->req->params->{species} ) {
+            ( $exon ) = $c->model('DB')->resultset('Exon')->search(
+                {
+                    ensembl_exon_id => $exon_id,
+                    'species.id'    => $c->req->params->{species},
+                },
+                { join => { gene => 'species' } }
+            );
+        }
+        else {
+            #because Human/Grch38 have overlapping exons its possible we get two back in human.
+            #we have no way of knowing which one it is unless the user specifies a species
+            my @exons = $c->model('DB')->resultset('Exon')->search( { ensembl_exon_id => $exon_id } );
+            _send_error( $c, "Found multiple exons, please provide a species.", 400 ) if @exons > 1;
+            $exon = $exons[0];
+        }
+
+        #my $exon = $c->model('DB')->resultset('Exon')->find( { ensembl_exon_id => $exon_id } );
 
         _send_error($c, "Invalid exon id", 400) unless $exon;
 

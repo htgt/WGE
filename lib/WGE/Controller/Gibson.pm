@@ -536,6 +536,7 @@ sub genoverse_browse_view :Path( '/genoverse_browse') : Args(0){
     $c->log->debug('Displaying region: '.Dumper($region));
 
     $c->stash(
+        'species'       => $region->{'species'},
         'genome'        => $region->{'genome'},
         'chromosome'    => $region->{'chromosome'},
         'browse_start'  => $region->{'browse_start'},

@@ -3,6 +3,9 @@
 
 <script type="text/javascript">
   $(document).ready(function() {
+    //colour assemblies with code from wge-utils
+    colour_species();
+
     // add event handler to reload crispr pair table after off-target searches
     // have been submitted
     $("#dialog").on('hidden', function(){
@@ -71,7 +74,7 @@
         //redirect the user to the genoverse page
         var url = "[% c.uri_for('/genoverse_browse') %]";
         var exon = get_selected_exons();
-        var full_url = url.concat("?view_paired=1&exon_id=",exon);
+        var full_url = url.concat("?view_paired=1&exon_id=",exon,'&species_id=',get_species());
         //window.location.href=full_url;
         window.open(full_url);
 
@@ -178,6 +181,9 @@
       else if(opts[0] == "Human") {
         radio = $("#radio_human");
       }
+      else if(opts[0] == "Grch38") {
+        radio = $("#radio_grch38");
+      }
       else {
         console.log("Invalid species found in URL:" + opts[0]);
       }
@@ -222,7 +228,7 @@
     var table = get_table();
 
     //get the pairs and add them to the table
-    $.get('api/pair_search', { exon_id: exons },
+    $.get('api/pair_search', { exon_id: exons, species: get_species() },
       function(data) {
         if (data.length == 0) {
           var num_cols = table.find("thead tr:nth-child(2) th").length;
@@ -495,12 +501,12 @@
       <fieldset id="fields">
         <div class="control-group" id="species">
           <label class="control-label">Species</label>
-          <label class="radio">
-            <input type="radio" name="species" id="radio_mouse" value="Mouse" />Mouse
-          </label>
-          <label class="radio">
-            <input type="radio" name="species" id="radio_human" value="Human" />Human
-          </label>
+            [% FOR s IN species %]
+              <label class="radio">
+                <input type="radio" name="species" id="radio_[% s.id FILTER lower %]" value="[% s.id %]" />
+                <div class="species_label">[% s.display_name %]</div>
+              </label>
+            [% END %]
         </div>
         <br/>
         <div>
@@ -528,7 +534,7 @@
 
     <div class="span2 pull-right">
      Example in genome browser:
-     <a href="[% c.uri_for('/genoverse_browse',{view_single => 1, view_paired => 1, exon_id => 'ENSE00000939167' }) %]">
+     <a href="[% c.uri_for('/genoverse_browse',{view_single => 1, view_paired => 1, exon_id => 'ENSE00000939167', species_id => 'Grch38' }) %]">
       <img src="[% c.uri_for('/static/images/genoverse_view.png') %]" class="img-polaroid" height="120px" width="120px" title="crispr pairs for BRCA2 (ENSE00000939167) in genome browser"/>
      </a>
     </div>

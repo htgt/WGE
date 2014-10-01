@@ -97,10 +97,11 @@ sub crispr_report :Path('/crispr') :Args(1){
     my $fwd_seq = $crispr_hash->{pam_right} ? $crispr_hash->{seq} : revcom_as_string( $crispr_hash->{seq} );
 
     $c->stash(
-        crispr         => $crispr_hash,
-        crispr_fwd_seq => $fwd_seq,
-        species        => $crispr->get_species,
-        crispr_pairs   => $crispr_pairs,
+        crispr               => $crispr_hash,
+        crispr_fwd_seq       => $fwd_seq,
+        species              => $species->id,
+        species_display_name => $species->display_name,
+        crispr_pairs         => $crispr_pairs,
     );
 
     if($c->user){
@@ -250,7 +251,7 @@ sub crispr_pair_report :Path('/crispr_pair') :Args(1){
     if ( $crispr_pair ) {
         $pair = $crispr_pair->as_hash( { with_offs => 1, get_status => 1 } );
         $c->log->warn( "Found " . scalar @{ $pair->{off_targets} } );
-        $species = $crispr_pair->get_species;
+        $species = $crispr_pair->species;
     }
     else {
         my $left_crispr = $c->model->resultset('Crispr')->find({ id => $left_id });
@@ -258,13 +259,14 @@ sub crispr_pair_report :Path('/crispr_pair') :Args(1){
 
         #gets a pair hash with spacer but no off target data
         $pair = $self->pair_finder->_check_valid_pair( $left_crispr, $right_crispr );
-        $species = $left_crispr->get_species;
+        $species = $left_crispr->species;
     }
 
     if ( $pair ) {
         $c->stash( {
-            pair          => $pair,
-            species       => $species,
+            pair                 => $pair,
+            species              => $species->id,
+            species_display_name => $species->display_name,
         } );
     }
     else {

@@ -155,9 +155,56 @@ __PACKAGE__->add_unique_constraint(
   ["chr_start", "chr_name", "pam_right"],
 );
 
+=head1 RELATIONS
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-09-30 10:51:00
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:fI1WGLGUCmV5ZIgCnfuSfQ
+=head2 crispr_pairs_grch38_lefts
+
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::CrisprPairsGrch38>
+
+=cut
+
+__PACKAGE__->has_many(
+  "crispr_pairs_grch38_lefts",
+  "WGE::Model::Schema::Result::CrisprPairsGrch38",
+  { "foreign.left_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 crispr_pairs_grch38_rights
+
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::CrisprPairsGrch38>
+
+=cut
+
+__PACKAGE__->has_many(
+  "crispr_pairs_grch38_rights",
+  "WGE::Model::Schema::Result::CrisprPairsGrch38",
+  { "foreign.right_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 user_crisprs_grch38s
+
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::UserCrisprsGrch38>
+
+=cut
+
+__PACKAGE__->has_many(
+  "user_crisprs_grch38s",
+  "WGE::Model::Schema::Result::UserCrisprsGrch38",
+  { "foreign.crispr_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-10-01 12:22:23
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:SCGim/jXVIqDCxecX/RLlA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
