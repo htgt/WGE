@@ -184,31 +184,6 @@ sub get_region_from_params{
                 'browse_end'   => $crispr->chr_start + 500,
             }
         }
-        # elsif (my $crispr_pair_id = $params->{'crispr_pair_id'}){
-        #     my $crispr_pair = $schema->resultset('CrisprPair')->find({ id => $crispr_pair_id });
-        #     my $crispr;
-        #     if($crispr_pair){
-        #         $crispr = $crispr_pair->left;
-        #     }
-        #     else{
-        #         # Pair does not exist in the database so split the ID and find one
-        #         # of the individual crisprs
-        #         my ($crispr_id) = $crispr_pair_id =~ /^(\d+)_/;
-        #         DEBUG("Finding crispr $crispr_id from non-database pair $crispr_pair_id");
-        #         $crispr = $schema->resultset('Crispr')->find({ id => $crispr_id });
-        #     }
-
-        #     die "Could not find crispr pair $crispr_pair_id in WGE database" unless $crispr;
-
-        #     my $genome = $crispr->species->default_assembly->assembly_id;
-        #     # Browse to a 1kb region around the crispr
-        #     return {
-        #         'genome'       => $genome,
-        #         'chromosome'   => $crispr->chr_name,
-        #         'browse_start' => $crispr->chr_start - 500,
-        #         'browse_end'   => $crispr->chr_start + 500,
-        #     }
-        # }
     }
     else{
         # All region params provided, we just return them

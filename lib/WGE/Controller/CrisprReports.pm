@@ -73,6 +73,7 @@ sub crispr_report :Path('/crispr') :Args(1){
     my $species = $c->model('DB')->resultset('Species')->find({ numerical_id => $crispr->species_id });
     my $assembly_id = $species->species_default_assembly->assembly_id;
     my $nearby_crisprs = crisprs_for_region($c->model('DB'), {
+        species_id        => $species->id,
         assembly_id       => $assembly_id,
         chromosome_number => $crispr->chr_name,
         start_coord       => $pair_search_start,

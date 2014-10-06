@@ -244,8 +244,7 @@
             $.each(crisprs, function(idx, pair) {
 
               var row = get_pair_row(pair);
-              if(row.has(".ots-button").length){
-                  console.log("found row contaning ots button");
+              if ( row.has(".ots-button").length ) {
                   missing_pair_ots = true;
               }
 
@@ -257,7 +256,7 @@
               }
             });
             // Add the exon OT search button if any pairs are missing ot data
-            if(missing_pair_ots){
+            if ( missing_pair_ots ) {
               var exon_ots_button = create_exon_ots_button(exon_id);
               exon_ots_button.appendTo(exon_column_td);
             }
@@ -353,12 +352,16 @@
 
     exon_ots_button.click(function(event){
       event.preventDefault();
-      $.get('api/exon_off_target_search', { id: exon_id }, function(data){
-        console.log(data);
+      $.get('api/exon_off_target_search', { exon_id: exon_id, species_id: get_species() }, function (data) {
+        if ( data.error_msg ) {
+          create_alert(data.error_msg);
+          return;
+        }
+
         var text = data.pair_count + " pairs and " + data.crispr_count + " individual crisprs submitted for off-target calculation";
         $("#dialog_content").text(text);
         $("#dialog").modal();
-      });
+      }).fail(ajax_failed);
     });
     return exon_ots_button;
   }

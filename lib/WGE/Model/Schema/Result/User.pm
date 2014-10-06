@@ -299,39 +299,5 @@ sub mouse_crispr_pairs { return shift->_species_crispr_pairs( 'mice' ); }
 sub human_crispr_pairs { return shift->_species_crispr_pairs( 'humans' ); }
 sub grch38_crispr_pairs { return shift->_species_crispr_pairs( 'grch38s' ); }
 
-
-# sub mouse_crisprs{
-#   my $self = shift;
-
-#   return map { $self->result_source->schema->resultset('Crispr')->find({ id => $_->crispr_id }) } $self->user_crisprs_mice;
-# }
-
-# # many-to-many relationship would return HumanCrispr so we do this instead
-# sub human_crisprs{
-#   my $self = shift;
-
-#   return map { $self->result_source->schema->resultset('Crispr')->find({ id => $_->crispr_id }) } $self->user_crisprs_humans;
-# }
-
-# # many-to-many relationship would return MouseCrisprPair so we do this instead
-# sub mouse_crispr_pairs{
-#   my $self = shift;
-
-#   return map { $self->result_source->schema->resultset('CrisprPair')->find({ id => $_->crispr_pair_id }) } $self->user_crispr_pairs_mice;
-# }
-
-# # many-to-many relationship would return HumanCrisprPair so we do this instead
-# sub human_crispr_pairs{
-#   my $self = shift;
-
-#   return map { $self->result_source->schema->resultset('CrisprPair')->find({ id => $_->crispr_pair_id }) } $self->user_crispr_pairs_humans;
-# }
-
-# sub human_crispr_pairs{
-#   my $self = shift;
-
-#   return map { $self->result_source->schema->resultset('CrisprPair')->find({ id => $_->crispr_pair_id }) } $self->user_crispr_pairs_grch38s;
-# }
-
 __PACKAGE__->meta->make_immutable;
 1;

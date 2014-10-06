@@ -304,10 +304,10 @@ sub exon_off_target_search :Local('exon_off_target_search'){
 
     my $params = $c->req->params;
 
-    check_params_exist( $c, $params, [ qw( id )] );
+    check_params_exist( $c, $params, [ qw( exon_id species_id ) ] );
 
     # Pass $c to the method as it spawns child processes which need to detach the request
-    my $data = $self->ot_finder->update_exon_off_targets($c->model('DB'),$params, $c);
+    my $data = $self->ot_finder->update_exon_off_targets( $c->model('DB'), $params, $c );
 
     $c->stash->{json_data} = $data;
     $c->forward('View::JSON');

@@ -18,6 +18,7 @@ $(document).ready(function() {
     colour_species();
 
     $("#bulk").click(function(event) {
+      event.preventDefault();
       process_text();
     });
 
@@ -357,7 +358,7 @@ function Iterator(list) {
             <div class="controls">
               [% FOR s IN species %]
                 <label class="radio">
-                  <input type="radio" name="bulk_species" value="[% s.id %]" />
+                  <input type="radio" name="species" value="[% s.id %]" />
                   <div class="species_label">[% s.display_name %]</div>
                 </label>
               [% END %]
