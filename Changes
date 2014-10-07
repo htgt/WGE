@@ -1,3 +1,7 @@
+0.044     2014-10-07 12:19:23 Europe/London
+
+    Bugfixes: off-target calculations within genoverse didn't send species and GRCh38 bookmarked CRISPRs did not show up
+
 0.043     2014-10-07 11:15:04 Europe/London
 
     Added code for GRCh38
