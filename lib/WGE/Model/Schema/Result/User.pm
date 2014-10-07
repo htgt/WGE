@@ -259,13 +259,13 @@ __PACKAGE__->has_many(
 sub user_crisprs {
   my $self = shift;
 
-  return ( $self->user_crisprs_humans, $self->user_crisprs_mice );
+  return ( $self->user_crisprs_grch38s, $self->user_crisprs_humans, $self->user_crisprs_mice );
 }
 
 sub user_crispr_pairs {
   my $self = shift;
 
-  return ( $self->user_crispr_pairs_humans, $self->user_crispr_pairs_mice );
+  return ( $self->user_crisprs_grch38s, $self->user_crispr_pairs_humans, $self->user_crispr_pairs_mice );
 }
 
 sub _species_crisprs {
