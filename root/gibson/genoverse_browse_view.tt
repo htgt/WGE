@@ -546,6 +546,7 @@
         end       : [% browse_end %] + 200,
         summary   : function(start, end) {
           var params = {
+            species: species,
             start_coord: start,
             end_coord: end,
             chromosome_number: '[% chromosome %]',
