@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::Exon;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::Exon::VERSION = '0.042';
+    $WGE::Model::Schema::Result::Exon::VERSION = '0.043';
 }
 ## use critic
 
@@ -126,11 +126,13 @@ __PACKAGE__->set_primary_key("id");
 
 =item * L</ensembl_exon_id>
 
+=item * L</gene_id>
+
 =back
 
 =cut
 
-__PACKAGE__->add_unique_constraint("exons_ensembl_exon_id_key", ["ensembl_exon_id"]);
+__PACKAGE__->add_unique_constraint("exons_ensembl_exon_id_key", ["ensembl_exon_id", "gene_id"]);
 
 =head1 RELATIONS
 
@@ -150,8 +152,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 13:58:10
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:frJ+3S6bI8G0wy8BJUenaQ
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-09-30 10:51:00
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:rJpBxtsELVy+cqO+mL7F8w
 
 use WGE::Util::FindPairs;
 

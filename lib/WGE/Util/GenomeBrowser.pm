@@ -1,7 +1,7 @@
 package WGE::Util::GenomeBrowser;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::GenomeBrowser::VERSION = '0.042';
+    $WGE::Util::GenomeBrowser::VERSION = '0.043';
 }
 ## use critic
 
@@ -104,8 +104,15 @@ sub get_region_from_params{
             # get info for initial display from design oligos...
             my $design_data = fetch_design_data($schema, $params);
 
+            my $species = $params->{species_id}; #optional as we can find it
+
             my ($start, $end, $chromosome, $genome);
             foreach my $oligo (@{ $design_data->{oligos} || [] }){
+                #set the species from the first oligo
+                if ( not defined $species ) {
+                    my $assembly = $oligo->{locus}{assembly};
+                    $species = $schema->resultset('Assembly')->find({ id => $assembly })->species->id;
+                }
                 $chromosome ||= $oligo->{locus}->{chr_name};
                 $genome   ||= $oligo->{locus}->{assembly};
                 my $oligo_start = $oligo->{locus}->{chr_start};
@@ -125,6 +132,7 @@ sub get_region_from_params{
             }
 
             return {
+                'species'       => $species,
                 'genome'        => $genome,
                 'chromosome'    => $chromosome,
                 'browse_start'  => $start,
@@ -134,15 +142,26 @@ sub get_region_from_params{
             };
         }
         elsif (my $exon_id_list = $params->{'exon_id'}){
+            unless ( defined $params->{species_id} ) {
+                die "A species must be provided with an ensembl exon id";
+            }
+
             # FIXME: crispr search form can have multiple exons selected
             # just use on of these for now
-            my ($exon_id) = split ",", $exon_id_list;
-            my $exon = $schema->resultset('Exon')->find({ ensembl_exon_id => $exon_id })
-                or die "Could not find exon $exon_id in WGE database";
+            my ( $exon_id ) = split ",", $exon_id_list;
+            my ( $exon ) = $schema->resultset('Exon')->search(
+                {
+                    ensembl_exon_id => $exon_id,
+                    'species.id'    => $params->{species_id},
+                },
+                { join => { gene => 'species' } }
+            );
+            die "Could not find exon $exon_id in WGE database" unless $exon;
 
-            my $genome = $exon->gene->species->default_assembly->assembly_id;
+            my $genome = $exon->gene->species->assembly;
 
             return {
+                'species'      => $params->{species_id},
                 'genes'        => $exon_id,
                 'genome'       => $genome,
                 'chromosome'   => $exon->chr_name,
@@ -150,37 +169,21 @@ sub get_region_from_params{
                 'browse_end'   => $exon->chr_end
             };
         }
-        elsif (my $crispr_id = $params->{'crispr_id'}){
+        elsif ($params->{'crispr_id'} || $params->{'crispr_pair_id'}){
+            my $crispr_id = $params->{'crispr_id'};
+            #if we didn't get a crispr id it means its a pair, so take the left crispr id
+            unless ( $crispr_id ) {
+                ( $crispr_id ) = $params->{'crispr_pair_id'} =~ /^(\d+)_/;
+            }
+
             my $crispr = $schema->resultset('Crispr')->find({ id => $crispr_id })
                 or die "Could not find crispr $crispr_id in WGE database";
-            my $genome = $crispr->species->default_assembly->assembly_id;
+
+            my $species = $crispr->species;
+            my $genome = $species->assembly;
             # Browse to a 1kb region around the crispr
             return {
-                'genome'       => $genome,
-                'chromosome'   => $crispr->chr_name,
-                'browse_start' => $crispr->chr_start - 500,
-                'browse_end'   => $crispr->chr_start + 500,
-            }
-        }
-        elsif (my $crispr_pair_id = $params->{'crispr_pair_id'}){
-            my $crispr_pair = $schema->resultset('CrisprPair')->find({ id => $crispr_pair_id });
-            my $crispr;
-            if($crispr_pair){
-                $crispr = $crispr_pair->left;
-            }
-            else{
-                # Pair does not exist in the database so split the ID and find one
-                # of the individual crisprs
-                my ($crispr_id) = $crispr_pair_id =~ /^(\d+)_/;
-                DEBUG("Finding crispr $crispr_id from non-database pair $crispr_pair_id");
-                $crispr = $schema->resultset('Crispr')->find({ id => $crispr_id });
-            }
-
-            die "Could not find crispr pair $crispr_pair_id in WGE database" unless $crispr;
-
-            my $genome = $crispr->species->default_assembly->assembly_id;
-            # Browse to a 1kb region around the crispr
-            return {
+                'species'      => $species->id,
                 'genome'       => $genome,
                 'chromosome'   => $crispr->chr_name,
                 'browse_start' => $crispr->chr_start - 500,
@@ -249,7 +252,11 @@ sub crisprs_for_region {
     my $params = shift;
 
     # Chromosome number is looked up in the chromosomes table to get the chromosome_id
-    my $species = $schema->resultset('Assembly')->find({ id => $params->{assembly_id} })->species;
+    my $species = $schema->resultset('Species')->find( { id => $params->{species_id} } );
+    unless ( $species ) {
+        WARN( "Couldn't find species " . $params->{species_id} );
+        return;
+    }
 
     # Store species name for gff output
     $params->{species} = $species->id;

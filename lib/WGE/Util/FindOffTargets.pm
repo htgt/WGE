@@ -1,7 +1,7 @@
 package WGE::Util::FindOffTargets;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::FindOffTargets::VERSION = '0.042';
+    $WGE::Util::FindOffTargets::VERSION = '0.043';
 }
 ## use critic
 
@@ -130,6 +130,11 @@ sub update_region_off_targets{
     my ( $self, $model, $params, $c ) = @_;
 
     $self->log->debug("Searching for region off-targets: ".Dumper($params));
+
+    #we use both... need to tidy this all up really
+    if ( ! $params->{species_id} ) {
+        $params->{species_id} = $params->{species};
+    }
 
     # Sort the pairs so they are processed in the same order as they
     # appear in the crispr pair table
@@ -303,14 +308,13 @@ sub update_exon_off_targets{
     my ( $self, $model, $params, $c ) = @_;
 
     $self->log->debug("Searching for exon off-targets: ".Dumper($params));
-    my $id = $params->{id};
 
     my $region;
     try {
-        $region = get_region_from_params($model, {exon_id => $id});
+        $region = get_region_from_params( $model, $params );
     }
     catch ($e) {
-        return { error_msg => "Could not get coordinates for exon $id - $e" };
+        return { error_msg => "Could not get coordinates for exon " . $params->{exon_id} . " - $e" };
     }
 
     # subtract 22 so we find crisprs that start before exon but end within it
@@ -322,6 +326,7 @@ sub update_exon_off_targets{
     }
 
     my $region_params = {
+        species_id  => $params->{species_id},
         start_coord => $region->{browse_start},
         end_coord   => $region->{browse_end},
         assembly_id => $region->{genome},

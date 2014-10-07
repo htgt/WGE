@@ -1,7 +1,7 @@
 package WGE::Controller::REST::Species;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::REST::Species::VERSION = '0.042';
+    $WGE::Controller::REST::Species::VERSION = '0.043';
 }
 ## use critic
 
@@ -21,7 +21,7 @@ sub get_all_species_GET {
     $c->assert_user_roles('read');
 
     #map numerical id to text id for lims2
-    my %data = map { $_->numerical_id, $_->id } $c->model('DB')->resultset("Species")->search;
+    my %data = map { $_->numerical_id, $_->display_name } $c->model('DB')->resultset("Species")->search;
 
     return $self->status_ok( $c, entity => \%data)
 }

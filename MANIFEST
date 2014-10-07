@@ -4,6 +4,8 @@ MANIFEST
 META.yml
 Makefile.PL
 README
+bin/assembly_liftover_dump.pl
+bin/assembly_liftover_load.pl
 bin/crisprs_in_exon.pl
 bin/dump_data.pl
 bin/dump_off_target_counts.pl
@@ -24,6 +26,7 @@ bin/persist_crisprs.pl
 bin/promotor_region_crisprs.pl
 bin/update_crispr_pair.pl
 human_genes_75.yaml
+human_genes_76.yaml
 lib/Catalyst/Authentication/Credential/OAuth2.pm
 lib/WGE.pm
 lib/WGE/Controller/API.pm
@@ -54,8 +57,10 @@ lib/WGE/Model/Schema/Result/CrisprOffTargets.pm
 lib/WGE/Model/Schema/Result/CrisprOtPending.pm
 lib/WGE/Model/Schema/Result/CrisprPair.pm
 lib/WGE/Model/Schema/Result/CrisprPairStatus.pm
+lib/WGE/Model/Schema/Result/CrisprPairsGrch38.pm
 lib/WGE/Model/Schema/Result/CrisprPairsHuman.pm
 lib/WGE/Model/Schema/Result/CrisprPairsMouse.pm
+lib/WGE/Model/Schema/Result/CrisprsGrch38.pm
 lib/WGE/Model/Schema/Result/CrisprsHuman.pm
 lib/WGE/Model/Schema/Result/CrisprsMouse.pm
 lib/WGE/Model/Schema/Result/Design.pm
@@ -76,8 +81,10 @@ lib/WGE/Model/Schema/Result/PairOffTargets.pm
 lib/WGE/Model/Schema/Result/Species.pm
 lib/WGE/Model/Schema/Result/SpeciesDefaultAssembly.pm
 lib/WGE/Model/Schema/Result/User.pm
+lib/WGE/Model/Schema/Result/UserCrisprPairsGrch38.pm
 lib/WGE/Model/Schema/Result/UserCrisprPairsHuman.pm
 lib/WGE/Model/Schema/Result/UserCrisprPairsMouse.pm
+lib/WGE/Model/Schema/Result/UserCrisprsGrch38.pm
 lib/WGE/Model/Schema/Result/UserCrisprsHuman.pm
 lib/WGE/Model/Schema/Result/UserCrisprsMouse.pm
 lib/WGE/Model/Schema/ResultSet/Crispr.pm

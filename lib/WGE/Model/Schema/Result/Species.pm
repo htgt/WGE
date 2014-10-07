@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::Species;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::Species::VERSION = '0.042';
+    $WGE::Model::Schema::Result::Species::VERSION = '0.043';
 }
 ## use critic
 
@@ -56,6 +56,17 @@ __PACKAGE__->table("species");
   data_type: 'text'
   is_nullable: 0
 
+=head2 display_name
+
+  data_type: 'text'
+  is_nullable: 0
+
+=head2 active
+
+  data_type: 'boolean'
+  default_value: false
+  is_nullable: 0
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -68,6 +79,10 @@ __PACKAGE__->add_columns(
   },
   "id",
   { data_type => "text", is_nullable => 0 },
+  "display_name",
+  { data_type => "text", is_nullable => 0 },
+  "active",
+  { data_type => "boolean", default_value => \"false", is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -189,8 +204,8 @@ __PACKAGE__->might_have(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 14:04:27
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:97MIJaAUTbIpKlMhnnmaLQ
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-09-30 10:51:00
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:lOgTfmyS0AWTk6DblJFzBg
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
@@ -202,10 +217,30 @@ __PACKAGE__->might_have(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
-sub name{
-  my ($self) = @_;
+sub as_hash {
+  my ( $self ) = @_;
+
+  return {
+    id           => $self->id,
+    numerical_id => $self->numerical_id,
+    display_name => $self->display_name,
+    active       => $self->active,
+  };
+}
+
+sub name {
+  my ( $self ) = @_;
 
   return $self->id;
+}
+
+#extract assembly from display name
+sub assembly {
+  my ( $self ) = @_;
+
+  my ( $assembly ) = $self->display_name =~ /.*\((.*)\)/;
+
+  return $assembly;
 }
 
 sub check_assembly_belongs {

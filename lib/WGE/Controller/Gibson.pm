@@ -1,7 +1,7 @@
 package WGE::Controller::Gibson;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::Gibson::VERSION = '0.042';
+    $WGE::Controller::Gibson::VERSION = '0.043';
 }
 ## use critic
 
@@ -46,8 +46,6 @@ sub gibson_design_gene_pick :Regex('gibson_design_gene_pick/(.*)'){
     $self->_require_login($c);
 
     my ($species) = @{ $c->req->captures };
-
-    $c->log->debug("Species: $species");
 
     # Allow species to be missing if session species already set
     if ($species) {
@@ -449,11 +447,17 @@ sub view_design :Path( '/view_gibson_design' ) : Args(0) {
 
     my $download_link = $c->uri_for('/download_design',{ design_id => $design_data->{id}});
 
+    my %UCSC_BLAT_DB = (
+        Mouse => 'mm10',
+        Human => 'hg38',
+    );
+
     $c->stash(
         design         => $design_data,
         display_design => \@DISPLAY_DESIGN,
         species        => $species_id,
         download_link  => $download_link,
+        ucsc_db        => $UCSC_BLAT_DB{ $species_id },
     );
 
     return;
@@ -542,6 +546,7 @@ sub genoverse_browse_view :Path( '/genoverse_browse') : Args(0){
     $c->log->debug('Displaying region: '.Dumper($region));
 
     $c->stash(
+        'species'       => $region->{'species'},
         'genome'        => $region->{'genome'},
         'chromosome'    => $region->{'chromosome'},
         'browse_start'  => $region->{'browse_start'},

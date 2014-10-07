@@ -1,4 +1,4 @@
-INSERT INTO species (numerical_id, id) VALUES (1,'Human'), (2,'Mouse');
+INSERT INTO species (numerical_id, id, display_name, active) VALUES (1,'Human', 'Human (GRCh37)', 't'), (2,'Mouse', 'Mouse (GRCm38)', 't'), (3, 'Pig', 'Pig (Sscrofa10.2)', 'f'), (4, 'Grch38', 'Human (GRCh38)', 't');
 
 INSERT INTO crispr_pair_statuses VALUES
     (-2, 'Too many individual off targets'),
@@ -11,10 +11,10 @@ INSERT INTO crispr_pair_statuses VALUES
     (5, 'Complete');
 
 INSERT INTO assemblies
-VALUES ('GRCh37','Human'),('GRCm38','Mouse');
+VALUES ('GRCh37','Human'),('GRCm38','Mouse'), ('GRCh38', 'Human');
 
 INSERT INTO species_default_assembly
-VALUES ('Human','GRCh37'),
+VALUES ('Human','GRCh38'),
        ('Mouse','GRCm38');
 
 INSERT INTO users (name, password)

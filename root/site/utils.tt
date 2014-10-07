@@ -1,4 +1,4 @@
-[%# 
+[%#
     to use this do:
     PROCESS utils
 %]
@@ -8,7 +8,17 @@
   [%- location = "${chr_name}:${chr_start}-${chr_end}" -%]
   [%# the default string is ':-' so thats why we check its > 2 %]
   [% IF location.length > 2 %]
-    <a href='http://www.ensembl.org/[% species %]/psychic?q=[% location %]'>[% location %]</a>
+    [% url = 'http://www.ensembl.org' %]
+    [% SWITCH species %]
+    [%  CASE 'Mouse' %]
+        [% ens_species = 'Mus_Musculus' %]
+    [% CASE 'Human' %]
+      [% url = 'http://grch37.ensembl.org' %]
+      [% ens_species = 'Homo_Sapiens' %]
+    [%  CASE 'Grch38' %]
+        [% ens_species = 'Homo_Sapiens' %]
+    [% END %]
+    <a href='[% url %]/[% ens_species %]/psychic?q=[% location %]'>[% location %]</a>
   [% END %]
 [%- END -%]
 
@@ -18,7 +28,8 @@
 [%- END -%]
 
 [%- MACRO type BLOCK -%]
-  [%- IF c.exonic.defined and c.genic.defined -%]
+[%# temporary hack to stop Grch38 showing these as they're not set yet %]
+  [%- IF c.species_id != 4 and c.exonic.defined and c.genic.defined -%]
     [%- IF c.exonic == 1 %]Exonic[% ELSIF c.genic == 1 %]Intronic[% ELSE %]Intergenic[% END -%]
   [%- ELSE %]Not set[% END -%]
 [%- END -%]
@@ -26,7 +37,7 @@
 [% email = "wge@sanger.ac.uk" %]
 
 <!--
-To use these you must run: 
+To use these you must run:
 PROCESS contact
 
 inside a template toolkit directive

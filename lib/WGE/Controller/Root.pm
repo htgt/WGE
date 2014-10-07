@@ -1,7 +1,7 @@
 package WGE::Controller::Root;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::Root::VERSION = '0.042';
+    $WGE::Controller::Root::VERSION = '0.043';
 }
 ## use critic
 
@@ -54,6 +54,14 @@ sub about :Path('/about') :Args(0) {
 sub find_crisprs :Path('/find_crisprs') :Args(0) {
     my ( $self, $c ) = @_;
 
+    my @species = sort { $a->{display_name} cmp $b->{display_name} }
+                      map { $_->as_hash }
+                          $c->model('DB')->resultset('Species')->search( { active => 1 } );
+
+    $c->stash(
+        species => \@species,
+    );
+
     return;
 }
 
@@ -91,6 +99,14 @@ sub contact :Path('/contact') :Args(0){
 
 sub search_by_seq :Path('/search_by_seq') :Args(0) {
     my ( $self, $c ) = @_;
+
+    my @species = sort { $a->{display_name} cmp $b->{display_name} }
+                      map { $_->as_hash }
+                          $c->model('DB')->resultset('Species')->search( { active => 1 } );
+
+    $c->stash(
+        species => \@species,
+    );
 
     #change to has
     # my $ots = WGE::Util::OffTargetServer->new;

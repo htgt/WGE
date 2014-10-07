@@ -13,9 +13,9 @@ use feature qw( say );
 use Smart::Comments;
 
 const my $REGION_LENGTH => 1000;
-const my $NUM_CRISPRS   => 5;
+const my $NUM_CRISPRS   => 4;
 #TODO work this out dynamically using the above variables
-const my @SPREAD        => qw( 100 300 500 700 900 );
+const my @SPREAD        => qw( 100 300 500 700 );
 
 Log::Log4perl->easy_init($DEBUG);
 
@@ -23,6 +23,8 @@ GetOptions(
     "species=s" => \my $species,
     "gene=s"    => \my $gene,
 );
+# Original Mouse Appends
+# 'GCAGATGGCTCTTTGTCCTAGACATCGAAGACAACACCG' . $guide_seq . 'GTTTTACAGTCTTCTCGTCGC'
 
 my $DB = WGE::Model::DB->new();
 
@@ -113,8 +115,17 @@ sub print_crispr_order_csv {
         $crispr_data{crispr_seq} = $crispr->seq;
         my $guide_seq = guide_rna($crispr);
         $crispr_data{crispr_guide_seq} = $guide_seq;
+
         $crispr_data{crispr_order_seq}
-            = 'GCAGATGGCTCTTTGTCCTAGACATCGAAGACAACACCG' . $guide_seq . 'GTTTTACAGTCTTCTCGTCGC';
+            = 'ATATATCTTGTGGAAAGGACGAAACACCG'
+            . $guide_seq
+            . 'GTTTTAGAGCTAGAAATAGCAAGTTAAAATA';
+
+        #$crispr_data{crispr_order_seq}
+            #= 'GCAGATGGCTCTTTGTCCTAGACATCGAAGACAACACCG'
+            #. $guide_seq
+            #. 'GTTTTACAGTCTTCTCGTCGC';
+
         $crispr_data{start}      = $crispr->chr_start;
         $crispr_data{end}        = $crispr->chr_end;
         $crispr_data{chromosome} = $crispr->chr_name;
@@ -201,7 +212,7 @@ To run script for just one gene use --gene option to specify a gene marker symbo
 
 Manos asked us to find crisprs with the following criteria:
 
-Will take all the genes for Mouse of Human in WGE ( only protein coding genes stored currently ).
+Will take all the genes for Mouse or Human in WGE ( only protein coding genes stored currently ).
 Then locates all our crisprs in 1000 base region before the start of the 5' most exon ( on canonical transcript )
 If more than 5 crisprs found we return a set of 5 crisprs that are spaced out as evenly as possible in the 1000 base pair region.
 
