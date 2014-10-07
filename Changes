@@ -1,3 +1,7 @@
+0.045     2014-10-07 14:49:33 Europe/London
+
+    Bugfix: Designs went to the wrong assembly for GRCh38
+
 0.044     2014-10-07 12:19:23 Europe/London
 
     Bugfixes: off-target calculations within genoverse didn't send species and GRCh38 bookmarked CRISPRs did not show up

@@ -1,7 +1,7 @@
 package WGE::Util::GenomeBrowser;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::GenomeBrowser::VERSION = '0.044';
+    $WGE::Util::GenomeBrowser::VERSION = '0.045';
 }
 ## use critic
 
@@ -111,7 +111,14 @@ sub get_region_from_params{
                 #set the species from the first oligo
                 if ( not defined $species ) {
                     my $assembly = $oligo->{locus}{assembly};
-                    $species = $schema->resultset('Assembly')->find({ id => $assembly })->species->id;
+                    #we have to hardcode this as there is no db link from assembly
+                    # - it will take you to Human.
+                    if ( $assembly eq "GRCh38" ) {
+                        $species = "Grch38";
+                    }
+                    else {
+                        $species = $schema->resultset('Assembly')->find({ id => $assembly })->species->id;
+                    }
                 }
                 $chromosome ||= $oligo->{locus}->{chr_name};
                 $genome   ||= $oligo->{locus}->{assembly};
