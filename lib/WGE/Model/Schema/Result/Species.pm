@@ -228,6 +228,15 @@ sub name {
   return $self->id;
 }
 
+#extract assembly from display name
+sub assembly {
+  my ( $self ) = @_;
+
+  my ( $assembly ) = $self->display_name =~ /.*\((.*)\)/;
+
+  return $assembly;
+}
+
 sub check_assembly_belongs {
     my ( $self, $assembly ) = @_;
 

@@ -122,11 +122,13 @@ function toggle_bookmark(button, path, id, item_name, spinner, bookmark_track){
 function get_ensembl_link(location, species) {
   //get ensembl species name
   var ens_species;
+  var ens_url = "http://www.ensembl.org";
   switch( species.toLowerCase() ) {
     case "mouse":
       ens_species = "Mus_Musculus";
       break;
     case "human":
+      ens_url = "http://grch37.ensembl.org";
     case "grch38":
       ens_species = "Homo_Sapiens";
       break;
@@ -134,7 +136,7 @@ function get_ensembl_link(location, species) {
       console.log("Invalid species");
   }
 
-  return $("<a>", { href: "http://www.ensembl.org/" + ens_species + "/psychic?q=" + location, html: location });
+  return $("<a>", { href: ens_url + "/" + ens_species + "/psychic?q=" + location, html: location });
 }
 
 //make a crispr object so all this type of stuff is in one place

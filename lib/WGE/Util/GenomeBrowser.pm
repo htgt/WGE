@@ -152,7 +152,7 @@ sub get_region_from_params{
             );
             die "Could not find exon $exon_id in WGE database" unless $exon;
 
-            my $genome = $exon->gene->species->default_assembly->assembly_id;
+            my $genome = $exon->gene->species->assembly;
 
             return {
                 'species'      => $params->{species_id},
@@ -174,7 +174,7 @@ sub get_region_from_params{
                 or die "Could not find crispr $crispr_id in WGE database";
 
             my $species = $crispr->species;
-            my $genome = $species->default_assembly->assembly_id;
+            my $genome = $species->assembly;
             # Browse to a 1kb region around the crispr
             return {
                 'species'      => $species->id,
