@@ -1,5 +1,25 @@
 {{$NEXT}}
 
+0.042     2014-09-02 16:32:57 Europe/London
+
+    Changed colour of PAM sites in genoverse
+
+0.041     2014-08-12 09:34:32 Europe/London
+
+    Genoverse now uses grch37 ensembl rest api for human    
+
+0.040     2014-08-05 15:39:23 Europe/London
+
+    Bugfix: exon lengths off by two
+
+0.039     2014-08-05 12:07:47 Europe/London
+
+    Bugfix: some paired off targets were hidden when they should not be
+
+0.038     2014-08-05 09:20:43 Europe/London
+
+    Added ability to paste a large sequence and find all CRISPRs within it
+
 0.037     2014-07-24 15:08:33 Europe/London
 
     Genoverse - added PAM site colouring to crispr pairs
