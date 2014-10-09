@@ -564,8 +564,11 @@
     <script type="text/javascript" src="[% c.uri_for('/Genoverse/js/genoverse.combined.js', {i => 1})%]"></script>
     <script type="text/javascript" src="[% c.uri_for('/static/js/genoverse_custom_tracks.js', {i => 5})%]"></script>
     <script>
-       var species = "[% genome == 'GRCm38' ? 'Mouse' : 'Human' %]";
-       var genoverseConfig = {
+      var species = '[% species %]';
+      var ensembl_species = '[% species == "Grch38" ? "Human" : species %]'.toLowerCase();
+      var ensembl_url = 'http://[% species == "Human" ? "grch37." : "" %]rest.ensembl.org';
+
+      var genoverseConfig = {
         width     : 1060,
         container : '#genoverse', // Where to inject Genoverse (css/jQuery selector)
         // If no genome supplied, it must have at least chromosomeSize, e.g.:
@@ -582,11 +585,7 @@
           Genoverse.Track.extend({
             name      : 'Sequence',
             id        : 'Sequence', //need this for tracksById
-            [% IF genome == 'GRCm38' %]
-            url       : 'http://rest.ensembl.org/sequence/region/mouse/__CHR__:__START__-__END__?content-type=text/plain',
-            [% ELSIF genome == 'GRCh37' %]
-            url       : 'http://grch37.rest.ensembl.org/sequence/region/human/__CHR__:__START__-__END__?content-type=text/plain',
-            [% END %]
+            url       : ensembl_url + '/sequence/region/' + ensembl_species + '/__CHR__:__START__-__END__?content-type=text/plain',
             model     : Genoverse.Track.Model.Sequence.Ensembl,
             view      : Genoverse.Track.View.Sequence,
             resizable : 'auto',
@@ -609,15 +608,16 @@
             name   : 'Genes',
             id     : 'Genes',
             //FIXME: should pass species to this template so we do not rely on assembly
+            url    : ensembl_url + '/overlap/region/' + ensembl_species + '/__CHR__:__START__-__END__?feature=gene;feature=transcript;feature=exon;feature=cds;content-type=application/json',
             [% IF genome == 'GRCm38' %]
-            url    : 'http://rest.ensembl.org/overlap/region/mouse/__CHR__:__START__-__END__?feature=gene;feature=transcript;feature=exon;feature=cds;content-type=application/json',
+            //url    : 'http://rest.ensembl.org/overlap/region/mouse/__CHR__:__START__-__END__?feature=gene;feature=transcript;feature=exon;feature=cds;content-type=application/json',
             [% ELSIF genome == 'GRCh37' %]
-            url    : 'http://grch37.rest.ensembl.org/overlap/region/human/__CHR__:__START__-__END__?feature=gene;feature=transcript;feature=exon;feature=cds;content-type=application/json',
+            //url    : 'http://grch37.rest.ensembl.org/overlap/region/human/__CHR__:__START__-__END__?feature=gene;feature=transcript;feature=exon;feature=cds;content-type=application/json',
             [% END %]
             height : 200,
             controls  : 'off',
             unsortable : true,
-            info   : 'Ensembl API genes & transcripts, see <a href="http://beta.rest.ensembl.org/" target="_blank">beta.rest.ensembl.org</a> for more details',
+            info   : 'Ensembl API genes & transcripts, see <a href="http://rest.ensembl.org/" target="_blank">rest.ensembl.org</a> for more details',
             drawFeature: function(transcript, featureContext, labelContext, scale) {
               this.base(transcript, featureContext, labelContext, scale);
 
@@ -680,14 +680,14 @@
           Genoverse.Track.Crisprs.extend({
             id        : 'Bookmarked Crisprs',
             name      : 'Bookmarked Crisprs',
-            url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&bookmarked_only=1" ,
+            url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&species_id=[%species%]&design_id=[%design_id%]&bookmarked_only=1" ,
             crispr_report_uri : "[%c.uri_for('/crispr')%]"
           }),
 [% END %]
           Genoverse.Track.Crisprs.extend({
             name      : 'Crisprs',
             id        : 'Crisprs',
-            url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]" ,
+            url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&species_id=[%species%]&design_id=[%design_id%]" ,
             view      : Genoverse.Track.View.FilterCrisprs,
             crispr_report_uri : "[%c.uri_for('/crispr')%]",
             crispr_id : "[%crispr_id || '' %]",
@@ -698,14 +698,14 @@
           Genoverse.Track.CrisprPairs.extend({
             id        : 'Bookmarked Crispr Pairs',
             name      : 'Bookmarked Crispr Pairs',
-            url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]&bookmarked_only=1" ,
+            url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&species_id=[%species%]&design_id=[%design_id%]&bookmarked_only=1" ,
             pair_report_uri : "[%c.uri_for('/crispr_pair')%]"
           }),
 [% END %]
           Genoverse.Track.CrisprPairs.extend({
             name      : 'Crispr Pairs',
             id        : 'Crispr Pairs',
-            url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&design_id=[%design_id%]" ,
+            url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&species_id=[%species%]&design_id=[%design_id%]" ,
             pair_report_uri : "[%c.uri_for('/crispr_pair')%]",
             urlParams : { crispr_filter: "[%crispr_filter%]", flank_size: "[%flank_size%]"},
             view      : Genoverse.Track.View.FilterCrisprPairs,

@@ -159,6 +159,21 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+=head2 user_crispr_pairs_grch38s
+
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::UserCrisprPairsGrch38>
+
+=cut
+
+__PACKAGE__->has_many(
+  "user_crispr_pairs_grch38s",
+  "WGE::Model::Schema::Result::UserCrisprPairsGrch38",
+  { "foreign.user_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
 =head2 user_crispr_pairs_humans
 
 Type: has_many
@@ -185,6 +200,21 @@ Related object: L<WGE::Model::Schema::Result::UserCrisprPairsMouse>
 __PACKAGE__->has_many(
   "user_crispr_pairs_mice",
   "WGE::Model::Schema::Result::UserCrisprPairsMouse",
+  { "foreign.user_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 user_crisprs_grch38s
+
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::UserCrisprsGrch38>
+
+=cut
+
+__PACKAGE__->has_many(
+  "user_crisprs_grch38s",
+  "WGE::Model::Schema::Result::UserCrisprsGrch38",
   { "foreign.user_id" => "self.id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
@@ -220,51 +250,54 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-04-15 09:58:51
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:rfe/H7RMQgI3l46eZj7bVQ
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-10-01 12:22:23
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:J/qLmKV+gpIgBDi+P7cdaA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 
-sub user_crisprs{
-    my $self = shift;
-
-    return ($self->user_crisprs_humans, $self->user_crisprs_mice);
-}
-
-# many-to-many relationship would return MouseCrispr so we do this instead
-sub mouse_crisprs{
+sub user_crisprs {
   my $self = shift;
 
-  return map { $self->result_source->schema->resultset('Crispr')->find({ id => $_->crispr_id }) } $self->user_crisprs_mice;
+  return ( $self->user_crisprs_grch38s, $self->user_crisprs_humans, $self->user_crisprs_mice );
 }
 
-# many-to-many relationship would return HumanCrispr so we do this instead
-sub human_crisprs{
+sub user_crispr_pairs {
   my $self = shift;
 
-  return map { $self->result_source->schema->resultset('Crispr')->find({ id => $_->crispr_id }) } $self->user_crisprs_humans;
+  return ( $self->user_crisprs_grch38s, $self->user_crispr_pairs_humans, $self->user_crispr_pairs_mice );
 }
 
-sub user_crispr_pairs{
-    my $self = shift;
+sub _species_crisprs {
+  my ( $self, $species ) = @_;
 
-    return ($self->user_crispr_pairs_humans, $self->user_crispr_pairs_mice);
+  #e.g. user_crisprs_mouse
+  my $field = "user_crisprs_" . $species;
+
+  return map { $self->result_source->schema->resultset('Crispr')->find({ id => $_->crispr_id }) }
+            $self->$field;
 }
 
-# many-to-many relationship would return MouseCrisprPair so we do this instead
-sub mouse_crispr_pairs{
-  my $self = shift;
+sub _species_crispr_pairs {
+  my ( $self, $species ) = @_;
 
-  return map { $self->result_source->schema->resultset('CrisprPair')->find({ id => $_->crispr_pair_id }) } $self->user_crispr_pairs_mice;
+  #e.g. user_crisprs_mouse
+  my $field = "user_crispr_pairs_" . $species;
+
+  return map { $self->result_source->schema->resultset('CrisprPair')->find({ id => $_->crispr_pair_id }) }
+            $self->$field;
 }
 
-# many-to-many relationship would return HumanCrisprPair so we do this instead
-sub human_crispr_pairs{
-  my $self = shift;
+# many-to-many relationship would return MouseCrispr so we do this instead:
 
-  return map { $self->result_source->schema->resultset('CrisprPair')->find({ id => $_->crispr_pair_id }) } $self->user_crispr_pairs_humans;
-}
+#should do this using $self->meta->add_method based on species table maybe
+sub mouse_crisprs { return shift->_species_crisprs( 'mice' ); }
+sub human_crisprs { return shift->_species_crisprs( 'humans' ); }
+sub grch38_crisprs { return shift->_species_crisprs( 'grch38s' ); }
+
+sub mouse_crispr_pairs { return shift->_species_crispr_pairs( 'mice' ); }
+sub human_crispr_pairs { return shift->_species_crispr_pairs( 'humans' ); }
+sub grch38_crispr_pairs { return shift->_species_crispr_pairs( 'grch38s' ); }
 
 __PACKAGE__->meta->make_immutable;
 1;

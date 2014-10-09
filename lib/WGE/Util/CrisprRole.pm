@@ -9,7 +9,6 @@ requires qw( chr_start pam_right species_id result_source );
 #to use them just add
 #with 'WGE::Util::CrisprRole'
 
-#CHECK THESE NUMBERS!! we want either the start or end of sgrna
 sub pam_start {
     my $self = shift;
     return $self->chr_start + ($self->pam_right ? 19 : 2)
@@ -23,14 +22,6 @@ sub chr_end {
     return shift->chr_start + 22;
 }
 
-sub get_species {
-    my $self = shift;
-
-    return $self->result_source->schema->resultset('Species')->find(
-        { numerical_id => $self->species_id }
-    )->id;
-}
-
 # Get species rs as you would if species_id was a foreign key
 sub species {
     my $self = shift;
@@ -39,5 +30,13 @@ sub species {
         { numerical_id => $self->species_id }
     );
 }
+
+sub get_species {
+    my $self = shift;
+
+    return $self->species->id;
+}
+
+
 
 1;

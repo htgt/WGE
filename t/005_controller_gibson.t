@@ -20,12 +20,14 @@ my $mech = $test->mech;
     my $chr = 17;
     my $start = 46154227;
     my $end = 46154403;
+    my $species = 'Human';
     my $assembly = 'GRCh37';
     my $crispr_id = '245377747';
     my $pair_id = '245377760_245377764';
     my $exon_id = 'ENSE00002771605';
 
     my $coords = {
+        species      => $species,
     	chromosome   => $chr,
     	genome       => $assembly,
     	browse_start => $start,
@@ -38,7 +40,7 @@ my $mech = $test->mech;
     is($mech->forms->[0]->value('browse_start'), $start, 'start correct');
     is($mech->forms->[0]->value('browse_end'), $end, 'end correct');
 
-    $mech->get_ok($test->get_uri('/genoverse_browse', { exon_id => $exon_id }), 'can browse by exon' );
+    $mech->get_ok($test->get_uri('/genoverse_browse', { exon_id => $exon_id, species_id => $species }), 'can browse by exon' );
     is($mech->forms->[0]->value('genome'), $assembly, 'genome correct');
     is($mech->forms->[0]->value('chromosome'), $chr, 'chromosome correct');
     is($mech->forms->[0]->value('browse_start'), $start, 'start correct');

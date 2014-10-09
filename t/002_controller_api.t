@@ -77,11 +77,11 @@ $test->add_ajax_headers;
             expect => {
               transcript => 'ENST00000393408',
               exons => [
-                { exon_id => "ENSE00001515177", rank => 1, len => 444, },
-                { exon_id => "ENSE00002771605", rank => 2, len => 177, },
-                { exon_id => "ENSE00002887933", rank => 3, len => 178, },
-                { exon_id => "ENSE00000735651", rank => 4, len => 95, },
-                { exon_id => "ENSE00001824299", rank => 5, len => 1528, },
+                { id => 452672, exon_id => "ENSE00001515177", rank => 1, len => 444, },
+                { id => 452668, exon_id => "ENSE00002771605", rank => 2, len => 177, },
+                { id => 452671, exon_id => "ENSE00002887933", rank => 3, len => 178, },
+                { id => 452669, exon_id => "ENSE00000735651", rank => 4, len => 95, },
+                { id => 452670, exon_id => "ENSE00001824299", rank => 5, len => 1528, },
               ]
             }
         },
@@ -102,12 +102,12 @@ $test->add_ajax_headers;
         },
         {
             name => 'single exon pairs',
-            data => { 'exon_id[]' => 'ENSE00000735651' },
+            data => { 'exon_id[]' => 'ENSE00000735651', species => 'Human' },
             expect => $test->json_data('single_exon_pairs_expected.json'),
         },
         {
             name => 'multiple exon pairs',
-            data => { 'exon_id[]' => [ qw(ENSE00002771605 ENSE00002887933) ] },
+            data => { 'exon_id[]' => [ qw(ENSE00002771605 ENSE00002887933) ], species => 'Human' },
             expect => $test->json_data('multiple_exon_pairs_expected.json'),
         },
     ];
@@ -127,21 +127,22 @@ $test->add_ajax_headers;
     my $start = 46153000;
     my $end = 46154000;
     my $assembly = "GRCh37";
+    my $species = "Human";
 
     my $tests = [
         {
             name => 'all crisprs in region',
-            data => { chr => $chr, start => $start, end => $end, assembly => $assembly },
+            data => { chr => $chr, start => $start, end => $end, assembly => $assembly, species_id => $species },
             expect => "crisprs_in_region.txt",
         },
         {
             name => 'exonic crisprs in region',
-            data => { crispr_filter => 'exonic', chr => $chr, start => $start, end => $end, assembly => $assembly },
+            data => { crispr_filter => 'exonic', chr => $chr, start => $start, end => $end, assembly => $assembly, species_id => $species },
             expect => "crisprs_in_region_exonic.txt",
         },
         {
             name => 'exon flanking crisprs in region',
-            data => { crispr_filter => 'exon_flanking', flank_size => 50, chr => $chr, start => $start, end => $end, assembly => $assembly },
+            data => { crispr_filter => 'exon_flanking', flank_size => 50, chr => $chr, start => $start, end => $end, assembly => $assembly, species_id => $species },
             expect => "crisprs_in_region_flanking.txt",
         },
     ];
@@ -150,17 +151,17 @@ $test->add_ajax_headers;
     my $pairs_test = [
         {
             name => 'all crisprs pairs in region',
-            data => { chr => $chr, start => $start, end => $end, assembly => $assembly },
+            data => { chr => $chr, start => $start, end => $end, assembly => $assembly, species_id => $species },
             expect => "crispr_pairs_in_region.txt",
         },
         {
             name => 'exonic crispr pairs in region',
-            data => { crispr_filter => 'exonic', chr => $chr, start => $start, end => $end, assembly => $assembly },
+            data => { crispr_filter => 'exonic', chr => $chr, start => $start, end => $end, assembly => $assembly, species_id => $species },
             expect => "crispr_pairs_in_region_exonic.txt",
         },
         {
             name => 'exon flanking crispr pairs in region',
-            data => { crispr_filter => 'exon_flanking', flank_size => 50, chr => $chr, start => $start, end => $end, assembly => $assembly },
+            data => { crispr_filter => 'exon_flanking', flank_size => 50, chr => $chr, start => $start, end => $end, assembly => $assembly, species_id => $species },
             expect => "crispr_pairs_in_region_flanking.txt",
         },
     ];

@@ -168,8 +168,8 @@ function check_str(text) {
       </tr>
       <tr>
         <th>Species</th>
-        <td>[% species %]</td>
-        <td>[% species %]</td>
+        <td>[% species_display_name %]</td>
+        <td>[% species_display_name %]</td>
       </tr>
       <tr>
         <th>Location</th>

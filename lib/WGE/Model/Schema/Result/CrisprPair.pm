@@ -266,12 +266,18 @@ sub as_hash {
   return $data;
 }
 
-sub get_species {
+sub species {
   my $self = shift;
 
   return $self->result_source->schema->resultset('Species')->find(
       { numerical_id => $self->species_id }
-  )->id;
+  );
+}
+
+sub get_species {
+  my $self = shift;
+
+  return $self->species->id;
 }
 
 =head1

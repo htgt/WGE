@@ -13,7 +13,7 @@
   <div class="row">
     <div class="span2">
         Example in genome browser:
-        <a href="[% c.uri_for('/genoverse_browse',{view_single => 1, view_paired => 1, exon_id => 'ENSE00000939167' }) %]">
+        <a href="[% c.uri_for('/genoverse_browse',{view_single => 1, view_paired => 1, exon_id => 'ENSE00000939167', species_id => 'Grch38' }) %]">
          <img src="[% c.uri_for('/static/images/genoverse_view.png') %]" class="img-polaroid" height="120px" width="120px" title="crispr pairs for BRCA2 (ENSE00000939167) in genome browser"/>
         </a>
     </div>
