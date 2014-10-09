@@ -244,15 +244,39 @@ function change_aa(e) {
     }
 }
 
+function get_protein_feature(pos) {
+  var track = genoverse.tracksById['Protein'];
+  //findFeatures in model doesn't work properly ?
+  var features = track.model.features.search({x: pos.start, y: 0, w: (pos.end - pos.start) + 1, h: 1});
+
+  //make sure only 1 feature has been selected
+  if ( features.length > 1 ) {
+    create_alert("Please select a region spanning 1 coding region only.");
+    return;
+  }
+  else if ( features.length < 1 ) {
+    create_alert("Please select a coding region");
+    return;
+  }
+
+  //this could be the same as what is already in the div data but it doesn't matter
+  return features[0];
+}
+
 Genoverse.Track.Controller.Protein = Genoverse.Track.Controller.Sequence.extend({
   init: function() {
     this.base();
+    //set up table of silent mutations
+    this.silent_mutations = silent_mutations();
 
     var browser = this.browser;
     var controls = browser.selectorControls;
 
     //add our find oligo button to the context menu
     $("<button class='oligos'>Get Oligo</button>").insertBefore( controls.find(".cancel") );
+
+    //so we can access methods inside click method
+    var parent = this;
 
     //the menu isn't extendable, so we have to add a new click method...
     controls.on('click', function (e) {
@@ -261,37 +285,33 @@ Genoverse.Track.Controller.Protein = Genoverse.Track.Controller.Sequence.extend(
       var pos = browser.getSelectorPosition();
       var len = (pos.end - pos.start) + 1;
 
-      //make sure the html elements exist
+      //see what protein feature the user has selected
+      var feat = get_protein_feature(pos);
+      if ( feat === undefined ) return;
+
       var div = $("#silent_mutations");
-      var o = div.find("#oligo");
-      var t = div.find("#oligo_text");
 
       //TODO:
       //add forward and reverse oligos in here
       //add transcript/protein
-      if ( ! o.length ) {
+      if ( ! div.find("#oligo").length ) {
         //add oligo div if it isn't there already
-        o = $("<div>", { id: "oligo" });
-        div.prepend(o);
-
-        t = $("<div>", { id: "oligo_text" });
-        div.prepend(t);
+        div.prepend("<div id='oligo_text'></div><div id='oligo'></div><div id='oligo_region'></div>");
       }
+
+      var t = div.find("#oligo_text");
+      var o = div.find("#oligo");
+      var r = div.find("#oligo_region");
 
       div.show();
 
       if ( len < 10 || len > 200 ) {
         o.text("");
+        r.text("");
         t.text("Oligo must be between 10 and 200 bases long");
         return;
       }
 
-      //TODO:
-      //get oligo but no exon selected is broken
-      //if feat doesn't exist no exon has been selected, so move the if block
-      //out of here and up.
-
-      var feat = div.data("feature");
       if ( val_in_range(pos.start, feat.start, feat.end)
         || val_in_range(feat.start, pos.start, pos.end) ) {
 
@@ -424,6 +444,7 @@ Genoverse.Track.Controller.Protein = Genoverse.Track.Controller.Sequence.extend(
 
           t.html( text + ":<br>" );
           o.html( output + "<br>" + "<small>Note: oligos are expanded to the nearest whole amino acid<small>" );
+          r.html("Oligo region: " + browser.chr + ":" + pos.start + "-" + pos.end);
         });
       }
       else {

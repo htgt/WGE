@@ -596,7 +596,7 @@
           Genoverse.Track.extend({
             name       : 'Protein',
             id         : 'Protein',
-            url        : "[% c.uri_for('/api/translation_for_region') %]" + "?species="+species+"&chr_name=__CHR__&chr_start=__START__&chr_end=__END__",
+            url        : "[% c.uri_for('/api/translation_for_region') %]" + "?species="+ensembl_species+"&chr_name=__CHR__&chr_start=__START__&chr_end=__END__",
             controller : Genoverse.Track.Controller.Protein,
             model      : Genoverse.Track.Model.Protein,
             view       : Genoverse.Track.View.Protein,
@@ -609,11 +609,6 @@
             id     : 'Genes',
             //FIXME: should pass species to this template so we do not rely on assembly
             url    : ensembl_url + '/overlap/region/' + ensembl_species + '/__CHR__:__START__-__END__?feature=gene;feature=transcript;feature=exon;feature=cds;content-type=application/json',
-            [% IF genome == 'GRCm38' %]
-            //url    : 'http://rest.ensembl.org/overlap/region/mouse/__CHR__:__START__-__END__?feature=gene;feature=transcript;feature=exon;feature=cds;content-type=application/json',
-            [% ELSIF genome == 'GRCh37' %]
-            //url    : 'http://grch37.rest.ensembl.org/overlap/region/human/__CHR__:__START__-__END__?feature=gene;feature=transcript;feature=exon;feature=cds;content-type=application/json',
-            [% END %]
             height : 200,
             controls  : 'off',
             unsortable : true,
