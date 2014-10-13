@@ -594,6 +594,13 @@
             controls  : 'off',
             unsortable : true
           }),
+          Genoverse.Track.Variation.extend({
+            name            : 'Variation',
+            url             : ensembl_url + '/overlap/region/' + ensembl_species + '/__CHR__:__START__-__END__?feature=variation;content-type=application/json',
+            resizable       : 'auto',
+            model           : Genoverse.Track.Model.extend({ dataRequestLimit : 5000000 }),
+            setFeatureColor : function (f) { f.color = '#1B0AB5'; }
+          }),
           Genoverse.Track.extend({
             name       : 'Protein',
             id         : 'Protein',
@@ -710,13 +717,6 @@
             // urlParams does not get reset - you can change this dynamically and the new
             // param values are maintained during zooming
             crispr_pair_id : "[%crispr_pair_id || '' %]"
-          }),
-          Genoverse.Track.Variation.extend({
-            name            : 'Variation',
-            url             : 'http://rest.ensembl.org/overlap/region/human/__CHR__:__START__-__END__?feature=variation;content-type=application/json',
-            resizable       : 'auto',
-            model           : Genoverse.Track.Model.extend({ dataRequestLimit : 5000000 }),
-            setFeatureColor : function (f) { f.color = '#AAA'; }
           }),
           Genoverse.Track.Scaleline
         ]
