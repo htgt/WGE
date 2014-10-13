@@ -17,6 +17,11 @@
   <button type="button" class="close" data-dismiss="alert">×</button>
 </div>
 <div id="genoverse" style="margin: 0;" class="span12"></div>
+
+<div class="row-fluid">
+  <div class="well" id="silent_mutations" style="display:none"></div>
+</div>
+
 <div class="row-fluid">
 <div class="span9">
 <form action="[% c.uri_for( '/genoverse_browse' ) %]" class="well">
@@ -169,7 +174,6 @@
 </div>
 
 <script type="text/javascript">
-
   // Functions to show and hide sets of tracks
   function hide_tracks(track_ids){
       track_ids.map(function(id){
@@ -413,6 +417,36 @@
     });
   }
 
+  function find_off_targets(start, end) {
+    var params = {
+      start_coord: start,
+      end_coord: end,
+      chromosome_number: '[% chromosome %]',
+      assembly_id: '[% genome %]',
+      all_singles: 1
+    };
+    var button_text = $(".summary").text();
+    var spinner = "[% c.uri_for( '/static/images/spinner-circle.gif' ) %]";
+    $(".summary").html('<img alt="Waiting" src="' + spinner + '" height="30" width="30">');
+    $.get('api/region_off_target_search', params, function(data){
+      console.log(data);
+      if(data.error_msg){
+        $("#dialog_content").text("Off-target computation failed with error: <br>" + data.error_msg);
+        $("#dialog_success").hide();
+      }
+      else{
+        var text = data.pair_count + " pairs and " + data.crispr_count + " individual crisprs submitted for off-target calculation";
+        $("#dialog_content").text(text);
+        $("#dialog_success").show();
+      }
+      $("#dialog").modal();
+    }).always( function() {
+      // remove spinner and restore button text
+      $(".summary").html("");
+      $(".summary").text(button_text);
+    });
+  }
+
   // Add event handlers to filter forms
   $(document).ready( function() {
 
@@ -529,6 +563,7 @@
 
     <script type="text/javascript" src="[% c.uri_for('/Genoverse/js/genoverse.combined.js', {i => 1})%]"></script>
     <script type="text/javascript" src="[% c.uri_for('/static/js/genoverse_custom_tracks.js', {i => 5})%]"></script>
+    <script type="text/javascript" src="[% c.uri_for('/static/js/genoverse_variation_track.js', {i => 3})%]"></script>
     <script>
       var species = '[% species %]';
       var ensembl_species = '[% species == "Grch38" ? "Human" : species %]'.toLowerCase();
@@ -544,47 +579,14 @@
         chr       : '[% chromosome %]',
         start     : [% browse_start %] - 200,
         end       : [% browse_end %] + 200,
-        summary   : function(start, end) {
-          var params = {
-            species: species,
-            start_coord: start,
-            end_coord: end,
-            chromosome_number: '[% chromosome %]',
-            assembly_id: '[% genome %]',
-            all_singles: 1
-          };
-          var button_text = $(".summary").text();
-          var spinner = "[% c.uri_for( '/static/images/spinner-circle.gif' ) %]";
-          $(".summary").html('<img alt="Waiting" src="' + spinner + '" height="30" width="30">');
-          $.get('api/region_off_target_search', params, function(data){
-            console.log(data);
-            if(data.error_msg){
-              $("#dialog_content").text("Off-target computation failed with error: <br>" + data.error_msg);
-              $("#dialog_success").hide();
-            }
-            else{
-              var text = data.pair_count + " pairs and " + data.crispr_count + " individual crisprs submitted for off-target calculation";
-              $("#dialog_content").text(text);
-              $("#dialog_success").show();
-            }
-            $("#dialog").modal();
-          }).always( function() {
-            // remove spinner and restore button text
-            $(".summary").html("");
-            $(".summary").text(button_text);
-          });
-        },
+        summary   : find_off_targets, //override the summary method to find off targets
         plugins   : [ 'controlPanelWGE', 'karyotype', 'trackControls', 'resizer', 'fileDrop' ],
         tracks    : [
           Genoverse.Track.Scalebar,
           Genoverse.Track.extend({
             name      : 'Sequence',
+            id        : 'Sequence', //need this for tracksById
             url       : ensembl_url + '/sequence/region/' + ensembl_species + '/__CHR__:__START__-__END__?content-type=text/plain',
-            [% IF genome == 'GRCm38' %]
-            //url       : 'http://rest.ensembl.org/sequence/region/mouse/__CHR__:__START__-__END__?content-type=text/plain',
-            [% ELSIF genome == 'GRCh37' %]
-            //url       : 'http://grch37.rest.ensembl.org/sequence/region/human/__CHR__:__START__-__END__?content-type=text/plain',
-            [% END %]
             model     : Genoverse.Track.Model.Sequence.Ensembl,
             view      : Genoverse.Track.View.Sequence,
             resizable : 'auto',
@@ -592,19 +594,68 @@
             controls  : 'off',
             unsortable : true
           }),
+          Genoverse.Track.Variation.extend({
+            name            : 'Variation',
+            url             : ensembl_url + '/overlap/region/' + ensembl_species + '/__CHR__:__START__-__END__?feature=variation;content-type=application/json',
+            resizable       : 'auto',
+            model           : Genoverse.Track.Model.extend({ dataRequestLimit : 5000000 }),
+            setFeatureColor : function (f) { f.color = '#1B0AB5'; }
+          }),
+          Genoverse.Track.extend({
+            name       : 'Protein',
+            id         : 'Protein',
+            url        : "[% c.uri_for('/api/translation_for_region') %]" + "?species="+ensembl_species+"&chr_name=__CHR__&chr_start=__START__&chr_end=__END__",
+            controller : Genoverse.Track.Controller.Protein,
+            model      : Genoverse.Track.Model.Protein,
+            view       : Genoverse.Track.View.Protein,
+            resizable  : 'auto',
+            controls   : 'off',
+            unsortable : false
+          }),
           Genoverse.Track.Genes.extend({
             name   : 'Genes',
+            id     : 'Genes',
             //FIXME: should pass species to this template so we do not rely on assembly
             url    : ensembl_url + '/overlap/region/' + ensembl_species + '/__CHR__:__START__-__END__?feature=gene;feature=transcript;feature=exon;feature=cds;content-type=application/json',
-            [% IF genome == 'GRCm38' %]
-            //url    : 'http://rest.ensembl.org/overlap/region/mouse/__CHR__:__START__-__END__?feature=gene;feature=transcript;feature=exon;feature=cds;content-type=application/json',
-            [% ELSIF genome == 'GRCh37' %]
-            //url    : 'http://grch37.rest.ensembl.org/overlap/region/human/__CHR__:__START__-__END__?feature=gene;feature=transcript;feature=exon;feature=cds;content-type=application/json',
-            [% END %]
             height : 200,
             controls  : 'off',
             unsortable : true,
-            info   : 'Ensembl API genes & transcripts, see <a href="http://rest.ensembl.org/" target="_blank">rest.ensembl.org</a> for more details'
+            info   : 'Ensembl API genes & transcripts, see <a href="http://rest.ensembl.org/" target="_blank">rest.ensembl.org</a> for more details',
+            drawFeature: function(transcript, featureContext, labelContext, scale) {
+              this.base(transcript, featureContext, labelContext, scale);
+
+                //get correct arrow character
+                var s = transcript.strand == -1 ? String.fromCharCode(9668) : String.fromCharCode(9658);
+                var textWidth = Math.ceil(featureContext.measureText(s).width) + 1;
+                var havana = transcript.logic_name.indexOf('ensembl_havana') === 0;
+                featureContext.fillStyle = havana ? '#666666' : '#CCCCCC';
+                //loop through all coding regions
+                if (transcript.cds && transcript.cds.length) {
+                  for (i = 0; i < transcript.cds.length; i++) {
+                    cds = transcript.cds[i];
+
+                    var cds_start = transcript.x + (cds.start - transcript.start) * scale;
+                    var cds_end   = cds_start + ( (cds.end - cds.start) * scale );
+                    var cds_width = Math.max(1, (cds.end - cds.start) * scale);
+
+                    //don't show arrows if the box is too small
+                    if ( cds_width < (textWidth+1)*3 )
+                      continue;
+
+                    featureContext.fillText(
+                      s,
+                      cds_start + 1,
+                      transcript.y - 2 //no idea why but -2 is what works
+                    );
+
+                    featureContext.fillText(
+                      s,
+                      (cds_end - textWidth) + 1,
+                      transcript.y - 2
+                    );
+                  }
+                }
+            }
           }),
           Genoverse.Track.extend({
             name      : 'Designs',
@@ -683,15 +734,15 @@
           // Hide the ones we don't want to see
           // We are doing it this way because using the hidden attribute
           // on the genoverse tracks caused "call stack size exceeded" error
-          if($("#hide_single")[0].checked == true){
+          if ( $("#hide_single").is(':checked') ) {
             hide_single();
           }
 
-          if($("#hide_paired")[0].checked == true){
+          if ( $("#hide_paired").is(':checked') ) {
             hide_paired();
           }
 
-           if($("#hide_designs")[0].checked == true){
+          if ( $("#hide_designs").is(':checked') ) {
             hide_designs();
           }
 

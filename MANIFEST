@@ -105,6 +105,7 @@ lib/WGE/Util/OffTargetServer.pm
 lib/WGE/Util/PersistCrisprs.pm
 lib/WGE/Util/PersistCrisprs/Bed.pm
 lib/WGE/Util/PersistCrisprs/TSV.pm
+lib/WGE/Util/SilentMutations.pm
 lib/WGE/Util/Statistics.pm
 lib/WGE/View/CSV.pm
 lib/WGE/View/JSON.pm
@@ -216,6 +217,7 @@ root/static/images/spinner-circle.gif
 root/static/images/table_view.png
 root/static/js/diagram.builder.js
 root/static/js/genoverse_custom_tracks.js
+root/static/js/genoverse_variation_track.js
 root/static/js/jquery-ui-1.9.2.custom.min.js
 root/static/js/jquery.js
 root/static/js/jquery.qtip.min.js

@@ -1,3 +1,8 @@
+0.046     2014-10-13 15:09:22 Europe/London
+
+    Added protein track to genoverse
+    Added variation track to genoverse
+
 0.045     2014-10-07 14:49:33 Europe/London
 
     Bugfix: Designs went to the wrong assembly for GRCh38
