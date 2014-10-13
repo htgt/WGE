@@ -1,7 +1,9 @@
 Genoverse.Track.Variation = Genoverse.Track.extend({
         // The basics for a variation track reading from Ensembl
-    test: function f() {
-        console.log('Variation track setup');
-        }
+        // Don't want the position property that comes with populateMenu by default
+    populateMenu: function( feature ) {
+        delete feature.position;
+        return feature;
+    }
 });
 
