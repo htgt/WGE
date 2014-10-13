@@ -546,6 +546,15 @@ Genoverse.Track.Model.Protein = Genoverse.Track.Model.extend({
     for ( var i = 0; i < data.length; i++ ) {
       this.insertFeature( data[i] );
     }
+  },
+
+  receiveData: function (data, start, end) {
+    if ( data.error ) {
+      create_alert(data.error);
+    }
+    else {
+      this.base(data, start, end);
+    }
   }
 });
 
@@ -606,6 +615,9 @@ Genoverse.Track.View.Protein = Genoverse.Track.View.Sequence.extend({
     var num_digits = data.idx.toString().length;
     if ( ! this.labelWidth[num_digits] )
       this.labelWidth[num_digits] = Math.ceil(data.context.measureText(data.idx).width) + 1;
+
+    //don't draw numbers if the box is too small
+    if ( this.labelWidth[num_digits] > data.width ) return;
 
     //if its white change the colour because it won't show up
     if ( data.textColour == '#FFFFFF' )
