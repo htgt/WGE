@@ -563,6 +563,7 @@
 
     <script type="text/javascript" src="[% c.uri_for('/Genoverse/js/genoverse.combined.js', {i => 1})%]"></script>
     <script type="text/javascript" src="[% c.uri_for('/static/js/genoverse_custom_tracks.js', {i => 5})%]"></script>
+    <script type="text/javascript" src="[% c.uri_for('/static/js/genoverse_variation_track.js', {i => 3})%]"></script>
     <script>
       var species = '[% species %]';
       var ensembl_species = '[% species == "Grch38" ? "Human" : species %]'.toLowerCase();
@@ -709,6 +710,13 @@
             // urlParams does not get reset - you can change this dynamically and the new
             // param values are maintained during zooming
             crispr_pair_id : "[%crispr_pair_id || '' %]"
+          }),
+          Genoverse.Track.Variation.extend({
+            name            : 'Variation',
+            url             : 'http://rest.ensembl.org/overlap/region/human/__CHR__:__START__-__END__?feature=variation;content-type=application/json',
+            resizable       : 'auto',
+            model           : Genoverse.Track.Model.extend({ dataRequestLimit : 5000000 }),
+            setFeatureColor : function (f) { f.color = '#AAA'; }
           }),
           Genoverse.Track.Scaleline
         ]
