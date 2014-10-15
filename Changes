@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+0.048     2014-10-15 16:38:39 Europe/London
+    Bugfix: protein track would not display if genes with weird structure were present
+
 0.047     2014-10-15 13:30:58 Europe/London
 
     Updated Genoverse context menu to include additional data from deferred REST call
