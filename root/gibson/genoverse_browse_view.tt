@@ -185,12 +185,13 @@
   }
 
   function show_tracks(track_ids){
-    // Insert the tracks at position 3, just below genes track (assuming user has not closed gene and sequence tracks..)
+    // Insert the tracks at position 5, just below genes track
+    //(assuming user has not closed gene, variation, protein, sequence tracks..)
       track_ids.map(function(id){
           var track = get_library_track(id);
           if(track){
               $(window)[0].genoverse.addTrack(
-                Genoverse.Track.extend($.extend(true, {},track)),3);
+                Genoverse.Track.extend($.extend(true, {},track)),5);
           }
       });
   }
@@ -566,7 +567,7 @@
     <script type="text/javascript" src="[% c.uri_for('/static/js/genoverse_variation_track.js', {i => 3})%]"></script>
     <script>
       var species = '[% species %]';
-      var ensembl_species = '[% species == "Grch38" ? "Human" : species %]'.toLowerCase();
+      ensembl_species = '[% species == "Grch38" ? "Human" : species %]'.toLowerCase();
       var ensembl_url = 'http://[% species == "Human" ? "grch37." : "" %]rest.ensembl.org';
 
       var genoverseConfig = {
