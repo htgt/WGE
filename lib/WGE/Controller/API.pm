@@ -517,18 +517,17 @@ sub translation_for_region :Local('translation_for_region') Args(0) {
     $c->log->debug( "Found " . scalar( @genes ) . " genes for region" );
 
     my @features;
-    try {
-        for my $gene ( @genes ) {
+    for my $gene ( @genes ) {
+        try {
             push @features, $self->_process_gene( $c, $gene );
         }
-
-        $c->stash->{json_data} = \@features;
-    }
-    catch ( $e ) {
-        $c->log->debug( $e );
-        $c->stash->{json_data} = { error => $e };
+        catch ( $e ) {
+            $c->log->error( $e );
+            #$c->stash->{json_data} = { error => $e };
+        }
     }
 
+    $c->stash->{json_data} = \@features;
     $c->forward('View::JSON');
 
     return;
@@ -547,12 +546,8 @@ sub _process_gene {
     my $trans_seq = $translation->seq . "*";
     my $nuc_seq = $transcript->translateable_seq;
 
-    $c->log->debug( "Nuc seq: " . $nuc_seq );
-    $c->log->debug( "Nucleotide length: " . length($nuc_seq) . ", 3: " . (length($nuc_seq)/3) );
-    $c->log->debug( "Transcript length:" . length($trans_seq) );
-
-    # die "Number of nucleotides does not match the number of amino acids"
-    #     unless length( $nuc_seq ) / 3 == length( $trans_seq );
+    die "Number of nucleotides does not match the number of amino acids"
+        unless length( $nuc_seq ) / 3 == length( $trans_seq );
 
     my @features;
     my $rank = 0;
@@ -610,6 +605,10 @@ sub _process_gene {
             #some fruity genes have a start phase that isn't 1 (ENSG00000249624 - AP000295.9)
             #if that is the case just strip off those first few bases because we can't do anything else
 
+            #these cause too many problems, so instead of trying to fix them
+            #we just won't show this exon. ive left the code that "fixes" it below
+            die "First exon has a start phase that isn't 0";
+
             #remove first so called "amino acid"
             #also adjust the start and end to what they are now so length calculations work
             $nuc_seq = substr( $nuc_seq, 3 );
@@ -650,14 +649,12 @@ sub _process_gene {
         if ( $rank == @exons ) {
             my $remainder = $length % 3;
             if ( $remainder != 0 ) {
+                die "Last exon has partial codon at the end";
                 $nuc_seq = substr( $nuc_seq, 0, -$remainder );
             }
 
             $length -= $remainder;
         }
-
-        $c->log->debug("LENGTH IS $length");
-        $c->log->debug("SEQ IS $nuc_seq");
 
         die "something has gone horribly wrong" if $length % 3 != 0;
 
@@ -689,15 +686,6 @@ sub _process_gene {
                 codon => substr( $nuc_seq, 0, 3 ),
             };
             $adjust_end_coordinates->( 0, $data );
-            # if ( $exon->strand == 1 ) {
-            #     $end_base = $data;
-            # }
-            # elsif ( $exon->strand == -1 ) {
-            #     $start_base = $data; #display on the other side
-            # }
-            # else {
-            #     die "Unknown strand";
-            # }
         }
 
         # $c->log->debug($seq . " (" . length($seq) . ")");
