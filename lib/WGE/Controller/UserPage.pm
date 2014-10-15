@@ -1,7 +1,7 @@
 package WGE::Controller::UserPage;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::UserPage::VERSION = '0.047';
+    $WGE::Controller::UserPage::VERSION = '0.048';
 }
 ## use critic
 

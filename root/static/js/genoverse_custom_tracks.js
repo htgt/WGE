@@ -612,12 +612,8 @@ Genoverse.Track.View.Protein = Genoverse.Track.View.Sequence.extend({
 
     //need to compute width of label
 
-    var num_digits = data.idx.toString().length;
-    if ( ! this.labelWidth[num_digits] )
-      this.labelWidth[num_digits] = Math.ceil(data.context.measureText(data.idx).width) + 1;
-
-    //don't draw numbers if the box is too small
-    if ( this.labelWidth[num_digits] > data.width ) return;
+    //don't draw numbers if the box is too small to hold 3 numbers
+    if ( this.measureText(data.context, 999) > data.width ) return;
 
     //if its white change the colour because it won't show up
     if ( data.textColour == '#FFFFFF' )
@@ -626,22 +622,24 @@ Genoverse.Track.View.Protein = Genoverse.Track.View.Sequence.extend({
     data.context.fillText( data.idx, this.getTextCenter(data, data.idx), data.y+data.height+this.labelYOffset );
   },
 
-  getTextCenter: function (data, text) {
-    var id;
-    //see if its a number
+  measureText: function (context, text) {
+    //if its a number we dont want to cache all numbers, so just cache the number of
+    //digits, which is stored in id
+    var id = text;
     if ( text % 1 === 0 ) {
-      //we don't want to cache every single number as they will all have a similar width?
-      id = text.toString().length; //number of digits in the string
-    }
-    else {
-      //for a text string id and text are the same
-      id = text;
+      var id = text.toString().length; //number of digits in the string
     }
 
-    if ( ! this.labelWidth[id] )
-        this.labelWidth[id] = Math.ceil(data.context.measureText(text).width) + 1;
+    //for a number we want to measure the original text not thenumber of digits
+    var size = this.labelWidth[id] || Math.ceil(context.measureText(text).width) + 1;
 
-    return data.x + (data.width - this.labelWidth[id]) / 2;
+    return size;
+  },
+
+  getTextCenter: function (data, text) {
+    var labelWidth = this.measureText(data.context, text);
+
+    return data.x + (data.width - labelWidth) / 2;
   },
 
   drawSequence: function (feature, context, scale, width) {
