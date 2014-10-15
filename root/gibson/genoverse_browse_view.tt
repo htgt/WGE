@@ -185,12 +185,13 @@
   }
 
   function show_tracks(track_ids){
-    // Insert the tracks at position 3, just below genes track (assuming user has not closed gene and sequence tracks..)
+    // Insert the tracks at position 5, just below genes track
+    //(assuming user has not closed gene, variation, protein, sequence tracks..)
       track_ids.map(function(id){
           var track = get_library_track(id);
           if(track){
               $(window)[0].genoverse.addTrack(
-                Genoverse.Track.extend($.extend(true, {},track)),3);
+                Genoverse.Track.extend($.extend(true, {},track)),5);
           }
       });
   }
