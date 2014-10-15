@@ -566,7 +566,7 @@
     <script type="text/javascript" src="[% c.uri_for('/static/js/genoverse_variation_track.js', {i => 3})%]"></script>
     <script>
       var species = '[% species %]';
-      var ensembl_species = '[% species == "Grch38" ? "Human" : species %]'.toLowerCase();
+      ensembl_species = '[% species == "Grch38" ? "Human" : species %]'.toLowerCase();
       var ensembl_url = 'http://[% species == "Human" ? "grch37." : "" %]rest.ensembl.org';
 
       var genoverseConfig = {
