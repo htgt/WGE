@@ -70,6 +70,11 @@ sub exon_adaptor {
     return $self->registry->get_adaptor( $species || $self->species, 'core', 'exon' );
 }
 
+sub variation_feature_adaptor {
+    my ( $self, $species ) = @_;
+    return $self->registry->get_adaptor( $species || $self->species, "variation", "variationfeature");
+}
+
 __PACKAGE__->meta->make_immutable;
 
 1;
