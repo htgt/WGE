@@ -548,17 +548,17 @@ sub translation_for_region :Local('translation_for_region') Args(0) {
     $c->log->debug( "Found " . scalar( @genes ) . " genes for region" );
 
     my @features;
-    try {
-        for my $gene ( @genes ) {
+    for my $gene ( @genes ) {
+        try {
             push @features, $self->_process_gene( $c, $gene );
         }
-
-        $c->stash->{json_data} = \@features;
+        catch ( $e ) {
+            $c->log->error( $e );
+            #$c->stash->{json_data} = { error => $e };
+        }
     }
-    catch ( $e ) {
-        $c->stash->{json_data} = { error => $e };
-    }
 
+    $c->stash->{json_data} = \@features;
     $c->forward('View::JSON');
 
     return;
@@ -577,21 +577,54 @@ sub _process_gene {
     my $trans_seq = $translation->seq . "*";
     my $nuc_seq = $transcript->translateable_seq;
 
-    $c->log->debug( "Nuc seq: " . $nuc_seq );
-    $c->log->debug( "Nucleotide length: " . length($nuc_seq) . ", 3: " . (length($nuc_seq)/3) );
-    $c->log->debug( "Transcript length:" . length($trans_seq) );
-
     die "Number of nucleotides does not match the number of amino acids"
         unless length( $nuc_seq ) / 3 == length( $trans_seq );
 
     my @features;
     my $rank = 0;
     my $start_index = 1;
-    for my $exon ( @{ $transcript->get_all_Exons } ) {
+    my @exons = @{ $transcript->get_all_Exons };
+    for my $exon ( @exons ) {
         ++$rank;
         my $start = $exon->coding_region_start( $transcript );
         my $end   = $exon->coding_region_end( $transcript );
         next unless $start and $end; #skip non coding exons
+
+        #see if there are bases spanning two exons,
+        #and extract them into here if so
+        my ( $start_base, $end_base );
+
+        #use a closure here so we don't have to pass start/end around all the time
+        #base_data is optional as sometimes we don't want to set it
+        my $adjust_start_coordinates = sub {
+            my ( $amount, $base_data ) = @_;
+            if ( $exon->strand == 1 ) {
+                $start += $amount;
+                $start_base = $base_data if $base_data;
+            }
+            elsif ( $exon->strand == -1 ) {
+                $end -= $amount;
+                $end_base = $base_data if $base_data;
+            }
+            else {
+                die "Unknown strand";
+            }
+        };
+
+        my $adjust_end_coordinates = sub {
+            my ( $amount, $base_data ) = @_;
+            if ( $exon->strand == 1 ) {
+                $end -= $amount;
+                $end_base = $base_data if $base_data;
+            }
+            elsif ( $exon->strand == -1 ) {
+                $start += $amount;
+                $start_base = $base_data if $base_data;
+            }
+            else {
+                die "Unknown strand";
+            }
+        };
 
         #skip unless the exon is within our window --
         # we can't do this because we actually NEED to process every exon first.
@@ -599,16 +632,18 @@ sub _process_gene {
         #next unless val_in_range( $params->{chr_start}, $start, $end )
         #         || val_in_range( $start, $params->{chr_start}, $params->{chr_end} );
 
-
-        #see if there are bases spanning two exons,
-        #and extract them if so
-        my ( $start_base, $end_base );
         if ( $exon->phase > 0 && $rank == 1 ) {
             #some fruity genes have a start phase that isn't 1 (ENSG00000249624 - AP000295.9)
             #if that is the case just strip off those first few bases because we can't do anything else
 
+            #these cause too many problems, so instead of trying to fix them
+            #we just won't show this exon. ive left the code that "fixes" it below
+            die "First exon has a start phase that isn't 0";
+
             #remove first so called "amino acid"
+            #also adjust the start and end to what they are now so length calculations work
             $nuc_seq = substr( $nuc_seq, 3 );
+            $adjust_start_coordinates->( 3 - $exon->phase );
         }
         elsif ( $exon->phase > 0 ) {
             #for start we have to take it off 3 to get the actual
@@ -625,37 +660,32 @@ sub _process_gene {
             #also remove it from the sequences as we don't want it in the counts
             $trans_seq = substr( $trans_seq, 1 );
             $nuc_seq = substr( $nuc_seq, 3 );
-            if ( $exon->strand == 1 ) {
-                $start += $num_nucs;
-                $start_base = $data;
-            }
-            elsif ( $exon->strand == -1 ) {
-                $end -= $num_nucs;
-                $end_base = $data;
-            }
-            else {
-                die "Unknown strand";
-            }
+
+            $adjust_start_coordinates->( $num_nucs, $data );
         }
 
         if ( $exon->end_phase > 0 ) {
             #we don't truncate the trans_seq here cause the next exon needs the
             #amino acid too.
             #my $data = { aa => substr( $trans_seq, 0, 1 ), len => $exon->end_phase };
-            if ( $exon->strand == 1 ) {
-                $end -= $exon->end_phase;
-                #$end_base = $data;
-            }
-            elsif ( $exon->strand == -1 ) {
-                $start += $exon->end_phase;
-                #$start_base = $data; #display on the other side
-            }
-            else {
-                die "Unknown strand";
-            }
+
+            #dont set the start_base/end_base yet because we need to truncate the seq first
+            $adjust_end_coordinates->( $exon->end_phase );
         }
 
         my $length = ($end - $start) + 1;
+
+        #the last exon can have a partial codon at the end,
+        #if so just strip the bases
+        if ( $rank == @exons ) {
+            my $remainder = $length % 3;
+            if ( $remainder != 0 ) {
+                die "Last exon has partial codon at the end";
+                $nuc_seq = substr( $nuc_seq, 0, -$remainder );
+            }
+
+            $length -= $remainder;
+        }
 
         die "something has gone horribly wrong" if $length % 3 != 0;
 
@@ -686,15 +716,7 @@ sub _process_gene {
                 len => $exon->end_phase,
                 codon => substr( $nuc_seq, 0, 3 ),
             };
-            if ( $exon->strand == 1 ) {
-                $end_base = $data;
-            }
-            elsif ( $exon->strand == -1 ) {
-                $start_base = $data; #display on the other side
-            }
-            else {
-                die "Unknown strand";
-            }
+            $adjust_end_coordinates->( 0, $data );
         }
 
         # $c->log->debug($seq . " (" . length($seq) . ")");

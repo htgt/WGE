@@ -420,6 +420,7 @@
 
   function find_off_targets(start, end) {
     var params = {
+      species: "[% species %]",
       start_coord: start,
       end_coord: end,
       chromosome_number: '[% chromosome %]',
