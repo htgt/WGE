@@ -1,7 +1,7 @@
 package WGE::Controller::API;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::API::VERSION = '0.048';
+    $WGE::Controller::API::VERSION = '0.049';
 }
 ## use critic
 
@@ -26,6 +26,7 @@ use WGE::Util::FindPairs;
 use WGE::Util::OffTargetServer;
 use WGE::Util::FindOffTargets;
 use WebAppCommon::Util::EnsEMBL;
+use JSON;
 
 BEGIN { extends 'Catalyst::Controller' }
 
@@ -496,6 +497,34 @@ sub crispr_pairs_in_region :Local('crispr_pairs_in_region') Args(0){
     return $c->response->body( $body );
 }
 
+sub variation_for_region :Local('variation_for_region') Args(0) {
+    my ($self, $c) = @_;
+
+    my $model = $c->model('DB');
+
+    my $params = ();
+    $params->{species} = $c->request->params->{'species'};
+    $params->{assembly_id} = $c->request->params->{'assembly'};
+    $params->{chr_number}= $c->request->params->{'chr_name'};
+    $params->{start_coord}= $c->request->params->{'chr_start'};
+    $params->{end_coord}= $c->request->params->{'chr_end'};
+
+    use WGE::Util::Variation;
+    my $variation = WGE::Util::Variation->new ( {'species' => $params->{'species'}} );
+
+    my $var_feature = $variation->variation_for_region(
+         $model,
+         $params,
+    );
+
+    $c->stash->{'json_data'} = $var_feature;
+
+    $c->forward('View::JSON');
+
+    return ;
+
+}
+
 sub val_in_range {
     my ( $val, $min, $max ) = @_;
 
@@ -851,4 +880,7 @@ sub fork_test :Local('fork_test') Args(0){
    $c->log->debug("i have stashed json_data");
    $c->forward('View::JSON');
 }
+
+
+
 1;

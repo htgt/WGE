@@ -107,6 +107,7 @@ lib/WGE/Util/PersistCrisprs/Bed.pm
 lib/WGE/Util/PersistCrisprs/TSV.pm
 lib/WGE/Util/SilentMutations.pm
 lib/WGE/Util/Statistics.pm
+lib/WGE/Util/Variation.pm
 lib/WGE/View/CSV.pm
 lib/WGE/View/JSON.pm
 lib/WGE/View/Web.pm

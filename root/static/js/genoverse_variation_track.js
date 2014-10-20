@@ -36,3 +36,23 @@ Genoverse.Track.Variation = Genoverse.Track.extend({
       }
 });
 
+Genoverse.Track.MAFVariation = Genoverse.Track.extend({
+
+    populateMenu: function ( feature ) {
+        
+        var atts = {
+            ID: feature.variation_name,
+            allele: feature.allele_string,
+            SO: feature.class_SO_term,
+            MAF: feature.minor_allele_frequency,
+            minor_allele: feature.minor_allele,
+            minor_allele_count: feature.minor_allele_count,
+            source: feature.source,
+            start: feature.start,
+            end: feature.end,
+            strand: feature.strand
+        };        
+        return atts;
+    }
+});
+

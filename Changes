@@ -1,3 +1,7 @@
+0.049     2014-10-20 16:14:28 Europe/London
+
+    Added Minor Allele Frequency track in Genoverse
+
 0.048     2014-10-15 16:38:39 Europe/London
     Bugfix: protein track would not display if genes with weird structure were present
 

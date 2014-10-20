@@ -603,6 +603,13 @@
             model           : Genoverse.Track.Model.extend({ dataRequestLimit : 5000000 }),
             setFeatureColor : function (f) { f.color = '#1B0AB5'; }
           }),
+          Genoverse.Track.MAFVariation.extend({
+            name            : 'MAF_variations',
+            url             : "[% c.uri_for('/api/variation_for_region') %]" + "?species="+ensembl_species+"&chr_name=__CHR__&chr_start=__START__&chr_end=__END__",
+            resizable       : 'auto',
+            model           : Genoverse.Track.Model.extend({ dataRequestLimit : 5000000 }),
+            setFeatureColor : function (f) { f.color = '#48C402'; }
+          }),
           Genoverse.Track.extend({
             name       : 'Protein',
             id         : 'Protein',
