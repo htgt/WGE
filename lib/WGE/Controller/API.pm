@@ -511,8 +511,6 @@ sub variation_for_region :Local('variation_for_region') Args(0) {
          $params,
     );
 
-#    my $json_text = encode_json( $var_feature );
-
     $c->stash->{'json_data'} = $var_feature;
 
     $c->forward('View::JSON');
