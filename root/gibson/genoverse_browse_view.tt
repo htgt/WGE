@@ -87,6 +87,15 @@
        </fieldset>
       </td>
     </tr>
+
+    <th>Variation</th>
+    <tr>
+        <td>
+            MAF threshold <input type="text" id="MAF_threshold" name="MAF_threshold" value="0.005" style="width: 60px"> <br/> 
+            </input>
+            <button type="button" class="btn btn-primary btn-small" id="apply_MAF_threshold">Apply MAF filter</button>
+        </td>
+    </tr>
   </tbody>
   </table>
   <a href="[% c.uri_for('/crispr_help') _ '#basic_filters' %]" target="_blank" class="pull-right">
@@ -408,6 +417,15 @@
     apply_spacer_filters();
   }
 
+  function apply_MAF_threshold(){
+    var track = get_track('MAF_variations');
+  
+    track.view.thresholdMAF = $('#MAF_threshold').val();
+    track.controller.resetImages();
+    track.controller.imgContainers.empty();
+    track.controller.makeFirstImage();
+  }
+
   function reload_crispr_tracks(){
     var tracks = ['Crisprs', 'Bookmarked Crisprs', 'Crispr Pairs', 'Bookmarked Crispr Pairs'];
     tracks.map(function (track_id){
@@ -518,6 +536,10 @@
       reset_spacer_filters();
     });
 
+    $('#apply_MAF_threshold').click(function (event){
+      apply_MAF_threshold();
+    });
+
     // show/hide help messages when values are entered in mismatch counts
     $("[id$=mismatch]").bind('keyup mouseup',function (event){
         var help_span_id = "#" + this.id + "_no_max";
@@ -597,6 +619,7 @@
             unsortable : true
           }),
           Genoverse.Track.Variation.extend({
+            id              : 'Variation',
             name            : 'Variation',
             url             : ensembl_url + '/overlap/region/' + ensembl_species + '/__CHR__:__START__-__END__?feature=variation;content-type=application/json',
             resizable       : 'auto',
@@ -604,10 +627,12 @@
             setFeatureColor : function (f) { f.color = '#1B0AB5'; }
           }),
           Genoverse.Track.MAFVariation.extend({
+            id              : 'MAF_variations',
             name            : 'MAF_variations',
             url             : "[% c.uri_for('/api/variation_for_region') %]" + "?species="+ensembl_species+"&chr_name=__CHR__&chr_start=__START__&chr_end=__END__",
             resizable       : 'auto',
             model           : Genoverse.Track.Model.extend({ dataRequestLimit : 5000000 }),
+            view            : Genoverse.Track.View.FilterMAFVariation.extend({ thresholdMAF : $('#MAF_threshold').val() }),
             setFeatureColor : function (f) { f.color = '#48C402'; }
           }),
           Genoverse.Track.extend({
