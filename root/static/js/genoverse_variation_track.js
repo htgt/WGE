@@ -13,7 +13,6 @@ Genoverse.Track.Variation = Genoverse.Track.extend({
             write_menu);
 
         function write_menu ( data ) {
-            console.log( data );
             var atts = {
                 type: feature.feature_type,
                 ID:   feature.id,
@@ -29,7 +28,6 @@ Genoverse.Track.Variation = Genoverse.Track.extend({
                 start: feature.start,
                 end: feature.end
             };        
-            console.log(atts);
             deferred.resolve(atts);
          }
         return( deferred );
@@ -53,6 +51,16 @@ Genoverse.Track.MAFVariation = Genoverse.Track.extend({
             strand: feature.strand
         };        
         return atts;
+    }
+});
+
+Genoverse.Track.View.FilterMAFVariation = Genoverse.Track.View.extend({
+    thresholdMAF : 0.00,
+
+    drawFeature: function (feature, featureContext, labelContext, scale) {
+        if(feature.minor_allele_frequency >= this.thresholdMAF ){
+            this.base.apply(this, arguments);
+        }
     }
 });
 
