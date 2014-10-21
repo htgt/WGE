@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+0.050     2014-10-21 16:19:26 Europe/London
+
+    Added filtering of MAF variations track in Genoverse by settable threshold
+
 0.049     2014-10-20 16:14:28 Europe/London
 
     Added Minor Allele Frequency track in Genoverse
