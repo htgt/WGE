@@ -1,3 +1,7 @@
+0.051     2014-10-22 15:10:57 Europe/London
+
+    Added numeric error checking to MAF threshold input value
+
 0.050     2014-10-21 16:19:26 Europe/London
 
     Added filtering of MAF variations track in Genoverse by settable threshold
