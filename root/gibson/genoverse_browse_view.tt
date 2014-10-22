@@ -91,7 +91,9 @@
     <th>Variation</th>
     <tr>
         <td>
-            MAF threshold <input type="text" id="MAF_threshold" name="MAF_threshold" value="0.005" style="width: 60px"> <br/> 
+            MAF threshold <input type="text" id="MAF_threshold" name="MAF_threshold" onblur="test_MAF_threshold_value(this);" value="0.005" style="width: 60px">
+            <p id="MAF_error_text"> Enter a decimal number. </p>
+            <br/>
             </input>
             <button type="button" class="btn btn-primary btn-small" id="apply_MAF_threshold">Apply MAF filter</button>
         </td>
@@ -417,9 +419,22 @@
     apply_spacer_filters();
   }
 
+
+  function test_MAF_threshold_value(field_value){
+    if ( ! $.isNumeric(field_value.value) ) {
+        field_value.value = "0.0";
+        $('#MAF_error_text').show();
+    }
+    else {
+        $('#MAF_error_text').hide();
+    }
+  }
+
+
   function apply_MAF_threshold(){
     var track = get_track('MAF_variations');
-  
+
+    $('#MAF_error_text').hide();
     track.view.thresholdMAF = $('#MAF_threshold').val();
     track.controller.resetImages();
     track.controller.imgContainers.empty();
