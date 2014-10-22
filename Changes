@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+0.052     2014-10-22 16:00:39 Europe/London
+
+    Corrected numeric error checking for MAF threshold input value
+
 0.051     2014-10-22 15:10:57 Europe/London
 
     Added numeric error checking to MAF threshold input value
