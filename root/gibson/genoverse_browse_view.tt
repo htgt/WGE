@@ -420,9 +420,9 @@
   }
 
 
-  function test_MAF_threshold_value(field_value){
-    if ( ! $.isNumeric(field_value.value) ) {
-        field_value.value = "0.0";
+  function test_MAF_threshold_value(field){
+    if ( ! $.isNumeric(field.value) ) {
+        field.value = "0.0";
         $('#MAF_error_text').show();
     }
     else {
@@ -596,6 +596,8 @@
         set_ot_filters(50);
         apply_ot_filters();
     });
+
+    $('#MAF_error_text').hide();
   });
 
 </script>
