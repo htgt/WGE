@@ -1,7 +1,7 @@
 package WGE::Controller::API;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::API::VERSION = '0.052';
+    $WGE::Controller::API::VERSION = '0.053';
 }
 ## use critic
 
@@ -281,13 +281,22 @@ sub individual_off_target_search :Local('individual_off_target_search') {
     my ( $self, $c ) = @_;
 
     my $params = $c->req->params;
-    check_params_exist( $c, $params, [ qw( species ids ) ] );
+    check_params_exist( $c, $params, [ qw( species ids[] ) ] );
 
+    try {
+        my $data = $self->ot_finder->run_individual_off_target_search(
+            $c->model('DB'),
+            $params->{species},
+            $params->{'ids[]'}
+        );
 
+        $c->stash->{json_data} = $data // {};
+    }
+    catch ( $e ) {
+        $e = $e->as_string if ref $e;
+        $c->stash->{json_data} = { error => $e };
+    }
 
-    my $data = $self->ot_finder->run_individual_off_target_search( $c->model('DB'), $params );
-
-    $c->stash->{json_data} = $data;
     $c->forward('View::JSON');
 
     return;
@@ -300,7 +309,7 @@ sub pair_off_target_search :Local('pair_off_target_search') {
 
     check_params_exist( $c, $params, [ qw( species left_id right_id ) ] );
 
-    my $data = $self->ot_finder->run_pair_off_target_search($c->model('DB'),$params);
+    my $data = $self->ot_finder->run_pair_off_target_search($c->model('DB'), $params);
 
     $c->stash->{json_data} = $data;
     $c->forward('View::JSON');

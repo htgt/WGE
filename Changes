@@ -1,3 +1,7 @@
+0.053     2014-11-07 16:29:22 Europe/London
+
+    Bugfix: individual off target computation through the API did not work
+
 0.052     2014-10-22 16:00:39 Europe/London
 
     Corrected numeric error checking for MAF threshold input value

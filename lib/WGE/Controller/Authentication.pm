@@ -1,7 +1,7 @@
 package WGE::Controller::Authentication;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::Authentication::VERSION = '0.052';
+    $WGE::Controller::Authentication::VERSION = '0.053';
 }
 ## use critic
 

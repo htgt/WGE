@@ -1,7 +1,7 @@
 package WGE::Util::FindOffTargets;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::FindOffTargets::VERSION = '0.052';
+    $WGE::Util::FindOffTargets::VERSION = '0.053';
 }
 ## use critic
 
@@ -39,27 +39,34 @@ sub _build_ots_server {
 sub run_individual_off_target_search {
     my ( $self, $model, $species, $ids ) = @_;
 
-    #allow arrayref or scalar
-    $ids = [ $ids ] if ref $ids ne 'ARRAY';
+    #make sure we got SOMETHING in ids
+    LIMS2::Exception->throw( "No ids provided" ) unless $ids;
+
+    if ( ref $ids eq 'ARRAY' ) {
+        LIMS2::Exception->throw( "No ids provided" ) unless @{ $ids };
+    }
+    else {
+        #its probably a scalar, so put it in an arrayref
+        $ids = [ $ids ];
+    }
 
     if ( @{$ids} > 100 ) {
         LIMS2::Exception->throw( "Can only search for 100 crispr off targets at a time" );
     }
 
     #find all ids that don't have
-    my @data_missing = map { $_->id }
-                        grep { ! $_->off_target_summary }
-                            $model->schema->resultset('Crispr')->search( id => {-IN => $ids} );
+    my @data_missing = grep { ! $_->off_target_summary }
+                         $model->schema->resultset('Crispr')->search( { id => {-IN => $ids} } );
 
     return unless @data_missing;
 
-    my $db_species = $data_missing[0]->species;
+    my $db_species = $data_missing[0]->species->id;
 
     if ( $db_species ne $species ) {
-        LIMS2::Exception->throw( "Provided species does not match CRISPR ids!" );
+        LIMS2::Exception->throw( "Provided species ($species) does not match CRISPR species ($db_species)!" );
     }
 
-    $self->ots_server->update_off_targets($model, { ids => \@data_missing, species => $species } );
+    $self->ots_server->update_off_targets($model, { ids => [ map { $_->id } @data_missing ], species => $species } );
 }
 
 sub run_pair_off_target_search{
