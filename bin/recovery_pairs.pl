@@ -369,7 +369,10 @@ chr_name
 
 =head1 DESCRIPTION
 
-This is a modified version of loxp_pairs.pl with slightly more flexibility in what fields can be used to find CRISPRs. The @region_groups array at the top is combined with @directions, which determines the field names. @directions is set to left and right for pair mode and set to crispr1 and crispr2 in individual.
+This is a modified version of loxp_pairs.pl with slightly more flexibility in what fields can be 
+used to find CRISPRs. The @region_groups array at the top is combined with @directions, 
+which determines the field names. @directions is set to left and right for pair mode and set to 
+crispr1 and crispr2 in individual.
 
 The following arrays:
 my @region_groups = qw( loxp cassette );
@@ -378,7 +381,8 @@ my @directions = qw( crispr1 crispr2 );
 will produce the following fields:
 loxp_crispr1, loxp_crispr2, cassette_crispr1, cassette_crispr2
 
-Each crispr also has the fields described in the crispr_fields array added. The names in this array should correspond to key names in a crispr hash, e.g. 
+Each crispr also has the fields described in the crispr_fields array added. The names in this array 
+should correspond to key names in a crispr hash, e.g. 
 my @crispr_fields = qw( crispr_id region seq summary );
 
 the @region_groups array is also combined with the %fields hash to decide which fields to find region data from, so:
@@ -392,14 +396,20 @@ loxp_chr_name, loxp_chr_start, loxp_chr_end, cassette_chr_name, cassette_chr_sta
 
 and if they do not exist in your input csv it will give an error.
 
-After these regions have been extracted from your CSV the script will find CRISPRs within that region, defined by whatever rules are in crispr_in_target_region (currently 1 base of the PAM must be inside the region on one end, and can go past the target region on the other end by 8 bases. 
+After these regions have been extracted from your CSV the script will find CRISPRs within that region, 
+defined by whatever rules are in crispr_in_target_region (currently 1 base of the PAM must be inside 
+the region on one end, and can go past the target region on the other end by 8 bases. 
 
-The CRISPRs are then ranked and the top 2 for every region extract in individual mode, or the top pair taken in pair mode.
+The CRISPRs are then ranked and the top 2 for every region extract in individual mode, or the top 
+pair taken in pair mode.
 
-All CRISPR sites must have off targets or the script will fail. If there are many CRISPR sites without off targets, uncomment the 'next' statement in the main loop after the following line:
+All CRISPR sites must have off targets or the script will fail. If there are many CRISPR sites without 
+off targets, uncomment the 'next' statement in the main loop after the following line:
 say $_->{id} for grep { ! $_->{off_target_summary} } @valid_crisprs;
 
-this will skip any sorting/processing of CRISPRs and will instead just print all the CRISPR IDs that have no off-targets to stdout. Once you have calculated all the off targets 
+this will skip any sorting/processing of CRISPRs and will instead just print all the CRISPR IDs that have 
+no off-targets to stdout. Once you have calculated all the off targets comment out the 'next' statement again
+and re-run the script to get the actual output.
 
 =cut
 
