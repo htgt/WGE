@@ -1,4 +1,10 @@
 package WGE::Model::Schema::Result::GibsonDesignBrowser;
+## no critic(RequireUseStrict,RequireUseWarnings)
+{
+    $WGE::Model::Schema::Result::GibsonDesignBrowser::VERSION = '0.054';
+}
+## use critic
+
 
 =head1 NAME
 

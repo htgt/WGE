@@ -1,4 +1,10 @@
 package WGE::Controller::UserPage;
+## no critic(RequireUseStrict,RequireUseWarnings)
+{
+    $WGE::Controller::UserPage::VERSION = '0.054';
+}
+## use critic
+
 use Moose;
 use namespace::autoclean;
 use Data::Dumper;

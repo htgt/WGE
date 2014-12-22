@@ -1,4 +1,10 @@
 package WGE::Util::Statistics;
+## no critic(RequireUseStrict,RequireUseWarnings)
+{
+    $WGE::Util::Statistics::VERSION = '0.054';
+}
+## use critic
+
 use strict;
 use Data::Dumper;
 

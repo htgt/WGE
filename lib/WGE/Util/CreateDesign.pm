@@ -1,4 +1,10 @@
 package WGE::Util::CreateDesign;
+## no critic(RequireUseStrict,RequireUseWarnings)
+{
+    $WGE::Util::CreateDesign::VERSION = '0.054';
+}
+## use critic
+
 
 use Moose;
 use WebAppCommon::Util::EnsEMBL;

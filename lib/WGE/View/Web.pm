@@ -1,4 +1,10 @@
 package WGE::View::Web;
+## no critic(RequireUseStrict,RequireUseWarnings)
+{
+    $WGE::View::Web::VERSION = '0.054';
+}
+## use critic
+
 use Moose;
 use namespace::autoclean;
 

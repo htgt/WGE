@@ -1,5 +1,11 @@
 use utf8;
 package WGE::Model::Schema::ResultSet::User;
+## no critic(RequireUseStrict,RequireUseWarnings)
+{
+    $WGE::Model::Schema::ResultSet::User::VERSION = '0.054';
+}
+## use critic
+
 
 use base 'DBIx::Class::ResultSet';
 
