@@ -71,6 +71,26 @@ sub find_off_targets {
     return $self->_get_json( $uri, $params->{as_string} );
 }
 
+sub find_off_targets_by_seq {
+    my ( $self, $params ) = @_;
+
+    my $seq = $params->{sequence};
+    die "No sequence provided" unless $params->{sequence};
+
+    die "Sequence must be 20 bases long" unless length($seq) == 20;
+
+    my $pam_right = $params->{pam_right};
+    die "Crispr orientation must be provided" unless defined($params->{pam_right});
+
+    die "Invalid orientation provided" unless ($params->{pam_right} eq 'true' || $params->{pam_right} eq 'false');
+
+    my $uri = $self->ots_server_uri( "/api/off_targets_by_seq" );
+    $uri->query_form( species => $params->{species}, seq => $seq, pam_right => $pam_right );
+
+    return $self->_get_json( $uri, $params->{as_string} );
+}
+
+
 sub update_off_targets {
     my ( $self, $model, $params ) = @_;
 

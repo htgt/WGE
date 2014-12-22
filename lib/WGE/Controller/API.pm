@@ -139,6 +139,27 @@ sub exon_search :Local('exon_search') {
     return;
 }
 
+sub off_targets_by_seq :Local('off_targets_by_seq') {
+    my ( $self, $c ) = @_;
+
+    my $params = $c->req->params;
+
+    check_params_exist( $c, $params, [ qw( seq pam_right ) ]);
+
+    my $json = $self->ots_server->find_off_targets_by_seq(
+        {
+            sequence  => $params->{seq},
+            pam_right => $params->{pam_right},
+            species   => $params->{species},
+        }
+    );
+
+    $c->stash->{json_data} = $json;
+    $c->forward('View::JSON');
+
+    return;
+}
+
 sub search_by_seq :Local('search_by_seq') {
     my ( $self, $c ) = @_;
 
