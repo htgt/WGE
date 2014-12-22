@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+0.054     2014-12-22 16:49:49 Europe/London
+
+    Added find off-targets by sequence
+
 0.053     2014-11-07 16:29:22 Europe/London
 
     Bugfix: individual off target computation through the API did not work
