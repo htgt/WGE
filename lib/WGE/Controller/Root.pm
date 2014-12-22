@@ -130,6 +130,20 @@ sub find_off_targets :Path('/find_off_targets') :Args(0) {
     return;
 }
 
+sub find_off_targets_by_seq :Path('/find_off_targets_by_seq') :Args(0) {
+    my ( $self, $c ) = @_;
+
+    my @species = sort { $a->{display_name} cmp $b->{display_name} }
+                      map { $_->as_hash }
+                          $c->model('DB')->resultset('Species')->search( { active => 1 } );
+
+    $c->stash(
+        species => \@species,
+    );
+
+    return;
+}
+
 =head2 default
 
 Standard 404 error page

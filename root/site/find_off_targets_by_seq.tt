@@ -1,0 +1,92 @@
+[% META title = "Find Off-Targets By Seq"; META tab_name = "crispr"; META header_text = "Find Off-Targets by Sequence"  %]
+
+<script type='text/javascript'>
+
+$(document).ready(function() {
+    $("#search_button").click(function(e){
+        e.preventDefault();
+
+        var seq = $("#sequence_field").val();
+        if (seq.length != 20) {
+            create_alert("Please provide a 20 base sequence, you provided "+seq.length+".");
+            return;
+        }
+        if (seq.match(/[^actg]/i)) {
+            create_alert("Not a valid sequence, please check for invalid bases.");
+            return;
+        }
+
+        var species = $("input:radio[name=species]:checked").val();
+        if (!species) {
+            create_alert("Please select a species.");
+            return;
+        }
+
+        var orientation = $("input:radio[name=orientation]:checked").val();
+
+        $("#off_targets_table tbody").append("<tr><td>"+seq.toUpperCase()+"</td><td>"+$("input:radio[name=orientation]:checked").attr('id')+"</td></td><td>"+species+"</td><td><img src='[% c.uri_for('/static/images/spinner-circle-small.gif') %]'></td></tr>");
+
+        $.getJSON( "[% c.uri_for( '/api/off_targets_by_seq') %]" ,
+            { seq: seq, species: species.toLowerCase(), pam_right: orientation },
+            function (data) {
+                $("#off_targets_table td:last").text(data.data);
+            }
+        );
+
+    })
+
+});
+
+</script>
+
+<div class="row">
+  <div class="span9">
+    <form role="form" id="search_form">
+      <fieldset id="fields">
+        <div class="control-group" id="sequence">
+            <label class="control-label">Sequence</label>
+            <input type="text" class="form-control span4" id="sequence_field" placeholder="Enter sequence" autocomplete="off" />
+        </div>
+        <div class="control-group" id="species">
+          <label class="control-label">Species</label>
+            [% FOR s IN species %]
+              <label class="radio">
+                <input type="radio" name="species" id="radio_[% s.id FILTER lower %]" value="[% s.id %]" />
+                <div class="species_label">[% s.display_name %]</div>
+              </label>
+            [% END %]
+        </div>
+        <div class="control-group" id="orientation">
+          <label class="control-label">Orientation</label>
+              <label class="radio">
+                <input type="radio" name="orientation" id="pam_right" value="true" checked />
+                <div class="species_label">PAM Right (NGG)</div>
+                <input type="radio" name="orientation" id="pam_left" value="false" />
+                <div class="species_label">PAM Left (CCN)</div>
+              </label>
+        </div>
+        <br/>
+        <div>
+          <button class="btn btn-default" id="search_button" autocomplete="off">Find Off-Targets</button>
+        </div>
+      </fieldset>
+      <br/>
+    </form>
+
+    <div style="display:none"><img src='[% c.uri_for('/static/images/spinner-circle-small.gif') %]'></div>
+
+    <table class="table table-bordered" id="off_targets_table">
+      <thead>
+        <tr>
+          <th>Sequence</th>
+          <th>Orientation</th>
+          <th>Species</th>
+          <th>Off-target Summary</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+
+  </div>
+</div>

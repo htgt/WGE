@@ -55,6 +55,8 @@
                 <li><a href="[% c.uri_for('/find_crisprs') %]">Search by Gene</a></li>
                 <li><a href="[% c.uri_for('/search_by_seq') %]">Search by Sequence</a></li>
                 <li><a href="[% c.uri_for('/find_crisprs_id') %]">Search by ID</a></li>
+                <li class="divider"></li>
+                <li><a href="[% c.uri_for('/find_off_targets_by_seq') %]">Off-Targets by Sequence</a></li>
               </ul>
             </li>
 
