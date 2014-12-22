@@ -61,6 +61,8 @@ $(document).ready(function() {
               <label class="radio">
                 <input type="radio" name="orientation" id="pam_right" value="true" checked />
                 <div class="species_label">PAM Right (NGG)</div>
+              </label>
+              <label class="radio">
                 <input type="radio" name="orientation" id="pam_left" value="false" />
                 <div class="species_label">PAM Left (CCN)</div>
               </label>
