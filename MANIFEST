@@ -24,6 +24,7 @@ bin/loxp_pairs_report.pl
 bin/nearby_crisprs.pl
 bin/persist_crisprs.pl
 bin/promotor_region_crisprs.pl
+bin/recovery_pairs.pl
 bin/update_crispr_pair.pl
 human_genes_75.yaml
 human_genes_76.yaml
@@ -135,6 +136,7 @@ root/site/crispr_report.tt
 root/site/find_crisprs.tt
 root/site/find_crisprs_id.tt
 root/site/find_off_targets.tt
+root/site/find_off_targets_by_seq.tt
 root/site/gibson_designer.tt
 root/site/gibson_help.tt
 root/site/index.tt
@@ -205,6 +207,7 @@ root/static/images/btn_88x31_built.png
 root/static/images/btn_88x31_built_shadow.png
 root/static/images/btn_88x31_powered.png
 root/static/images/btn_88x31_powered_shadow.png
+root/static/images/bulk_seq_search_view.png
 root/static/images/catalyst_logo.png
 root/static/images/distributions/human_0mm.png
 root/static/images/distributions/human_1mm.png
@@ -214,6 +217,8 @@ root/static/images/distributions/human_4mm.png
 root/static/images/genoverse_view.png
 root/static/images/gibson_designer/vector_construction.png
 root/static/images/sanger-logo.png
+root/static/images/search_by_grna_view.png
+root/static/images/spinner-circle-small.gif
 root/static/images/spinner-circle.gif
 root/static/images/table_view.png
 root/static/js/diagram.builder.js

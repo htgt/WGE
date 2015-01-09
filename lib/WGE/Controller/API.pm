@@ -1,7 +1,7 @@
 package WGE::Controller::API;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::API::VERSION = '0.053';
+    $WGE::Controller::API::VERSION = '0.055';
 }
 ## use critic
 
@@ -140,6 +140,27 @@ sub exon_search :Local('exon_search') {
 
     #return a list of hashrefs with the matching exon ids and ranks
     $c->stash->{json_data} = { transcript => $gene->canonical_transcript, exons => \@exons };
+    $c->forward('View::JSON');
+
+    return;
+}
+
+sub off_targets_by_seq :Local('off_targets_by_seq') {
+    my ( $self, $c ) = @_;
+
+    my $params = $c->req->params;
+
+    check_params_exist( $c, $params, [ qw( seq pam_right ) ]);
+
+    my $json = $self->ots_server->find_off_targets_by_seq(
+        {
+            sequence  => $params->{seq},
+            pam_right => $params->{pam_right},
+            species   => $params->{species},
+        }
+    );
+
+    $c->stash->{json_data} = $json;
     $c->forward('View::JSON');
 
     return;

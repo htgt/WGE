@@ -62,6 +62,7 @@ requires:
   LIMS2::Util::EnsEMBL: 0
   LWP::UserAgent: 0
   List::MoreUtils: 0
+  List::Util: 0
   Log::Log4perl: 0
   Log::Log4perl::Catalyst: 0
   MIME::Base64: 0
@@ -98,4 +99,4 @@ requires:
   strict: 0
   utf8: 0
   warnings: 0
-version: 0.053
+version: 0.055
