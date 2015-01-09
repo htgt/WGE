@@ -1,3 +1,8 @@
+0.056     2015-01-09 16:15:36 Europe/London
+
+    Added verification to the new off target search method.
+    Disabled Protein track in genoverse for GRCh37
+
 0.055     2015-01-09 09:44:09 Europe/London
 
     Added links to the front page for different ways of finding CRISPRS

@@ -1,7 +1,7 @@
 package WGE::Controller::API;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::API::VERSION = '0.055';
+    $WGE::Controller::API::VERSION = '0.056';
 }
 ## use critic
 
@@ -152,15 +152,22 @@ sub off_targets_by_seq :Local('off_targets_by_seq') {
 
     check_params_exist( $c, $params, [ qw( seq pam_right ) ]);
 
-    my $json = $self->ots_server->find_off_targets_by_seq(
-        {
-            sequence  => $params->{seq},
-            pam_right => $params->{pam_right},
-            species   => $params->{species},
-        }
-    );
+    my $off_target_data;
+    try {
+        $off_target_data = $self->ots_server->find_off_targets_by_seq(
+            {
+                sequence  => $params->{seq},
+                pam_right => $params->{pam_right},
+                species   => $params->{species},
+            }
+        );
+    }
+    catch ( $e ) {
+        $c->log->error( 'Error generating off target data: ' . $e );
+        _send_error( $c, $e, 400 );
+    }
 
-    $c->stash->{json_data} = $json;
+    $c->stash->{json_data} = $off_target_data;
     $c->forward('View::JSON');
 
     return;

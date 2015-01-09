@@ -99,4 +99,4 @@ requires:
   strict: 0
   utf8: 0
   warnings: 0
-version: 0.055
+version: 0.056

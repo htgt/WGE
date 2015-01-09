@@ -1,7 +1,7 @@
 package WGE::Util::OffTargetServer;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::OffTargetServer::VERSION = '0.055';
+    $WGE::Util::OffTargetServer::VERSION = '0.056';
 }
 ## use critic
 
@@ -81,14 +81,14 @@ sub find_off_targets_by_seq {
     my ( $self, $params ) = @_;
 
     my $seq = $params->{sequence};
-    die "No sequence provided" unless $params->{sequence};
+    die "No sequence provided\n" unless $params->{sequence};
 
-    die "Sequence must be 20 bases long" unless length($seq) == 20;
+    die "Sequence must be 20 bases long\n" unless length($seq) == 20;
 
     my $pam_right = $params->{pam_right};
-    die "Crispr orientation must be provided" unless defined($params->{pam_right});
+    die "Crispr pam_right orientation must be provided\n" unless defined($params->{pam_right});
 
-    die "Invalid orientation provided" unless ($params->{pam_right} eq 'true' || $params->{pam_right} eq 'false');
+    die "Invalid pam_right orientation provided, must be true or false\n" unless ($params->{pam_right} eq 'true' || $params->{pam_right} eq 'false');
 
     my $uri = $self->ots_server_uri( "/api/off_targets_by_seq" );
     $uri->query_form( species => $params->{species}, seq => $seq, pam_right => $pam_right );
