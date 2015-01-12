@@ -11,20 +11,24 @@ use feature 'say';
 # These files can be used to generate off-target count distributions in R
 # Script ran in about 2.5 hours for all human crisprs
 
+my $species = $ARGV[0];
+$species ||= 'Human';
+
+my $species_lc = lc($species);
 my $model = WGE::Model::DB->new();
 
 my $files;
 foreach my $mm_category (0..4){
-	open (my $fh,  ">", "human_".$mm_category."mm.csv");
+	open (my $fh,  ">", $species_lc."_".$mm_category."mm.csv");
 	$files->{$mm_category} = $fh;
 }
 
-my @chromosomes = map {$_->name} $model->schema->resultset('Chromosome')->search({ species_id => 'Human'});
+my @chromosomes = map {$_->name} $model->schema->resultset('Chromosome')->search({ species_id => $species});
 say "Finding off target summaries for chromosomes: ",@chromosomes;
 
 foreach my $chr (@chromosomes){
 say STDERR "running query for chromosome $chr...";
-my $sql_query = "select off_target_summary from crisprs_human where chr_name='$chr' and off_target_summary is not null";
+my $sql_query = "select off_target_summary from crisprs_$species_lc where chr_name='$chr' and off_target_summary is not null";
 my $sql_result =  $model->schema->storage->dbh_do(
     sub {
          my ( $storage, $dbh ) = @_;
