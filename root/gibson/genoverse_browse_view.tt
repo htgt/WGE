@@ -652,6 +652,7 @@
             view            : Genoverse.Track.View.FilterMAFVariation.extend({ thresholdMAF : $('#MAF_threshold').val() }),
             setFeatureColor : function (f) { f.color = '#48C402'; }
           }),
+          [% IF genome.lower != 'grch37' %]
           Genoverse.Track.extend({
             name       : 'Protein',
             id         : 'Protein',
@@ -663,6 +664,7 @@
             controls   : 'off',
             unsortable : false
           }),
+          [% END %]
           Genoverse.Track.Genes.extend({
             name   : 'Genes',
             id     : 'Genes',
