@@ -74,7 +74,7 @@
         //redirect the user to the genoverse page
         var url = "[% c.uri_for('/genoverse_browse') %]";
         var exon = get_selected_exons();
-        var full_url = url.concat("?view_paired=1&exon_id=",exon,'&species_id=',get_species());
+        var full_url = url.concat("?view_single=1&view_paired=0&exon_id=",exon,'&species_id=',get_species());
         //window.location.href=full_url;
         window.open(full_url);
 
