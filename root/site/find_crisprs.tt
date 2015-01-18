@@ -10,8 +10,8 @@
     // have been submitted
     $("#dialog").on('hidden', function(){
       if( form_valid() ) {
-        $("#search").button('loading');
-        $("#crispr_table").remove(); //we want to keep the headings tbh. fine for now
+        $("#search_pairs").button('loading');
+        //$("#crispr_table").remove(); //we want to keep the headings tbh. fine for now
         get_pairs();
       }
     });
@@ -45,12 +45,12 @@
       $("#gene").val(""); //clear marker symbol box
       $("#exons").find('option').remove(); //remove exons
       $("#exon_label").html('Exons');
-      get_table( { hide: 1 } ); //hide crisprs
+      get_pair_table( { hide: 1 } ); //hide crisprs
       document.location.hash = $(this).val(); //update URL
     });
 
     //when someone clicks find paired crisprs create a table of the data
-    $("#search").click(function (event) {
+    $("#search_pairs, #search_crisprs").click(function (event) {
       //stop it from submitting the form
       event.preventDefault();
 
@@ -58,9 +58,9 @@
         return;
       }
 
-      $("#search").button('loading');
-      $("#crispr_table").remove(); //we want to keep the headings tbh. fine for now
-      var table = get_pairs();
+      $(this).button('loading');
+      //$("#crispr_table").remove(); //we want to keep the headings tbh. fine for now
+      var table = $(this).attr('id') == "search_pairs" ? get_pairs() : get_crisprs();
     });
 
     $("#genoverse").click(function(event) {
@@ -106,13 +106,15 @@
     process_url();
 
     console.log('adding example click');
-    $("#table_view_example").click(function(){
+    $("#table_view_example").click(function(e){
+      e.preventDefault(); //don't follow the link
+
       // Produce table view for BRCA2 pairs
-      $('#radio_human').click();
+      $('#radio_grch38').click();
       $('#gene').val('BRCA2');
-      $.when( exon_search({marker_symbol: 'BRCA2', species: 'Human'}) ).done(function(){
-        $('#exons').val('ENSE00000939167')
-        $('#search').click();
+      $.when( exon_search({marker_symbol: 'BRCA2', species: 'Grch38'}) ).done(function(){
+        $('#exons').val('ENSE00001484009')
+        $('#search_crisprs').click();
         $("html, body").animate({ scrollTop: 650});
       });
     });
@@ -220,12 +222,54 @@
     } );
   }
 
+  function get_crisprs() {
+    $("#pair_table").remove(); //if the pair table exists we don't want to show both
+    var exons = get_selected_exons();
+    var table = get_crispr_table();
+
+    $.get('api/crispr_search', { exon_id: exons, species: get_species() },
+      function(data) {
+        console.log(data);
+
+        if (data.length == 0) {
+          var num_cols = table.find("thead tr:nth-child(2) th").length;
+          $("<tr>").append("<td colspan='"+num_cols+"'>None found!</td>" ).appendTo(table.find("tbody"));
+        }
+        else {
+          //add each crispr to the table, its a hash of arrays.
+          $.each(data, function(exon_id, crisprs) {
+            var missing_pair_ots = false;
+            var exon_column_td;
+            //each exon has a list of crisprs
+            $.each(crisprs, function(idx, crispr) {
+
+              var row = $("<tr>", { style: "font-size: 13px"})
+                         .append( get_crispr_row(crispr) );
+              row.appendTo( table.find("tbody") );
+
+              if ( idx == 0 ) {
+                var exon_column_td = $("<td>", { html: exon_id, rowspan: crisprs.length, class: "exon_column_td" });
+                row.prepend( exon_column_td );
+              }
+            });
+            //add button to calculate single off-targets here, like we do for pairs
+          });
+        }
+        //we're done so update the search button
+        $("#search_crisprs").button('reset');
+      })
+      .fail(ajax_failed); //create error if its not successful;
+
+    return table;
+  }
+
   function get_pairs() {
+    $("#crispr_table").remove(); //if they chose some single crisprs first delete the table
     //get all the selected exon ids
     var exons = get_selected_exons();
 
     //create a table or clear the existing one.
-    var table = get_table();
+    var table = get_pair_table();
 
     //get the pairs and add them to the table
     $.get('api/pair_search', { exon_id: exons, species: get_species() },
@@ -263,7 +307,7 @@
           });
         }
         //change the loading button
-        $("#search").button('reset');
+        $("#search_pairs").button('reset');
       })
 
      .fail(ajax_failed); //create error if its not successful
@@ -413,7 +457,47 @@
     });
   }
 
-  function get_table(options) {
+  function get_crispr_table(options) {
+    options = options || {};
+
+    //make a table if it doesn't exist
+    var table = $("#crispr_table");
+    if ( table.length ) {
+        table.find("tbody").empty(); //leave header row
+        table.show(); //in case it has been hidden
+    }
+    else {
+        //create the table
+        table = $("<table>", { "class": 'table table-bordered table-condensed', style: "max-width: none;", id: 'crispr_table' })
+                 .append( $("<thead>") )
+                 .append( $("<tbody>") );
+
+        //add headers
+        $("<tr>")
+          .append( $("<th>", { text: "Exon ID" }) )
+          .append( get_crispr_header() )
+          .appendTo( table.find("thead") );
+
+        //insert the table into the dom
+        //should make this function accept an object to add the table to maybe
+        $("#crispr_search").append(table);
+    }
+
+    //allow the user to hide the button as this method is used
+    //whenever the species is changed
+    if (options.hide) {
+      table.hide();
+    }
+    else {
+      table.show();
+    }
+
+    return table;
+
+  }
+
+  //formally just get_table
+  function get_pair_table(options) {
     options = options || {}; //completely optional
 
     /*
@@ -525,9 +609,10 @@
           <small>Note: the CRISPR table only shows CRISPRs that overlap the exon by at least 1 base.<br/>
             To see flanking crisprs please use the genome browser</small>
           <br/><br/>
-          <button class="btn btn-default" id="search" autocomplete="off">Show in table</button>
+          <button class="btn btn-default" id="search_crisprs" autocomplete="off">Show CRISPRs in table</button>
+          <button class="btn btn-default" id="search_pairs" autocomplete="off">Show pairs in table</button>
           <button class="btn btn-default" id="genoverse" autocomplete="off">Show in genome browser</button>
-          <button class="btn btn-default" id="download" autocomplete="off">Download as spreadsheet</button>
+          <button class="btn btn-default" id="download" autocomplete="off">Download pairs as spreadsheet</button>
         </div>
       </fieldset>
       <br/>
@@ -544,7 +629,7 @@
 
     <div class="span2 pull-right">
      Example in table:<br/><br/>
-      <a href="#">
+      <a href="[% c.uri_for('/find_crisprs', {show_example => 1})  %]">
       <img id="table_view_example" src="[% c.uri_for('/static/images/table_view.png') %]" class="img-polaroid" height="120px" width="120px" title="crispr pairs for BRCA2 (ENSE00000939167) in table"/>
       </a>
     </div>
