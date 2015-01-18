@@ -1,7 +1,7 @@
 package WGE::Model::Plugin::User;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Plugin::User::VERSION = '0.057';
+    $WGE::Model::Plugin::User::VERSION = '0.058';
 }
 ## use critic
 

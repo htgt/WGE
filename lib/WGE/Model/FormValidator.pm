@@ -1,7 +1,7 @@
 package WGE::Model::FormValidator;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::FormValidator::VERSION = '0.057';
+    $WGE::Model::FormValidator::VERSION = '0.058';
 }
 ## use critic
 
