@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+0.058     2015-01-18 23:22:09 Europe/London
+
+    Changed default table view to be single CRISPRs.
+
 0.057     2015-01-16 16:48:35 Europe/London
 
     Made 'single crisprs' the default selection when loading the genoverse page.
