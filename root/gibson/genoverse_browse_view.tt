@@ -452,6 +452,7 @@
   }
 
   function find_off_targets(start, end) {
+    console.log('find off target button clicked');
     var params = {
       species: "[% species %]",
       start_coord: start,
@@ -460,9 +461,9 @@
       assembly_id: '[% genome %]',
       all_singles: 1
     };
-    var button_text = $(".summary").text();
+    var button_text = $("#compute_ot").text();
     var spinner = "[% c.uri_for( '/static/images/spinner-circle.gif' ) %]";
-    $(".summary").html('<img alt="Waiting" src="' + spinner + '" height="30" width="30">');
+    $("#compute_ot").html('<img alt="Waiting" src="' + spinner + '" height="30" width="30">');
     $.get('api/region_off_target_search', params, function(data){
       console.log(data);
       if(data.error_msg){
@@ -477,8 +478,8 @@
       $("#dialog").modal();
     }).always( function() {
       // remove spinner and restore button text
-      $(".summary").html("");
-      $(".summary").text(button_text);
+      $("#compute_ot").html("");
+      $("#compute_ot").text(button_text);
     });
   }
 
@@ -782,6 +783,7 @@
         window.genoverse.on('afterInit', function (){
           // Change the text of the region summary button
           $(".summary").text("Compute Off-Targets");
+          $(".summary").attr("id","compute_ot");
 
           // All tracks are loaded by default on page refresh
           // Hide the ones we don't want to see
