@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+0.059     2015-01-27 14:37:23 Europe/London
+
+    Compute Off-Target button bugfix
+
 0.058     2015-01-18 23:22:09 Europe/London
 
     Changed default table view to be single CRISPRs.
