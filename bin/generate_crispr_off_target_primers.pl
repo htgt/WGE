@@ -46,20 +46,20 @@ else {
     pod2usage( 'Provide crispr ids, --crispr-id or -crispr-file' );
 }
 
-my @failed;
+my @summary;
 for my $id ( @crispr_ids ) {
     my $crispr = try{ $model->resultset('Crispr')->find( { id => $id } ) };
     die( "Unable to find crispr group with id $id" )
         unless $crispr;
 
-    $primer_util->crispr_off_targets_primers( $crispr );
+    my ( $primers, $summary ) = $primer_util->crispr_off_targets_primers( $crispr );
 
-    #dump_output( $picked_primers, $seq, $crispr );
+    dump_output( $primers, $crispr );
 
-    #push @failed, $id unless $picked_primers;
+    push @summary, { $id => $summary } if $summary;
 }
 
-print Dump( { failed => \@failed } );
+print Dump( { summary => \@summary } );
 
 =head2 dump_output
 
@@ -67,32 +67,45 @@ Write out the generated primers plus other useful information in YAML format.
 
 =cut
 sub dump_output {
-    my ( $picked_primers, $seq, $crispr ) = @_;
+    my ( $ot_primer_data, $crispr ) = @_;
 
-    unless ( $picked_primers ) {
-        $picked_primers = { no_primers => 1 };
+    unless ( @{ $ot_primer_data } ) {
+        print Dump( { no_ot_primers => $crispr->id } );
+        return;
     }
 
-    $picked_primers->{crispr_group_id}    = $crispr->id;
-    $picked_primers->{gene_id}            = $crispr->gene_id;
-    $picked_primers->{chromosome}         = $crispr->chr_name;
-    $picked_primers->{species}            = $crispr->species;
-    $picked_primers->{crispr_group_start} = $crispr->start;
-    $picked_primers->{crispr_group_end}   = $crispr->end;
+    for my $primers ( @{ $ot_primer_data } ) {
+        my %data;
 
-    my $count = 1;
-    for my $cp ( @{ $crispr->ranked_crisprs } ) {
-        $picked_primers->{'crispr_' . $count . '_start'} = $cp->start;
-        $picked_primers->{'crispr_' . $count . '_end'}   = $cp->end;
-        $picked_primers->{'crispr_' . $count . '_seq'}   = $cp->seq;
-        $count++;
+        # off target data
+        $data{crispr_id}  = $crispr->id;
+        $data{ot_id}      = $primers->{ot}->id;
+        $data{mismatches} = $primers->{mismatches};
+        $data{chromosome} = $primers->{ot}->chr_name;
+        $data{start}      = $primers->{ot}->chr_start;
+        $data{end}        = $primers->{ot}->chr_end;
+
+        #primer data
+        for my $type ( qw( sequencing pcr ) ) {
+            if ( exists $primers->{$type} ) {
+                _dump_primer_data( $primers->{$type}{'forward'}, $type, \%data );
+                _dump_primer_data( $primers->{$type}{'reverse'}, $type, \%data );
+            }
+            else {
+                $data{"no_$type"} = 1;
+            }
+        }
+        print Dump( \%data );
     }
-
-    $picked_primers->{search_seq} = $seq->seq if $seq;
-
-    print Dump( $picked_primers );
 
     return;
+}
+
+sub _dump_primer_data {
+    my ( $primer, $type, $data ) = @_;
+    my $oligo_type = $type . '_' . $primer->{oligo_direction};
+
+    $data->{ $oligo_type . '_seq' } = uc( $primer->{oligo_seq} );
 }
 
 
