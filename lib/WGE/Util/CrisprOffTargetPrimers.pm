@@ -6,7 +6,7 @@ WGE::Util::CrisprOffTargetPrimers
 
 =head1 DESCRIPTION
 
-Generate pcr and sequencing primers for crispr off targets.
+Generate pcr and sequencing primers for selected crispr off target sites.
 
 =cut
 
@@ -104,15 +104,10 @@ has base_dir => (
     coerce   => 1,
 );
 
-# PCR Primers
-# need genomic specificity checks
-# produce primers that produce PCR product
-
-# Sequencing Primers
-# Run against the PCR product, show sequence around crispr site
-# no need for genomic specificity check
-
 =head2 crispr_off_targets_primers
+
+Generate pcr and sequencing primers for all selected off target
+sites for given crispr.
 
 =cut
 sub crispr_off_targets_primers {
@@ -126,7 +121,7 @@ sub crispr_off_targets_primers {
     my $fwd_seq = $crispr->pam_right ? $crispr->seq : revcom_as_string( $crispr->seq );
     my $crispr_grna = substr $fwd_seq, 0, 20;
 
-    my @off_target_primers;
+    my ( @off_target_primers, %summary );
     for my $off_target ( $crispr->off_targets->all ) {
         Log::Log4perl::NDC->remove;
         Log::Log4perl::NDC->push( $off_target->id );
@@ -136,29 +131,58 @@ sub crispr_off_targets_primers {
         # filter out off targets with more that 3 mismatches
         my $mismatches = $off_target->mismatches( $crispr_grna );
         next if $mismatches > 3;
+        $summary{$off_target->id}{mismatches} = $mismatches;
+        $summary{$off_target->id}{exonic} = $off_target->exonic;
+        $summary{$off_target->id}{genic} = $off_target->genic;
 
-        my $off_target_dir = $crispr_dir->subdir( $off_target->id );
-        $off_target_dir->mkpath;
+        my $dir = $crispr_dir->subdir( $off_target->id );
+        $dir->mkpath;
 
-        my $sequencing_primers = $self->sequencing_primers( $off_target, $off_target_dir, $species );
-        next unless $sequencing_primers;
-        my $pcr_primers = $self->pcr_primers( $off_target, $sequencing_primers, $off_target_dir, $species );
-
-        push @off_target_primers, {
-            ot                 => $off_target,
-            mismatches         => $mismatches,
-            sequencing_primers => $sequencing_primers,
-            pcr_primers        => $pcr_primers,
-        };
-        last;
+        my ( $seq_primers, $pcr_primers );
+        if ( $seq_primers = $self->generate_sequencing_primers( $off_target, $dir, $species  ) ) {
+            if ( $pcr_primers = $self->generate_pcr_primers( $off_target, $seq_primers, $dir, $species ) ) {
+                push @off_target_primers, {
+                    ot         => $off_target,
+                    mismatches => $mismatches,
+                    sequencing => $seq_primers,
+                    pcr        => $pcr_primers,
+                };
+                $summary{$off_target->id}{status} = 'both';
+            }
+            else {
+                push @off_target_primers, {
+                    ot         => $off_target,
+                    mismatches => $mismatches,
+                    sequencing => $seq_primers,
+                };
+                $summary{$off_target->id}{status} = 'seq_only';
+            }
+        }
+        else {
+            if ( $pcr_primers = $self->generate_pcr_primers( $off_target, undef, $dir, $species ) ) {
+                push @off_target_primers, {
+                    ot         => $off_target,
+                    mismatches => $mismatches,
+                    pcr        => $pcr_primers,
+                };
+                $summary{$off_target->id}{status} = 'pcr_only';
+            }
+            else {
+                push @off_target_primers, {
+                    ot         => $off_target,
+                    mismatches => $mismatches,
+                };
+                $summary{$off_target->id}{status} = 'fail';
+            }
+        }
     }
 
-    return \@off_target_primers;
+    return ( \@off_target_primers, \%summary );
 }
 
 =head2 get_crispr_species_name
 
-desc
+Work out species of crispr.
 
 =cut
 sub get_crispr_species_name {
@@ -179,12 +203,16 @@ sub get_crispr_species_name {
     return $species;
 }
 
-=head2 sequencing_primers
+=head2 generate_sequencing_primers
 
-desc
+Generate the sequencing primers for the crispr off target, used to show the sequence
+around the crispr site and show any potential damage.
+These primers are run against the PCR product, which is created using the pcr_primers
+created here.
+As the primers are run against the pcr product no genomic specificity check is needed.
 
 =cut
-sub sequencing_primers {
+sub generate_sequencing_primers {
     my ( $self, $off_target, $dir, $species ) = @_;
 
     my $work_dir = $dir->subdir( 'sequencing_primers' );
@@ -222,16 +250,28 @@ sub sequencing_primers {
     return $seq_primer_data->[0];
 }
 
-=head2 pcr_primers
+=head2 generate_pcr_primers
 
-desc
+Generate the pcr primers for the crispr off target, used to amplify the region
+around the off target site for further analysis.
+The primers are run against the whole genome, so we must carry out genomic
+specificity checks against the primers.
 
 =cut
-sub pcr_primers {
-    my ( $self, $off_target, $sequencing_primers, $dir, $species ) = @_;
+sub generate_pcr_primers {
+    my ( $self, $off_target, $seq_primers, $dir, $species ) = @_;
 
     my $work_dir = $dir->subdir( 'pcr_primers' );
     $work_dir->mkpath;
+    my ( $target_start, $target_end );
+    if ( $seq_primers ) {
+        $target_start = $seq_primers->{forward}{oligo_start};
+        $target_end   = $seq_primers->{reverse}{oligo_end};
+    }
+    else {
+        $target_start = $off_target->chr_start - 300;
+        $target_end   = $off_target->chr_end + 300;
+    }
 
     $self->log->info( 'Searching for pcr primers' );
     my $pcr_primer_finder = HTGT::QC::Util::GeneratePrimersAttempts->new(
@@ -239,8 +279,8 @@ sub pcr_primers {
         species             => $species,
         strand              => 1, # always global +ve strand
         chromosome          => $off_target->chr_name,
-        target_start        => $sequencing_primers->{forward}{oligo_start},
-        target_end          => $sequencing_primers->{reverse}{oligo_end},
+        target_start        => $target_start,
+        target_end          => $target_end,
         primer3_config_file => $self->pcr_primer3_config_file,
         slice_def(
             $self->pcr_primer_config,
