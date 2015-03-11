@@ -1,13 +1,22 @@
 [% META title="Browse Crisprs" %]
 <div class="page-header">
   <h1>[%- genes -%]
-  <small>[% IF design_id %]design: <strong>[%design_id%]</strong>[% END %]
-  chr: [%- chromosome -%]
+    <small>[% IF design_id %]design: <strong>[%design_id%]</strong>[% END %]
   assembly: [%- genome -%]</small>
   <a id="go_to_filters" class="btn btn-default pull-right">Show Options and Filters <i class="icon-chevron-down"></i></a><br>
   <a id="reload_tracks" class="btn btn-default pull-right">Reload Tracks <i class="icon-refresh"></i></a>
   </h1>
 </div>
+
+  <form class="form-inline" action="[% c.uri_for( '/genoverse_browse/' ) %]">
+    Chr <input type="text" class="input-small" placeholder="Chr" name="chromosome" value="[% chromosome %]">
+    <input type="text" class="input-small" placeholder="Start coord" name="browse_start" value="[% browse_start %]">
+     : <input type="text" class="input-small" placeholder="End coord" name="browse_end" value="[% browse_end %]">
+    <input type="hidden" name="genome" value="[% genome %]">
+    <input type="hidden" name="view_single" value="[% view_single %]">
+    <input type="hidden" name="view_paired" value="[% view_paired %]">
+    <button type="submit" class="btn">Go <i class="icon-arrow-right"></i></button>
+  </form>
 
 <div class="container-fluid">
 <div class="alert alert-info"><strong>Zoom:</strong> use "+" and "-" buttons. <strong>Move:</strong> drag or scroll with the mouse. <strong>Select region:</strong> hold shift key and drag with the mouse.
