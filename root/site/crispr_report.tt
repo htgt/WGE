@@ -29,6 +29,18 @@
 
   $(document).ready( function() {
 
+    //add functionality to off target button
+    $(".ots-button").click( function(event) {
+        //stop it from submitting the form
+        event.preventDefault();
+
+        $(this).hide();
+        $('#offtarget_table tr:last').after('<tr><td colspan="9" style="text-align: center" id="progressbar">Computing off-targets now..<div class="progress progress-striped active"><div class="bar" style="width: 100%"></div></div></td></tr>');
+        $.when( find_off_targets_for_individual(species, crispr_id) ).done(function (){
+            location.reload();
+        });
+    });
+
   //function to handle bookmarking of crispr
     $("#bookmark").click(function (event){
       event.preventDefault();
@@ -237,5 +249,6 @@
   <tr>
     <td colspan="5" style="text-align: center">No off target data available for this crispr</td>
   </tr>
+  <button class="btn btn-block ots-button" value="[% crispr_id %]">Find off targets</button>
 [% END %]
 </table>

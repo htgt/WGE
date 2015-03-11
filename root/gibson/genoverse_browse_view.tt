@@ -15,7 +15,7 @@
     <input type="hidden" name="genome" value="[% genome %]">
     <input type="hidden" name="view_single" value="[% view_single %]">
     <input type="hidden" name="view_paired" value="[% view_paired %]">
-    <button type="submit" class="btn">Go <i class="icon-arrow-right"></i></button>
+    <button type="submit" class="btn">Go </button>
   </form>
 
 <div class="container-fluid">
