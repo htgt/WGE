@@ -20,7 +20,7 @@ use Const::Fast;
 use YAML::Any qw( LoadFile DumpFile );
 use Hash::MoreUtils qw( slice_def );
 
-use Smart::Comments;
+#use Smart::Comments;
 
 use namespace::autoclean;
 
