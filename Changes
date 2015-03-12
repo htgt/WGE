@@ -1,3 +1,8 @@
+0.060     2015-03-12 11:24:30 Europe/London
+
+    Can now change genoverse view region by entering chr and coords
+    Added off-target calculation button to single crispr page
+
 0.059     2015-01-27 14:37:23 Europe/London
 
     Compute Off-Target button bugfix

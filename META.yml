@@ -50,6 +50,7 @@ requires:
   File::stat: 0
   FindBin: 0
   Getopt::Long: 0
+  HTGT::QC::Util::GeneratePrimersAttempts: 0
   HTTP::Request::Common: 0
   Hash::MoreUtils: 0
   IO::File: 0
@@ -75,10 +76,13 @@ requires:
   MooseX::NonMoose: 0
   MooseX::SimpleConfig: 0
   MooseX::Types::Path::Class: 0
+  MooseX::Types::Path::Class::MoreCoercions: 0
   MooseX::Types::URI: 0
   POSIX: 0
   Path::Class: 0
+  Perl6::Slurp: 0
   Pod::Usage: 0
+  Scalar::Util: 0
   Smart::Comments: 0
   Sub::Exporter: 0
   Term::ReadPassword: 0
@@ -99,4 +103,4 @@ requires:
   strict: 0
   utf8: 0
   warnings: 0
-version: 0.059
+version: 0.060

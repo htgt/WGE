@@ -12,6 +12,7 @@ bin/dump_off_target_counts.pl
 bin/dump_schema.pl
 bin/export_cbx1_crispr_fixtures.sql
 bin/find_crisprs.pl
+bin/generate_crispr_off_target_primers.pl
 bin/get_all_genes.pl
 bin/get_crisprs.pl
 bin/get_crisprs/Makefile
@@ -94,6 +95,7 @@ lib/WGE/Model/Schema/ResultSet/Gene.pm
 lib/WGE/Model/Schema/ResultSet/Species.pm
 lib/WGE/Model/Schema/ResultSet/User.pm
 lib/WGE/Util/CreateDesign.pm
+lib/WGE/Util/CrisprOffTargetPrimers.pm
 lib/WGE/Util/CrisprRole.pm
 lib/WGE/Util/EnsEMBL.pm
 lib/WGE/Util/ExportCSV.pm

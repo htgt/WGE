@@ -159,8 +159,8 @@ function find_off_targets_for_individual(species, ids) {
     ids = ids.join(",");
 
   return $.get(
-    base_url+'api/pair_off_target_search',
-    { 'ids': ids, 'species': species }
+    base_url+'api/individual_off_target_search',
+    { 'ids[]': ids, 'species': species }
   );
 }
 

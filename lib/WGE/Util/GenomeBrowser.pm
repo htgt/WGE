@@ -1,7 +1,7 @@
 package WGE::Util::GenomeBrowser;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::GenomeBrowser::VERSION = '0.059';
+    $WGE::Util::GenomeBrowser::VERSION = '0.060';
 }
 ## use critic
 
@@ -10,6 +10,7 @@ use Data::Dumper;
 use TryCatch;
 use Log::Log4perl qw(:easy);
 use warnings FATAL => 'all';
+use Scalar::Util qw(looks_like_number);
 
 
 BEGIN {
@@ -200,14 +201,44 @@ sub get_region_from_params{
     }
     else{
         # All region params provided, we just return them
-        my %region = map { $_ => $params->{$_} } @required;
+        my $region = _tidy_region_input($schema, $params);
         if ($params->{'genes'}){
-            $region{'genes'} = $params->{'genes'};
+            $region->{'genes'} = $params->{'genes'};
         }
-        return \%region;
+
+        return $region;
     }
 
     die "No region parameters, design_id, exon_id, crispr_id or crispr_pair_id provided";
+}
+
+sub _tidy_region_input{
+    my ($schema,$params) = @_;
+    my $region = {};
+
+    # Remove extra characters from coords and check they are numerical
+    foreach my $coord_name ( qw(browse_start browse_end) ){
+        my $coord_string = $params->{$coord_name};
+        $coord_string =~ s/[\,\.\s]//g;
+        unless(looks_like_number($coord_string)){
+            die "$coord_name must be a number, got $coord_string";
+        }
+        $region->{$coord_name} = $coord_string;
+    }
+
+    # Remove "chr" from chromosome name
+    my $chromosome =$params->{chromosome};
+    $chromosome =~ s/chr//i;
+    $region->{chromosome} = $chromosome;
+
+    # Fetch species for assembly
+    $region->{genome} = $params->{genome};
+    my $assembly = $schema->resultset('Assembly')->find({ id => $params->{genome} })
+        or die "Could not find genome assembly ".$params->{genome};
+    my $species = $assembly->species->id;
+    $region->{species} = $species;
+
+    return $region;
 }
 
 =head fetch_design_data
