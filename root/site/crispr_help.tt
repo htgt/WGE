@@ -266,18 +266,7 @@ max_distance: 1000
         <section id="individual_process">
             <h2>Calculating CRISPR off targets</h2>
             <p>
-                To calculate off targets for CRISPRs we use an aligner called <a href="http://bio-bwa.sourceforge.net/">BWA</a><a href="#refs"><sup>2</sup></a>. It uses a burrows wheeler transform to quickly search for sites in the genome with similar sequence to the CRISPR.<br/>
-            </p>
-            <p>
-                We run BWA with the following parameters<br/>
-                <pre>
-bwa aln -n 5 -o 0 -l 20 -k 4 -N -m 1000000000 ${GENOME} ${CRISPR_FQ_FILE}
-                </pre>
-                This will find all sites within the genome with up to 4 mismatches over the sgRNA. The problem is that bwa will find many sites that do have 4 mismatches over the sgRNA, but they do not have a valid PAM site. The Cas9 protein will not bind to a site that doesn't have a PAM site, so we can safely ignore some of the alignments we get from BWA.<br/>
-            </p>
-            <p>
-                To do this we have to first retrieve the genomic sequence that was aligned; we do this using two tools from the BedTools<a href="#refs"><sup>3</sup></a> suite -- bamToBed followed by fastaFromBed.<br/>
-                After we have determined which off targets we think are valid, we then store them in our crispr database, after which they become viewable through the webapp.<br/>
+               To calculate off targets for CRISPRs we use the CRISPR-Analyser package, hosted here: <a href="http://github.com/htgt/CRISPR-Analyser">CRISPR-Analyser on github</a>
             </p>
         </section>
         <hr class="docs-separator" />
