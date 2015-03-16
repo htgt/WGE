@@ -4,6 +4,7 @@ use warnings FATAL => 'all';
 
 use WGE::Util::CrisprOffTargetPrimers;
 use WGE::Model::DB;
+use WebAppCommon::Util::EnsEMBL;
 use Getopt::Long;
 use Log::Log4perl ':easy';
 use Path::Class;
@@ -23,16 +24,18 @@ GetOptions(
     'dir=s'           => \$dir_name,
     'crispr-id=i'     => \$crispr_id,
     'crispr-file=s'   => \$crispr_file,
+    'species=s'       => \my $species,
 ) or pod2usage(2);
 
 Log::Log4perl->easy_init( { level => $log_level, layout => '%p %x %m%n' } );
 
 pod2usage('Must specify a work dir --dir') unless $dir_name;
+die ( 'Must provide --species' ) unless $species;
 
 my $base_dir = dir( $dir_name )->absolute;
 $base_dir->mkpath;
-my $model = WGE::Model::DB->new();
 
+my $model = WGE::Model::DB->new();
 my $primer_util = WGE::Util::CrisprOffTargetPrimers->new( base_dir => $base_dir );
 
 my @crispr_ids;
@@ -90,6 +93,8 @@ sub dump_output {
             if ( exists $primers->{$type} ) {
                 _dump_primer_data( $primers->{$type}{'forward'}, $type, \%data );
                 _dump_primer_data( $primers->{$type}{'reverse'}, $type, \%data );
+                _inter_seq_primer_seq( $primers->{sequencing}, \%data )
+                    if $type eq 'sequencing';
             }
             else {
                 $data{"no_$type"} = 1;
@@ -108,7 +113,33 @@ sub _dump_primer_data {
     $data->{ $oligo_type . '_seq' } = uc( $primer->{oligo_seq} );
 }
 
+sub _inter_seq_primer_seq {
+    my ( $primers, $data ) = @_;
 
+    my $ensembl_util = get_ensemble_util( );
+    my $start = $primers->{forward}{oligo_start};
+    my $end   = $primers->{reverse}{oligo_end};
+    my $chr   = $data->{chromosome};
+
+    my $slice = $ensembl_util->get_slice(
+        $start, $end, $chr,
+    );
+    my $seq = $slice->seq;
+
+    $data->{global_sequence} = $seq;
+}
+
+
+{
+    my $ensembl_util;
+
+    sub get_ensemble_util {
+        unless ( $ensembl_util ) {
+            $ensembl_util = WebAppCommon::Util::EnsEMBL->new( species => $species );
+        }
+        return $ensembl_util;
+    }
+}
 __END__
 
 =head1 NAME
