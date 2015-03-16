@@ -20,8 +20,6 @@ use Const::Fast;
 use YAML::Any qw( LoadFile DumpFile );
 use Hash::MoreUtils qw( slice_def );
 
-use Smart::Comments;
-
 use namespace::autoclean;
 
 with 'MooseX::Log::Log4perl';
@@ -138,43 +136,33 @@ sub crispr_off_targets_primers {
         my $dir = $crispr_dir->subdir( $off_target->id );
         $dir->mkpath;
 
+        my %data = (
+            ot         => $off_target,
+            mismatches => $mismatches,
+            species    => $species,
+        );
+
         my ( $seq_primers, $pcr_primers );
         if ( $seq_primers = $self->generate_sequencing_primers( $off_target, $dir, $species  ) ) {
+            $data{sequencing} = $seq_primers;
             if ( $pcr_primers = $self->generate_pcr_primers( $off_target, $seq_primers, $dir, $species ) ) {
-                push @off_target_primers, {
-                    ot         => $off_target,
-                    mismatches => $mismatches,
-                    sequencing => $seq_primers,
-                    pcr        => $pcr_primers,
-                };
+                $data{pcr} = $pcr_primers;
                 $summary{$off_target->id}{status} = 'both';
             }
             else {
-                push @off_target_primers, {
-                    ot         => $off_target,
-                    mismatches => $mismatches,
-                    sequencing => $seq_primers,
-                };
                 $summary{$off_target->id}{status} = 'seq_only';
             }
         }
         else {
             if ( $pcr_primers = $self->generate_pcr_primers( $off_target, undef, $dir, $species ) ) {
-                push @off_target_primers, {
-                    ot         => $off_target,
-                    mismatches => $mismatches,
-                    pcr        => $pcr_primers,
-                };
+                $data{pcr} = $pcr_primers;
                 $summary{$off_target->id}{status} = 'pcr_only';
             }
             else {
-                push @off_target_primers, {
-                    ot         => $off_target,
-                    mismatches => $mismatches,
-                };
                 $summary{$off_target->id}{status} = 'fail';
             }
         }
+        push @off_target_primers, \%data;
     }
 
     return ( \@off_target_primers, \%summary );
