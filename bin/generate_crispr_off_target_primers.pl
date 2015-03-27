@@ -94,7 +94,7 @@ sub dump_output {
 
         # off target data
         $data{crispr_id}  = $crispr_data->{crispr_id};
-        $data{gene_name}  = $crispr_data->{gene_symbol};
+        $data{gene_name}  = $crispr_data->{gene_name};
         $data{ot_id}      = $primers->{ot}->id;
         $data{mismatches} = $primers->{mismatches};
         $data{chromosome} = $primers->{ot}->chr_name;
