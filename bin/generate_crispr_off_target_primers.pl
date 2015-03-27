@@ -10,12 +10,12 @@ use Log::Log4perl ':easy';
 use Path::Class;
 use Pod::Usage;
 use Try::Tiny;
-use Perl6::Slurp;
+use Text::CSV;
 use YAML::Any;
 
 my $log_level = $WARN;
 my $persist = 0;
-my ( $dir_name, $crispr_id, $crispr_file, $project_name );
+my ( $dir_name, $crispr_id, $crispr_file, $max_mismatches, $project_name );
 GetOptions(
     'help'            => sub { pod2usage( -verbose => 1 ) },
     'man'             => sub { pod2usage( -verbose => 2 ) },
@@ -24,6 +24,7 @@ GetOptions(
     'dir=s'           => \$dir_name,
     'crispr-id=i'     => \$crispr_id,
     'crispr-file=s'   => \$crispr_file,
+    'max_mismatches=i' => \$max_mismatches,
     'species=s'       => \my $species,
 ) or pod2usage(2);
 
@@ -34,35 +35,46 @@ die ( 'Must provide --species' ) unless $species;
 
 my $base_dir = dir( $dir_name )->absolute;
 $base_dir->mkpath;
+$max_mismatches //= 3;
 
 my $model = WGE::Model::DB->new();
-my $primer_util = WGE::Util::CrisprOffTargetPrimers->new( base_dir => $base_dir );
+my $primer_util = WGE::Util::CrisprOffTargetPrimers->new(
+    base_dir                  => $base_dir,
+    max_off_target_mismatches => $max_mismatches,
+);
+my @summary;
 
-my @crispr_ids;
 if ( $crispr_id ) {
-    push @crispr_ids, $crispr_id;
+    generate_off_target_primers( { crispr_id => $crispr_id } );
 }
 elsif ( $crispr_file ) {
-    @crispr_ids = slurp $crispr_file, { chomp => 1 };
+    my $input_csv = Text::CSV->new();
+    open ( my $input_fh, '<', $crispr_file ) or die( "Can not open $crispr_file " . $! );
+    $input_csv->column_names( @{ $input_csv->getline( $input_fh ) } );
+
+    while ( my $data = $input_csv->getline_hr( $input_fh ) ) {
+        generate_off_target_primers( $data );
+    }
 }
 else {
     pod2usage( 'Provide crispr ids, --crispr-id or -crispr-file' );
 }
 
-my @summary;
-for my $id ( @crispr_ids ) {
-    my $crispr = try{ $model->resultset('Crispr')->find( { id => $id } ) };
-    die( "Unable to find crispr group with id $id" )
+print Dump( { summary => \@summary } );
+
+sub generate_off_target_primers {
+    my ( $crispr_data ) = @_;
+
+    my $crispr = try{ $model->resultset('Crispr')->find( { id => $crispr_data->{crispr_id} } ) };
+    die( "Unable to find crispr with id " . $crispr_data->{crispr_id} )
         unless $crispr;
 
     my ( $primers, $summary ) = $primer_util->crispr_off_targets_primers( $crispr );
 
-    dump_output( $primers, $crispr );
+    dump_output( $primers, $crispr_data );
 
-    push @summary, { $id => $summary } if $summary;
+    push @summary, { $crispr_data->{crispr_id} => $summary } if $summary;
 }
-
-print Dump( { summary => \@summary } );
 
 =head2 dump_output
 
@@ -70,10 +82,10 @@ Write out the generated primers plus other useful information in YAML format.
 
 =cut
 sub dump_output {
-    my ( $ot_primer_data, $crispr ) = @_;
+    my ( $ot_primer_data, $crispr_data ) = @_;
 
     unless ( @{ $ot_primer_data } ) {
-        print Dump( { no_ot_primers => $crispr->id } );
+        print Dump( { no_ot_primers => $crispr_data->{crispr_id} } );
         return;
     }
 
@@ -81,7 +93,8 @@ sub dump_output {
         my %data;
 
         # off target data
-        $data{crispr_id}  = $crispr->id;
+        $data{crispr_id}  = $crispr_data->{crispr_id};
+        $data{gene_name}  = $crispr_data->{gene_symbol};
         $data{ot_id}      = $primers->{ot}->id;
         $data{mismatches} = $primers->{mismatches};
         $data{chromosome} = $primers->{ot}->chr_name;
