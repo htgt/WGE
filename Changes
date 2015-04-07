@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+0.061     2015-04-07 11:29:44 Europe/London
+
+   Bigfix: genoverse coordinate navigation was causing tracks to be populated from wrong human assembly
+
 0.060     2015-03-12 11:24:30 Europe/London
 
     Can now change genoverse view region by entering chr and coords
