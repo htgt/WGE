@@ -13,6 +13,7 @@
     <input type="text" class="input-small" placeholder="Start coord" name="browse_start" value="[% browse_start %]">
      : <input type="text" class="input-small" placeholder="End coord" name="browse_end" value="[% browse_end %]">
     <input type="hidden" name="genome" value="[% genome %]">
+    <input type="hidden" name="species" value="[% species %]">
     <input type="hidden" name="view_single" value="[% view_single %]">
     <input type="hidden" name="view_paired" value="[% view_paired %]">
     <button type="submit" class="btn">Go </button>
