@@ -19,8 +19,7 @@ use Path::Class;
 use Const::Fast;
 use YAML::Any qw( LoadFile DumpFile );
 use Hash::MoreUtils qw( slice_def );
-
-#use Smart::Comments;
+use Bio::Perl qw( revcom_as_string );
 
 use namespace::autoclean;
 
@@ -33,6 +32,12 @@ my %PRIMER_PROJECT_CONFIG_FILES = (
     crispr_off_target_pcr_primers => $ENV{CRISPR_OFF_TARGETS_PCR_PRIMER_CONFIG}
             || '/nfs/users/nfs_s/sp12/workspace/WGE/tmp/wge_crispr_off_target_pcr.yaml',
             #|| '/opt/t87/global/conf/primers/wge_crispr_off_target_genotyping.yaml',
+);
+
+has max_off_target_mismatches => (
+    is => 'ro',
+    isa => 'Int',
+    default => 3,
 );
 
 has pcr_primer_config => (
@@ -124,13 +129,14 @@ sub crispr_off_targets_primers {
     my ( @off_target_primers, %summary );
     for my $off_target ( $crispr->off_targets->all ) {
         Log::Log4perl::NDC->remove;
+        Log::Log4perl::NDC->push( $crispr->id );
         Log::Log4perl::NDC->push( $off_target->id );
         # skip off target record for original crispr
         next if $off_target->id == $crispr->id;
 
         # filter out off targets with more that 3 mismatches
         my $mismatches = $off_target->mismatches( $crispr_grna );
-        next if $mismatches > 3;
+        next if $mismatches > $self->max_off_target_mismatches;
         $summary{$off_target->id}{mismatches} = $mismatches;
         $summary{$off_target->id}{exonic} = $off_target->exonic;
         $summary{$off_target->id}{genic} = $off_target->genic;
@@ -138,43 +144,33 @@ sub crispr_off_targets_primers {
         my $dir = $crispr_dir->subdir( $off_target->id );
         $dir->mkpath;
 
+        my %data = (
+            ot         => $off_target,
+            mismatches => $mismatches,
+            species    => $species,
+        );
+
         my ( $seq_primers, $pcr_primers );
         if ( $seq_primers = $self->generate_sequencing_primers( $off_target, $dir, $species  ) ) {
+            $data{sequencing} = $seq_primers;
             if ( $pcr_primers = $self->generate_pcr_primers( $off_target, $seq_primers, $dir, $species ) ) {
-                push @off_target_primers, {
-                    ot         => $off_target,
-                    mismatches => $mismatches,
-                    sequencing => $seq_primers,
-                    pcr        => $pcr_primers,
-                };
+                $data{pcr} = $pcr_primers;
                 $summary{$off_target->id}{status} = 'both';
             }
             else {
-                push @off_target_primers, {
-                    ot         => $off_target,
-                    mismatches => $mismatches,
-                    sequencing => $seq_primers,
-                };
                 $summary{$off_target->id}{status} = 'seq_only';
             }
         }
         else {
             if ( $pcr_primers = $self->generate_pcr_primers( $off_target, undef, $dir, $species ) ) {
-                push @off_target_primers, {
-                    ot         => $off_target,
-                    mismatches => $mismatches,
-                    pcr        => $pcr_primers,
-                };
+                $data{pcr} = $pcr_primers;
                 $summary{$off_target->id}{status} = 'pcr_only';
             }
             else {
-                push @off_target_primers, {
-                    ot         => $off_target,
-                    mismatches => $mismatches,
-                };
                 $summary{$off_target->id}{status} = 'fail';
             }
         }
+        push @off_target_primers, \%data;
     }
 
     return ( \@off_target_primers, \%summary );

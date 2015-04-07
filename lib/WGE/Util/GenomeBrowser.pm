@@ -91,7 +91,7 @@ sub get_region_from_params{
     my $schema = shift;
     my $params = shift;
 
-    my @required = qw(genome chromosome browse_start browse_end);
+    my @required = qw(genome species chromosome browse_start browse_end);
     my @missing_params = grep { not defined $params->{$_ } } @required;
 
     if (@missing_params){
@@ -225,12 +225,10 @@ sub _tidy_region_input{
     $chromosome =~ s/chr//i;
     $region->{chromosome} = $chromosome;
 
-    # Fetch species for assembly
+    # Set the genome and species. NB: species might be 'Grch38' instead of 'Human'
+    # so don't try to get the species from the genome
     $region->{genome} = $params->{genome};
-    my $assembly = $schema->resultset('Assembly')->find({ id => $params->{genome} })
-        or die "Could not find genome assembly ".$params->{genome};
-    my $species = $assembly->species->id;
-    $region->{species} = $species;
+    $region->{species} = $params->{species};
 
     return $region;
 }
