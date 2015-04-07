@@ -1,7 +1,7 @@
 package WGE::Util::FindOffTargets;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::FindOffTargets::VERSION = '0.060';
+    $WGE::Util::FindOffTargets::VERSION = '0.061';
 }
 ## use critic
 

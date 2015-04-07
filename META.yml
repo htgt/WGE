@@ -80,7 +80,6 @@ requires:
   MooseX::Types::URI: 0
   POSIX: 0
   Path::Class: 0
-  Perl6::Slurp: 0
   Pod::Usage: 0
   Scalar::Util: 0
   Smart::Comments: 0
@@ -103,4 +102,4 @@ requires:
   strict: 0
   utf8: 0
   warnings: 0
-version: 0.060
+version: 0.061
