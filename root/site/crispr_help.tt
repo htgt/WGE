@@ -179,7 +179,7 @@ $(window).load(function() {
         <section id="off_targets">
             <h2>Off targets</h2>
             <p>
-                An off target is a site in the genome that may be cut by a given CRISPR, where the site is not the original CRISPR site we intended to cut<a href="#refs"><sup>1</sup></a>.<br/> The site must contain a PAM site (NGG), and the sequence will be similar to the given CRISPR sgRNA.
+                An off target is a site in the genome that may be cut by a given CRISPR, where the site is not the original CRISPR site we intended to cut<a href="#refs"><sup>ref</sup></a>.<br/> The site must contain a PAM site (NGG), and the sequence will be similar to the given CRISPR sgRNA.
             </p>
             <p>
                 Cutting has been seen with up to 5 mismatches depending on their proximity to the PAM; mismatches closer to the PAM site are less tolerated than those further away.<br/>
@@ -273,7 +273,7 @@ max_distance: 1000
         <section id="pair_process">
             <h2>Calculating off targets for CRISPR pairs</h2>
             <p>
-                Paired CRISPRs can be used with a modified Cas9 protein to reduce off targets<a href="#refs"><sup>4</sup></a>. What we call a 'Paired CRISPR' is simply two CRISPRs in close proximity (within 50bp~), that are located on opposite strands. <br/>
+                Paired CRISPRs can be used with a modified Cas9 protein to reduce off targets<a href="#refs"><sup>ref</sup></a>. What we call a 'Paired CRISPR' is simply two CRISPRs in close proximity (within 50bp~), that are located on opposite strands. <br/>
             </p>
             <p>
                 A nickase version of the Cas9 protein is used together with the two CRISPRs, meaning that we still get a break at the the desired site due to the two nicks being in close proximity, and (hopefully) all off targets are repaired without indels as there is only a single stranded break.<br/>
@@ -345,12 +345,16 @@ max_distance: 1000
         </section>
         <hr class="docs-separator" />
         <section id="refs"><br/>
+        <h2>References</h2>
             <p>
-                1. Hsu P.D. et al (2013) DNA targeting specificity of RNA-guided Cas9 nucleases. Nature Biotechnology 31, 827–832 doi:10.1038/nbt.2647<br/>
-                2. Li H. and Durbin R. (2009) Fast and accurate short read alignment with Burrows-Wheeler Transform. Bioinformatics, 25:1754-60. [PMID: 19451168]<br/>
-                3. Quinlan A.R. and Hall I.M., (2010) BEDTools: a flexible suite of utilities for comparing genomic features. Bioinformatics. 26, 6, pp. 841–842<br/>
-                4. Ran. F.A. et al. (2013) Double Nicking by RNA-Guided CRISPR Cas9 for Enhanced Genome Editing Specificity. Cell 154, 1380–1389<br/>
-                5. Shen, B. et al. (2014) Efficient genome modification by CRISPR-Cas9 nickase with minimal off-target effects. Nature Methods doi:10.1038/nmeth.2857<br/>
+                Hsu P.D. et al (2013) <em>DNA targeting specificity of RNA-guided Cas9 nucleases.</em> Nature Biotechnology 31, 827–832 doi:10.1038/nbt.2647<br/>
+                <br>
+                Quinlan A.R. and Hall I.M., (2010) <em>BEDTools: a flexible suite of utilities for comparing genomic features.</em> Bioinformatics. 26, 6, pp. 841–842<br/>
+                <br>
+                Ran. F.A. et al. (2013) <em>Double Nicking by RNA-Guided CRISPR Cas9 for Enhanced Genome Editing Specificity.</em> Cell 154, 1380–1389<br/>
+                <br>
+                Shen, B. et al. (2014) <em>Efficient genome modification by CRISPR-Cas9 nickase with minimal off-target effects.</em> Nature Methods doi:10.1038/nmeth.2857<br/>
+                <br>
             </p>
         </section>
     </div>
