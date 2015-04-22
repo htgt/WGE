@@ -52,7 +52,6 @@ $(window).load(function() {
                 </ul>
             </li>
             <li><a href="#statuses">Pair Status Descriptions</a></li>
-            <li><a href="#source">Source Code</a></li>
             <li><a href="#refs">References</a></li>
         </ul>
     </div>
@@ -266,7 +265,8 @@ max_distance: 1000
         <section id="individual_process">
             <h2>Calculating CRISPR off targets</h2>
             <p>
-               To calculate off targets for CRISPRs we use the CRISPR-Analyser package, hosted here: <a href="http://github.com/htgt/CRISPR-Analyser">CRISPR-Analyser on github</a>
+               To calculate off targets for CRISPRs we use the CRISPR-Analyser package. For details about
+               how this works please see our <a href="[% c.uri_for('/developer_help#crispr_analyser') %]">developer help page</a>.
             </p>
         </section>
         <hr class="docs-separator" />
@@ -332,17 +332,11 @@ max_distance: 1000
                 </tr>
             </table>
         </section>
+
         <hr class="docs-separator" />
-        <section id="source">
-            <h2>Source code</h2>
-            <p>
-                Our web application is written in <a href="http://www.perl.org/">Perl</a> using the <a href="http://www.catalystframework.org/">Catalyst</a> framework. The application runs on a <a href="http://www.postgresql.org/">PostgreSQL</a> database.<br/>
-                The code can be seen in our <a href="https://github.com/htgt/WGE">github repository</a><br/>
-            </p>
-            <p>
-                [% PROCESS contact %]
-            </p>
-        </section>
+
+        [% PROCESS contact %]
+
         <hr class="docs-separator" />
         <section id="refs"><br/>
         <h2>References</h2>

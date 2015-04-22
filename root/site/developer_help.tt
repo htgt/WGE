@@ -1,0 +1,396 @@
+[% META title = "WGE Developer Information"; META tab_name="help"; META header_text = "Information for Developers" %]
+[% PROCESS utils.tt %]
+
+<style type="text/css">
+section img {
+    border-color: #000000;
+    border-width: 1px;
+    border-style: solid;
+}
+
+.affix {
+    position: fixed;
+    top: 12px;
+}
+
+.docs-separator {
+    margin: 40px 0 39px
+}
+
+</style>
+
+<script type="text/javascript">
+//need to wait for images to load or the scrollspy is broken
+$(window).load(function() {
+    //link the nav to the anchors
+    $("body").scrollspy({target: ".bs-docs-sidebar", offset: 20});
+});
+</script>
+
+<div class="content">
+  <div class="row">
+    <div class="span3 bs-docs-sidebar">
+        <ul id="navigation" data-spy="affix" data-offset-top="180" class="nav nav-list bs-docs-sidenav">
+            <li><a href="#disclaimer">Disclaimer</a></li>
+            <li><a href="#api">WGE API</a></li>
+            <li>
+                <ul class="nav nav-list">
+                    <li><a href="#crispr_search">Crispr Search by Exon</a></li>
+                    <li><a href="#crisprs_in_region">Crispr Search by Region</a></li>
+                    <li><a href="#pair_search">Crispr Pair Search by Exon</a></li>
+                    <li><a href="#individual_off_target_search">Off-Targets for Crisprs</a></li>
+                    <li><a href="#pair_off_target_search">Off-Targets for Crispr Pairs</a></li>
+                    <li><a href="#search_by_seq">Find Crispr ID for Sequence</a></li>
+                    <li><a href="#gene_search">Find Marker Symbols for Search Term</a></li>
+                    <li><a href="#exon_search">Find Exons for Marker Symbol</a></li>
+                </ul>
+            </li>
+            <li><a href="#components">WGE Components</a></li>
+            <li><a href="#crispr_analyser">CRISPR-Analyser</a></li>
+            <li><a href="#source">Source Code</a></li>
+        </ul>
+    </div>
+    <div class="span9">
+
+        [% PROCESS disclaimer %]
+
+        <hr class="docs-separator" />
+
+        <section id="api">
+            <h2>WGE API</h2>
+            <section id="crispr_search">
+            <h3>Crispr Search by Exon</h3>
+            Find CRISPRs for a given exon
+            <br>
+            Required fields: species, exon_id[]
+            <br>
+            Takes one or many ensembl exon ids:
+            <br>
+            [% url = c.uri_for('/api/crispr_search',{ "exon_id[]" => "ENSMUSE00000106755", species => "Mouse"}) %]
+            <a href="[% url %]">[% url %]</a>
+            <br>
+            Returns a json hash of exon ids -> crisprs:
+
+<pre>
+{
+   "ENSMUSE00000106755":[
+      {
+         "ensembl_exon_id":"ENSMUSE00000106755",
+         "chr_start":35997419,
+         "off_target_summary_arr":[
+            "1",
+            "0",
+            "0",
+            "10",
+            "159"
+         ],
+         "pam_right":0,
+         "species_id":2,
+         "exonic":1,
+         "chr_end":35997441,
+         "id":349738635,
+         "off_target_summary":"{0: 1, 1: 0, 2: 0, 3: 10, 4: 159}",
+         "genic":1,
+         "chr_name":"12",
+         "seq":"CCAGCCTTAAAGAAAGTGTTTGC"
+      },
+      ...
+   ]
+}
+</pre>
+
+            Multiple exons can be specified like so:
+            <br>
+            [% url = c.uri_for('/api/crispr_search', { "exon_id[]" => ["ENSMUSE00000106755", "ENSMUSE00000106761"], "species" => "Mouse" }) %]
+            <a href="[% url %]">[% url %]</a>
+            </section>
+
+            <section id="crisprs_in_region">
+            <h3>Crispr Search by Region</h3>
+            Find CRISPRs for a given region, returning GFF (for easy displaying in genoverse).
+            <br>
+            Required fields: species_id, chr, start, end, assembly
+            <br>
+            [% url = c.uri_for('/api/crisprs_in_region',{ "species_id"=> "Mouse", "chr"=> "12", "start"=> 35997423, "end"=> "35997496", "assembly"=> "GRCm38" }) %]
+            <a href="[% url %]">[% url %]</a>
+            <br>
+            Returns GFF:
+
+<pre>
+##gff-version 3
+##sequence-region lims2-region 35997423 35997496
+# Crisprs for region Mouse(GRCm38) 12:35997423-35997496
+12  WGE Crispr  35997423    35997445    .   +   .   ID=C_349738636;Name=349738636;OT_Summary={0: 1, 1: 0, 2: 3, 3: 25, 4: 292}
+12  WGE CDS 35997425    35997445    .   +   .   ID=Cr_349738636;Parent=C_349738636;Name=349738636;color=#45A825
+12  WGE CDS 35997423    35997425    .   +   .   ID=PAM_349738636;Parent=C_349738636;Name=349738636;color=#1A8599
+12  WGE Crispr  35997445    35997467    .   +   .   ID=C_349738637;Name=349738637;OT_Summary={0: 1, 1: 0, 2: 6, 3: 259, 4: 1774}
+12  WGE CDS 35997445    35997465    .   +   .   ID=Cr_349738637;Parent=C_349738637;Name=349738637;color=#45A825
+12  WGE CDS 35997465    35997467    .   +   .   ID=PAM_349738637;Parent=C_349738637;Name=349738637;color=#1A8599
+12  WGE Crispr  35997457    35997479    .   +   .   ID=C_349738638;Name=349738638;OT_Summary={0: 1, 1: 0, 2: 0, 3: 13, 4: 162}
+12  WGE CDS 35997459    35997479    .   +   .   ID=Cr_349738638;Parent=C_349738638;Name=349738638;color=#45A825
+12  WGE CDS 35997457    35997459    .   +   .   ID=PAM_349738638;Parent=C_349738638;Name=349738638;color=#1A8599
+12  WGE Crispr  35997472    35997494    .   +   .   ID=C_349738639;Name=349738639;OT_Summary={0: 1, 1: 1, 2: 1, 3: 9, 4: 107}
+12  WGE CDS 35997472    35997492    .   +   .   ID=Cr_349738639;Parent=C_349738639;Name=349738639;color=#45A825
+12  WGE CDS 35997492    35997494    .   +   .   ID=PAM_349738639;Parent=C_349738639;Name=349738639;color=#1A8599
+12  WGE Crispr  35997484    35997506    .   +   .   ID=C_349738640;Name=349738640;OT_Summary={0: 1, 1: 0, 2: 1, 3: 5, 4: 85}
+12  WGE CDS 35997486    35997506    .   +   .   ID=Cr_349738640;Parent=C_349738640;Name=349738640;color=#45A825
+12  WGE CDS 35997484    35997486    .   +   .   ID=PAM_349738640;Parent=C_349738640;Name=349738640;color=#1A8599
+12  WGE Crispr  35997490    35997512    .   +   .   ID=C_349738641;Name=349738641;OT_Summary={0: 1, 1: 0, 2: 0, 3: 5, 4: 68}
+12  WGE CDS 35997492    35997512    .   +   .   ID=Cr_349738641;Parent=C_349738641;Name=349738641;color=#45A825
+12  WGE CDS 35997490    35997492    .   +   .   ID=PAM_349738641;Parent=C_349738641;Name=349738641;color=#1A8599
+</pre>
+            </section>
+
+            <section id="pair_search">
+            <h3>Crispr Pair Search by Exon</h3>
+            Find CRISPR pairs for a given exon, identical to the crispr_search but returns pairs instead of crisprs:
+            <br>
+            [% url = c.uri_for('/api/crispr_search', { "exon_id[]"=> ["ENSMUSE00000106755", "ENSMUSE00000106761"], "species"=> "Mouse" }) %]
+            <a href="[% url %]">[% url %]</a>
+            Returns JSON:
+
+<pre>
+{
+   "ENSMUSE00000106755":[
+      {
+         "ensembl_exon_id":"ENSMUSE00000106755",
+         "right_crispr":{
+            "chr_start":35997445,
+            "off_target_summary_arr":[
+               "1",
+               "0",
+               "6",
+               "259",
+               "1774"
+            ],
+            "pam_right":1,
+            "species_id":2,
+            "exonic":1,
+            "chr_end":35997467,
+            "id":"349738637",
+            "off_target_summary":"{0: 1, 1: 0, 2: 6, 3: 259, 4: 1774}",
+            "genic":1,
+            "chr_name":"12",
+            "seq":"ACATAAAGAAATCCAGAAATTGG"
+         },
+         "orientation":0,
+         "id":"349738635_349738637",
+         "left_crispr":{
+            "chr_start":35997419,
+            "off_target_summary_arr":[
+               "1",
+               "0",
+               "0",
+               "10",
+               "159"
+            ],
+            "pam_right":0,
+            "species_id":2,
+            "exonic":1,
+            "chr_end":35997441,
+            "id":"349738635",
+            "off_target_summary":"{0: 1, 1: 0, 2: 0, 3: 10, 4: 159}",
+            "genic":1,
+            "chr_name":"12",
+            "seq":"CCAGCCTTAAAGAAAGTGTTTGC"
+         },
+         "db_data":null,
+         "spacer":3
+      },
+      ...
+   ]
+}
+</pre>
+            </section>
+            <section id="individual_off_target_search">
+            <h3>Off-Targets for Crisprs</h3>
+
+            Calculate off-targets for individual CRISPRs, persisting into WGE.
+            <br>
+            Required: species, ids[]
+            <br>
+            ids[] is a list of CRISPR IDs that do not have off-target data. Any IDs provided that already have off-target data will be ignored
+            <br>
+            [% url = c.uri_for('/api/individual_off_target_search', { "ids[]" => [322289792], "species" => "Mouse" } ) %]
+            <a href="[% url %]">[% url %]</a>
+            <br>
+            Returns an object in JSON mapping CRISPR id -> off target data ONLY for CRISPR IDs that were updated. If there were no CRISPRs needing off-targets the returned object will be empty. A maximum of 100 CRISPR IDs will be processed.
+
+<pre>
+{
+   "322289792":{
+      "off_targets":[
+         "300894653",
+         "300947249",
+         "301353461",
+         "301376066",
+         ...
+         "573722530",
+         "573805949",
+         "576503162",
+         "576681220"
+      ],
+      "off_target_summary":"{0: 1, 1: 0, 2: 1, 3: 35, 4: 413}",
+      "id":322289792
+   }
+}
+</pre>
+            </section>
+            <section id="pair_off_target_search">
+            <h3>Off-Targets for Crispr Pairs</h3>
+            <p>
+                Calculate off-targets for a single CRISPR pair, persisting into WGE.
+                <br>
+                Required: species, left_id, right_id
+                <br>
+                where left_id is the CRISPR ID of the left crispr and right_id is the CRISPR ID of the right CRISPR.
+                <br>
+                Note: this method can be slow (10-20 seconds per pair)
+                <br>
+                [% url = c.uri_for('/api/pair_off_target_search',{ left_id => 322289790, right_id => 322289791, species => "Mouse" }) %]
+
+                <a href="[% url %]">[% url %]</a>
+                <br>
+                Returns an json string with two fields:
+
+<pre>
+{success: 1, pair_status: 5}
+</pre>
+
+                So unlike the individual method does not return the off-targets that were found.
+
+            <section id="search_by_seq">
+            <h3>Find Crispr ID for Sequence</h3>
+            Find a CRISPR ID for a given gRNA
+            <br>
+
+            Required fields: seq, species, pam_right
+            <br>
+
+            pam_right can be set to the following values:
+            <br>
+            <ul>
+            <li>0 - only find crisprs on the global negative strand</li>
+            <li>1 - only find crisprs on the global positive strand</li>
+            <li>2 - search in both orientations</li>
+            </ul>
+
+            Optionally, get_db_data can be set to 1 to return the crispr data for each ID found
+            <br>
+            [% url = c.uri_for('/api/search_by_seq', { "seq"=> "GTCCCCAGAATTGTGTTTGT", "species"=> "Mouse", "pam_right"=> 2 }) %]
+            <a href="[% url %]">[% url %]</a>
+            <br>
+            Returns a list of IDs that matched:
+
+
+<pre>
+[349738765]
+</pre>
+
+Or, with get_db_data set to 1 a list of CRISPRs:
+<pre>
+[
+   {
+      "chr_start":35998625,
+      "off_target_summary_arr":[
+         "1",
+         "0",
+         "0",
+         "10",
+         "155"
+      ],
+      "pam_right":1,
+      "species_id":2,
+      "exonic":1,
+      "chr_end":35998647,
+      "id":349738765,
+      "off_target_summary":"{0: 1, 1: 0, 2: 0, 3: 10, 4: 155}",
+      "genic":1,
+      "chr_name":"12",
+      "seq":"GTCCCCAGAATTGTGTTTGTAGG"
+   }
+]
+</pre>
+            </section>
+            <section id="gene_search">
+            <h3>Find Marker Symbols for Search Term</h3>
+            Find all marker symbols matching your search, with wildcards either side of your value:
+            <br>
+            Required fields: name, species
+            <br>
+            [% url = c.uri_for('/api/gene_search',{"name" => "cb", "species" => "Mouse"}) %]
+            <a href="[% url %]">[% url %]</a>
+            <br>
+            Returns a list of marker symbols:
+
+<pre>
+["Abcb10", "Abcb11", "Abcb1a", "Abcb1b", "Abcb4", "Abcb5", "Abcb6", "Abcb7", "Abcb8", "Abcb9", "Acacb", "Acbd3", "Shcbp1", "Shcbp1l", "Smarcb1", "Sncb", "Tbcb", "Ube2cbp"]
+</pre>
+            </section>
+            <section id="exon_search">
+            <h3>Find Exons for Marker Symbol</h3>
+            Find all exons for a marker sybmol. This is used by the find_crisprs table.
+            <br>
+            Required: marker_symbol, species
+            <br>
+            [% url = c.uri_for('/api/exon_search',{ "marker_symbol" => "Cbx1", "species" => "Mouse" }) %]
+            <a href="[% url %]">[% url %]</a>
+            <br>
+            Returns an object containing the transcript id and a list of exons:
+
+<pre>
+{
+   "exons":[
+      {
+         "len":195,
+         "exon_id":"ENSMUSE00000761328",
+         "id":"736362",
+         "rank":1
+      },
+      ...
+      {
+         "len":457,
+         "exon_id":"ENSMUSE00000585969",
+         "id":"736364",
+         "rank":6
+      }
+   ],
+   "transcript":"ENSMUST00000093943"
+}
+</pre>
+            </section>
+        </section>
+
+        <hr class="docs-separator" />
+
+        <section id="components">
+            <h2>WGE Components</h2>
+            <p>
+Figure from paper here
+            </p>
+        </section>
+
+        <hr class="docs-separator" />
+
+        <section id="crispr_analyser">
+            <h2>CRISPR-Analyser</h2>
+            <p>
+            To calculate off targets for CRISPRs we use the CRISPR-Analyser package, hosted here: <a href="http://github.com/htgt/CRISPR-Analyser">CRISPR-Analyser on github</a>
+Figure from paper here
+            </p>
+        </section>
+
+        <hr class="docs-separator" />
+
+        <section id="source">
+            <h2>Source code</h2>
+            <p>
+                Our web application is written in <a href="http://www.perl.org/">Perl</a> using the <a href="http://www.catalystframework.org/">Catalyst</a> framework. The application runs on a <a href="http://www.postgresql.org/">PostgreSQL</a> database.<br/>
+                The code can be seen in our <a href="https://github.com/htgt/WGE">github repository</a><br/>
+            </p>
+        </section>
+        [% PROCESS contact %]
+    </div>
+  </div>
+</div>
+

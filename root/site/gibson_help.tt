@@ -35,7 +35,6 @@ $(window).load(function() {
             <li><a href="#usage">Gibson Design Tool Usage</a></li>
             <li><a href="#design_attempts">Design Attempts</a></li>
             <li><a href="#view_designs">Designs</a></li>
-            <li><a href="#source">Source Code</a></li>
         </ul>
     </div>
     <div class="span9">
@@ -122,14 +121,8 @@ $(window).load(function() {
 
         <hr class="docs-separator" />
 
-        <section id="source">
-            <h2>Source code</h2>
-            <p>
-                Our web application is written in <a href="http://www.perl.org/">Perl</a> using the <a href="http://www.catalystframework.org/">Catalyst</a> framework. The application runs on a <a href="http://www.postgresql.org/">PostgreSQL</a> database.<br/>
-                The code can be seen in our <a href="https://github.com/htgt/WGE">github repository</a><br/>
-            </p>
-            [% PROCESS contact %]
-        </section>
+       [% PROCESS contact %]
+
     </div>
   </div>
 </div>

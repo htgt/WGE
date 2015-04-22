@@ -1,4 +1,4 @@
-use Test::More tests => 8;
+use Test::More tests => 9;
 
 use strict;
 use warnings;
@@ -15,6 +15,15 @@ my $test = Test::WGE->new;
 $test->mech->get_ok( '/', 'a route handler is defined for /' );
 $test->mech->get_ok( '/about', 'a route handler is defined for about' );
 $test->mech->get_ok( '/contact', 'a route handler is defined for contact' );
+
+#check links on help pages
+$test->mech->get_ok('/developer_help','can get developer help');
+
+# Can't do this test as the links refer to things that are not in test fixtures
+# TODO: add the required crisprs etc to test fixtures
+#my @links = $test->mech->find_all_links( url_regex => qr/api/ );
+#$test->mech->links_ok(\@links, 'can get all api links in dev help page');
+
 $test->mech->content_contains('Login with Google', 'mech is not logged in');
 
 #check authentication
