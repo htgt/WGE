@@ -147,6 +147,7 @@ $(window).load(function() {
             <br>
             [% url = c.uri_for('/api/crispr_search', { "exon_id[]"=> ["ENSMUSE00000106755", "ENSMUSE00000106761"], "species"=> "Mouse" }) %]
             <a href="[% url %]">[% url %]</a>
+            <br>
             Returns JSON:
 
 <pre>
@@ -366,7 +367,10 @@ Or, with get_db_data set to 1 a list of CRISPRs:
         <section id="components">
             <h2>WGE Components</h2>
             <p>
-Figure from paper here
+             (A) The WGE website (with the genoverse genome browser) presents pre-computed CRISPR and off-target data from the WGE Database (B) as well as Ensembl gene structure and variation data (C), and user-generated targeting vector designs (D). CRISPR location data  for the whole genome is pre-computed in WGE. Off-target data is precomputed for all CRISPRS in the exome (E) and stored in WGE (F). Off-target data which has not been pre-computed can be requested from the website (G) and is stored in WGE (H) and displayed as usual (B).
+             <br>
+
+<img src="[% c.uri_for('/static/images/about/wge_components_diagram.png') %]" title="WGE components diagram" />
             </p>
         </section>
 
@@ -376,7 +380,10 @@ Figure from paper here
             <h2>CRISPR-Analyser</h2>
             <p>
             To calculate off targets for CRISPRs we use the CRISPR-Analyser package, hosted here: <a href="http://github.com/htgt/CRISPR-Analyser">CRISPR-Analyser on github</a>
-Figure from paper here
+            <br>
+            The CRISPR-Analyser works as follows: (A) Any Genome is scanned for all possible CRISPR sites (1,2,3…), and the resulting sequences (B) are stored as a CSV file. (C) Each CRISPR sequence in the file is converted to a 64 bit integer and the resulting index kept in-memory is a Mongoose server. All targets for a specific query-CRISPR string (D) are matched against every possible genomic crispr site using a rapid XOR (E) and the resulting possible Off-target sites returned as a list (F), along with the number of mismatches to the possible off-target site.
+            <br>
+<img src="[% c.uri_for('/static/images/about/crispr_analyser_diagram.png') %]" title="CRISPR-Analyser diagram" />
             </p>
         </section>
 
