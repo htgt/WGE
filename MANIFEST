@@ -135,6 +135,7 @@ root/site/contact.tt
 root/site/crispr_help.tt
 root/site/crispr_pair_report.tt
 root/site/crispr_report.tt
+root/site/developer_help.tt
 root/site/find_crisprs.tt
 root/site/find_crisprs_id.tt
 root/site/find_off_targets.tt
@@ -167,6 +168,7 @@ root/static/images/about/buttons.png
 root/static/images/about/choose_exon.png
 root/static/images/about/choose_gene.png
 root/static/images/about/choose_species.png
+root/static/images/about/crispr_analyser_diagram.png
 root/static/images/about/crispr_filters.png
 root/static/images/about/design_attempt_fail.png
 root/static/images/about/design_attempt_success.png
@@ -201,6 +203,7 @@ root/static/images/about/spacer_filters.png
 root/static/images/about/statuses.png
 root/static/images/about/strict_ot_filters.png
 root/static/images/about/view_bookmarks.png
+root/static/images/about/wge_components_diagram.png
 root/static/images/btn_120x50_built.png
 root/static/images/btn_120x50_built_shadow.png
 root/static/images/btn_120x50_powered.png

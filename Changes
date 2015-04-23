@@ -1,3 +1,7 @@
+0.062     2015-04-23 11:22:42 Europe/London
+
+   Added developer help page with API details
+
 0.061     2015-04-07 11:29:44 Europe/London
 
    Bigfix: genoverse coordinate navigation was causing tracks to be populated from wrong human assembly

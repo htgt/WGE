@@ -1,7 +1,7 @@
 package WGE::Controller::Root;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::Root::VERSION = '0.061';
+    $WGE::Controller::Root::VERSION = '0.062';
 }
 ## use critic
 
@@ -86,6 +86,12 @@ sub crispr_help :Path('/crispr_help') :Args(0) {
 }
 
 sub gibson_help :Path('/gibson_help') :Args(0) {
+    my ( $self, $c ) = @_;
+
+    return;
+}
+
+sub developer_help :Path('/developer_help') :Args(0) {
     my ( $self, $c ) = @_;
 
     return;
