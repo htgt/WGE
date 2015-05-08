@@ -14,8 +14,7 @@ use Text::CSV;
 use YAML::Any;
 
 my $log_level = $WARN;
-my $persist = 0;
-my ( $dir_name, $crispr_id, $crispr_file, $max_mismatches, $project_name );
+my ( $dir_name, $crispr_id, $crispr_file, $max_mismatches, $project_name, $species, $persist );
 GetOptions(
     'help'            => sub { pod2usage( -verbose => 1 ) },
     'man'             => sub { pod2usage( -verbose => 2 ) },
@@ -25,7 +24,8 @@ GetOptions(
     'crispr-id=i'     => \$crispr_id,
     'crispr-file=s'   => \$crispr_file,
     'max_mismatches=i' => \$max_mismatches,
-    'species=s'       => \my $species,
+    'species=s'        => \$species,
+    'persist'          => \$persist,
 ) or pod2usage(2);
 
 Log::Log4perl->easy_init( { level => $log_level, layout => '%p %x %m%n' } );
@@ -41,6 +41,7 @@ my $model = WGE::Model::DB->new();
 my $primer_util = WGE::Util::CrisprOffTargetPrimers->new(
     base_dir                  => $base_dir,
     max_off_target_mismatches => $max_mismatches,
+    persist_crisprs_lims2     => $persist,
 );
 my @summary;
 

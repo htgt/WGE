@@ -13,6 +13,7 @@ Generate pcr and sequencing primers for selected crispr off target sites.
 use Moose;
 
 use HTGT::QC::Util::GeneratePrimersAttempts;
+use LIMS2::REST::Client;
 use MooseX::Types::Path::Class::MoreCoercions qw/AbsDir AbsFile/;
 use Try::Tiny;
 use Path::Class;
@@ -27,18 +28,32 @@ with 'MooseX::Log::Log4perl';
 
 my %PRIMER_PROJECT_CONFIG_FILES = (
     crispr_off_target_sequencing_primers => $ENV{CRISPR_OFF_TARGETS_SEQUENCING_PRIMER_CONFIG}
-            || '/nfs/users/nfs_s/sp12/workspace/WGE/tmp/wge_crispr_off_target_sequencing.yaml',
-            #|| '/opt/t87/global/conf/primers/wge_crispr_off_target_sequencing.yaml',
+            || '/nfs/team87/farm3_lims2_vms/conf/primers/wge_crispr_off_target_sequencing.yaml',
     crispr_off_target_pcr_primers => $ENV{CRISPR_OFF_TARGETS_PCR_PRIMER_CONFIG}
-            || '/nfs/users/nfs_s/sp12/workspace/WGE/tmp/wge_crispr_off_target_pcr.yaml',
-            #|| '/opt/t87/global/conf/primers/wge_crispr_off_target_genotyping.yaml',
+            || '/nfs/team87/farm3_lims2_vms/conf/primers/wge_crispr_off_target_pcr.yaml',
 );
 
 has max_off_target_mismatches => (
-    is => 'ro',
-    isa => 'Int',
+    is      => 'ro',
+    isa     => 'Int',
     default => 3,
 );
+
+has persist_crisprs_lims2 => (
+    is      => 'ro',
+    isa     => 'Bool',
+    default => 0,
+);
+
+has lims2_api => (
+    is         => 'ro',
+    isa        => 'LIMS2::REST::Client',
+    lazy_build => 1
+);
+
+sub _build_lims2_api {
+    return LIMS2::REST::Client->new_with_config();
+}
 
 has pcr_primer_config => (
     is         => 'ro',
@@ -121,8 +136,10 @@ sub crispr_off_targets_primers {
 
     my $crispr_dir = $self->base_dir->subdir( 'crispr_' . $crispr->id )->absolute;
     $crispr_dir->mkpath;
+    my ( $species, $assembly ) = $self->get_crispr_species_and_assembly( $crispr );
+    my $lims2_crispr = $self->find_or_create_lims2_crispr( $crispr, $species, $assembly );
 
-    my $species = $self->get_crispr_species_name( $crispr );
+    # get crispr grna sequence in standard orientation
     my $fwd_seq = $crispr->pam_right ? $crispr->seq : revcom_as_string( $crispr->seq );
     my $crispr_grna = substr $fwd_seq, 0, 20;
 
@@ -137,43 +154,62 @@ sub crispr_off_targets_primers {
         # filter out off targets with more that 3 mismatches
         my $mismatches = $off_target->mismatches( $crispr_grna );
         next if $mismatches > $self->max_off_target_mismatches;
-        $summary{$off_target->id}{mismatches} = $mismatches;
-        $summary{$off_target->id}{exonic} = $off_target->exonic;
-        $summary{$off_target->id}{genic} = $off_target->genic;
 
-        my $dir = $crispr_dir->subdir( $off_target->id );
-        $dir->mkpath;
-
-        my %data = (
-            ot         => $off_target,
-            mismatches => $mismatches,
-            species    => $species,
-        );
-
-        my ( $seq_primers, $pcr_primers );
-        if ( $seq_primers = $self->generate_sequencing_primers( $off_target, $dir, $species  ) ) {
-            $data{sequencing} = $seq_primers;
-            if ( $pcr_primers = $self->generate_pcr_primers( $off_target, $seq_primers, $dir, $species ) ) {
-                $data{pcr} = $pcr_primers;
-                $summary{$off_target->id}{status} = 'both';
-            }
-            else {
-                $summary{$off_target->id}{status} = 'seq_only';
-            }
-        }
-        else {
-            if ( $pcr_primers = $self->generate_pcr_primers( $off_target, undef, $dir, $species ) ) {
-                $data{pcr} = $pcr_primers;
-                $summary{$off_target->id}{status} = 'pcr_only';
-            }
-            else {
-                $summary{$off_target->id}{status} = 'fail';
-            }
-        }
-        push @off_target_primers, \%data;
+        my $primer_data = $self->off_target_primers( $lims2_crispr, $off_target, \%summary, $mismatches, $species, $assembly, $crispr_dir );
+        push @off_target_primers, $primer_data;
     }
 
     return ( \@off_target_primers, \%summary );
+}
+
+=head2 off_target_primers
+
+Attempt to generate primers for off target
+
+=cut
+sub off_target_primers {
+    my ( $self, $lims2_crispr, $off_target, $summary, $mismatches, $species, $assembly, $crispr_dir ) = @_;
+
+    $summary->{$off_target->id}{mismatches} = $mismatches;
+    $summary->{$off_target->id}{exonic}     = $off_target->exonic;
+    $summary->{$off_target->id}{genic}      = $off_target->genic;
+
+    # check it ot crispr exists in LIMS2 and export if it does not
+    my $lims2_ot_crispr = $self->find_or_create_lims2_crispr( $off_target, $species, $assembly );
+    $summary->{$off_target->id}{lims2_crispr_id} = $lims2_ot_crispr->{id} if $lims2_ot_crispr;
+    my $lims2_ot = $self->create_lims2_crispr_off_target( $lims2_crispr, $lims2_ot_crispr, $mismatches );
+
+    my $dir = $crispr_dir->subdir( $off_target->id );
+    $dir->mkpath;
+
+    my %data = (
+        ot         => $off_target,
+        mismatches => $mismatches,
+        species    => $species,
+    );
+
+    my ( $seq_primers, $pcr_primers );
+    if ( $seq_primers = $self->generate_sequencing_primers( $off_target, $dir, $species  ) ) {
+        $data{sequencing} = $seq_primers;
+        if ( $pcr_primers = $self->generate_pcr_primers( $off_target, $seq_primers, $dir, $species ) ) {
+            $data{pcr} = $pcr_primers;
+            $summary->{$off_target->id}{status} = 'both';
+        }
+        else {
+            $summary->{$off_target->id}{status} = 'seq_only';
+        }
+    }
+    else {
+        if ( $pcr_primers = $self->generate_pcr_primers( $off_target, undef, $dir, $species ) ) {
+            $data{pcr} = $pcr_primers;
+            $summary->{$off_target->id}{status} = 'pcr_only';
+        }
+        else {
+            $summary->{$off_target->id}{status} = 'fail';
+        }
+    }
+
+    return \%data;
 }
 
 =head2 get_crispr_species_name
@@ -181,22 +217,24 @@ sub crispr_off_targets_primers {
 Work out species of crispr.
 
 =cut
-sub get_crispr_species_name {
+sub get_crispr_species_and_assembly {
     my ( $self, $crispr ) = @_;
 
-    my $species;
+    my ( $species, $assembly );
     if ( $crispr->species->id eq 'Grch38' ) {
         $species = 'Human';
+        $assembly = 'GRCh38';
     }
     elsif ( $crispr->species->id eq 'Mouse' ) {
         $species = 'Mouse';
+        $assembly = 'GRCm38';
     }
     else {
         die( 'Can only work with Human or Mouse crisprs on current assembly, not: '
                 . $crispr->species->display_name );
     }
 
-    return $species;
+    return ( $species, $assembly );
 }
 
 =head2 generate_sequencing_primers
@@ -299,6 +337,66 @@ sub generate_pcr_primers {
     DumpFile( $work_dir->file('pcr_primers.yaml'), $pcr_primer_data );
 
     return $pcr_primer_data->[0];
+}
+
+=head2 find_or_create_lims2_crispr
+
+Find of create a crispr in LIMS2, through the REST API.
+
+=cut
+sub find_or_create_lims2_crispr {
+    my ( $self, $crispr, $species, $assembly ) = @_;
+    return unless $self->persist_crisprs_lims2;
+
+    # check if it exists in LIMS2, if it does then do nothing
+    my $lims2_crispr = try{ $self->lims2_api->GET( 'single_crispr', { wge_crispr_id => $crispr->id } ) };
+    if ( $lims2_crispr ) {
+        $self->log->debug( 'Crispr exists in LIMS2' );
+        return $lims2_crispr;
+    }
+    my $type = $crispr->exonic ? 'Exonic' : $crispr->genic ? 'Intergenic' : 'Intronic';
+
+    my $wge_crispr = $crispr->as_hash;
+    my $lims2_crispr_data = {
+        species              => $species,
+        off_target_algorithm => 'wge',
+        type                 => $type,
+        wge_crispr_id        => $wge_crispr->{id},
+        locus                => {
+            chr_name   => $wge_crispr->{chr_name},
+            chr_start  => $wge_crispr->{chr_start},
+            chr_end    => $wge_crispr->{chr_end},
+            chr_strand => $wge_crispr->{pam_right} ? 1 : -1,
+            assembly   => $assembly,
+        },
+        pam_right => $wge_crispr->{pam_right},
+        seq       => $wge_crispr->{seq},
+        off_target_summary => $wge_crispr->{off_target_summary},
+    };
+
+    $lims2_crispr = $self->lims2_api->POST( 'single_crispr', $lims2_crispr_data );
+
+    return $lims2_crispr;
+}
+
+=head2 create_lims2_crispr_off_target
+
+Create a off target link between two crisprs in LIMS2.
+
+=cut
+sub create_lims2_crispr_off_target {
+    my ( $self, $lims2_crispr, $lims2_ot_crispr, $mismatches ) = @_;
+    return unless $self->persist_crisprs_lims2;
+
+    my $ot_data = {
+        crispr_id    => $lims2_crispr->{id},
+        ot_crispr_id => $lims2_ot_crispr->{id},
+        mismatches   => $mismatches,
+    };
+
+    my $lims2_ot = $self->lims2_api->POST( 'crispr_off_target', $ot_data );
+
+    return $lims2_ot;
 }
 
 __PACKAGE__->meta->make_immutable;
