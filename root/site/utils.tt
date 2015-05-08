@@ -42,17 +42,17 @@ PROCESS contact
 inside a template toolkit directive
 -->
 [% BLOCK contact -%]
-This tool should be considered a <i>beta</i> release, and is being continuously developed and extended. If you wish to contact us about it, please do so at <a href="mailto:[% email %]">[% email %]</a>
+This tool is being continuously developed and extended. If you wish to contact us about it, please do so at <a href="mailto:[% email %]">[% email %]</a>
 [%- END %]
 
 [% BLOCK disclaimer %]
         <section id="disclaimer">
             <h2>Disclaimer</h2>
             <p>
-                <h5>
-                    Please note that the application is currently in <b>beta</b>, so if you have any problems, please <a href="mailto:[% email %]">let us know</a>
-                </h5>
                 We assume no responsibility or liability for any loss or damage incurred as a result of any use of the information contained within or downloaded from this website.<br/>
+                <h5>
+                    If you have any problems, please <a href="mailto:[% email %]">let us know</a>
+                </h5>
             </p>
         </section>
 [% END %]

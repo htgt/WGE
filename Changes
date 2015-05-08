@@ -1,5 +1,18 @@
 {{$NEXT}}
 
+0.061     2015-04-07 11:29:44 Europe/London
+
+   Bigfix: genoverse coordinate navigation was causing tracks to be populated from wrong human assembly
+
+0.060     2015-03-12 11:24:30 Europe/London
+
+    Can now change genoverse view region by entering chr and coords
+    Added off-target calculation button to single crispr page
+
+0.059     2015-01-27 14:37:23 Europe/London
+
+    Compute Off-Target button bugfix
+
 0.058     2015-01-18 23:22:09 Europe/London
 
     Changed default table view to be single CRISPRs.

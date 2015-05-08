@@ -85,6 +85,12 @@ sub gibson_help :Path('/gibson_help') :Args(0) {
     return;
 }
 
+sub developer_help :Path('/developer_help') :Args(0) {
+    my ( $self, $c ) = @_;
+
+    return;
+}
+
 sub contact :Path('/contact') :Args(0){
     my ( $self, $c ) = @_;
 

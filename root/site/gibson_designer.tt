@@ -4,8 +4,6 @@
 <div class="row">
   <div class="span12">
 
-    <h4>Please note that this application is currently in beta. If you have any problems, please <a href="mailto:[% email %]">let us know</a>.</h4>
-
     <div id="content">
       <img src="[% c.uri_for('/static/images/gibson_designer/vector_construction.png') %]" title="vector_construction" width="55%" align="right"/>
       <br/><br/>
