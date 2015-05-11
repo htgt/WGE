@@ -94,13 +94,18 @@ sub dump_output {
         my %data;
 
         # off target data
-        $data{crispr_id}  = $crispr_data->{crispr_id};
+        $data{wge_crispr_id}  = $crispr_data->{crispr_id};
         $data{gene_name}  = $crispr_data->{gene_name};
-        $data{ot_id}      = $primers->{ot}->id;
+        $data{wge_ot_id}  = $primers->{ot}->id;
         $data{mismatches} = $primers->{mismatches};
         $data{chromosome} = $primers->{ot}->chr_name;
         $data{start}      = $primers->{ot}->chr_start;
         $data{end}        = $primers->{ot}->chr_end;
+
+        if ( exists $primers->{lims2_ot} ) {
+            $data{lims2_crispr_id} = $primers->{lims2_ot}{crispr_id};
+            $data{lims2_ot_id} = $primers->{lims2_ot}{off_target_crispr_id};
+        }
 
         #primer data
         for my $type ( qw( sequencing pcr ) ) {
