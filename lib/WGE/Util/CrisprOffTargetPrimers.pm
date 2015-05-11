@@ -187,6 +187,7 @@ sub off_target_primers {
         mismatches => $mismatches,
         species    => $species,
     );
+    $data{lims2_ot} = $lims2_ot if $lims2_ot;
 
     my ( $seq_primers, $pcr_primers );
     if ( $seq_primers = $self->generate_sequencing_primers( $off_target, $dir, $species  ) ) {
@@ -394,7 +395,16 @@ sub create_lims2_crispr_off_target {
         mismatches   => $mismatches,
     };
 
-    my $lims2_ot = $self->lims2_api->POST( 'crispr_off_target', $ot_data );
+    # check if off target already exists in LIMS2
+    my $lims2_ot;
+    $lims2_ot = try {
+        $self->lims2_api->GET( 'crispr_off_target',
+            { crispr_id => $lims2_crispr->{id}, off_target_crispr_id => $lims2_ot_crispr->{id} } );
+    };
+
+    unless ( $lims2_ot ) {
+        $lims2_ot = $self->lims2_api->POST( 'crispr_off_target', $ot_data );
+    }
 
     return $lims2_ot;
 }
