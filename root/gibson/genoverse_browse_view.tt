@@ -650,18 +650,22 @@
             id              : 'Variation',
             name            : 'Variation',
             url             : ensembl_url + '/overlap/region/' + ensembl_species + '/__CHR__:__START__-__END__?feature=variation;content-type=application/json',
-            resizable       : 'auto',
             model           : Genoverse.Track.Model.extend({ dataRequestLimit : 5000000 }),
-            setFeatureColor : function (f) { f.color = '#1B0AB5'; }
+            setFeatureColor : function (f) { f.color = '#1B0AB5'; },
+            threshold       : 50000,
+            messages        : { threshold : 'Variation not displayed for regions larger than ' },
+            autoheight      : true
           }),
           Genoverse.Track.MAFVariation.extend({
             id              : 'MAF_variations',
             name            : 'MAF_variations',
             url             : "[% c.uri_for('/api/variation_for_region') %]" + "?species="+ensembl_species+"&chr_name=__CHR__&chr_start=__START__&chr_end=__END__",
-            resizable       : 'auto',
             model           : Genoverse.Track.Model.extend({ dataRequestLimit : 5000000 }),
             view            : Genoverse.Track.View.FilterMAFVariation.extend({ thresholdMAF : $('#MAF_threshold').val() }),
-            setFeatureColor : function (f) { f.color = '#48C402'; }
+            setFeatureColor : function (f) { f.color = '#48C402'; },
+            threshold       : 5000,
+            messages        : { threshold : 'MAF variations not displayed for regions larger than ' },
+            autoheight      : true
           }),
           [% IF genome.lower != 'grch37' %]
           Genoverse.Track.extend({
@@ -671,9 +675,11 @@
             controller : Genoverse.Track.Controller.Protein,
             model      : Genoverse.Track.Model.Protein,
             view       : Genoverse.Track.View.Protein,
-            resizable  : 'auto',
             controls   : 'off',
-            unsortable : false
+            unsortable : false,
+            threshold  : 5000,
+            messages   : { threshold : 'Protein not displayed for regions larger than ' },
+            autoheight : true
           }),
           [% END %]
           Genoverse.Track.Genes.extend({
