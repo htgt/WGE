@@ -1,5 +1,10 @@
 {{$NEXT}}
 
+0.063     2015-05-18 12:25:43 Europe/London
+
+   Added Bioinformatics publication details
+   Added thresholds to protein and MAF variation tracks
+
 0.062     2015-04-23 11:22:42 Europe/London
 
    Added developer help page with API details
