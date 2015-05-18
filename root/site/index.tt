@@ -58,7 +58,7 @@
         </p><br/>
         <p>
             If you use this site in your research, please cite:<br/>
-            <small>Bin Shen, Wensheng Zhang, Jun Zhang, Jiankui Zhou, Jianying Wang, Li Chen, Lu Wang, Alex Hodgkins,     Vivek Iyer, Xingxu Huang &amp; William C Skarnes (2014) Efficient genome modification by CRISPR-Cas9 nickase with minimal off-target effects. doi:10.1038/nmeth.2857</small>
+            <em>WGE: A CRISPR database for genome engineering.</em> Alex Hodgkins; Anna Farne; Sajith Perera; Tiago Grego; David J. Parry-Smith; William C. Skarnes; Vivek Iyer (Bioinformatics 2015) <a href="http://bioinformatics.oxfordjournals.org/cgi/content/abstract/btv308?ijkey=KA5dSQB0G2CBGSj&keytype=ref">doi:10.1093/bioinformatics/btv308</a>
         </p><br/>
         <a href="http://www.sanger.ac.uk">
             <img src="[% c.uri_for('/static/images/sanger-logo.png') %]" title="sanger logo" />

@@ -1,7 +1,7 @@
 package WGE::View::JSON;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::View::JSON::VERSION = '0.062';
+    $WGE::View::JSON::VERSION = '0.063';
 }
 ## use critic
 

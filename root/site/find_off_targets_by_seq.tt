@@ -6,6 +6,8 @@ $(document).ready(function() {
     $("#search_button").click(function(e){
         e.preventDefault();
 
+        close_alerts();
+
         var seq = $("#sequence_field").val();
         if (seq.length != 20) {
             create_alert("Please provide a 20 base sequence, you provided "+seq.length+".");
@@ -24,12 +26,27 @@ $(document).ready(function() {
 
         var orientation = $("input:radio[name=orientation]:checked").val();
 
-        $("#off_targets_table tbody").append("<tr><td>"+seq.toUpperCase()+"</td><td>"+$("input:radio[name=orientation]:checked").attr('id')+"</td></td><td>"+species+"</td><td><img src='[% c.uri_for('/static/images/spinner-circle-small.gif') %]'></td></tr>");
+        $("#off_targets_table tbody").append("<tr><td>"+seq.toUpperCase()+"</td><td>"+$("input:radio[name=orientation]:checked").attr('id')+"</td></td><td>"+species+"</td><td><img src='[% c.uri_for('/static/images/spinner-circle-small.gif') %]'></td><td><img src='[% c.uri_for('/static/images/spinner-circle-small.gif') %]'></td></tr>");
 
         $.getJSON( "[% c.uri_for( '/api/off_targets_by_seq') %]" ,
             { seq: seq, species: species.toLowerCase(), pam_right: orientation },
             function (data) {
-                $("#off_targets_table td:last").text(data.data);
+                $("#off_targets_table td:nth-last-child(2)").text(data.data);
+            }
+        );
+
+        $.getJSON( "[% c.uri_for( '/api/search_by_seq') %]" ,
+            { seq: seq, species: species.toLowerCase(), pam_right: orientation },
+            function (crispr_ids) {
+              $("#off_targets_table td:last").find('img').remove();
+              console.log('search by seq got crispr_ids: ' + crispr_ids);
+              var link_list = [];
+              $.each(crispr_ids, function(i,val){
+                var link = "[% c.uri_for('/crispr/') %]" + val;
+                console.log(link);
+                link_list.push('<a href="' + link + '">' + val + '</a>');
+              });
+              $("#off_targets_table td:last").append( link_list.join(", ") );
             }
         );
 
@@ -84,6 +101,7 @@ $(document).ready(function() {
           <th>Orientation</th>
           <th>Species</th>
           <th>Off-target Summary</th>
+          <th>Details</th>
         </tr>
       </thead>
       <tbody>
