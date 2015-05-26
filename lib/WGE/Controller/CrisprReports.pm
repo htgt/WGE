@@ -1,7 +1,7 @@
 package WGE::Controller::CrisprReports;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::CrisprReports::VERSION = '0.063';
+    $WGE::Controller::CrisprReports::VERSION = '0.064';
 }
 ## use critic
 
@@ -11,8 +11,10 @@ use Data::Dumper;
 use TryCatch;
 use IO::File;
 use Bio::Perl qw( revcom_as_string );
+use List::Util qw(sum);
 use List::MoreUtils qw(any);
 use WGE::Util::GenomeBrowser qw(crisprs_for_region);
+
 
 BEGIN { extends 'Catalyst::Controller' }
 
@@ -102,6 +104,17 @@ sub crispr_report :Path('/crispr') :Args(1){
 
     my $crispr_hash = $crispr->as_hash( { with_offs => 1, always_pam_right => 1 } );
     my $fwd_seq = $crispr_hash->{pam_right} ? $crispr_hash->{seq} : revcom_as_string( $crispr_hash->{seq} );
+
+    # If we have the off target summary but no list of off-targets there were too
+    # many to store so calculate the total from the off-target summary
+    if($crispr_hash->{off_target_summary} and !@{ $crispr_hash->{off_targets} }){
+        my $summary = $crispr_hash->{off_target_summary};
+        $c->log->debug("Off targets not stored. Caculating total offs from summary $summary.");
+        my @values = ($summary =~ /:\s*(\d+)/g);
+        my $total = sum @values;
+        $crispr_hash->{off_target_total} = $total;
+        $c->log->debug("Off-target total: $total");
+    }
 
     $c->stash(
         crispr               => $crispr_hash,
