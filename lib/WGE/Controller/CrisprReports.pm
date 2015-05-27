@@ -8,6 +8,7 @@ use Bio::Perl qw( revcom_as_string );
 use List::Util qw(sum);
 use List::MoreUtils qw(any);
 use WGE::Util::GenomeBrowser qw(crisprs_for_region);
+use WGE::Util::OffTargetServer;
 
 
 BEGIN { extends 'Catalyst::Controller' }
@@ -29,6 +30,16 @@ has pair_finder_with_schema => (
     isa        => 'WGE::Util::FindPairs',
 );
 
+has ots_server => (
+    is => 'ro',
+    isa => 'WGE::Util::OffTargetServer',
+    lazy_build => 1,
+);
+
+sub _build_ots_server {
+    return WGE::Util::OffTargetServer->new;
+}
+
 #
 # Sets the actions in this controller to be registered with no prefix
 # so they function identically to actions created in MyApp.pm
@@ -40,6 +51,70 @@ __PACKAGE__->config(namespace => '');
 WGE::Controller::CrisprReports - Controller for Crispr report pages in WGE
 
 =cut
+
+sub novel_crispr_off_targets :Path('/novel_crispr_off_targets') :Args(0){
+    my ( $self, $c ) = @_;
+
+    my $pam = "NGG";
+
+    my $seq = $c->req->param('seq');
+    my $pam_right = $c->req->param('pam_right');
+
+    my $crispr_seq;
+    if($pam_right eq "true"){
+        $crispr_seq = $seq.$pam;
+    }
+    elsif($pam_right eq "false"){
+        $crispr_seq = revcom_as_string($pam).$seq;
+    }
+    else{
+        $c->stash->{error_msg} = "pam_right must be true or false (not $pam_right)";
+        return;
+    }
+    $c->stash->{crispr_seq} = $crispr_seq;
+
+    $c->stash->{seq} = $seq;
+    $c->stash->{pam_right} =  $pam_right;
+    $c->stash->{species} = $c->req->param('species');
+
+    my $fwd_seq = $pam_right eq "true" ? $crispr_seq : revcom_as_string( $crispr_seq );
+    $c->stash->{crispr_fwd_seq} = $fwd_seq;
+
+    my $data;
+    try{
+        $data = $self->ots_server->find_off_targets_by_seq({
+            sequence => $seq,
+            pam_right => $pam_right,
+            species => $c->req->param('species'),
+        });
+    }
+    catch{
+        $c->stash->{error_msg} = $_ ;
+    };
+
+    if($data){
+        my $crispr_hash->{off_target_summary} = $data->{off_target_summary};
+        my @ot_ids = @{ $data->{off_targets} };
+        my @ot_crisprs = $c->model->resultset('Crispr')->search({
+            id => { -in => \@ot_ids }
+        })->all;
+
+        my @ot_hashes = map { $_->as_hash } @ot_crisprs;
+
+        # For the standard crispr_report page the CrisprOffTargets as_hash method
+        # revcoms the seq of the pam_left off-targets
+        # As we are not using the CrisprOffTargets view we have to do the revcom here
+        foreach my $ot_hash (@ot_hashes){
+            if ( !$ot_hash->{pam_right} ) {
+                $ot_hash->{seq} = revcom_as_string( $ot_hash->{seq} );
+            }
+        }
+
+        $crispr_hash->{off_targets} = \@ot_hashes;
+        $c->stash->{data} = $crispr_hash;
+    }
+    return;
+}
 
 sub crispr_report :Path('/crispr') :Args(1){
     my ( $self, $c, $crispr_id ) = @_;
