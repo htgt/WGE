@@ -143,7 +143,7 @@
     </tr>
     <tr>
       <td>Total off-targets</td>
-      <td id="total_offs">[% crispr.off_targets.size or 'No data' %]</td>
+      <td id="total_offs">[% crispr.off_targets.size or crispr.off_target_total or 'No data' %]</td>
     </tr>
     <tr>
       <td>In exon</td>
@@ -245,10 +245,16 @@
     <td>[% type(c=off_target) %]</td>
   </tr>
 [% END %]
-[% IF crispr.off_targets.size == 0 %]
+[% UNLESS crispr.off_target_summary %]
   <tr>
     <td colspan="5" style="text-align: center">No off target data available for this crispr</td>
   </tr>
   <button class="btn btn-block ots-button" value="[% crispr_id %]">Find off targets</button>
+[% END %]
+
+[% IF crispr.off_target_summary AND crispr.off_targets.size == 0 %]
+  <tr class="warning">
+    <td colspan="5" style="text-align: center">Too many off-targets to display for this crispr</td>
+  </tr>
 [% END %]
 </table>
