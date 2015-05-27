@@ -144,6 +144,7 @@ root/site/gibson_designer.tt
 root/site/gibson_help.tt
 root/site/index.tt
 root/site/my_bookmarks.tt
+root/site/novel_crispr_off_targets.tt
 root/site/search_by_seq.tt
 root/site/utils.tt
 root/static/css/images/ui-bg_flat_0_aaaaaa_40x100.png

@@ -31,9 +31,11 @@ $(document).ready(function() {
         $.getJSON( "[% c.uri_for( '/api/off_targets_by_seq') %]" ,
             { seq: seq, species: species.toLowerCase(), pam_right: orientation },
             function (data) {
-                $("#off_targets_table td:nth-last-child(2)").text(data.data);
+                $("#off_targets_table td:nth-last-child(2)").text(data.off_target_summary);
             }
-        );
+        ).fail(function(){
+          $("#off_targets_table td:nth-last-child(2)").text("search error");
+        });
 
         $.getJSON( "[% c.uri_for( '/api/search_by_seq') %]" ,
             { seq: seq, species: species.toLowerCase(), pam_right: orientation },
@@ -46,9 +48,19 @@ $(document).ready(function() {
                 console.log(link);
                 link_list.push('<a href="' + link + '">' + val + '</a>');
               });
+
+              // If we got no crispr IDs link to novel crispr report for details
+              if(link_list.length == 0){
+                var link = "[% c.uri_for('/novel_crispr_off_targets') %]"
+                           + "?species=" + species.toLowerCase() + "&seq=" + seq + "&pam_right=" + orientation;
+                link_list.push('<a href="' + link + '">novel crispr</a>');
+              }
+
               $("#off_targets_table td:last").append( link_list.join(", ") );
             }
-        );
+        ).fail(function(){
+          $("#off_targets_table td:last").text("search error");
+        });
 
     })
 

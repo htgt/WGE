@@ -176,8 +176,18 @@ generate_crispr_off_target_primers.pl - Generate sequencing primers for crispr o
       --dir                       Name of work directory
       --crispr-id                 ID of crispr
       --crispr-file               File with multiple crispr ids
+      --max_mismatches            Max number of mismatch bases ( default 3 )
+      --species                   Species of Crispr
+      --persist                   Load crispr off targets into LIMS2 database
 
-Crispr IDs can either be specified individually or in a text file with one ID per line.
+Crispr IDs can either be specified individually or in a CSV with a 'crispr_id' column.
+
+Results sent to STDOUT in a YAML format.
+
+You can persist the crispr off target data to LIMS2 with the '--persist' flag, make sure you
+have setup the LIMS2_REST_CLIENT_CONFIG env variable first though.
+
+This script also output the genomic sequence between the sequencing primers ( Manousous wanted this ).
 
 Provide a directory name where the output files will be stored.
 
