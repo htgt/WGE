@@ -286,6 +286,8 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+use List::MoreUtils qw( uniq );
+
 sub as_hash {
     my ( $self, $suppress_relations ) = @_;
 
@@ -309,10 +311,14 @@ sub as_hash {
     );
 
     if ( ! $suppress_relations ) {
+        my $strand = $self->strand;
+        $h{strand}             = $strand;
         my $oligos = $self->_sort_oligos;
         $h{comments}           = [ map { $_->as_hash } $self->design_comments ];
         $h{oligos}             = $oligos;
+        $h{assembly}           = $oligos->[0]{locus}{assembly};
         $h{oligos_fasta}       = $self->_oligos_fasta( $oligos );
+        $h{oligo_order_seqs}   = $self->oligo_order_seqs( $strand );
         $h{genotyping_primers} = [ sort { $a->{type} cmp $b->{type} } map { $_->as_hash } $self->genotyping_primers ];
     }
 
@@ -369,6 +375,31 @@ sub design_attempt {
     );
 
     return $design_attempts->first;
+}
+
+sub oligo_order_seqs {
+    my ( $self, $strand ) = @_;
+    $strand //= $self->strand;
+    my %oligo_order_seqs;
+
+    my @oligos = $self->oligos;
+    for my $oligo ( @oligos ) {
+        my $type = $oligo->design_oligo_type_id;
+        $oligo_order_seqs{ $type } = $oligo->oligo_order_seq( $strand, $self->design_type_id );
+    }
+
+    return \%oligo_order_seqs;
+}
+
+sub strand {
+    my ( $self ) = @_;
+
+    my @strands = uniq map { $_->{locus}{chr_strand} } map { $_->as_hash } $self->oligos;
+    die (
+        'Design ' . $self->design->id . ' oligos have inconsistent strands'
+    ) unless @strands == 1;
+
+    return $strands[0];
 }
 
 __PACKAGE__->meta->make_immutable;
