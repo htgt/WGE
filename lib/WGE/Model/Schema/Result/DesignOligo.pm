@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::DesignOligo;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::DesignOligo::VERSION = '0.065';
+    $WGE::Model::Schema::Result::DesignOligo::VERSION = '0.066';
 }
 ## use critic
 
@@ -178,6 +178,7 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+use Try::Tiny;
 
 sub as_hash {
     my $self = shift;
@@ -198,6 +199,80 @@ sub locus {
         $locus = $self->search_related( 'loci', { assembly_id => $default_assembly->assembly_id } )->first;
     }
     return $locus;
+}
+
+=head2 oligo_strand_vs_design_strand
+
+What is the orientation of the oligo in relation to the strand of the design it belongs to.
+1 means it is the same strand as the design, -1 means it is the opposite strand to the design.
+Remember, all oligo sequence is stored on the +ve strand, no matter the design strand.
+
+For example, the U5 oligo is on the same strand as the design ( 1 )
+So a U5 oligo for a +ve stranded design is on the +ve strand ( i.e do not revcomp )
+Conversely, a U5 oligo for a -ve stranded design is on the -ve strand ( i.e revcomp it )
+
+The U3 oligo is on the opposite strand as the design ( -1 )
+So a U3 oligo for a +ve stranded design is on the -ve strand ( i.e revcomp it )
+Conversely, a U3 oligo for a -ve stranded design is on the +ve strand ( i.e do not revcomp )
+
+=cut
+my %OLIGO_STRAND_VS_DESIGN_STRAND = (
+    "G5" => -1,
+    "U5" => 1,
+    "U3" => -1,
+    "D5" => 1,
+    "D3" => -1,
+    "G3" => 1,
+    "5F" => 1,
+    "5R" => -1,
+    "EF" => 1,
+    "ER" => -1,
+    "3F" => 1,
+    "3R" => -1,
+);
+
+=head2 oligo_order_seq
+
+Sequence used when ordering the oligo.
+Need to revcomp if needed.
+
+Send in optional design strand and design type to avoid extra DB calls.
+
+=cut
+sub oligo_order_seq {
+    my ( $self, $design_strand, $design_type ) = @_;
+    $design_strand ||= $self->locus->chr_strand;
+    $design_type   ||= $self->design->design_type_id;
+
+    # See comment above %OLIGO_STRAND_VS_DESIGN_STRAND for explanation
+    my $oligo_strand = $OLIGO_STRAND_VS_DESIGN_STRAND{ $self->design_oligo_type_id };
+    my $seq = $design_strand != $oligo_strand ? $self->revcomp_seq : $self->seq;
+
+    return $seq;
+}
+
+=head2 revcomp_seq
+
+Return reverse complimented oligo sequence.
+
+=cut
+sub revcomp_seq {
+    my $self = shift;
+    my $revcomp_seq;
+
+    require Bio::Seq;
+    require LIMS2::Exception;
+
+    try{
+        # -verbose -1 turns of warning / error messages
+        my $bio_seq = Bio::Seq->new( -alphabet => 'dna', -seq => $self->seq, -verbose => -1 );
+        $revcomp_seq = $bio_seq->revcom->seq;
+    }
+    catch {
+        LIMS2::Exception->throw( 'Error working out revcomp of sequence: ' . $self->seq );
+    };
+
+    return $revcomp_seq;
 }
 
 __PACKAGE__->meta->make_immutable;

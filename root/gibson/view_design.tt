@@ -68,6 +68,7 @@
   </table>
 [% END %]
 
+
 <h2>Oligos</h2>
 [% IF design.oligos.size > 0 %]
   <table class="table table-striped">
@@ -75,10 +76,10 @@
       <tr>
         <th>Type</th>
         <th>Chromosome</th>
-        <th>Strand</th>
         <th>Start</th>
         <th>End</th>
-        <th>Sequence</th>
+        <th>Sequence on +ve strand</th>
+        <th>Sequence as Ordered</th>
       </tr>
     </thead>
     <tbody>
@@ -86,10 +87,10 @@
       <tr>
         <td>[% oligo.type             %]</td>
         <td>[% oligo.locus.chr_name   %]</td>
-        <td>[% oligo.locus.chr_strand %]</td>
         <td>[% oligo.locus.chr_start  %]</td>
         <td>[% oligo.locus.chr_end    %]</td>
         <td>[% oligo.seq              %]</td>
+        <td>[% design.oligo_order_seqs.item( oligo.type ) %]</td>
       </tr>
     [%- END %]
     </tbody>
@@ -110,4 +111,10 @@
   <p><em>No oligos for this design</em></p>
 [% END %]
 
+<p class="text-info">
+The oligo sequences above ( and the in the CSV download ) are displayed in two ways, as the sequence on the global +ve strand and the sequence as ordered.
 
+<br>
+
+Sequences 'as ordered' display complimentarity, but do not include the append sequences needed for cloning and ligation.
+</p>

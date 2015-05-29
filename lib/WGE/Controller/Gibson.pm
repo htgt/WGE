@@ -1,7 +1,7 @@
 package WGE::Controller::Gibson;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::Gibson::VERSION = '0.065';
+    $WGE::Controller::Gibson::VERSION = '0.066';
 }
 ## use critic
 
@@ -411,6 +411,8 @@ my @DISPLAY_DESIGN = (
     [ 'Design id'               => 'id' ],
     [ 'Type'                    => 'type' ],
     [ 'Assigned to gene(s)'     => 'assigned_genes' ],
+    [ 'Strand'                  => 'strand' ],
+    [ 'Assembly'                => 'assembly' ],
     [ 'Created by'              => 'created_by' ],
     [ 'Created at'              => 'created_at' ]
 );

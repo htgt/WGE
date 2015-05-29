@@ -1,7 +1,7 @@
 package WGE::Util::Statistics;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::Statistics::VERSION = '0.065';
+    $WGE::Util::Statistics::VERSION = '0.066';
 }
 ## use critic
 
