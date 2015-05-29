@@ -405,6 +405,8 @@ my @DISPLAY_DESIGN = (
     [ 'Design id'               => 'id' ],
     [ 'Type'                    => 'type' ],
     [ 'Assigned to gene(s)'     => 'assigned_genes' ],
+    [ 'Strand'                  => 'strand' ],
+    [ 'Assembly'                => 'assembly' ],
     [ 'Created by'              => 'created_by' ],
     [ 'Created at'              => 'created_at' ]
 );

@@ -37,16 +37,16 @@ sub write_design_data_csv{
 
     push @content, "";
     push @content, 'Oligos: ';
-    push @content, (join ',','Type','Chromosome','Strand','Start','End','Sequence');
+    push @content, (join ',','Type','Chromosome','Start','End','Sequence on +ve strand', 'Sequence as Ordered');
 
     foreach my $oligo (@{ $design_data->{oligos} || [] }){
         push @content, (join ',',
         	$oligo->{type}, 
         	$oligo->{locus}->{chr_name},
-        	$oligo->{locus}->{chr_strand},
         	$oligo->{locus}->{chr_start},
         	$oligo->{locus}->{chr_end},
         	$oligo->{seq},
+            $design_data->{oligo_order_seqs}{ $oligo->{type} },
         );
     }
 
