@@ -210,7 +210,6 @@ sub update_region_off_targets{
     }
 
     @crispr_ids_to_process = uniq @crispr_ids_to_process;
-
     # Return some info about what has been submitted for OT calculation
     my $crispr_count = @crispr_ids_to_process;
     my $pair_count = @pairs_to_process_now + @pairs_to_process_later;

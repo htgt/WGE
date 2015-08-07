@@ -2,18 +2,34 @@
 <div class="page-header">
   <h1>[%- genes -%]
     <small>[% IF design_id %]design: <strong>[%design_id%]</strong>[% END %]
-  assembly: [%- genome -%]</small>
+  assembly: [%- genome -%]
+  [% IF species == "Grch38" %]
+  species: Human
+  [% ELSE %]
+  species: [% species %]
+  [% END %]
+  </small>
   <a id="go_to_filters" class="btn btn-default pull-right">Show Options and Filters <i class="icon-chevron-down"></i></a><br>
   <a id="reload_tracks" class="btn btn-default pull-right">Reload Tracks <i class="icon-refresh"></i></a>
   </h1>
 </div>
+
+
 
   <form class="form-inline" action="[% c.uri_for( '/genoverse_browse/' ) %]">
     Chr <input type="text" class="input-small" placeholder="Chr" name="chromosome" value="[% chromosome %]">
     <input type="text" class="input-small" placeholder="Start coord" name="browse_start" value="[% browse_start %]">
      : <input type="text" class="input-small" placeholder="End coord" name="browse_end" value="[% browse_end %]">
     <input type="hidden" name="genome" value="[% genome %]">
-    <input type="hidden" name="species" value="[% species %]">
+    <select NAME="species" class="formtextarea">
+    [% IF species == 'Grch38' %]
+    <OPTION VALUE="Grch38" SELECTED>Human</OPTION>
+    <OPTION VALUE="Mouse">Mouse</OPTION>
+    [% ELSE %]
+    <OPTION VALUE="Mouse" SELECTED>Mouse</OPTION>
+    <OPTION VALUE="Grch38">Human</OPTION>
+    [% END %]
+    </SELECT>
     <input type="hidden" name="view_single" value="[% view_single %]">
     <input type="hidden" name="view_paired" value="[% view_paired %]">
     <button type="submit" class="btn">Go </button>
@@ -178,6 +194,13 @@
   </table>
 </form>
 </div>
+<p>
+  <a href="javascript:update_coords();" class="btn btn-primary" name="crispr_ranking button">
+    Rank Crisprs by Off-Targets 
+  </a>
+</p>
+
+
 </div> [%# end of right-hand div %]
 </div> [%# end of row div %]
 </div>
@@ -194,7 +217,20 @@
   </div>
 </div>
 
+
 <script type="text/javascript">
+
+  //Function to retrieve the current coords on display to the user
+  function update_coords(){
+      var browse_start = $(window)[0].genoverse.start + 200;
+      var browse_end = $(window)[0].genoverse.end - 200;
+      var genome = '[% genome %]';
+      var species = '[% species %]';
+      var chromosome = [% chromosome %];
+      window.location.replace('/crispr_ranking?loc=' + browse_start + "_" + browse_end + "_" + genome + "_" + species + "_" + chromosome);
+
+  }
+
   // Functions to show and hide sets of tracks
   function hide_tracks(track_ids){
       track_ids.map(function(id){
@@ -460,6 +496,8 @@
       }
     });
   }
+
+  
 
   function find_off_targets(start, end) {
     console.log('find off target button clicked');
