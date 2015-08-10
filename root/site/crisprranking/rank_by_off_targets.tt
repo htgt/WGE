@@ -36,8 +36,8 @@ $(document).ready(function () {
         });
     });
 })
-
 </script>
+The score is generated from a mathematical algorithm. The algorithm applies weighting to the off-targets in each mismatch category. 
 <form  class="well">
   <table class='table'>
     <tr>
