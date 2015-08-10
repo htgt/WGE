@@ -33,6 +33,7 @@ lib/Catalyst/Authentication/Credential/OAuth2.pm
 lib/WGE.pm
 lib/WGE/Controller/API.pm
 lib/WGE/Controller/Authentication.pm
+lib/WGE/Controller/CrisprRanking.pm
 lib/WGE/Controller/CrisprReports.pm
 lib/WGE/Controller/Gibson.pm
 lib/WGE/Controller/REST.pm
@@ -135,6 +136,7 @@ root/site/contact.tt
 root/site/crispr_help.tt
 root/site/crispr_pair_report.tt
 root/site/crispr_report.tt
+root/site/crisprranking/rank_by_off_targets.tt
 root/site/developer_help.tt
 root/site/find_crisprs.tt
 root/site/find_crisprs_id.tt
@@ -229,7 +231,6 @@ root/static/images/spinner-circle-small.gif
 root/static/images/spinner-circle.gif
 root/static/images/table_view.png
 root/static/js/diagram.builder.js
-root/static/js/genoverse_custom_tracks.js
 root/static/js/genoverse_variation_track.js
 root/static/js/jquery-ui-1.9.2.custom.min.js
 root/static/js/jquery.js
@@ -237,6 +238,7 @@ root/static/js/jquery.qtip.min.js
 root/static/js/poller.js
 root/static/js/raphael-min.js
 root/static/js/wge-utils.js
+root/static/js/wge_genoverse_custom_tracks.js
 root/wrapper.tt
 script/wge_cgi.pl
 script/wge_create.pl
