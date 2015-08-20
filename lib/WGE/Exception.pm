@@ -1,7 +1,7 @@
 package WGE::Exception;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Exception::VERSION = '0.067';
+    $WGE::Exception::VERSION = '0.069';
 }
 ## use critic
 
