@@ -1,7 +1,7 @@
 package WGE::Util::GenomeBrowser;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::GenomeBrowser::VERSION = '0.066';
+    $WGE::Util::GenomeBrowser::VERSION = '0.067';
 }
 ## use critic
 
@@ -34,6 +34,7 @@ use Sub::Exporter -setup => {
         get_region_from_params
         fetch_design_data
         crisprs_for_region
+        crisprs_for_region_as_arrayref
         crisprs_to_gff
         crispr_pairs_for_region
         crispr_pairs_to_gff
@@ -96,7 +97,6 @@ af11
 sub get_region_from_params{
     my $schema = shift;
     my $params = shift;
-
     my @required = qw(genome species chromosome browse_start browse_end);
     my @missing_params = grep { not defined $params->{$_ } } @required;
 
@@ -205,7 +205,6 @@ sub get_region_from_params{
         if ($params->{'genes'}){
             $region->{'genes'} = $params->{'genes'};
         }
-
         return $region;
     }
 
@@ -268,7 +267,7 @@ sub fetch_design_data{
     my $design_attempt = $design->design_attempt;
     $design_data->{design_attempt} = $design_attempt->id if $design_attempt;
 
-    TRACE( "Design: " .Dumper($design_data) );
+    #TRACE( "Design: " .Dumper($design_data) );
 
     return $design_data;
 }
@@ -286,7 +285,6 @@ dp10
 sub crisprs_for_region {
     my $schema = shift;
     my $params = shift;
-
     # Chromosome number is looked up in the chromosomes table to get the chromosome_id
     my $species = $schema->resultset('Species')->find( { id => $params->{species_id} } );
     unless ( $species ) {
@@ -297,13 +295,11 @@ sub crisprs_for_region {
     # Store species name for gff output
     $params->{species} = $species->id;
     $params->{species_numerical_id} = $species->numerical_id;
-
     my $user = $params->{user};
 
     unless($params->{crispr_filter}){ $params->{crispr_filter} = 'all' }
 
     if ($params->{crispr_filter} eq 'exon_flanking'){
-
         # default to 100 bp
         my $flank_size = $params->{flank_size} || 100;
 
@@ -341,10 +337,9 @@ sub crisprs_for_region {
     # Add exonic flag filter if applicable
     if($params->{crispr_filter} eq 'exonic'){
         $search_params->{exonic} = 1;
+        print "exonic \n";
     }
-
     my $crisprs_rs = $schema->resultset('Crispr')->search($search_params);
-
     if($user){ return _bookmarked($user, $crisprs_rs) };
     return $crisprs_rs;
 }
@@ -451,7 +446,7 @@ sub bookmarked_pairs_for_region{
         };
         $pair_hash->{db_data} = $db_data;
     }
-    TRACE Dumper(\@hashes);
+    #TRACE Dumper(\@hashes);
     return \@hashes;
 }
 
@@ -473,7 +468,6 @@ sub crisprs_for_region_as_arrayref {
     while ( my $hashref = $crisprs_rs->next ) {
         push @crisprs, $hashref;
     }
-
     return \@crisprs;
 }
 
@@ -997,4 +991,5 @@ sub _bookmarked{
 
     return $bookmarked_rs
 }
+
 1;
