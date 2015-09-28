@@ -2,8 +2,6 @@
  
 use strict;
 
-# ppid in /opt/t87/local/run/wge2/fastcgi.pid
-# try 600,000KB as limit
 my ($ppid, $kbytes, $debug) = @ARGV;
  
 die "Usage: kidreaper PPID ram_limit_in_kb\n" unless $ppid && $kbytes;
