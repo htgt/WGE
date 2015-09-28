@@ -196,7 +196,7 @@
 </div>
 <p>
   <a href="javascript:update_coords();" class="btn btn-primary" name="crispr_ranking button">
-    Rank Crisprs by Off-Targets 
+    Rank Crisprs by Off-Targets
   </a>
 </p>
 
@@ -497,7 +497,7 @@
     });
   }
 
-  
+
 
   function find_off_targets(start, end) {
     console.log('find off target button clicked');
@@ -652,7 +652,7 @@
 </script>
 
     <script type="text/javascript" src="[% c.uri_for('/Genoverse/js/genoverse.combined.js', {i => 1})%]"></script>
-    <script type="text/javascript" src="[% c.uri_for('/js/genoverse_custom_tracks.js' )%]"></script>
+    <script type="text/javascript" src="[% c.uri_for('/js/genoverse_custom_tracks.js', {i => 2} )%]"></script>
     <script type="text/javascript" src="[% c.uri_for('/static/js/wge_genoverse_custom_tracks.js' )%]"></script>
     <script type="text/javascript" src="[% c.uri_for('/static/js/genoverse_variation_track.js', {i => 3})%]"></script>
     <script>
@@ -674,12 +674,10 @@
         plugins   : [ 'controlPanelWGE', 'karyotype', 'trackControls', 'resizer', 'fileDrop' ],
         tracks    : [
           Genoverse.Track.Scalebar,
-          Genoverse.Track.extend({
+          Genoverse.Track.SequenceSelect.extend({
             name      : 'Sequence',
             id        : 'Sequence', //need this for tracksById
             url       : ensembl_url + '/sequence/region/' + ensembl_species + '/__CHR__:__START__-__END__?content-type=text/plain',
-            model     : Genoverse.Track.Model.Sequence.Ensembl,
-            view      : Genoverse.Track.View.Sequence,
             resizable : 'auto',
             100000    : false,
             controls  : 'off',
