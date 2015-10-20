@@ -226,8 +226,9 @@
       var browse_end = $(window)[0].genoverse.end - 200;
       var genome = '[% genome %]';
       var species = '[% species %]';
-      var chromosome = [% chromosome %];
-      window.location.replace('/crispr_ranking?loc=' + browse_start + "_" + browse_end + "_" + genome + "_" + species + "_" + chromosome);
+      var chromosome = '[% chromosome %]';
+      var url_base = '[% c.uri_for('/crispr_ranking') %]';
+      window.location.replace(url_base + '?loc=' + browse_start + "_" + browse_end + "_" + genome + "_" + species + "_" + chromosome);
 
   }
 
