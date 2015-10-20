@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+0.071     2015-10-20 12:46:05 Europe/London
+
+    Added AGPL licence information to github and to WGE website
+
 0.070     2015-09-28 14:42:45 Europe/London
 
    Sequence select feature added to sequence track in genoverse
