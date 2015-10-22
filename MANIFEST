@@ -1,5 +1,6 @@
 Changes
 LICENSE
+Licence
 MANIFEST
 META.yml
 Makefile.PL
@@ -243,6 +244,7 @@ root/wrapper.tt
 script/wge_cgi.pl
 script/wge_create.pl
 script/wge_fastcgi.pl
+script/wge_process_manager.pl
 script/wge_server.pl
 script/wge_test.pl
 t/00-compile.t

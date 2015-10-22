@@ -1,7 +1,7 @@
 package WGE::Util::FindCrisprs;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::FindCrisprs::VERSION = '0.068';
+    $WGE::Util::FindCrisprs::VERSION = '0.072';
 }
 ## use critic
 
@@ -194,7 +194,7 @@ sub get_pairs {
 
 sub get_matches {
     my ( $self, $slice ) = @_;
-
+$DB::single=1;
     my $seq = $slice->seq;
 
     my ( @pam_left, @pam_right );
