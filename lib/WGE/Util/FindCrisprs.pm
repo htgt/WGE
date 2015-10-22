@@ -188,7 +188,7 @@ sub get_pairs {
 
 sub get_matches {
     my ( $self, $slice ) = @_;
-
+$DB::single=1;
     my $seq = $slice->seq;
 
     my ( @pam_left, @pam_right );

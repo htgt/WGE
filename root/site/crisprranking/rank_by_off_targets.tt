@@ -36,8 +36,8 @@ $(document).ready(function () {
         });
     });
 })
-
 </script>
+The score is generated from a mathematical algorithm. The algorithm applies weighting to the off-targets in each mismatch category. 
 <form  class="well">
   <table class='table'>
     <tr>
@@ -48,7 +48,6 @@ $(document).ready(function () {
       <th>Start</th>
       <th>Sequence</th>
       <th>Off-Target Summary</th>
-      <th>Score</th>
     </tr>
     [% SET counter = 0 %]
     [% FOREACH crispr IN sorted %]
@@ -61,7 +60,6 @@ $(document).ready(function () {
       <td>[% crispr.chr_start %]</td>
       <td>[% crispr.seq %]</td>
       <td>[% crispr.off_target_summary %]</td>
-      <td>[% crispr.score %]</td>
     </tr>
     [% END %]
     [% IF sorted.size == 0 %]
