@@ -797,8 +797,12 @@
       document.addEventListener('DOMContentLoaded', function () {
         window.genoverse = new Genoverse(genoverseConfig);
 
+        // From WebApp-Common/shared_static
+        [% INCLUDE 'genoverse_mods/selector_size_display.tt' %]
+
         // code that needs to run AFTER genoverse is loaded and initialized
         window.genoverse.on('afterInit', function (){
+          console.log("doing afterAddDomElements stuff");
           // Change the text of the region summary button
           $(".summary").text("Compute Off-Targets");
           $(".summary").attr("id","compute_ot");
