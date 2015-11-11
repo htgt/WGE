@@ -21,3 +21,10 @@ th.group-header {
 .modal {
 	display : none;
 }
+
+.selector_size_display{
+  display: none;
+  font-size: 13px;
+  color: red;
+  position: fixed;
+}
