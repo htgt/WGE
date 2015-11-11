@@ -138,20 +138,24 @@
       <td>[% display_strand(pam_right=crispr.pam_right) %]</td>
     </tr>
     <tr>
-      <td>Off-target summary</td>
-      <td>[% crispr.off_target_summary or 'No data' %]</td>
+      <td>Crispr in exon?</td>
+      <td>[% crispr.exonic ? "Yes" : "No" %]</td>
     </tr>
+    <tr>
+      <td>Crispr in intron?</td>
+      <td>[% crispr.genic && ! crispr.exonic ? "Yes" : "No" %]</td>
+    </tr>
+  </table>
+</div>
+<div class="well">
+  <table>
     <tr>
       <td>Total off-targets</td>
       <td id="total_offs">[% crispr.off_targets.size or crispr.off_target_total or 'No data' %]</td>
     </tr>
     <tr>
-      <td>In exon</td>
-      <td>[% crispr.exonic ? "Yes" : "No" %]</td>
-    </tr>
-    <tr>
-      <td>In intron</td>
-      <td>[% crispr.genic && ! crispr.exonic ? "Yes" : "No" %]</td>
+      <td>Off-target summary</td>
+      <td>[% crispr.off_target_summary or 'No data' %]</td>
     </tr>
   </table>
 </div>
