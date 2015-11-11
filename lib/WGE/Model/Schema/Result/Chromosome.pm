@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::Chromosome;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::Chromosome::VERSION = '0.073';
+    $WGE::Model::Schema::Result::Chromosome::VERSION = '0.074';
 }
 ## use critic
 

@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::GenotypingPrimer;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::GenotypingPrimer::VERSION = '0.073';
+    $WGE::Model::Schema::Result::GenotypingPrimer::VERSION = '0.074';
 }
 ## use critic
 

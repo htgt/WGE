@@ -1,7 +1,7 @@
 package WGE::Model::Schema::Result::GibsonDesignBrowser;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::GibsonDesignBrowser::VERSION = '0.073';
+    $WGE::Model::Schema::Result::GibsonDesignBrowser::VERSION = '0.074';
 }
 ## use critic
 
