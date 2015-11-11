@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+0.073     2015-11-11 10:03:56 Europe/London
+
+    Added genoverse region selected size display
+
 0.072     2015-10-22 13:49:24 Europe/London
     Added XLSX and CSV support to Crispr Damage script
 
