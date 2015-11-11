@@ -48,7 +48,6 @@ The score is generated from a mathematical algorithm. The algorithm applies weig
       <th>Start</th>
       <th>Sequence</th>
       <th>Off-Target Summary</th>
-      <th>Score</th>
     </tr>
     [% SET counter = 0 %]
     [% FOREACH crispr IN sorted %]
@@ -61,7 +60,6 @@ The score is generated from a mathematical algorithm. The algorithm applies weig
       <td>[% crispr.chr_start %]</td>
       <td>[% crispr.seq %]</td>
       <td>[% crispr.off_target_summary %]</td>
-      <td>[% crispr.score %]</td>
     </tr>
     [% END %]
     [% IF sorted.size == 0 %]
