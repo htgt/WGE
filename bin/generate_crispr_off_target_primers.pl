@@ -15,7 +15,7 @@ use YAML::Any;
 use Excel::Writer::XLSX;
 
 my $log_level = $WARN;
-my ( $dir_name, $crispr_id, $crispr_file, $max_mismatches, $project_name, $species, $persist, $file_type, $file_name );
+my ( $dir_name, $crispr_id, $crispr_file, $max_mismatches, $species, $persist, $file_type, $file_name );
 GetOptions(
     'help'              => sub { pod2usage( -verbose => 1 ) },
     'man'               => sub { pod2usage( -verbose => 2 ) },
@@ -98,6 +98,7 @@ sub generate_off_target_primers {
     dump_output( $primers, $crispr_data, $file_type, $dir, $file_name);
 
     push @summary, { $crispr_data->{crispr_id} => $summary } if $summary;
+    return;
 }
 
 =head2 dump_output
@@ -170,6 +171,7 @@ sub dump_output {
     }
     return;
 }
+
 sub dump_yaml {
     my @primer_data = shift;
     print "Creating YAML files.\n";
@@ -180,11 +182,13 @@ sub dump_yaml {
     }
     return;
 }
+
 sub _dump_primer_data {
     my ( $primer, $type, $data ) = @_;
     my $oligo_type = $type . '_' . $primer->{oligo_direction};
 
     $data->{ $oligo_type . '_seq' } = uc( $primer->{oligo_seq} );
+    return;
 }
 
 sub _inter_seq_primer_seq {
@@ -201,6 +205,7 @@ sub _inter_seq_primer_seq {
     my $seq = $slice->seq;
 
     $data->{global_sequence} = $seq;
+    return;
 }
 
 # Define a 2D array of column header, hash key so that we have just one place to make changes
