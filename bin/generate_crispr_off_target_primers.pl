@@ -1,4 +1,4 @@
-#!/usr/bin/env perl -d
+#!/usr/bin/env perl
 use strict;
 use warnings FATAL => 'all';
 
@@ -15,7 +15,7 @@ use YAML::Any;
 use Excel::Writer::XLSX;
 
 my $log_level = $WARN;
-my ( $dir_name, $crispr_id, $crispr_file, $max_mismatches, $project_name, $species, $persist, $file_type, $file_name );
+my ( $dir_name, $crispr_id, $crispr_file, $max_mismatches, $species, $persist, $file_type, $file_name );
 GetOptions(
     'help'              => sub { pod2usage( -verbose => 1 ) },
     'man'               => sub { pod2usage( -verbose => 2 ) },
@@ -27,8 +27,8 @@ GetOptions(
     'max_mismatches=i'  => \$max_mismatches,
     'species=s'         => \$species,
     'persist'           => \$persist,
-    'file:s'            => \$file_type,
-    'name:s'            => \$file_name,
+    'file-type:s'       => \$file_type,
+    'file-name:s'            => \$file_name,
 ) or pod2usage(2);
 
 Log::Log4perl->easy_init( { level => $log_level, layout => '%p %x %m%n' } );
@@ -39,6 +39,14 @@ die ( 'Must provide --species' ) unless $species;
 my $base_dir = dir( $dir_name )->absolute;
 $base_dir->mkpath;
 $max_mismatches //= 3;
+if ($file_type) {
+    $file_type = uc($file_type);
+    my @file_types = ('XLSX','CSV','XLS','YAML');
+
+    my %type_hash = map { $_ => 1 } @file_types;
+
+    pod2usage('File type must be one of the following: XLS, XLSX, CSV, YAML --file-type') unless (exists($type_hash{$file_type}));
+}
 
 my $model = WGE::Model::DB->new();
 my $primer_util = WGE::Util::CrisprOffTargetPrimers->new(
@@ -72,11 +80,25 @@ sub generate_off_target_primers {
     die( "Unable to find crispr with id " . $crispr_data->{crispr_id} )
         unless $crispr;
 
+    my $DB = WGE::Model::DB->new();
+    my $crispr_cd = $DB->schema->resultset("Crispr")->find( { id => $crispr_data->{crispr_id} } )->{_column_data};
+    my $species_cd = $DB->schema->resultset("Species")->find( { numerical_id => $crispr_cd->{species_id} } )->{_column_data};
+    try {
+        my $gene_cd = $DB->schema->resultset("Gene")->find( {
+            species_id  => $species_cd->{id},
+            chr_name    => $crispr_cd->{chr_name},
+            chr_start   => { '<' => $crispr_cd->{chr_start}},
+            chr_end     => { '>' => $crispr_cd->{chr_start}},
+        })->{_column_data};
+
+        $crispr_data->{gene_name} = $gene_cd->{marker_symbol};
+    };
     my ( $primers, $summary ) = $primer_util->crispr_off_targets_primers( $crispr );
 
     dump_output( $primers, $crispr_data, $file_type, $dir, $file_name);
 
     push @summary, { $crispr_data->{crispr_id} => $summary } if $summary;
+    return;
 }
 
 =head2 dump_output
@@ -122,16 +144,41 @@ sub dump_output {
             }
         }
 
-        if ($file_type ne "CSV" && $file_type !~ /XLS/) {
-            print Dump( \%data );
-        }
+        #unless ($file_type) {
+        #    print Dump( \%data );
+        #    print "Creating YAML files";
+        #}
         push @primer_data, \%data;
     }
-    if ($file_type eq "CSV") {
-        output_csv($dir, $file_name, @primer_data);
+    print "---\n";
+    unless ($file_type) {
+        dump_yaml(@primer_data);
+        return;
     }
-    if ($file_type =~ /XLS/) {
-        output_xlsx($dir, $file_name, @primer_data);
+    unless ($file_name) {
+        $file_name = "Crispr_" . $crispr_data->{crispr_id};
+    }
+    if (uc($file_type) eq "CSV") {
+        print "Creating CSV file: " . $file_name . ".csv\n";
+        output_csv($file_name, @primer_data);
+    }
+    elsif (uc($file_type) eq "XLS" || uc($file_type) eq "XLSX") {
+        print "Creating XLSX file: " . $file_name . ".xlsx\n";
+        output_xlsx($file_name, @primer_data);
+    }
+    else {
+        dump_yaml(@primer_data);
+    }
+    return;
+}
+
+sub dump_yaml {
+    my @primer_data = shift;
+    print "Creating YAML files.\n";
+
+    foreach my $item(@primer_data){
+        my %data_hash = %{$item};
+        print Dump( \%data_hash );
     }
     return;
 }
@@ -141,6 +188,7 @@ sub _dump_primer_data {
     my $oligo_type = $type . '_' . $primer->{oligo_direction};
 
     $data->{ $oligo_type . '_seq' } = uc( $primer->{oligo_seq} );
+    return;
 }
 
 sub _inter_seq_primer_seq {
@@ -157,32 +205,49 @@ sub _inter_seq_primer_seq {
     my $seq = $slice->seq;
 
     $data->{global_sequence} = $seq;
+    return;
+}
+
+# Define a 2D array of column header, hash key so that we have just one place to make changes
+# The hash keys are not really formatted as column headers so the first column looks better
+# in the output csv or spreadsheet file.
+
+sub out_col_headers {
+    return (
+         ['Chromosome',         'chromosome'],
+         ['Gene Name',          'gene_name'],
+         ['WGE Crispr ID',      'wge_crispr_id'],
+         ['Start',              'start'],
+         ['End',                'end'],
+         ['WGE Off Target ID',  'wge_ot_id'],
+         ['Mismatches',         'mismatches'],
+         ['PCR Forward',        'pcr_forward_seq'],
+         ['PCR Reverse',        'pcr_reverse_seq'],
+         ['Seq Forward',        'sequencing_forward_seq'],
+         ['Seq Reverse',        'sequencing_reverse_seq'],
+         ['Sequence',           'global_sequence'],
+    );
 }
 
 sub output_xlsx {
-    my ($dir, $file_name, @primers) = @_;
-    my $address = $dir . $file_name . ".xlsx";
+    my ($file_name, @primers) = @_;
+
+    my $address = $file_name . ".xlsx";
     my $workbook = Excel::Writer::XLSX->new($address);
 
     my $worksheet = $workbook->add_worksheet();
 
-    my @headers = ('Chromosome','Gene Name','WGE Crispr ID','Start','End','WGE Off Target ID','Mismatches','PCR Forward Seq','PCR Reverse Seq','Global Sequence');
-    $worksheet->write_row( 'A1', \@headers );
+    my @col_headers = map { $_->[0] } out_col_headers();
 
+    $worksheet->write_row( 'A1', \@col_headers );
+    my $format = $workbook->add_format();
+    $format->set_num_format();
+    $worksheet->set_column('C:F', 15, $format);
+    $worksheet->set_column('H:I', 30);
     my $row_number = 2;
     foreach my $primer (@primers){
-        my @row = (
-            $primer->{chromosome},
-            $primer->{gene_name},
-            $primer->{wge_crispr_id},
-            $primer->{start},
-            $primer->{end},
-            $primer->{wge_ot_id},
-            $primer->{mismatches},
-            $primer->{pcr_forward_seq},
-            $primer->{pcr_reverse_seq},
-            $primer->{global_sequence},
-        );
+        my @row =
+            map { $primer->{ $_->[1] }} out_col_headers();
         $worksheet->write_row('A' . $row_number, \@row);
         $row_number++;
     }
@@ -191,37 +256,28 @@ sub output_xlsx {
 }
 
 sub output_csv {
-    my ($dir, $file_name, @primers) = @_;
-    my $address = $dir . $file_name . ".csv";
-    
+    my ($file_name, @primers) = @_;
+    my $address = $file_name . ".csv";
+
     my $csv = Text::CSV->new ( { binary => 1 , auto_diag => 1, eol => "\n"} )
                  or die "Cannot use CSV: ".Text::CSV->error_diag ();
-    $csv->column_names('Chromosome','Gene Name','WGE Crispr ID','Start','End','WGE Off Target ID','Mismatches','PCR Forward Seq','PCR Reverse Seq','Global Sequence');
+
+    my @col_headers = map { $_->[0] } out_col_headers();
+    $csv->column_names( @col_headers );
     $csv->bind_columns();
     my $fh;
     open $fh, ">", $address or die "Failed: $!";
     $csv->print ($fh, [$csv->column_names]);
 
     foreach my $primer (@primers){
-        my @row = (
-            $primer->{chromosome},
-            $primer->{gene_name},
-            $primer->{wge_crispr_id},
-            $primer->{start},
-            $primer->{end},
-            $primer->{wge_ot_id},
-            $primer->{mismatches},
-            $primer->{pcr_forward_seq},
-            $primer->{pcr_reverse_seq},
-            $primer->{global_sequence},
-        );
-
+        my @row = map { $primer->{ $_->[1] }} out_col_headers();
         $csv->print($fh, \@row);
     }
     close $fh;
 
     return;
 }
+
 
 {
     my $ensembl_util;
@@ -253,8 +309,8 @@ generate_crispr_off_target_primers.pl - Generate sequencing primers for crispr o
       --max_mismatches            Max number of mismatch bases ( default 3 )
       --species                   Species of Crispr
       --persist                   Load crispr off targets into LIMS2 database
-      --file                      Output file type from XLS, CSV and YAML. Default - YAML
-      --name                      Name of the output file (Only XLS and CSV)
+      --file-type                 Output file type from XLS, CSV and YAML. Default - YAML
+      --file-name                      Name of the output file (Only XLS and CSV)
 
 Crispr IDs can either be specified individually or in a CSV with a 'crispr_id' column.
 
