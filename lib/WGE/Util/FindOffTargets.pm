@@ -8,6 +8,7 @@ use WGE::Util::GenomeBrowser qw(get_region_from_params crispr_pairs_for_region c
 use TryCatch;
 use List::MoreUtils qw(uniq);
 use LIMS2::Exception;
+use DateTime;
 
 has log => (
     is         => 'rw',
@@ -172,8 +173,18 @@ sub update_region_off_targets{
 
         #if its -2 we want to skip, not continue
         if ( $pair->status_id > 0 ) {
+            # If status is pending check if it has been modified within the last hour
+            # If not then it has probably got stuck in pending status and should be
+            # resubmitted
+            my $stuck_at_pending = 0;
+            if($pair->status_id == 1){
+                if($pair->last_modified < DateTime->now()->subtract({ hours => 1})){
+                    $self->log->debug("crispr pair ".$pair->id." OT status seems to be stuck at pending. resubmitting.");
+                    $stuck_at_pending = 1;
+                }
+            }
             #someone else has already started this one, so don't do anything
-            next;
+            next unless $stuck_at_pending;
         }
         elsif ( $pair->status_id == -2 ) {
             #pair has bad crispr - skip it!
