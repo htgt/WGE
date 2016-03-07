@@ -1,5 +1,10 @@
 {{$NEXT}}
 
+0.077     2016-03-07 14:07:24 Europe/London
+
+    Search off-targets by seq bug fixes
+    More debugging statements added
+ 
 0.076     2016-01-07 11:55:57 Europe/London
     Desgin creation bug fix
 0.075     2016-01-07 11:17:40 Europe/London
