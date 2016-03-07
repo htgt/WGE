@@ -25,20 +25,21 @@ $(document).ready(function() {
         }
 
         var orientation = $("input:radio[name=orientation]:checked").val();
+        var orientation_for_search = (orientation=="true" ? 1 : 0);
 
         $("#off_targets_table tbody").append("<tr><td>"+seq.toUpperCase()+"</td><td>"+$("input:radio[name=orientation]:checked").attr('id')+"</td></td><td>"+species+"</td><td><img src='[% c.uri_for('/static/images/spinner-circle-small.gif') %]'></td><td><img src='[% c.uri_for('/static/images/spinner-circle-small.gif') %]'></td></tr>");
 
         $.getJSON( "[% c.uri_for( '/api/off_targets_by_seq') %]" ,
             { seq: seq, species: species.toLowerCase(), pam_right: orientation },
             function (data) {
-                $("#off_targets_table td:nth-last-child(2)").text(data.off_target_summary);
+                $("#off_targets_table tr:last td:nth-last-child(2)").text(data.off_target_summary);
             }
         ).fail(function(){
-          $("#off_targets_table td:nth-last-child(2)").text("search error");
+          $("#off_targets_table tr:last td:nth-last-child(2)").text("search error");
         });
 
         $.getJSON( "[% c.uri_for( '/api/search_by_seq') %]" ,
-            { seq: seq, species: species.toLowerCase(), pam_right: orientation },
+            { seq: seq, species: species.toLowerCase(), pam_right: orientation_for_search },
             function (crispr_ids) {
               $("#off_targets_table td:last").find('img').remove();
               console.log('search by seq got crispr_ids: ' + crispr_ids);
