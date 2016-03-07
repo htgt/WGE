@@ -1,7 +1,7 @@
 package WGE::Util::OffTargetServer;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::OffTargetServer::VERSION = '0.074';
+    $WGE::Util::OffTargetServer::VERSION = '0.077';
 }
 ## use critic
 

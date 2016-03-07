@@ -11,8 +11,8 @@ use WGE::Util::FindPairs;
 use Const::Fast;
 use Log::Log4perl ':easy';
 use feature qw( say );
-
 use YAML::Any;
+
 use Smart::Comments;
 
 # hard coded species id of 2 - Mouse
@@ -65,14 +65,17 @@ while ( my $data = $csv->getline_hr( $fh ) ) {
 
     foreach my $pair (@{ $pairs }) {
 
-        my $yaml = Load($pair->{left_crispr}{off_target_summary});
+        my $yaml_left = Load($pair->{left_crispr}{off_target_summary});
+
+        my $yaml_right = Load($pair->{right_crispr}{off_target_summary});
 
         ## $pair
-        ## $yaml
-        # my $score = '';
-        if ($yaml) {
-            my $score = $yaml->{0} + $yaml->{1} + $yaml->{2} + $yaml->{3};
-        
+        ## $yaml_left
+        ## $yaml_right
+
+        if ($yaml_left && $yaml_right) {
+            my $score = $yaml_left->{0} + $yaml_left->{1} + $yaml_left->{2} + $yaml_left->{3} + $yaml_right->{0} + $yaml_right->{1} + $yaml_right->{2} + $yaml_right->{3};
+
 ## TO GET MISSING CRISPRS
             # if (!$pair->{left_crispr}{off_target_summary}) {
             #     print MISSES $pair->{left_crispr}{id} ."\n";
@@ -91,7 +94,7 @@ while ( my $data = $csv->getline_hr( $fh ) ) {
                 'right_crispr:', $pair->{right_crispr}{id},
                 $pair->{right_crispr}{chr_name}.':'.$pair->{right_crispr}{chr_start}.'-'.$pair->{right_crispr}{chr_end},
                 $pair->{right_crispr}{seq},
-                'spacer:',       $pair->{spacer}, 
+                'spacer:',       $pair->{spacer},
                 'score:',        $score
             ] );
 
@@ -147,7 +150,7 @@ sub sort_rank {
     foreach (sort { ($sort{$a} <=> $sort{$b}) } keys %sort) {
         # print "$i:\t$off_pairs[$_]\n";
         $sorted[$i] = $off_pairs[$_];
-        $i++;   
+        $i++;
     }
     ## @sorted
 
@@ -308,7 +311,7 @@ sub make_report_summary {
                         $current_spacer = $spacer{$j};
                         $best_index = $j;
                     }
-                }    
+                }
 
                 if (!defined $best_index) {
                     $current_spacer = -9999999;
@@ -318,7 +321,7 @@ sub make_report_summary {
                             $current_spacer = $spacer{$j};
                             $best_index = $j;
                         }
-                    }   
+                    }
                 }
 
                 if ( $score{$best_index} ) {
@@ -365,7 +368,7 @@ sub make_report_summary {
 
             }
 
-        }    
+        }
 
         if (!defined $best_index) {
             $current_spacer = -9999999;
@@ -376,7 +379,7 @@ sub make_report_summary {
                     $best_index = $j;
                 }
 
-            }   
+            }
 
         }
 

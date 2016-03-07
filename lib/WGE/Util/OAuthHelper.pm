@@ -1,7 +1,7 @@
 package WGE::Util::OAuthHelper;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::OAuthHelper::VERSION = '0.074';
+    $WGE::Util::OAuthHelper::VERSION = '0.077';
 }
 ## use critic
 

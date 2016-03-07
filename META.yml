@@ -46,6 +46,7 @@ requires:
   Data::Dump: 0
   Data::Dumper: 0
   Data::Random: 0
+  DateTime: 0
   DateTime::Format::Pg: 0
   Excel::Writer::XLSX: 0
   File::stat: 0
@@ -103,4 +104,4 @@ requires:
   strict: 0
   utf8: 0
   warnings: 0
-version: 0.074
+version: 0.077

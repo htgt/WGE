@@ -253,6 +253,7 @@ t/002_controller_api.t
 t/003_util.t
 t/004_controller_crispr_reports.t
 t/005_controller_gibson.t
+t/006_crispr_damage.t
 t/data/crispr_pairs_in_region.txt
 t/data/crispr_pairs_in_region_exonic.txt
 t/data/crispr_pairs_in_region_flanking.txt

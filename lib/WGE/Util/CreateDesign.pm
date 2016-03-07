@@ -1,7 +1,7 @@
 package WGE::Util::CreateDesign;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::CreateDesign::VERSION = '0.074';
+    $WGE::Util::CreateDesign::VERSION = '0.077';
 }
 ## use critic
 
@@ -140,9 +140,9 @@ initiate the creation of a gibson design with a exon target.
 sub create_exon_target_gibson_design {
     my ( $self ) = @_;
 
-    my $params         = $self->c_parse_and_validate_exon_target_gibson_params();
+    my $params         = $self->c_parse_and_validate_exon_target_design_params();
     my $design_attempt = $self->c_initiate_design_attempt( $params );
-    my $cmd            = $self->c_generate_gibson_design_cmd( $params );
+    my $cmd            = $self->c_generate_design_cmd( $params );
     my $job_id         = $self->c_run_design_create_cmd( $cmd, $params );
 
     return ( $design_attempt, $job_id );
@@ -157,9 +157,9 @@ initiate the creation of a gibson design with a custom target.
 sub create_custom_target_gibson_design {
     my ( $self ) = @_;
 
-    my $params         = $self->c_parse_and_validate_custom_target_gibson_params();
+    my $params         = $self->c_parse_and_validate_custom_target_design_params();
     my $design_attempt = $self->c_initiate_design_attempt( $params );
-    my $cmd            = $self->c_generate_gibson_design_cmd( $params );
+    my $cmd            = $self->c_generate_design_cmd( $params );
     my $job_id         = $self->c_run_design_create_cmd( $cmd, $params );
 
     return ( $design_attempt, $job_id );
