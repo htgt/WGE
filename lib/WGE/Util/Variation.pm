@@ -6,6 +6,8 @@ use Moose;
 use namespace::autoclean;
 use WGE::Util::EnsEMBL;
 
+with 'MooseX::Log::Log4perl';
+
 has species => (
     is       => 'rw',
     isa      => 'Str',
@@ -36,17 +38,21 @@ sub variation_for_region {
     my $model = shift;
     my $params = shift;
 
-    my $slice_adaptor = $self->slice_adaptor( $params->{'species'} );
 
+    my $slice_adaptor = $self->slice_adaptor( $params->{'species'} );
+$self->log->debug("getting slice");
     my $slice = $slice_adaptor->fetch_by_region(
         'chromosome',
         $params->{'chr_number'},
         $params->{'start_coord'},
         $params->{'end_coord'},
     );
+$self->log->debug("got slice");
 
     my $vf_adaptor = $self->variation_feature_adaptor( $params->{'species'} );
+$self->log->debug("getting variation features");
     my $vfs = $vf_adaptor->fetch_all_by_Slice( $slice );
+$self->log->debug("got ".scalar @{$vfs}." variation features");
     my @vf_mafs;
 
     my @req_keys
@@ -61,6 +67,7 @@ sub variation_for_region {
             strand
           /;
 
+$self->log->debug("getting minor allele frequencies");
     foreach my $vf ( @{$vfs}) {
         if ( $vf->minor_allele_frequency ) {
             my %maff = map { $_ => $vf->$_ } @req_keys;
@@ -69,6 +76,7 @@ sub variation_for_region {
             push @vf_mafs, \%maff;
         }
     }
+$self->log->debug("got minor allele frequencies");
     return \@vf_mafs;
 }
 
