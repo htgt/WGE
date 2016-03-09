@@ -1,7 +1,7 @@
 package WGE::Util::EnsEMBL;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::EnsEMBL::VERSION = '0.078';
+    $WGE::Util::EnsEMBL::VERSION = '0.079';
 }
 ## use critic
 

@@ -1,7 +1,7 @@
 package WGE::Util::Variation;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::Variation::VERSION = '0.078';
+    $WGE::Util::Variation::VERSION = '0.079';
 }
 ## use critic
 
@@ -44,7 +44,21 @@ sub variation_for_region {
     my $model = shift;
     my $params = shift;
 
+    my @vf_mafs;
 
+    my $pid = $$;
+    my $time = 5;
+
+    my $alarm_pid = fork();
+    if($alarm_pid == 0){
+        # child monitors parent and kills it if it takes too long
+        for (1..$time) { sleep 1; kill(0,$pid) || exit }
+        $self->log->error("variation_for_region has timed out - killing process $pid");
+        kill 'KILL', $pid;
+        exit;
+    }
+
+    # parent does the work
     my $slice_adaptor = $self->slice_adaptor( $params->{'species'} );
 $self->log->debug("getting slice");
     my $slice = $slice_adaptor->fetch_by_region(
@@ -59,7 +73,6 @@ $self->log->debug("got slice");
 $self->log->debug("getting variation features");
     my $vfs = $vf_adaptor->fetch_all_by_Slice( $slice );
 $self->log->debug("got ".scalar @{$vfs}." variation features");
-    my @vf_mafs;
 
     my @req_keys
         = qw/
@@ -83,6 +96,9 @@ $self->log->debug("getting minor allele frequencies");
         }
     }
 $self->log->debug("got minor allele frequencies");
+    # Parent kills the child alarm process now that the work is complete
+    kill 'KILL', $alarm_pid;
+
     return \@vf_mafs;
 }
 

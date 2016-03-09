@@ -1,7 +1,7 @@
 package WGE::Controller::API;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::API::VERSION = '0.078';
+    $WGE::Controller::API::VERSION = '0.079';
 }
 ## use critic
 
@@ -27,7 +27,7 @@ use WGE::Util::OffTargetServer;
 use WGE::Util::FindOffTargets;
 use WebAppCommon::Util::EnsEMBL;
 use JSON;
-use Time::Out qw(timeout);
+
 
 BEGIN { extends 'Catalyst::Controller' }
 
@@ -578,15 +578,10 @@ sub variation_for_region :Local('variation_for_region') Args(0) {
     use WGE::Util::Variation;
     my $variation = WGE::Util::Variation->new ( {'species' => $params->{'species'}} );
 
-    my $var_feature = timeout 20 => sub{
-        return $variation->variation_for_region(
+    my $var_feature = $variation->variation_for_region(
          $model,
          $params,
-        );
-    };
-    if($@){
-        die "variation_for_region search timed out";
-    }
+    );
 
     $c->log->debug("variation for region done");
 
