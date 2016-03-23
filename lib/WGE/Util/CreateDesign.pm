@@ -1,7 +1,7 @@
 package WGE::Util::CreateDesign;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::CreateDesign::VERSION = '0.079';
+    $WGE::Util::CreateDesign::VERSION = '0.080';
 }
 ## use critic
 
@@ -12,6 +12,7 @@ use WGE::Exception::Validation;
 use Const::Fast;
 use Path::Class;
 use namespace::autoclean;
+use WGE::Util::TimeOut qw(timeout);
 
 use warnings FATAL => 'all';
 
@@ -122,11 +123,15 @@ Optionally get all exons or just exons from canonical transcript.
 sub exons_for_gene {
     my ( $self, $gene_name, $exon_types ) = @_;
 
-    my $gene = $self->ensembl_util->get_ensembl_gene( $gene_name );
-    return unless $gene;
+    my ($gene_data, $exon_data);
 
-    my $gene_data = $self->c_build_gene_data( $gene );
-    my $exon_data = $self->c_build_gene_exon_data( $gene, $gene_data->{gene_id}, $exon_types );
+    timeout(10,sub{
+        my $gene = $self->ensembl_util->get_ensembl_gene( $gene_name );
+        return unless $gene;
+
+        $gene_data = $self->c_build_gene_data( $gene );
+        $exon_data = $self->c_build_gene_exon_data( $gene, $gene_data->{gene_id}, $exon_types );
+    });
 
     return ( $gene_data, $exon_data );
 }

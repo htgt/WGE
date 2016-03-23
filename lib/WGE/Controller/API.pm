@@ -1,7 +1,7 @@
 package WGE::Controller::API;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::API::VERSION = '0.079';
+    $WGE::Controller::API::VERSION = '0.080';
 }
 ## use critic
 
@@ -27,6 +27,7 @@ use WGE::Util::OffTargetServer;
 use WGE::Util::FindOffTargets;
 use WebAppCommon::Util::EnsEMBL;
 use JSON;
+use WGE::Util::TimeOut qw(timeout);
 
 
 BEGIN { extends 'Catalyst::Controller' }
@@ -608,27 +609,32 @@ sub translation_for_region :Local('translation_for_region') Args(0) {
 
     $c->log->debug( "translation_for_region: ".$params->{chr_name} . ":" . $params->{chr_start} . "-" . $params->{chr_end} );
 
-    my $slice = $ensembl->slice_adaptor->fetch_by_region(
-        'chromosome',
-        $params->{chr_name},
-        $params->{chr_start},
-        $params->{chr_end},
-    );
-
-    my @genes = @{ $slice->get_all_Genes_by_type('protein_coding') };
-
-    $c->log->debug( "Found " . scalar( @genes ) . " genes for region" );
-
     my @features;
-    for my $gene ( @genes ) {
-        try {
-            push @features, $self->_process_gene( $c, $gene );
+
+    timeout(5,sub{
+        my $slice = $ensembl->slice_adaptor->fetch_by_region(
+            'chromosome',
+            $params->{chr_name},
+            $params->{chr_start},
+            $params->{chr_end},
+        );
+
+        my @genes = @{ $slice->get_all_Genes_by_type('protein_coding') };
+
+
+        $c->log->debug( "Found " . scalar( @genes ) . " genes for region" );
+
+
+        for my $gene ( @genes ) {
+            try {
+                push @features, $self->_process_gene( $c, $gene );
+            }
+            catch ( $e ) {
+                $c->log->error( $e );
+                #$c->stash->{json_data} = { error => $e };
+            }
         }
-        catch ( $e ) {
-            $c->log->error( $e );
-            #$c->stash->{json_data} = { error => $e };
-        }
-    }
+    });
 
     $c->log->debug("translation_for_region done");
     $c->stash->{json_data} = \@features;
