@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+0.080     2016-03-23 14:56:50 Europe/London
+
+   Added timeout to other methods using ensembl API
+
 0.079     2016-03-09 13:44:10 Europe/London
 
 0.078     2016-03-08 16:21:01 Europe/London
