@@ -38,7 +38,7 @@ $(window).load(function() {
                     <li><a href="#crispr_search">Crispr Search by Exon</a></li>
                     <li><a href="#crisprs_in_region">Crispr Search by Region</a></li>
                     <li><a href="#pair_search">Crispr Pair Search by Exon</a></li>
-                    <li><a href="#individual_off_target_search">Off-Targets for Crisprs</a></li>
+                    <li><a href="#crispr_off_targets">Off-Targets for Crisprs</a></li>
                     <li><a href="#pair_off_target_search">Off-Targets for Crispr Pairs</a></li>
                     <li><a href="#search_by_seq">Find Crispr ID for Sequence</a></li>
                     <li><a href="#gene_search">Find Marker Symbols for Search Term</a></li>
@@ -203,8 +203,47 @@ $(window).load(function() {
 }
 </pre>
             </section>
-            <section id="individual_off_target_search">
+            <section id="crispr_off_targets">
             <h3>Off-Targets for Crisprs</h3>
+            Fetch off-target summaries and list of off-target crispr IDs for 1 or more crisprs (up to max of 100).
+            <br>
+            Required: species, id
+            <br>
+            [% url = c.uri_for('/api/crispr_off_targets', { id => [1106710989,1106710985], species => 'Human' }) %]
+            <a href="[% url %]">[% url %]</a>
+            <br>
+            Returns an object mapping crispr ID to its off-target summary and off-target list
+            <pre>
+{
+  "1106710985": {
+    "off_targets": [
+      904032520,
+      904764939,
+      ...
+      1197488029,
+      1199013883
+    ],
+    "off_target_summary": "{0: 1, 1: 0, 2: 0, 3: 2, 4: 66}",
+    "id": 1106710985
+  },
+  "1106710989": {
+    "off_targets": [
+      902582231,
+      906234136,
+      ...
+      1188165849,
+      1201450411
+    ],
+    "off_target_summary": "{0: 1, 1: 0, 2: 0, 3: 4, 4: 49}",
+    "id": 1106710989
+  }
+}
+            </pre>
+            </section>
+
+            <section id="individual_off_target_search">
+            <h3>Off-Targets for Crisprs (DEPRECATED)</h3>
+            <h4>This method has now been replaced by <a href="#crispr_off_targets">crispr_off_targets</a> which returns off-target information for all IDs queried</h4>
 
             Calculate off-targets for individual CRISPRs, persisting into WGE.
             <br>

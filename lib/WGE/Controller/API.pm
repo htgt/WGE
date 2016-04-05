@@ -338,6 +338,51 @@ sub individual_off_target_search :Local('individual_off_target_search') {
     return;
 }
 
+# This differs from individual_off_target_search as it returns the off-target
+# summary and list for all crisprs queried, not just those that have been
+# added to the database following the call to the CRISPR-Analyser
+sub crispr_off_targets :Local('crispr_off_targets'){
+    my ($self, $c) = @_;
+
+    my $params = $c->req->params;
+    check_params_exist( $c, $params, [ qw( species id ) ] );
+
+    my $ids = $params->{id} ;
+    if ( ref $ids ne 'ARRAY' ) {
+        $ids = [ $ids ];
+    }
+
+    try {
+        my $data = $self->ot_finder->run_individual_off_target_search(
+            $c->model('DB'),
+            $params->{species},
+            $ids,
+        );
+    }
+    catch ($e){
+        $c->stash->{json_data} = { error => $e };
+        $c->forward('View::JSON');
+        return;
+    }
+
+    my $data = {};
+    my @crisprs = $c->model('DB')->resultset('Crispr')->search({
+        id => { '-in' => $ids }
+    });
+
+    foreach my $crispr (@crisprs){
+        $data->{ $crispr->id } = {
+            id                 => $crispr->id,
+            off_targets        => $crispr->off_target_ids,
+            off_target_summary => $crispr->off_target_summary,
+        };
+    }
+
+    $c->stash->{json_data} = $data;
+    $c->forward('View::JSON');
+    return;
+}
+
 sub pair_off_target_search :Local('pair_off_target_search') {
     my ( $self, $c ) = @_;
 
