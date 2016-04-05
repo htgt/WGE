@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+0.081     2016-04-05 16:17:33 Europe/London
+
+   Added APIs to get off-target info for crisprs and pairs 
+
 0.080     2016-03-23 14:56:50 Europe/London
 
    Added timeout to other methods using ensembl API
