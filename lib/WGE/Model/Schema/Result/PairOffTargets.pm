@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::PairOffTargets;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::PairOffTargets::VERSION = '0.080';
+    $WGE::Model::Schema::Result::PairOffTargets::VERSION = '0.081';
 }
 ## use critic
 

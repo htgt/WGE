@@ -1,7 +1,7 @@
 package WGE::Model::Plugin::CrisprPair;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Plugin::CrisprPair::VERSION = '0.080';
+    $WGE::Model::Plugin::CrisprPair::VERSION = '0.081';
 }
 ## use critic
 
@@ -20,7 +20,7 @@ sub _build_pair_finder {
     return WGE::Util::FindPairs->new;
 }
 
-sub find_or_create_crispr_pair {
+sub find_crispr_pair{
     my ( $self, $params ) = @_;
 
     die "left_id and right_id are required"
@@ -43,30 +43,39 @@ sub find_or_create_crispr_pair {
     }
 
     #see if the pair exists already
-    my $pair = $self->resultset('CrisprPair')->find( 
-        { 
-            left_id    => $params->{left_id}, 
+    my $pair = $self->resultset('CrisprPair')->find(
+        {
+            left_id    => $params->{left_id},
             right_id   => $params->{right_id},
             species_id => $params->{species_id},
         }
     );
 
+    return $pair;
+}
+
+sub find_or_create_crispr_pair {
+    my ( $self, $params ) = @_;
+
+    my $pair = $self->find_crispr_pair($params);
+
     my @crisprs;
     if ( $pair ) {
         $self->log->debug( "Pair " . $pair->id . " already exists." );
-    } 
+        @crisprs = ($pair->left, $pair->right);
+    }
     else {
         #the pair doesn't exist so lets create it.
         $self->log->debug( "Creating pair " . $params->{left_id} . "_" . $params->{right_id} );
 
         #first find the crispr entries so we can check they are a valid pair
         #also include the total number of offs for the CrisprPair method
-        @crisprs = $self->resultset('Crispr')->search( 
-            {  
+        @crisprs = $self->resultset('Crispr')->search(
+            {
                 id         => { -IN => [ $params->{left_id}, $params->{right_id} ] },
                 species_id => $params->{species_id}
             },
-            { 
+            {
                 '+select' => [
                     { array_length => [ 'off_target_ids', 1 ], -as => 'total_offs' }
                 ]
