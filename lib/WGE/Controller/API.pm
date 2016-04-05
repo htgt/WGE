@@ -398,6 +398,48 @@ sub pair_off_target_search :Local('pair_off_target_search') {
     return;
 }
 
+# This differs from pair_off_target_search as it returns the off target information
+# for the crispr_pair ID queried
+sub crispr_pair_off_targets :Local('crispr_pair_off_targets') {
+    my ( $self, $c ) = @_;
+
+    my $params = $c->req->params;
+
+    check_params_exist( $c, $params, [ qw( species left_id right_id ) ] );
+
+    my $data = $self->ot_finder->run_pair_off_target_search($c->model('DB'), $params);
+
+    if($data->{success}){
+        my $off_target_data;
+        my $pair = $c->model('DB')->find_crispr_pair($params);
+
+        my @off_target_ids;
+        foreach my $off_target ($pair->off_targets){
+            push @off_target_ids, $off_target->{left_crispr}->{id}
+                                  ."_"
+                                  .$off_target->{right_crispr}->{id};
+        }
+
+        my $pair_data = {
+            $pair->id => {
+                id                 => $pair->id,
+                off_target_summary => $pair->off_target_summary,
+                off_targets        => \@off_target_ids,
+            }
+        };
+
+        $c->stash->{json_data} = $pair_data;
+    }
+    else{
+        $c->stash->{json_data} = $data;
+    }
+
+
+    $c->forward('View::JSON');
+
+    return;
+}
+
 sub exon_off_target_search :Local('exon_off_target_search'){
     my ( $self, $c ) = @_;
 

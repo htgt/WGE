@@ -71,8 +71,11 @@ sub run_pair_off_target_search{
 
     #see what the current pair status is, and decide what to do
 
-    #if its -2 we want to skip, not continue
-    if ( $pair->status_id > 0 ) {
+    if ( $pair->status_id == 5){
+        # Off target computation already done
+        return { success => 1, pair_status => 5};
+    }
+    elsif ( $pair->status_id > 0 ) {
         #LOG HERE
         #someone else has already started this one, so don't do anything
         return { 'error' => 'Job already started!' };
