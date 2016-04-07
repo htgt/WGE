@@ -1,5 +1,10 @@
 {{$NEXT}}
 
+0.082     2016-04-07 14:38:44 Europe/London
+
+  Show off-target counts by type on crispr report page
+  Upgraded to EnsEMBL API v83
+
 0.081     2016-04-05 16:17:33 Europe/London
 
    Added APIs to get off-target info for crisprs and pairs 
