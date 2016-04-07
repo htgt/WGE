@@ -65,7 +65,6 @@ sub variation_for_region {
                 minor_allele_frequency
                 minor_allele
                 minor_allele_count
-                source
                 strand
               /;
 
@@ -75,6 +74,9 @@ sub variation_for_region {
                 my %maff = map { $_ => $vf->$_ } @req_keys;
                 $maff{'start'} = $vf->transform('chromosome')->start;
                 $maff{'end'} = $vf->transform('chromosome')->end;
+                # Following upgrade to ensembl API v83 $vf->source returns object
+                # rather than string so we fetch the source name string here
+                $maff{'source'} = $vf->source->name;
                 push @vf_mafs, \%maff;
             }
         }
