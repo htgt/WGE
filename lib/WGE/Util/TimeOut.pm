@@ -1,7 +1,7 @@
 package WGE::Util::TimeOut;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::TimeOut::VERSION = '0.081';
+    $WGE::Util::TimeOut::VERSION = '0.082';
 }
 ## use critic
 
@@ -25,6 +25,10 @@ use Log::Log4perl qw(:easy);
 sub timeout{
 	my ($time, $code, @args) = @_;
 
+    if($ENV{WGE_NO_TIMEOUT}){
+        my @ret = $code->(@args);
+        return wantarray ? @ret : $ret[0] ;
+    }
 	my $pid = $$;
     my $caller = ( caller(1) )[3];
 
@@ -33,6 +37,7 @@ sub timeout{
         # child monitors parent and kills it if it takes too long
         for (1..$time) { sleep 1; kill(0,$pid) || exit }
         ERROR("$caller has timed out - killing process $pid");
+        DEBUG("Set environment variable WGE_NO_TIMEOUT=1 to switch off timeout");
         kill 'KILL', $pid;
         exit;
     }

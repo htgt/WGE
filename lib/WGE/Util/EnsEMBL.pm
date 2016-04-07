@@ -1,7 +1,7 @@
 package WGE::Util::EnsEMBL;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::EnsEMBL::VERSION = '0.081';
+    $WGE::Util::EnsEMBL::VERSION = '0.082';
 }
 ## use critic
 
@@ -14,7 +14,10 @@ use warnings FATAL => 'all';
 use Moose;
 use MooseX::ClassAttribute;
 use Bio::EnsEMBL::Registry;
+use Bio::EnsEMBL::ApiVersion;
 use namespace::autoclean;
+
+with 'MooseX::Log::Log4perl';
 
 # registry is a class variable to ensure that load_registry_from_db() is
 # called only once
@@ -26,12 +29,13 @@ class_has registry => (
 );
 
 sub _build_registry {
-
+    my $self = shift;
     Bio::EnsEMBL::Registry->load_registry_from_db(
         -host => $ENV{LIMS2_ENSEMBL_HOST} || 'ensembldb.ensembl.org',
         -user => $ENV{LIMS2_ENSEMBL_USER} || 'anonymous'
     );
 
+    $self->log->debug("Using ensembl API version: ".software_version());
     return 'Bio::EnsEMBL::Registry';
 }
 
