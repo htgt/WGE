@@ -35,7 +35,14 @@ The root page (/)
 
 sub index :Path :Args(0) {
     my ( $self, $c ) = @_;
-
+    my $status = $c->model('Golgi')->schema->resultset('InfoMessage')->find({ date => {'!=', undef}});
+    if ($status) {
+        $status = $status->as_hash;
+        $c->stash(
+            date => $status->{date},
+            message => $status->{message}
+        );
+    }
     return;
 }
 

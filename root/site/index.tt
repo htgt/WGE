@@ -1,5 +1,7 @@
 [% META title = "WTSI Genome Editing"; META tab_name = "WGE" %]
-
+[% IF message != "" %]
+    [% INCLUDE message/warning_message.tt warning = message %]
+[% END %]
 <div class="content">
   <div class="row">
     <div class="span12">
