@@ -64,7 +64,6 @@ sub window_find_pairs{
 
     my @all_pairs;
     while ($start < $end ){
-        $self->log->debug("pair window start: $start");
         my $pair_rs = $pairs->search({ 'chr_start' => { -between => [ $start, $start + $window_size ]} });
         my @crisprs = $pair_rs->all;
         push @all_pairs, @{ $self->find_pairs(\@crisprs,\@crisprs, $options) || [] };
@@ -93,8 +92,6 @@ sub find_pairs {
         die "You must provide a schema if you want db data"
             unless defined $self->schema;
     }
-
-    $self->log->debug( "Finding pairs: ", scalar(@{$list_a}), ", ", scalar(@{$list_b}) );
 
     my %pairs; #use a hash to avoid duplicates
     for my $first ( @{ $list_a } ) {
@@ -128,13 +125,10 @@ sub find_pairs {
 
     #if the user wants database data then now is the time to retrieve it
     if ( $options->{get_db_data} ) {
-        $self->log->warn("Retrieving DB pair data");
         my $db_data = $self->schema->resultset('CrisprPair')->fast_search_by_ids( {
             ids        => [ keys %pairs ],
             species_id => $options->{species_id}
         } );
-
-        $self->log->debug("Found " . scalar( keys %{ $db_data } ) . " pairs");
 
         #now insert anything we found into the original pairs hash
         while ( my ( $pair_id, $data ) = each %{ $db_data } ) {

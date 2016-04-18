@@ -21,6 +21,8 @@ use WGE::Util::OffTargetServer;
 use WGE::Util::FindOffTargets;
 use WebAppCommon::Util::EnsEMBL;
 use JSON;
+use WGE::Util::TimeOut qw(timeout);
+
 
 BEGIN { extends 'Catalyst::Controller' }
 
@@ -101,6 +103,7 @@ sub gene_search :Local('gene_search') {
         }
     );
 
+    $c->log->debug("Gene marker symbol search done");
     #return a list of hashrefs with the matching gene data
     $c->stash->{json_data}  = [ sort map { $_->marker_symbol } @genes ];
     $c->forward('View::JSON');
@@ -132,6 +135,7 @@ sub exon_search :Local('exon_search') {
             }
         } sort { $a->rank <=> $b->rank } $gene->exons;
 
+    $c->log->debug("Exon search done");
     #return a list of hashrefs with the matching exon ids and ranks
     $c->stash->{json_data} = { transcript => $gene->canonical_transcript, exons => \@exons };
     $c->forward('View::JSON');
@@ -146,20 +150,24 @@ sub off_targets_by_seq :Local('off_targets_by_seq') {
 
     check_params_exist( $c, $params, [ qw( seq pam_right ) ]);
 
-    my $off_target_data;
-    try {
-        $off_target_data = $self->ots_server->find_off_targets_by_seq(
-            {
+    my $search_params = {
                 sequence  => $params->{seq},
                 pam_right => $params->{pam_right},
                 species   => $params->{species},
-            }
-        );
+    };
+
+    $c->log->debug("Finding off targets by seq: ".Dumper($search_params));
+
+    my $off_target_data;
+    try {
+        $off_target_data = $self->ots_server->find_off_targets_by_seq($search_params);
     }
     catch ( $e ) {
         $c->log->error( 'Error generating off target data: ' . $e );
         _send_error( $c, $e, 400 );
     }
+
+    $c->log->debug("Off targets by seq search done");
 
     $c->stash->{json_data} = $off_target_data;
     $c->forward('View::JSON');
@@ -176,6 +184,7 @@ sub search_by_seq :Local('search_by_seq') {
 
     check_params_exist( $c, $params, [ qw( seq pam_right ) ]);
 
+    $c->log->debug("Searching for crisprs by seq");
     my $json = $self->ots_server->search_by_seq(
         {
             sequence  => $params->{seq},
@@ -192,6 +201,7 @@ sub search_by_seq :Local('search_by_seq') {
         }
     }
 
+    $c->log->debug("Crispr search by seq done");
     $c->stash->{json_data} = $json;
     $c->forward('View::JSON');
 
@@ -205,6 +215,7 @@ sub crispr_search :Local('crispr_search') {
 
     check_params_exist( $c, $params, [ 'exon_id[]' ]);
 
+    $c->log->debug("Doing crispr_search");
     $c->stash->{json_data} = _get_exon_attribute(
         $c,
         "crisprs",
@@ -213,6 +224,7 @@ sub crispr_search :Local('crispr_search') {
         $params->{ flank }
     );
 
+    $c->log->debug("crispr_search done");
     $c->forward('View::JSON');
 
     return;
@@ -224,6 +236,7 @@ sub pair_search :Local('pair_search') {
 
     check_params_exist( $c, $params, [ 'exon_id[]' ]);
 
+    $c->log->debug("doing pair_search");
     my $pair_data = _get_exon_attribute(
         $c,
         "pairs",
@@ -296,6 +309,7 @@ sub pair_search :Local('pair_search') {
         $c->forward('View::JSON');
     }
 
+    $c->log->debug("pair_search done");
     return;
 }
 
@@ -324,6 +338,51 @@ sub individual_off_target_search :Local('individual_off_target_search') {
     return;
 }
 
+# This differs from individual_off_target_search as it returns the off-target
+# summary and list for all crisprs queried, not just those that have been
+# added to the database following the call to the CRISPR-Analyser
+sub crispr_off_targets :Local('crispr_off_targets'){
+    my ($self, $c) = @_;
+
+    my $params = $c->req->params;
+    check_params_exist( $c, $params, [ qw( species id ) ] );
+
+    my $ids = $params->{id} ;
+    if ( ref $ids ne 'ARRAY' ) {
+        $ids = [ $ids ];
+    }
+
+    try {
+        my $data = $self->ot_finder->run_individual_off_target_search(
+            $c->model('DB'),
+            $params->{species},
+            $ids,
+        );
+    }
+    catch ($e){
+        $c->stash->{json_data} = { error => $e };
+        $c->forward('View::JSON');
+        return;
+    }
+
+    my $data = {};
+    my @crisprs = $c->model('DB')->resultset('Crispr')->search({
+        id => { '-in' => $ids }
+    });
+
+    foreach my $crispr (@crisprs){
+        $data->{ $crispr->id } = {
+            id                 => $crispr->id,
+            off_targets        => $crispr->off_target_ids,
+            off_target_summary => $crispr->off_target_summary,
+        };
+    }
+
+    $c->stash->{json_data} = $data;
+    $c->forward('View::JSON');
+    return;
+}
+
 sub pair_off_target_search :Local('pair_off_target_search') {
     my ( $self, $c ) = @_;
 
@@ -334,6 +393,48 @@ sub pair_off_target_search :Local('pair_off_target_search') {
     my $data = $self->ot_finder->run_pair_off_target_search($c->model('DB'), $params);
 
     $c->stash->{json_data} = $data;
+    $c->forward('View::JSON');
+
+    return;
+}
+
+# This differs from pair_off_target_search as it returns the off target information
+# for the crispr_pair ID queried
+sub crispr_pair_off_targets :Local('crispr_pair_off_targets') {
+    my ( $self, $c ) = @_;
+
+    my $params = $c->req->params;
+
+    check_params_exist( $c, $params, [ qw( species left_id right_id ) ] );
+
+    my $data = $self->ot_finder->run_pair_off_target_search($c->model('DB'), $params);
+
+    if($data->{success}){
+        my $off_target_data;
+        my $pair = $c->model('DB')->find_crispr_pair($params);
+
+        my @off_target_ids;
+        foreach my $off_target ($pair->off_targets){
+            push @off_target_ids, $off_target->{left_crispr}->{id}
+                                  ."_"
+                                  .$off_target->{right_crispr}->{id};
+        }
+
+        my $pair_data = {
+            $pair->id => {
+                id                 => $pair->id,
+                off_target_summary => $pair->off_target_summary,
+                off_targets        => \@off_target_ids,
+            }
+        };
+
+        $c->stash->{json_data} = $pair_data;
+    }
+    else{
+        $c->stash->{json_data} = $data;
+    }
+
+
     $c->forward('View::JSON');
 
     return;
@@ -442,6 +543,7 @@ sub designs_in_region :Local('designs_in_region') Args(0){
         user                 => $c->user,
     };
 
+    $c->log->debug("Finding designs in region ".$params->{chromosome_number}.":".$params->{start_coord}."-".$params->{end_coord});
     # FIXME: generate gff for all design oligos in specified region
     my $oligos = gibson_designs_for_region (
          $schema,
@@ -449,6 +551,9 @@ sub designs_in_region :Local('designs_in_region') Args(0){
     );
 
     my $gibson_gff = design_oligos_to_gff( $oligos, $params );
+
+    $c->log->debug("designs in regions search done");
+
     $c->response->content_type( 'text/plain' );
     my $body = join "\n", @{$gibson_gff};
     return $c->response->body( $body );
@@ -471,6 +576,8 @@ sub crisprs_in_region :Local('crisprs_in_region') Args(0){
         flank_size        => $c->request->params->{flank_size},
     };
 
+    $c->log->debug("Finding crisprs in region ".$params->{chromosome_number}.":".$params->{start_coord}."-".$params->{end_coord});
+
     # Show only bookmarked crisprs
     if($c->request->params->{bookmarked_only}){
         $params->{user} = $c->user;
@@ -486,6 +593,9 @@ sub crisprs_in_region :Local('crisprs_in_region') Args(0){
     }
 
     my $crispr_gff = crisprs_to_gff( $crisprs, $params);
+
+    $c->log->debug("crisprs in region search done");
+
     $c->response->content_type( 'text/plain' );
     my $body = join "\n", @{$crispr_gff};
     return $c->response->body( $body );
@@ -505,6 +615,8 @@ sub crispr_pairs_in_region :Local('crispr_pairs_in_region') Args(0){
         flank_size        => $c->request->params->{flank_size},
     };
 
+    $c->log->debug("Finding crispr pairs in region ".$params->{chromosome_number}.":".$params->{start_coord}."-".$params->{end_coord});
+
     my $pairs;
     # Show only bookmarked crispr pairs
     if($c->request->params->{bookmarked_only}){
@@ -523,6 +635,9 @@ sub crispr_pairs_in_region :Local('crispr_pairs_in_region') Args(0){
     }
 
     my $pairs_gff = crispr_pairs_to_gff( $pairs, $params);
+
+    $c->log->debug("crispr pairs in region search done");
+
     $c->response->content_type( 'text/plain' );
     my $body = join "\n", @{$pairs_gff};
     return $c->response->body( $body );
@@ -540,6 +655,8 @@ sub variation_for_region :Local('variation_for_region') Args(0) {
     $params->{start_coord}= $c->request->params->{'chr_start'};
     $params->{end_coord}= $c->request->params->{'chr_end'};
 
+    $c->log->debug("Finding variation for region ".$params->{chr_number}.":".$params->{start_coord}."-".$params->{end_coord});
+
     use WGE::Util::Variation;
     my $variation = WGE::Util::Variation->new ( {'species' => $params->{'species'}} );
 
@@ -547,6 +664,8 @@ sub variation_for_region :Local('variation_for_region') Args(0) {
          $model,
          $params,
     );
+
+    $c->log->debug("variation for region done");
 
     $c->stash->{'json_data'} = $var_feature;
 
@@ -569,30 +688,36 @@ sub translation_for_region :Local('translation_for_region') Args(0) {
 
     my $ensembl = WebAppCommon::Util::EnsEMBL->new( species => $params->{species} );
 
-    $c->log->debug( $params->{chr_name} . ":" . $params->{chr_start} . "-" . $params->{chr_end} );
-
-    my $slice = $ensembl->slice_adaptor->fetch_by_region(
-        'chromosome',
-        $params->{chr_name},
-        $params->{chr_start},
-        $params->{chr_end},
-    );
-
-    my @genes = @{ $slice->get_all_Genes_by_type('protein_coding') };
-
-    $c->log->debug( "Found " . scalar( @genes ) . " genes for region" );
+    $c->log->debug( "translation_for_region: ".$params->{chr_name} . ":" . $params->{chr_start} . "-" . $params->{chr_end} );
 
     my @features;
-    for my $gene ( @genes ) {
-        try {
-            push @features, $self->_process_gene( $c, $gene );
-        }
-        catch ( $e ) {
-            $c->log->error( $e );
-            #$c->stash->{json_data} = { error => $e };
-        }
-    }
 
+    timeout(5,sub{
+        my $slice = $ensembl->slice_adaptor->fetch_by_region(
+            'chromosome',
+            $params->{chr_name},
+            $params->{chr_start},
+            $params->{chr_end},
+        );
+
+        my @genes = @{ $slice->get_all_Genes_by_type('protein_coding') };
+
+
+        $c->log->debug( "Found " . scalar( @genes ) . " genes for region" );
+
+
+        for my $gene ( @genes ) {
+            try {
+                push @features, $self->_process_gene( $c, $gene );
+            }
+            catch ( $e ) {
+                $c->log->error( $e );
+                #$c->stash->{json_data} = { error => $e };
+            }
+        }
+    });
+
+    $c->log->debug("translation_for_region done");
     $c->stash->{json_data} = \@features;
     $c->forward('View::JSON');
 
