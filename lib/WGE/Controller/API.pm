@@ -23,6 +23,15 @@ use WebAppCommon::Util::EnsEMBL;
 use JSON;
 use WGE::Util::TimeOut qw(timeout);
 
+has lims2_api => (
+    is         => 'ro',
+    isa        => 'LIMS2::REST::Client',
+    lazy_build => 1
+);
+
+sub _build_lims2_api {
+    return LIMS2::REST::Client->new_with_config();
+}
 
 BEGIN { extends 'Catalyst::Controller' }
 
@@ -1037,6 +1046,10 @@ sub fork_test :Local('fork_test') Args(0){
    $c->forward('View::JSON');
 }
 
-
-
+sub announcements :Local('announcements') {
+    my ($self, $c) = @_;
+    my $messages = encode_json $self->lims2_api->GET( 'announcements', { sys => 'wge' } );
+    
+    return $c->response->body( $messages );
+}
 1;
