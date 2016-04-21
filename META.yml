@@ -18,6 +18,7 @@ meta-spec:
   version: 1.4
 name: WGE
 requires:
+  Bio::EnsEMBL::ApiVersion: 0
   Bio::EnsEMBL::Registry: 0
   Bio::Perl: 0
   Bio::Seq: 0
@@ -46,6 +47,7 @@ requires:
   Data::Dump: 0
   Data::Dumper: 0
   Data::Random: 0
+  DateTime: 0
   DateTime::Format::Pg: 0
   Excel::Writer::XLSX: 0
   File::stat: 0
@@ -103,4 +105,4 @@ requires:
   strict: 0
   utf8: 0
   warnings: 0
-version: 0.076
+version: 0.077

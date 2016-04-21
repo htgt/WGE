@@ -1,3 +1,29 @@
+0.077     2016-04-21 14:40:12 Europe/London
+    Implemented announcements
+0.082     2016-04-07 14:38:44 Europe/London
+
+  Show off-target counts by type on crispr report page
+  Upgraded to EnsEMBL API v83
+
+0.081     2016-04-05 16:17:33 Europe/London
+
+   Added APIs to get off-target info for crisprs and pairs 
+
+0.080     2016-03-23 14:56:50 Europe/London
+
+   Added timeout to other methods using ensembl API
+
+0.079     2016-03-09 13:44:10 Europe/London
+
+0.078     2016-03-08 16:21:01 Europe/London
+
+   Timeout set for MAF variation in region search which sometimes hangs
+
+0.077     2016-03-07 14:07:24 Europe/London
+
+    Search off-targets by seq bug fixes
+    More debugging statements added
+ 
 0.076     2016-01-07 11:55:57 Europe/London
     Desgin creation bug fix
 0.075     2016-01-07 11:17:40 Europe/London

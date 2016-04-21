@@ -51,6 +51,13 @@
     });
 
     var rows = new Array([], [], [], [], []);
+    var ots_by_type = {
+        'Exonic'     : [0,0,0,0,0],
+        'Intergenic' : [0,0,0,0,0],
+        'Intronic'   : [0,0,0,0,0],
+
+    };
+
     var total_erroneous = 0;
     $("#offtarget_table .ots").each(function() {
       var tr = $(this);
@@ -68,6 +75,9 @@
         rows[match.total].push(tr);
       }
 
+      var type = tr.children(".ot_type").text();
+      ots_by_type[type][match.total]++;
+
       //quick hack to remove the handful of CC-GG matches
       //that aren't right. need to stop persisting them.
       if ( match.total > 5 ) {
@@ -78,7 +88,28 @@
 
     var t = $("#total_offs");
     if( t.text() != 'No data') { //only do this if there's data
+      // adjust the total OT count
       t.text( t.text() - total_erroneous );
+
+      // Add the OT counts by type
+      var count_table = $("#ot_count_table");
+      if( $(".too_many_ots").size() ){
+        count_table.after("<small>Off-target counts by type not available as there are too many off-targets to list</small>");
+      }
+      else{
+        for (var type in ots_by_type){
+          var total = 0;
+          var mm_counts = [];
+          for ( var mm = 0; mm <=4; mm++ ){
+            var count = ots_by_type[type][mm];
+            total += count;
+            mm_counts.push(mm + ":" + count);
+          }
+          var summary = "{" + mm_counts.join(", ") + "}";
+          count_table.find(".ot_total").filter("." + type).text(total);
+          count_table.find(".ot_summary").filter("." + type).text(summary);
+        }
+      }
     }
 
     //order everything by number of mismatches
@@ -148,14 +179,27 @@
   </table>
 </div>
 <div class="well">
-  <table>
+  <table class="table table-bordered" id="ot_count_table">
     <tr>
-      <td>Total off-targets</td>
-      <td id="total_offs">[% crispr.off_targets.size or crispr.off_target_total or 'No data' %]</td>
+      <th>Off-Target Counts</th>
+      <th>All</th>
+      <th>Exonic</th>
+      <th>Intronic</th>
+      <th>Intergenic</th>
     </tr>
     <tr>
-      <td>Off-target summary</td>
+      <td>Total</td>
+      <td id="total_offs">[% crispr.off_targets.size or crispr.off_target_total or 'No data' %]</td>
+      <td class="Exonic ot_total"></td>
+      <td class="Intronic ot_total"></td>
+      <td class="Intergenic ot_total"></td>
+    </tr>
+    <tr>
+      <td>Summary</td>
       <td>[% crispr.off_target_summary or 'No data' %]</td>
+      <td class="Exonic ot_summary"></td>
+      <td class="Intronic ot_summary"></td>
+      <td class="Intergenic ot_summary"></td>
     </tr>
   </table>
 </div>
@@ -246,7 +290,7 @@
     <td class="seq">[% off_target.seq %]</td>
     <td class="mm"></td>
     <td>[% display_strand(pam_right=off_target.pam_right) %]</td>
-    <td>[% type(c=off_target) %]</td>
+    <td class="ot_type">[% type(c=off_target) %]</td>
   </tr>
 [% END %]
 [% UNLESS crispr.off_target_summary %]
@@ -257,7 +301,7 @@
 [% END %]
 
 [% IF crispr.off_target_summary AND crispr.off_targets.size == 0 %]
-  <tr class="warning">
+  <tr class="warning too_many_ots">
     <td colspan="5" style="text-align: center">Too many off-targets to display for this crispr</td>
   </tr>
 [% END %]

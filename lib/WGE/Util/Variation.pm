@@ -1,7 +1,7 @@
 package WGE::Util::Variation;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::Variation::VERSION = '0.076';
+    $WGE::Util::Variation::VERSION = '0.077';
 }
 ## use critic
 
@@ -11,6 +11,9 @@ use feature qw( say );
 use Moose;
 use namespace::autoclean;
 use WGE::Util::EnsEMBL;
+use WGE::Util::TimeOut qw(timeout);
+
+with 'MooseX::Log::Log4perl';
 
 has species => (
     is       => 'rw',
@@ -42,39 +45,50 @@ sub variation_for_region {
     my $model = shift;
     my $params = shift;
 
-    my $slice_adaptor = $self->slice_adaptor( $params->{'species'} );
-
-    my $slice = $slice_adaptor->fetch_by_region(
-        'chromosome',
-        $params->{'chr_number'},
-        $params->{'start_coord'},
-        $params->{'end_coord'},
-    );
-
-    my $vf_adaptor = $self->variation_feature_adaptor( $params->{'species'} );
-    my $vfs = $vf_adaptor->fetch_all_by_Slice( $slice );
     my @vf_mafs;
 
-    my @req_keys
-        = qw/
-            variation_name
-            allele_string
-            class_SO_term
-            minor_allele_frequency
-            minor_allele
-            minor_allele_count
-            source
-            strand
-          /;
+    timeout( 5 => sub {
+        my $slice_adaptor = $self->slice_adaptor( $params->{'species'} );
+        $self->log->debug("getting slice");
+        my $slice = $slice_adaptor->fetch_by_region(
+            'chromosome',
+            $params->{'chr_number'},
+            $params->{'start_coord'},
+            $params->{'end_coord'},
+        );
+        $self->log->debug("got slice");
 
-    foreach my $vf ( @{$vfs}) {
-        if ( $vf->minor_allele_frequency ) {
-            my %maff = map { $_ => $vf->$_ } @req_keys;
-            $maff{'start'} = $vf->transform('chromosome')->start;
-            $maff{'end'} = $vf->transform('chromosome')->end;
-            push @vf_mafs, \%maff;
+        my $vf_adaptor = $self->variation_feature_adaptor( $params->{'species'} );
+        $self->log->debug("getting variation features");
+        my $vfs = $vf_adaptor->fetch_all_by_Slice( $slice );
+        $self->log->debug("got ".scalar @{$vfs}." variation features");
+
+        my @req_keys
+            = qw/
+                variation_name
+                allele_string
+                class_SO_term
+                minor_allele_frequency
+                minor_allele
+                minor_allele_count
+                strand
+              /;
+
+        $self->log->debug("getting minor allele frequencies");
+        foreach my $vf ( @{$vfs}) {
+            if ( $vf->minor_allele_frequency ) {
+                my %maff = map { $_ => $vf->$_ } @req_keys;
+                $maff{'start'} = $vf->transform('chromosome')->start;
+                $maff{'end'} = $vf->transform('chromosome')->end;
+                # Following upgrade to ensembl API v83 $vf->source returns object
+                # rather than string so we fetch the source name string here
+                $maff{'source'} = $vf->source->name;
+                push @vf_mafs, \%maff;
+            }
         }
-    }
+        $self->log->debug("got minor allele frequencies");
+    });
+
     return \@vf_mafs;
 }
 
