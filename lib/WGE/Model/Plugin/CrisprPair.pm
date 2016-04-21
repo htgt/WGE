@@ -1,7 +1,7 @@
 package WGE::Model::Plugin::CrisprPair;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Plugin::CrisprPair::VERSION = '0.084';
+    $WGE::Model::Plugin::CrisprPair::VERSION = '0.085';
 }
 ## use critic
 
