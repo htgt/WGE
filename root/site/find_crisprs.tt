@@ -63,10 +63,7 @@
       var table = $(this).attr('id') == "search_pairs" ? get_pairs() : get_crisprs();
     });
 
-    $("#genoverse").click(function(event) {
-        //stop the button submitting the form
-        event.preventDefault();
-
+    function show_genoverse(single,paired){
         if( ! form_valid() ) {
           return;
         }
@@ -74,21 +71,40 @@
         //redirect the user to the genoverse page
         var url = "[% c.uri_for('/genoverse_browse') %]";
         var exon = get_selected_exons();
-        var full_url = url.concat("?view_single=1&view_paired=0&exon_id=",exon,'&species_id=',get_species());
+        var full_url = url.concat("?view_single=",single,"&view_paired=",paired,"&exon_id=",exon,'&species_id=',get_species());
         //window.location.href=full_url;
         window.open(full_url);
+    }
+
+    $("#genoverse_crisprs").click(function(event) {
+        //stop the button submitting the form
+        event.preventDefault();
+
+        show_genoverse(1,0);
 
         return false;
      });
 
-    $("#download").click(function(event) {
+    $("#genoverse_pairs").click(function(event) {
+        //stop the button submitting the form
+        event.preventDefault();
+
+        show_genoverse(0,1);
+
+        return false;
+     });
+
+    $("#download_pairs , #download_crisprs").click(function(event) {
       event.preventDefault();
 
       if ( ! form_valid() ) {
         return;
       }
 
-      var url = "[% c.uri_for('/api/pair_search') %]";
+      var pair_url = "[% c.uri_for('/api/pair_search') %]";
+      var crispr_url = "[% c.uri_for('/api/crispr_search') %]";
+
+      var url = $(this).attr('id') == "download_pairs" ? pair_url : crispr_url ;
 
       //open csv download in new window
       window.open( build_url(url, {"csv": 1, "exon_id[]": get_selected_exons(), "species": get_species()}) );
@@ -607,11 +623,19 @@
           <small>Note: the CRISPR table only shows CRISPRs that overlap the exon by at least 1 base.<br/>
             To see flanking crisprs please use the genome browser</small>
           <br/><br/>
-          <button class="btn btn-default" id="search_crisprs" autocomplete="off">Show CRISPRs in table</button>
-          <button class="btn btn-default" id="search_pairs" autocomplete="off">Show pairs in table</button>
-          <button class="btn btn-default" id="genoverse" autocomplete="off">Show in genome browser</button>
-          <button class="btn btn-default" id="download" autocomplete="off">Download pairs as spreadsheet</button>
-        </div>
+          <div class="well">
+            <h4>Show CRISPRs in:</h4>
+            <button class="btn btn-primary" id="search_crisprs" autocomplete="off"><i class="icon-list-alt icon-white"></i> Table</button>
+            <button class="btn btn-primary" id="genoverse_crisprs" autocomplete="off"><i class="icon-eye-open icon-white"></i> Genome Browser</button>
+            <button class="btn btn-primary" id="download_crisprs" autocomplete="off"><i class="icon-download icon-white"></i> Download</button>
+          </div>
+
+          <div class="well">
+            <h4>Show CRISPR pairs in:</h4>
+            <button class="btn btn-primary" id="search_pairs" autocomplete="off"><i class="icon-list-alt icon-white"></i> Table</button>
+            <button class="btn btn-primary" id="genoverse_pairs" autocomplete="off"><i class="icon-eye-open icon-white"></i> Genome Browser</button>
+            <button class="btn btn-primary" id="download_pairs" autocomplete="off"><i class="icon-download icon-white"></i> Download</button>
+          </div>
       </fieldset>
       <br/>
     </form>
