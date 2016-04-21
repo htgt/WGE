@@ -94,6 +94,10 @@
             </li>
           </ul>
           <ul class='nav pull-right'>
+
+            <li onclick="getAnnouncements()"><a><i class="icon-envelope"></i></a></li>
+            [% INCLUDE message/announcements.tt sys = 'wge' %]
+
            [% IF c.user %]
             <li [% IF (template.tab_name == 'bookmarks') %] class="active" [% END %]>
              <a href="[% c.uri_for('/my_bookmarks') %]">My Bookmarks</a>
@@ -157,6 +161,9 @@ _gaq.push(['_trackPageview']);
   ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
   var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
 })();
+function getAnnouncements(){
+    $('#announceModal').modal({show: true});
+}
 
 </script>
 </body>

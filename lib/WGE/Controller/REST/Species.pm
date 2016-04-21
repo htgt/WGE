@@ -1,7 +1,7 @@
 package WGE::Controller::REST::Species;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::REST::Species::VERSION = '0.083';
+    $WGE::Controller::REST::Species::VERSION = '0.084';
 }
 ## use critic
 
