@@ -220,6 +220,22 @@
 
 <script type="text/javascript">
 
+  // Use this to query a url with the current region params
+  // and download csv it returns
+  function download_as_csv(url){
+    var region_params = {
+      "species_id" : "[% species %]",
+      "start"      : $(window)[0].genoverse.start,
+      "end"        : $(window)[0].genoverse.end,
+      "chr"        : "[% chromosome %]",
+      "assembly"   : "[% genome %]",
+      "crispr_filter" : $('input[name=crispr_filter]:checked').val(),
+      "flank_size"    :  $('#flank_size').val()
+    };
+    region_params["csv"] = 1;
+    window.open( build_url(url, region_params) );
+  }
+
   //Function to retrieve the current coords on display to the user
   function update_coords(){
       var browse_start = $(window)[0].genoverse.start + 200;
@@ -648,6 +664,7 @@
     });
 
     $('#MAF_error_text').hide();
+
   });
 
 </script>
@@ -822,6 +839,22 @@
           if ( $("#hide_designs").is(':checked') ) {
             hide_designs();
           }
+
+          // Add buttons to allow users to download crisprs from tracks
+          var btn_html = "<button class='btn-mini btn-primary'>download <i class='icon-download icon-white'></i></button>";
+
+          var crispr_download_btn = $(btn_html);
+          $(".name[title='Crisprs']").append(crispr_download_btn);
+          crispr_download_btn.click(function(){
+            download_as_csv("[% c.uri_for('/api/crisprs_in_region') %]");
+          });
+
+          var pair_download_btn = $(btn_html);
+          $(".name[title='Crispr Pairs']").append(pair_download_btn);
+          pair_download_btn.click(function(){
+            download_as_csv("[% c.uri_for('/api/crispr_pairs_in_region') %]");
+          });
+
 
           var spinner = "[% c.uri_for( '/static/images/spinner-circle.gif' ) %]";
 
