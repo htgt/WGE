@@ -220,6 +220,16 @@
 
 <script type="text/javascript">
 
+  function add_download_button(track,url){
+    var download_btn = $("<button class='btn-mini btn-primary'>download <i class='icon-download icon-white'></i></button>");
+
+    $(".name[title='" + track + "']").append(download_btn);
+
+    download_btn.click(function(){
+      download_as_csv(url);
+    });
+  }
+
   // Use this to query a url with the current region params
   // and download csv it returns
   function download_as_csv(url){
@@ -278,6 +288,7 @@
   function show_single (){
       show_tracks(["Crisprs", "Bookmarked Crisprs"]);
       enable_crispr_filters();
+      add_download_button("Crisprs","[% c.uri_for('/api/crisprs_in_region') %]");
   }
 
   function hide_paired (){
@@ -288,6 +299,7 @@
   function show_paired (){
       show_tracks(["Crispr Pairs","Bookmarked Crispr Pairs"]);
       enable_crispr_pair_filters();
+      add_download_button("Crispr Pairs","[% c.uri_for('/api/crispr_pairs_in_region') %]");
   }
 
   function hide_designs (){
@@ -841,20 +853,8 @@
           }
 
           // Add buttons to allow users to download crisprs from tracks
-          var btn_html = "<button class='btn-mini btn-primary'>download <i class='icon-download icon-white'></i></button>";
-
-          var crispr_download_btn = $(btn_html);
-          $(".name[title='Crisprs']").append(crispr_download_btn);
-          crispr_download_btn.click(function(){
-            download_as_csv("[% c.uri_for('/api/crisprs_in_region') %]");
-          });
-
-          var pair_download_btn = $(btn_html);
-          $(".name[title='Crispr Pairs']").append(pair_download_btn);
-          pair_download_btn.click(function(){
-            download_as_csv("[% c.uri_for('/api/crispr_pairs_in_region') %]");
-          });
-
+          add_download_button("Crisprs","[% c.uri_for('/api/crisprs_in_region') %]");
+          add_download_button("Crispr Pairs","[% c.uri_for('/api/crispr_pairs_in_region') %]");
 
           var spinner = "[% c.uri_for( '/static/images/spinner-circle.gif' ) %]";
 
