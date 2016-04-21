@@ -8,9 +8,21 @@ use Bio::Perl qw( revcom_as_string );
 use WGE::Util::CreateDesign;
 use WGE::Util::Statistics qw( human_ot_distributions );
 use WGE::Util::OffTargetServer;
+use LIMS2::REST::Client;
+
+use Data::Dumper;
 
 BEGIN { extends 'Catalyst::Controller' }
 
+has lims2_api => (
+    is         => 'ro',
+    isa        => 'LIMS2::REST::Client',
+    lazy_build => 1
+);
+
+sub _build_lims2_api {
+    return LIMS2::REST::Client->new_with_config();
+}
 #
 # Sets the actions in this controller to be registered with no prefix
 # so they function identically to actions created in MyApp.pm
@@ -35,7 +47,21 @@ The root page (/)
 
 sub index :Path :Args(0) {
     my ( $self, $c ) = @_;
-
+    my $messages;
+    try {
+        $messages = $self->lims2_api->GET( 'announcements', { sys => 'wge' } );
+    } catch {
+        $c->log->debug("Unable to connect to LIMS2");
+    };
+    if ($messages) {
+        print Dumper $messages;
+        my @high = @{$messages->{high}};
+        my @normal = @{$messages->{normal}};
+        $c->stash(
+            high => \@high,
+            normal => \@normal,
+        );
+    }
     return;
 }
 
