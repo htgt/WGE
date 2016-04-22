@@ -23,15 +23,13 @@ use WebAppCommon::Util::EnsEMBL;
 use JSON;
 use WGE::Util::TimeOut qw(timeout);
 
-has lims2_api => (
-    is         => 'ro',
-    isa        => 'LIMS2::REST::Client',
-    lazy_build => 1
-);
+use LWP::UserAgent;
 
-sub _build_lims2_api {
-    return LIMS2::REST::Client->new_with_config();
-}
+use Sub::Exporter -setup => {
+    exports => [ qw(
+        handle_public_api
+    ) ] 
+};
 
 BEGIN { extends 'Catalyst::Controller' }
 
@@ -1048,8 +1046,23 @@ sub fork_test :Local('fork_test') Args(0){
 
 sub announcements :Local('announcements') {
     my ($self, $c) = @_;
-    my $messages = encode_json $self->lims2_api->GET( 'announcements', { sys => 'wge' } );
-    
-    return $c->response->body( $messages );
+    my $message = handle_public_api();
+    return $c->response->body($message);
+}
+
+sub handle_public_api {
+    my ($self, $c) = @_;
+    print Dumper "Entered"; 
+    my $agent = LWP::UserAgent->new;
+    my $url = "http://www.sanger.ac.uk/htgt/lims2/public_api/announcements/?sys=wge";
+ 
+    my $req = HTTP::Request->new(GET => $url);
+    $req->header('content-type' => 'application/json');
+ 
+    my $response = $agent->request($req);
+    if ($response->is_success) {
+        my $message = $response->decoded_content;
+        return $message;
+    }
 }
 1;
