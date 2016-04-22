@@ -8,6 +8,8 @@ use Bio::Perl qw( revcom_as_string );
 use WGE::Util::CreateDesign;
 use WGE::Util::Statistics qw( human_ot_distributions );
 use WGE::Util::OffTargetServer;
+use WGE::Controller::API qw( handle_public_api );
+use JSON;
 use LIMS2::REST::Client;
 
 use Data::Dumper;
@@ -49,11 +51,13 @@ sub index :Path :Args(0) {
     my ( $self, $c ) = @_;
     my $messages;
     try {
-        $messages = $self->lims2_api->GET( 'announcements', { sys => 'wge' } );
+        $messages = WGE::Controller::API::handle_public_api();
     } catch {
         $c->log->debug("Unable to connect to LIMS2");
     };
+    print Dumper $messages;
     if ($messages) {
+        $messages = decode_json $messages;
         print Dumper $messages;
         my @high = @{$messages->{high}};
         my @normal = @{$messages->{normal}};
