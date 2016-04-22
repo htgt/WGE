@@ -1,7 +1,7 @@
 package WGE::Controller::API;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::API::VERSION = '0.086';
+    $WGE::Controller::API::VERSION = '0.087';
 }
 ## use critic
 
@@ -28,16 +28,15 @@ use WGE::Util::FindOffTargets;
 use WebAppCommon::Util::EnsEMBL;
 use JSON;
 use WGE::Util::TimeOut qw(timeout);
+use WGE::Util::ExportCSV qw(format_crisprs_for_csv format_pairs_for_csv);
 
-has lims2_api => (
-    is         => 'ro',
-    isa        => 'LIMS2::REST::Client',
-    lazy_build => 1
-);
+use LWP::UserAgent;
 
-sub _build_lims2_api {
-    return LIMS2::REST::Client->new_with_config();
-}
+use Sub::Exporter -setup => {
+    exports => [ qw(
+        handle_public_api
+    ) ] 
+};
 
 BEGIN { extends 'Catalyst::Controller' }
 
@@ -231,16 +230,47 @@ sub crispr_search :Local('crispr_search') {
     check_params_exist( $c, $params, [ 'exon_id[]' ]);
 
     $c->log->debug("Doing crispr_search");
-    $c->stash->{json_data} = _get_exon_attribute(
+
+    my $crispr_data = _get_exon_attribute(
         $c,
         "crisprs",
         $params->{ 'exon_id[]' },
         undef, #species which is optional
         $params->{ flank }
     );
-
     $c->log->debug("crispr_search done");
-    $c->forward('View::JSON');
+
+    #default to json, but allow csv
+    if ( exists $params->{csv} and $params->{csv} ) {
+        my @crispr_list;
+        while ( my ( $exon_id, $crisprs ) = each %{ $crispr_data } ) {
+            for my $crispr ( @{ $crisprs } ) {
+                push @crispr_list, $crispr;
+            }
+        }
+
+        my $show_exon_id = 1;
+        my $csv_data = format_crisprs_for_csv(\@crispr_list, $show_exon_id);
+        $c->log->debug( "Total CSV rows:" . scalar( @$csv_data ) );
+
+
+        #format array of exons properly
+        my $exons = $params->{'exon_id[]'};
+        if ( ref $exons eq 'ARRAY' ) {
+            #limit exon string to 50 characters
+            $exons = substr( join("-", @{ $params->{'exon_id[]'} }), 0, 50 );
+        }
+
+        $c->stash(
+            filename     => "WGE-" . $exons . "-crisprs.tsv",
+            data         => $csv_data,
+            current_view => 'CSV',
+        );
+    }
+    else{
+        $c->stash->{json_data} = $crispr_data;
+        $c->forward('View::JSON');
+    }
 
     return;
 }
@@ -261,50 +291,17 @@ sub pair_search :Local('pair_search') {
 
     #default to json, but allow csv
     if ( exists $params->{csv} and $params->{csv} ) {
-        my @csv_data;
-
-        my @fields = qw( exon_id spacer pair_status summary pair_id );
-
-        my @crispr_fields = qw( id location seq off_target_summary );
-
-        for my $orientation ( qw( l r ) ) {
-            push @fields, map { $orientation . "_" . $_ } @crispr_fields;
-        }
-
-        push @csv_data, \@fields;
-
+        my @pair_list;
         while ( my ( $exon_id, $pairs ) = each %{ $pair_data } ) {
             for my $pair ( @{ $pairs } ) {
-                my ( $status, $summary ) = ("Not started", "");
-
-                if ( $pair->{db_data} ) {
-                    $status  = $pair->{db_data}{status} if $pair->{db_data}{status};
-                    $summary = $pair->{db_data}{off_target_summary} if $pair->{db_data}{off_target_summary};
-                }
-
-                my @row = (
-                    $exon_id,
-                    $pair->{spacer},
-                    $status,
-                    $summary,
-                    $pair->{id},
-                );
-
-                #add all the individual crispr fields for both crisprs
-                for my $dir ( qw( left_crispr right_crispr ) ) {
-                    #mirror ensembl location format
-                    $pair->{$dir}{location} = $pair->{$dir}{chr_name}  . ":"
-                                      . $pair->{$dir}{chr_start} . "-"
-                                      . $pair->{$dir}{chr_end};
-
-                    push @row, map { $pair->{$dir}{$_} || "" } @crispr_fields;
-                }
-
-                push @csv_data, \@row;
+                push @pair_list, $pair;
             }
         }
+        my $show_exon_id = 1;
+        my $csv_data = format_pairs_for_csv(\@pair_list, $show_exon_id);
 
-        $c->log->debug( "Total CSV rows:" . scalar( @csv_data ) );
+
+        $c->log->debug( "Total CSV rows:" . scalar( @$csv_data ) );
 
         #format array of exons properly
         my $exons = $params->{'exon_id[]'};
@@ -315,7 +312,7 @@ sub pair_search :Local('pair_search') {
 
         $c->stash(
             filename     => "WGE-" . $exons . "-pairs.tsv",
-            data         => \@csv_data,
+            data         => $csv_data,
             current_view => 'CSV',
         );
     }
@@ -591,7 +588,8 @@ sub crisprs_in_region :Local('crisprs_in_region') Args(0){
         flank_size        => $c->request->params->{flank_size},
     };
 
-    $c->log->debug("Finding crisprs in region ".$params->{chromosome_number}.":".$params->{start_coord}."-".$params->{end_coord});
+    my $region = $params->{chromosome_number}.":".$params->{start_coord}."-".$params->{end_coord};
+    $c->log->debug("Finding crisprs in region $region");
 
     # Show only bookmarked crisprs
     if($c->request->params->{bookmarked_only}){
@@ -599,6 +597,17 @@ sub crisprs_in_region :Local('crisprs_in_region') Args(0){
     }
 
     my $crisprs = crisprs_for_region($schema, $params);
+
+    # Can request CSV download, otherwise continue to generate gff
+    if($c->request->params->{csv}){
+        my $csv_data = format_crisprs_for_csv([$crisprs->all]);
+        $c->stash(
+            filename     => "WGE-" . $region . "-crisprs.tsv",
+            data         => $csv_data,
+            current_view => 'CSV',
+        );
+        return;
+    }
 
     if(my $design_id = $c->request->params->{design_id}){
         my $five_f = $c->model->c_retrieve_design_oligo({ design_id => $design_id, oligo_type => '5F' });
@@ -630,7 +639,8 @@ sub crispr_pairs_in_region :Local('crispr_pairs_in_region') Args(0){
         flank_size        => $c->request->params->{flank_size},
     };
 
-    $c->log->debug("Finding crispr pairs in region ".$params->{chromosome_number}.":".$params->{start_coord}."-".$params->{end_coord});
+    my $region = $params->{chromosome_number}.":".$params->{start_coord}."-".$params->{end_coord};
+    $c->log->debug("Finding crispr pairs in region $region");
 
     my $pairs;
     # Show only bookmarked crispr pairs
@@ -640,6 +650,17 @@ sub crispr_pairs_in_region :Local('crispr_pairs_in_region') Args(0){
     }
     else{
         $pairs = crispr_pairs_for_region($schema, $params);
+    }
+
+    # Can request CSV download, otherwise continue to generate gff
+    if($c->request->params->{csv}){
+        my $csv_data = format_pairs_for_csv($pairs);
+        $c->stash(
+            filename     => "WGE-" . $region . "-pairs.tsv",
+            data         => $csv_data,
+            current_view => 'CSV',
+        );
+        return;
     }
 
     if(my $design_id = $c->request->params->{design_id}){
@@ -1054,8 +1075,23 @@ sub fork_test :Local('fork_test') Args(0){
 
 sub announcements :Local('announcements') {
     my ($self, $c) = @_;
-    my $messages = encode_json $self->lims2_api->GET( 'announcements', { sys => 'wge' } );
-    
-    return $c->response->body( $messages );
+    my $message = handle_public_api();
+    return $c->response->body($message);
+}
+
+sub handle_public_api {
+    my ($self, $c) = @_;
+    print Dumper "Entered"; 
+    my $agent = LWP::UserAgent->new;
+    my $url = "http://www.sanger.ac.uk/htgt/lims2/public_api/announcements/?sys=wge";
+ 
+    my $req = HTTP::Request->new(GET => $url);
+    $req->header('content-type' => 'application/json');
+ 
+    my $response = $agent->request($req);
+    if ($response->is_success) {
+        my $message = $response->decoded_content;
+        return $message;
+    }
 }
 1;
