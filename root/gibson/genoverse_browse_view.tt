@@ -220,6 +220,32 @@
 
 <script type="text/javascript">
 
+  function add_download_button(track,url){
+    var download_btn = $("<button class='btn-mini btn-primary'>download <i class='icon-download icon-white'></i></button>");
+
+    $(".name[title='" + track + "']").append(download_btn);
+
+    download_btn.click(function(){
+      download_as_csv(url);
+    });
+  }
+
+  // Use this to query a url with the current region params
+  // and download csv it returns
+  function download_as_csv(url){
+    var region_params = {
+      "species_id" : "[% species %]",
+      "start"      : $(window)[0].genoverse.start,
+      "end"        : $(window)[0].genoverse.end,
+      "chr"        : "[% chromosome %]",
+      "assembly"   : "[% genome %]",
+      "crispr_filter" : $('input[name=crispr_filter]:checked').val(),
+      "flank_size"    :  $('#flank_size').val()
+    };
+    region_params["csv"] = 1;
+    window.open( build_url(url, region_params) );
+  }
+
   //Function to retrieve the current coords on display to the user
   function update_coords(){
       var browse_start = $(window)[0].genoverse.start + 200;
@@ -262,6 +288,7 @@
   function show_single (){
       show_tracks(["Crisprs", "Bookmarked Crisprs"]);
       enable_crispr_filters();
+      add_download_button("Crisprs","[% c.uri_for('/api/crisprs_in_region') %]");
   }
 
   function hide_paired (){
@@ -272,6 +299,7 @@
   function show_paired (){
       show_tracks(["Crispr Pairs","Bookmarked Crispr Pairs"]);
       enable_crispr_pair_filters();
+      add_download_button("Crispr Pairs","[% c.uri_for('/api/crispr_pairs_in_region') %]");
   }
 
   function hide_designs (){
@@ -648,6 +676,7 @@
     });
 
     $('#MAF_error_text').hide();
+
   });
 
 </script>
@@ -822,6 +851,10 @@
           if ( $("#hide_designs").is(':checked') ) {
             hide_designs();
           }
+
+          // Add buttons to allow users to download crisprs from tracks
+          add_download_button("Crisprs","[% c.uri_for('/api/crisprs_in_region') %]");
+          add_download_button("Crispr Pairs","[% c.uri_for('/api/crispr_pairs_in_region') %]");
 
           var spinner = "[% c.uri_for( '/static/images/spinner-circle.gif' ) %]";
 
