@@ -516,14 +516,23 @@
     track.controller.makeFirstImage();
   }
 
-  function reload_crispr_tracks(){
-    var tracks = ['Crisprs', 'Bookmarked Crisprs', 'Crispr Pairs', 'Bookmarked Crispr Pairs'];
+  function reload_tracks(tracks){
     tracks.map(function (track_id){
       var track = get_track(track_id);
       if(track){
-        track.reload();
+        reload_track(track);
       }
     });
+  }
+
+  function reload_crispr_tracks(){
+    var tracks = ['Crisprs', 'Bookmarked Crisprs', 'Crispr Pairs', 'Bookmarked Crispr Pairs'];
+    reload_tracks(tracks);
+  }
+
+  function reload_ensembl_tracks(){
+    var tracks = ['Variation','MAF_variations','Protein'];
+    reload_tracks(tracks);
   }
 
 
@@ -658,6 +667,7 @@
 
     $('#reload_tracks').click(function (event){
       reload_crispr_tracks();
+      reload_ensembl_tracks();
     });
 
     $('#best_10_percent').click(function(){
