@@ -114,6 +114,19 @@
           </ul>
         </div>
     </div>
+    [% IF c.uri_for('/').match('internal|staging') %]
+    <div class="navbar">
+      <div class="navbar-inner">
+        <div class="brand">This version of WGE is used for software testing. The stable version is <a href="http://www.sanger.ac.uk/htgt/wge">here</a></div>
+        <div class="container">
+          <p class="nav pull-right navbar-text">
+          version: <strong>[% c.model('DB').software_version %]</strong> |
+          database: <strong>[% c.model('DB').database_name %]</strong>
+          </p>
+        </div>
+      </div>
+    </div>
+    [% END %]
 
     <div id="page_container" class="container">
       <!-- general error box for javascript to use -->
