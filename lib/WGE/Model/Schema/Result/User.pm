@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::User;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::User::VERSION = '0.090';
+    $WGE::Model::Schema::Result::User::VERSION = '0.091';
 }
 ## use critic
 
@@ -271,7 +271,7 @@ sub user_crisprs {
 sub user_crispr_pairs {
   my $self = shift;
 
-  return ( $self->user_crisprs_grch38s, $self->user_crispr_pairs_humans, $self->user_crispr_pairs_mice );
+  return ( $self->user_crispr_pairs_grch38s, $self->user_crispr_pairs_humans, $self->user_crispr_pairs_mice );
 }
 
 sub _species_crisprs {
