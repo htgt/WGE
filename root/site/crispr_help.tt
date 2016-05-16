@@ -7,6 +7,7 @@ section img {
     border-color: #000000;
     border-width: 1px;
     border-style: solid;
+    max-width: 100%;
 }
 
 .affix {
@@ -31,31 +32,23 @@ $(window).load(function() {
 
 <div class="content">
   <div class="row">
-    <div class="span3 bs-docs-sidebar">
-        <ul id="navigation" data-spy="affix" data-offset-top="180" class="nav nav-list bs-docs-sidenav">
+    <div class="col-md-3 bs-docs-sidebar">
+        <ul id="navigation" data-spy="affix" data-offset-top="180" class="nav nav-pills nav-stacked bs-docs-sidenav">
             <li><a href="#disclaimer">Disclaimer</a></li>
             <li><a href="#usage">Webapp Usage</a></li>
-            <li>
-                <ul class="nav nav-list">
-                    <li><a href="#table_view">Table view</a></li>
-                    <li><a href="#genoverse_view">Genoverse view</a></li>
-                    <li><a href="#bookmarks">Bookmarks</a></li>
-                </ul>
-            </li>
+            <li><a href="#table_view">&nbsp;&nbsp;&nbsp;Table view</a></li>
+            <li><a href="#genoverse_view">&nbsp;&nbsp;&nbsp;Genoverse view</a></li>
+            <li><a href="#bookmarks">&nbsp;&nbsp;&nbsp;Bookmarks</a></li>
             <li><a href="#off_targets">Off targets</a></li>
-            <li>
-                <ul class="nav nav-list">
-                    <li><a href="#summary_explanation">Summaries</a></li>
-                    <li><a href="#ot_distributions">Distributions</a></li>
-                    <li><a href="#individual_process">Individual</a></li>
-                    <li><a href="#pair_process">Paired</a></li>
-                </ul>
-            </li>
+            <li><a href="#summary_explanation">&nbsp;&nbsp;&nbsp;Summaries</a></li>
+            <li><a href="#ot_distributions">&nbsp;&nbsp;&nbsp;Distributions</a></li>
+            <li><a href="#individual_process">&nbsp;&nbsp;&nbsp;Individual</a></li>
+            <li><a href="#pair_process">&nbsp;&nbsp;&nbsp;Paired</a></li>
             <li><a href="#statuses">Pair Status Descriptions</a></li>
             <li><a href="#refs">References</a></li>
         </ul>
     </div>
-    <div class="span9">
+    <div class="col-md-9">
         [% PROCESS disclaimer %]
         <hr class="docs-separator" />
         <section id="usage">
@@ -241,11 +234,11 @@ max_distance: 1000
               </tr>
               <tr>
               [% FOREACH num IN [0,1,2,3,4] %]
-               <td>
+              <td>
                 <a href="[% c.uri_for('/static/images/distributions/human_' _ num _ 'mm.png') %]">
-                 <img src="[% c.uri_for('/static/images/distributions/human_' _ num _ 'mm.png') %]">
+                  <img src="[% c.uri_for('/static/images/distributions/human_' _ num _ 'mm.png') %]" style="width:200px;height:200px">
                 </a>
-               </td>
+              </td>
               [% END %]
               </tr>
               <tr>

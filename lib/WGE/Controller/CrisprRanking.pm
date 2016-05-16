@@ -13,6 +13,8 @@ use Text::CSV;
 
 BEGIN { extends 'Catalyst::Controller' }
 
+__PACKAGE__->config(namespace => '');
+
 #On navigated to, find OT calculated crisprs in the browser and sort
 sub rank_by_off_targets :Path('/crispr_ranking') :Args(0){
     my ( $self, $c) = @_;
