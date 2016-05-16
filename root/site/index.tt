@@ -2,7 +2,7 @@
 
 <div class="content">
   <div class="row">
-    <div class="span12">
+    <div class="col-md-12">
 [% FOREACH status IN high %]
     [% INCLUDE message/warning_message.tt warning = status.message prior = 'warning' date = status.created sid = status.id %]
 [% END %]
@@ -18,35 +18,35 @@
     </div>
   </div>
   <div class="row">
-    <div class="span2">
+    <div class="col-md-2">
         <b>Find CRISPRs in our genome browser</b>:<br/>
         <a href="[% c.uri_for('/genoverse_browse',{view_single => 1, view_paired => 1, exon_id => 'ENSE00000939167', species_id => 'Grch38' }) %]">
          <img src="[% c.uri_for('/static/images/genoverse_view.png') %]" class="img-polaroid" height="160px" width="160px" title="crispr pairs for BRCA2 (ENSE00000939167) in genome browser"/>
         </a>
     </div>
 
-    <div class="span2">
+    <div class="col-md-2">
         <b>Find CRISPRs by gene using our table</b>:<br/>
         <a href="[% c.uri_for('/find_crisprs', {show_example => 1}) %]">
         <img id="table_view_example" src="[% c.uri_for('/static/images/table_view.png') %]" class="img-polaroid" height="160px" width="160px" title="crispr pairs for BRCA2 (ENSE00000939167) in table"/>
         </a>
     </div>
 
-    <div class="span2">
+    <div class="col-md-2">
         <b>Find CRISPRs by 20bp gRNA</b>:<br/>
         <a href="[% c.uri_for('/search_by_seq', {show_example => 1}) %]">
         <img id="grna_search_example" src="[% c.uri_for('/static/images/search_by_grna_view.png') %]" class="img-polaroid" height="160px" width="160px" title="CRISPR lookup by gRNA"/>
         </a>
     </div>
 
-    <div class="span2">
+    <div class="col-md-2">
         <b>Find CRISPRs in genomic sequence</b>:<br/>
         <a href="[% c.uri_for('/search_by_seq', {show_example => 1}) %]">
         <img id="seq_search_example" src="[% c.uri_for('/static/images/bulk_seq_search_view.png') %]" class="img-polaroid" height="160px" width="160px" title="Find CRISPRs in genomic sequence"/>
         </a>
     </div>
 
-    <div class="span2">
+    <div class="col-md-2">
         <b>Find off-targets by sequence</b>:<br/>
         <a href="[% c.uri_for('/find_off_targets_by_seq', {show_example => 1}) %]">
         <img id="seq_search_example" src="[% c.uri_for('/static/images/find_off_targets_view.png') %]" class="img-polaroid" height="160px" width="160px" title="Find off-targets for gRNA"/>
@@ -56,7 +56,7 @@
   </div>
 
   <div class="row">
-    <div class="span12">
+    <div class="col-md-12">
         <br>
         <h5><a href="[% c.uri_for('/gibson_designer') %]">Gibson Designer</a></h5>
         <p>

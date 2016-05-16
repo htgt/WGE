@@ -70,36 +70,42 @@ $(document).ready(function() {
 </script>
 
 <div class="row">
-  <div class="span9">
+  <div class="col-md-9">
     <form role="form" id="search_form">
       <fieldset id="fields">
-        <div class="control-group" id="sequence">
-            <label class="control-label">Sequence</label>
-            <input type="text" class="form-control span4" id="sequence_field" placeholder="Enter sequence" autocomplete="off" />
-        </div>
+        <div class="control-group row" id="sequence">
+            <label class="col-md-12">Sequence</label>
+            <div class="col-md-4">
+              <input type="text" class="form-control" id="sequence_field" placeholder="Enter sequence" autocomplete="off" />
+            </div>
+        </div><br>
         <div class="control-group" id="species">
           <label class="control-label">Species</label>
+          <div class="col-md-offset-1">
             [% FOR s IN species %]
               <label class="radio">
                 <input type="radio" name="species" id="radio_[% s.id FILTER lower %]" value="[% s.id %]" />
                 <div class="species_label">[% s.display_name %]</div>
               </label>
             [% END %]
+          </div>    
         </div>
         <div class="control-group" id="orientation">
           <label class="control-label">Orientation</label>
-              <label class="radio">
-                <input type="radio" name="orientation" id="pam_right" value="true" checked />
-                <div class="species_label">PAM Right (NGG)</div>
-              </label>
-              <label class="radio">
-                <input type="radio" name="orientation" id="pam_left" value="false" />
-                <div class="species_label">PAM Left (CCN)</div>
-              </label>
+          <div class="col-md-offset-1">
+            <label class="radio">
+              <input type="radio" name="orientation" id="pam_right" value="true" checked />
+              <div class="species_label">PAM Right (NGG)</div>
+            </label>
+            <label class="radio">
+              <input type="radio" name="orientation" id="pam_left" value="false" />
+              <div class="species_label">PAM Left (CCN)</div>
+            </label>
+          </div>
         </div>
         <br/>
         <div>
-          <button class="btn btn-default" id="search_button" autocomplete="off">Find Off-Targets</button>
+          <button class="btn btn-primary" id="search_button" autocomplete="off">Find Off-Targets</button>
         </div>
       </fieldset>
       <br/>

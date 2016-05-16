@@ -6,6 +6,7 @@ section img {
     border-color: #000000;
     border-width: 1px;
     border-style: solid;
+    max-width: 100%;
 }
 
 .affix {
@@ -29,28 +30,25 @@ $(window).load(function() {
 
 <div class="content">
   <div class="row">
-    <div class="span3 bs-docs-sidebar">
-        <ul id="navigation" data-spy="affix" data-offset-top="180" class="nav nav-list bs-docs-sidenav">
+    <div class="col-md-3 bs-docs-sidebar">
+        <ul id="navigation" data-spy="affix" data-offset-top="180" class="nav nav-pills nav-stacked bs-docs-sidenav">
             <li><a href="#disclaimer">Disclaimer</a></li>
             <li><a href="#api">WGE API</a></li>
-            <li>
-                <ul class="nav nav-list">
-                    <li><a href="#crispr_search">Crispr Search by Exon</a></li>
-                    <li><a href="#crisprs_in_region">Crispr Search by Region</a></li>
-                    <li><a href="#pair_search">Crispr Pair Search by Exon</a></li>
-                    <li><a href="#crispr_off_targets">Off-Targets for Crisprs</a></li>
-                    <li><a href="#crispr_pair_off_targets">Off-Targets for Crispr Pairs</a></li>
-                    <li><a href="#search_by_seq">Find Crispr ID for Sequence</a></li>
-                    <li><a href="#gene_search">Find Marker Symbols for Search Term</a></li>
-                    <li><a href="#exon_search">Find Exons for Marker Symbol</a></li>
-                </ul>
+            <li><a href="#crispr_search">&nbsp;&nbsp;&nbsp;Crispr Search by Exon</a></li>
+            <li><a href="#crisprs_in_region">&nbsp;&nbsp;&nbsp;Crispr Search by Region</a></li>
+            <li><a href="#pair_search">&nbsp;&nbsp;&nbsp;Crispr Pair Search by Exon</a></li>
+            <li><a href="#crispr_off_targets">&nbsp;&nbsp;&nbsp;Off-Targets for Crisprs</a></li>
+            <li><a href="#crispr_pair_off_targets">&nbsp;&nbsp;&nbsp;Off-Targets for Crispr Pairs</a></li>
+            <li><a href="#search_by_seq">&nbsp;&nbsp;&nbsp;Find Crispr ID for Sequence</a></li>
+            <li><a href="#gene_search">&nbsp;&nbsp;&nbsp;Find Marker Symbols for Search Term</a></li>
+            <li><a href="#exon_search">&nbsp;&nbsp;&nbsp;Find Exons for Marker Symbol</a></li>
             </li>
             <li><a href="#components">WGE Components</a></li>
             <li><a href="#crispr_analyser">CRISPR-Analyser</a></li>
             <li><a href="#source">Source Code</a></li>
         </ul>
     </div>
-    <div class="span9">
+    <div class="col-md-9">
 
         [% PROCESS disclaimer %]
 

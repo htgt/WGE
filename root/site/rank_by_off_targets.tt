@@ -1,0 +1,91 @@
+[% META title = "Rank by Crispr Off-Targets" %]
+
+<div class="page-header">
+  <h1>Crispr ranking</h1>
+</div>
+<div id="alert_placeholder"></div>
+<div class="row">
+  <p class="col-md-2">
+    <a href="[% c.uri_for('/genoverse_browse' { chromosome => params.chromosome, browse_start => params.browse_start, browse_end => params.browse_end, genome => params.genome, species => params.species, view_single => view, view_paired => view }) %]" class="btn btn-primary" name="project_return_button">
+      <i class="glyphicon glyphicon-hand-left"></i> Back to genoverse browser
+    </a>
+  </p>
+  <button type="button" class="col-md-offset-8 btn btn-info" id="export">Export to spreadsheet</button>
+</div>
+
+<p>The score is generated from a mathematical algorithm. The algorithm applies weighting to the off-targets in each mismatch category.</p>
+
+<form class="form-horizontal">
+  <table class='table' id="crispr_table">
+    <tr>
+      <th>Rank</th>
+      <th>Crispr ID</th>
+      <th>Species</th>
+      <th>Chromosome</th>
+      <th>Start</th>
+      <th>Sequence</th>
+      <th>Off-Target Summary</th>
+    </tr>
+    [% SET counter = 0 %]
+    [% FOREACH crispr IN sorted %]
+      [% SET counter = counter + 1 %]
+      <tr>
+        <td>[% counter %]</td>
+        <td>[% crispr.id %]</td>
+        <td>[% params.species %]</td>
+        <td>[% crispr.chr_name %]</td>
+        <td>[% crispr.chr_start %]</td>
+        <td>[% crispr.seq %]</td>
+        <td>[% crispr.off_target_summary %]</td>
+      </tr>
+    [% END %]
+    [% IF sorted.size == 0 %]
+      <tr><td>No crisprs with calculated off-targets found.</td></tr>
+    [% END %]
+  </table>
+</form>
+
+
+<script type="text/javascript">
+
+$('#export').click(function () {
+    var table = $("#crispr_table");
+    var title = [];
+    var rows = [];
+    table = table.find('tr');
+    
+    for (var tr = 0; tr < table.length; tr++) {
+        var data = [];
+        var head = $(table[tr]).find('th');
+        for (var h = 0; h < head.length; h++) {
+            var text = clean_text($(head[h]).text());
+            title.push(text);
+        }
+        var body = $(table[tr]).find('td');
+        for (var b = 0; b < body.length; b++) {
+            var text = clean_text($(body[b]).text());
+            data.push(text);
+        }
+        data = data.join(",");
+        rows.push(data);
+    }
+    title = title.join(",");
+    rows = rows.join("\n");
+
+    var csv = title + rows;
+    
+    var downloadLink = document.createElement('a'); 
+    downloadLink.href = 'data:text/csv;charset=UTF,'+ encodeURIComponent(csv); 
+    downloadLink.download = "Crisprs.csv"; 
+    document.body.appendChild(downloadLink); 
+    $('#alert_placeholder').html('<div class="alert alert-info"><a class="close" data-dismiss="alert">×</a><span>Please select the character set UTF-8 when importing the CSV into your editor.</span></div>')
+    downloadLink.click();
+});
+
+
+function clean_text(text){
+    text = text.replace(/"/g, '""');
+    return '"'+text+'"';
+}
+
+</script>
