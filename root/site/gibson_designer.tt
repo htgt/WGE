@@ -2,7 +2,7 @@
 [% PROCESS utils.tt %]
 
 <div class="row">
-  <div class="span12">
+  <div class="col-md-12">
 
     <div id="content">
       <img src="[% c.uri_for('/static/images/gibson_designer/vector_construction.png') %]" title="vector_construction" width="55%" align="right"/>

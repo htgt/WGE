@@ -596,23 +596,25 @@
 
 <div class="row">
 
-    <div class="span7">
+    <div class="col-md-7">
 
     <form role="form" id="crispr_search">
       <fieldset id="fields">
-        <div class="control-group" id="species">
           <label class="control-label">Species</label>
+          <div class="col-md-12 control-group" id="species">
+          <div class="col-md-12">
             [% FOR s IN species %]
               <label class="radio">
                 <input type="radio" name="species" id="radio_[% s.id FILTER lower %]" value="[% s.id %]" />
                 <div class="species_label">[% s.display_name %]</div>
               </label>
             [% END %]
+          </div>  
         </div>
-        <br/>
+        <br/>        
         <div>
           <div class="control-group" id="marker_symbol">
-            <label class="control-label">Marker Symbol</label>
+            <label class="control-label"><br/>Marker Symbol</label>
             <input type="text" class="form-control span4" id="gene" placeholder="Enter gene" autocomplete="off" />
           </div>
           <br/>
@@ -625,16 +627,16 @@
           <br/><br/>
           <div class="well">
             <h4>Show CRISPRs in:</h4>
-            <button class="btn btn-primary" id="search_crisprs" autocomplete="off"><i class="icon-list-alt icon-white"></i> Table</button>
-            <button class="btn btn-primary" id="genoverse_crisprs" autocomplete="off"><i class="icon-eye-open icon-white"></i> Genome Browser</button>
-            <button class="btn btn-primary" id="download_crisprs" autocomplete="off"><i class="icon-download icon-white"></i> Download</button>
+            <button class="btn btn-primary" id="search_crisprs" autocomplete="off"><i class="glyphicon glyphicon-list-alt"></i> Table</button>
+            <button class="btn btn-primary" id="genoverse_crisprs" autocomplete="off"><i class="glyphicon glyphicon-eye-open"></i> Genome Browser</button>
+            <button class="btn btn-primary" id="download_crisprs" autocomplete="off"><i class="glyphicon glyphicon-download"></i> Download</button>
           </div>
 
           <div class="well">
             <h4>Show CRISPR pairs in:</h4>
-            <button class="btn btn-primary" id="search_pairs" autocomplete="off"><i class="icon-list-alt icon-white"></i> Table</button>
-            <button class="btn btn-primary" id="genoverse_pairs" autocomplete="off"><i class="icon-eye-open icon-white"></i> Genome Browser</button>
-            <button class="btn btn-primary" id="download_pairs" autocomplete="off"><i class="icon-download icon-white"></i> Download</button>
+            <button class="btn btn-primary" id="search_pairs" autocomplete="off"><i class="glyphicon glyphicon-list-alt"></i> Table</button>
+            <button class="btn btn-primary" id="genoverse_pairs" autocomplete="off"><i class="glyphicon glyphicon-eye-open"></i> Genome Browser</button>
+            <button class="btn btn-primary" id="download_pairs" autocomplete="off"><i class="glyphicon glyphicon-download"></i> Download</button>
           </div>
       </fieldset>
       <br/>
@@ -642,14 +644,14 @@
 
     </div>
 
-    <div class="span2 pull-right">
+    <div class="col-md-2 pull-right">
      Example in genome browser:
      <a href="[% c.uri_for('/genoverse_browse',{view_single => 1, view_paired => 1, exon_id => 'ENSE00000939167', species_id => 'Grch38' }) %]">
       <img src="[% c.uri_for('/static/images/genoverse_view.png') %]" class="img-polaroid" height="120px" width="120px" title="crispr pairs for BRCA2 (ENSE00000939167) in genome browser"/>
      </a>
     </div>
 
-    <div class="span2 pull-right">
+    <div class="col-md-2 pull-right">
      Example in table:<br/><br/>
       <a href="[% c.uri_for('/find_crisprs', {show_example => 1})  %]">
       <img id="table_view_example" src="[% c.uri_for('/static/images/table_view.png') %]" class="img-polaroid" height="120px" width="120px" title="crispr pairs for BRCA2 (ENSE00000939167) in table"/>

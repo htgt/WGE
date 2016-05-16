@@ -6,12 +6,16 @@
 <form method="POST" action="[% c.uri_for( '/gibson_design_gene_pick' ) %]/[% c.session.species %]" class="well">
   <fieldset>
     <legend>Gibson Design Gene Pick</legend>
-
-    <input type="text" class="input-xxlarge" name="search_gene" placeholder="gene name">
+    <div class="row">
+      <div class="col-md-4">
+        <input type="text" class="form-control" name="search_gene" placeholder="gene name">
+      </div>
+    </div>
     <span class="help-block">Valid search terms: HGNC IDs, MGI IDs, Ensembl Gene IDs and Marker Symbols.</span>
 
 
     <label><strong>Show Exons</strong></label>
+    <div class="col-md-offset-1">
     <label class="radio">
       <input type="radio" name="show_exons" value="canonical" checked>
       Canonical Transcript Only
@@ -20,7 +24,7 @@
       <input type="radio" name="show_exons" value="all">
       All
     </label>
-
+    </div>
     <br>
     <input type="submit" name="gene_pick" class="btn btn-primary" value="Find Exons" />
   </fieldset>
