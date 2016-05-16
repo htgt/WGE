@@ -1,9 +1,31 @@
+0.088     2016-05-16 13:51:15 Europe/London
+    Bootstrap v3
+0.091     2016-05-09 16:42:41 Europe/London
+
+  Bugfix in fetching bookmarked crispr pairs
+
+0.090     2016-04-27 10:42:53 Europe/London
+
+  Info to distinguish staging version from live
+
+0.089     2016-04-26 10:35:50 Europe/London
+
+  Link SNPs back to ensembl
+  Reload ensembl tracks which may have timed out
+
+0.088     2016-04-25 11:18:28 Europe/London
+
+  Explanation of PAM-proximal OT sorting
+
 0.087     2016-04-22 15:31:43 Europe/London
 
 0.086     2016-04-21 16:18:01 Europe/London
     Possible announcements fix
 0.085     2016-04-21 15:25:52 Europe/London
     Implemented announcements
+    Added tsv download options to genoverse and exon search results
+    Off-targets sorted by position of mismatches with respect to PAM
+
 0.082     2016-04-07 14:38:44 Europe/London
 
   Show off-target counts by type on crispr report page

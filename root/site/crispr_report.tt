@@ -119,6 +119,7 @@
       }
     }
 
+    $("#ot_info").popover({content: "The off-targets on this page are sorted by total mismatch count and those with mismatches close to the PAM site are shown lower in the list. Structural analysis suggests that mismatches in the PAM-proximal region produce a greater reduction in cas9 off-target activity."});
     //order everything by number of mismatches
     var tbl_top = $("#spacer_row");
 
@@ -156,7 +157,7 @@
     <td><h4>ID: [% crispr.id %]</h4></td>
     <td>
        <a class='btn btn-info pull-right' href="[% c.uri_for( '/genoverse_browse', { crispr_id => crispr.id, view_single => 1 }) %]">
-          <i class="icon-eye-open icon-white"></i>
+          <i class="glyphicon glyphicon-eye-open icon-white"></i>
           View in Genome Browser
         </a>
     </td>
@@ -230,16 +231,16 @@
 </div>
 
 
-<div class="accordion" id="accordion">
-  <div class="accordion-group well">
-    <div class="accordion-heading">
+<div class="panel-group" id="accordion">
+  <div class="panel panel-default well">
+    <div class="panel-heading">
       <p><strong>Found [% crispr_pairs.size %] Related Crispr Pairs</strong></p>
-      <a class="accordion-toggle collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
-        <i class='icon-list'></i> Show Crispr Pairs
+      <a class="panel-toggle collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+        <i class='glyphicon glyphicon-list'></i> Show Crispr Pairs
       </a>
     </div>
-    <div id="collapseOne" class="accordion-body collapse">
-      <div class="accordion-inner">
+    <div id="collapseOne" class="panel-body collapse">
+      <div class="panel-body">
         <table  class="table table-bordered table-condensed">
           <tr>
     <th>ID</th>
@@ -282,7 +283,10 @@
   </div>
 </div>
 
-<h3>Off-Target Sites</h3>
+
+<h3>Off-Target Sites <small><button class="btn btn-info" id="ot_info"><i class="icon-info-sign icon-white"></i></button></small></h3>
+
+
 <p><b>Note</b>: the row highlighted in blue is the original CRISPR</p>
 
 [%# if we have no off targets to show hide the table %]
@@ -322,7 +326,7 @@
   <tr>
     <td colspan="5" style="text-align: center">No off target data available for this crispr</td>
   </tr>
-  <button class="btn btn-block ots-button" value="[% crispr_id %]">Find off targets</button>
+  <button class="btn btn-default btn-block ots-button" value="[% crispr_id %]">Find off targets</button>
 [% END %]
 
 [% IF crispr.off_target_summary AND crispr.off_targets.size == 0 %]

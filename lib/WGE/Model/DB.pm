@@ -1,7 +1,7 @@
 package WGE::Model::DB;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::DB::VERSION = '0.087';
+    $WGE::Model::DB::VERSION = '0.088';
 }
 ## use critic
 
@@ -61,6 +61,14 @@ around BUILDARGS => sub {
 
     return $data;
 };
+
+sub database_name {
+    return $ENV{WGE_DB};
+}
+
+sub software_version {
+    return $WGE::Model::DB::VERSION || 'dev';
+}
 
 sub clear_schema {
     my ( $self ) = @_;

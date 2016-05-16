@@ -1,7 +1,7 @@
 [% META title = "About WTSI Genome Editing"; META header_text = "About WTSI Genome Editing"; META tab_name = 'about' %]
 [% PROCESS utils.tt %]
 
-<div class="span12">
+<div class="col-md-12">
     <section id="wge">
         <h2>WGE</h2>
         <p class="lead">
