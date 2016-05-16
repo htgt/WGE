@@ -119,6 +119,7 @@
       }
     }
 
+    $("#ot_info").popover({content: "The off-targets on this page are sorted by total mismatch count and those with mismatches close to the PAM site are shown lower in the list. Structural analysis suggests that mismatches in the PAM-proximal region produce a greater reduction in cas9 off-target activity."});
     //order everything by number of mismatches
     var tbl_top = $("#spacer_row");
 
@@ -282,7 +283,10 @@
   </div>
 </div>
 
-<h3>Off-Target Sites</h3>
+
+<h3>Off-Target Sites <small><button class="btn btn-info" id="ot_info"><i class="icon-info-sign icon-white"></i></button></small></h3>
+
+
 <p><b>Note</b>: the row highlighted in blue is the original CRISPR</p>
 
 [%# if we have no off targets to show hide the table %]
