@@ -155,9 +155,9 @@
       </div>
     </div>
     [% IF c.uri_for('/').match('internal|staging') %]
-    <div class="navbar">
-      <div class="navbar-inner">
-        <div class="brand">This version of WGE is used for software testing. The stable version is <a href="http://www.sanger.ac.uk/htgt/wge">here</a></div>
+    <div class="navbar-nav">
+      <div class="navbar-body">
+        <div class="navbar-brand">This version of WGE is used for software testing. The stable version is <a href="http://www.sanger.ac.uk/htgt/wge">here</a></div>
         <div class="container">
           <p class="nav pull-right navbar-text">
           version: <strong>[% c.model('DB').software_version %]</strong> |
