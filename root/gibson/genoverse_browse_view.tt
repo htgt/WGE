@@ -73,7 +73,12 @@
       <input type="hidden" name="view_single" value="[% view_single %]">
       <input type="hidden" name="view_paired" value="[% view_paired %]">
       <button type="submit" class="col-md-offset-2 col-md-3 btn btn-primary">Go </button>
-    </div>
+  </div>
+<p class="col-md-offset-1">
+  <a href="javascript:update_coords();" class="btn btn-primary" name="crispr_ranking button">
+    Crispr off-target report
+  </a>
+</p>
 </div>
 </div>
 </form>
@@ -169,11 +174,14 @@
     </tr>
   </tbody>
   </table>
+
   <a href="[% c.uri_for('/crispr_help') _ '#basic_filters' %]" target="_blank" class="pull-right">
-    <i class="glyphicon glyphicon-question-sign"></i>Help
+    <i class="glyphicon glyphicon-question-sign"></i> Help
   </a>
 </form>
-<div class="well">
+<div >
+<form id="colour_key" class="col-md-9 well">
+ <i id="pan" class="pull-right glyphicon glyphicon-move"></i>
  <table><tr>
  <td style="padding-right: 20px;">
   <strong>Crispr Colour Key:</strong><br>
@@ -185,9 +193,9 @@
 
   <div style="background: [%colours.pam%]; width: 10px; height: 20px; float: left"></div>
   <div style="margin-left: 30px">PAM site</div>
-
  </td>
- <td>
+
+ <td style="padding-bottom:20px;">
   <strong>Crispr Pair Colour Key:</strong><br>
   <div style="background: [%colours.left_crispr%]; width: 20px; height: 20px; float: left"></div>
   <div style="background: [%colours.right_crispr%]; width: 20px; height: 20px; float: left"></div>
@@ -199,16 +207,20 @@
 
   </td>
   </tr></table>
+</form>
 </div>
 </div> [%# end of left-hand div %]
 
 <div class="col-md-3">
 <div id="ot_filters_panel">
-<form  class="well">
+<form class="well">
+ <i id="pan" class="pull-right glyphicon glyphicon-move"></i>
   <table class='table' id="ot_filters_table">
-   <thead>
+      <thead>
+
     <tr>
-      <th id="crispr_ot_filters_heading" [% UNLESS view_single OR view_paired %]class="muted"[% END %]>Off-Target Filters</th>
+        <th id="crispr_ot_filters_heading" [% UNLESS view_single OR view_paired %]class="muted"[% END %]> Off-Target Filters</th>
+
     </tr>
    </thead>
    <tbody>
@@ -241,11 +253,7 @@
   </table>
 </form>
 </div>
-<p>
-  <a href="javascript:update_coords();" class="btn btn-primary" name="crispr_ranking button">
-    Rank Crisprs by Off-Targets
-  </a>
-</p>
+
 
 
 </div> [%# end of right-hand div %]
@@ -253,14 +261,18 @@
 </div>
 
 <div class="modal" id="dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-    <h3 id="myModalLabel">Off-Target Computation Status</h3>
-  </div>
-  <div class="modal-body" id="dialog_content">
-  </div>
-  <div class="modal-body" id="dialog_success">
-    This may take several minutes. Click "Reload Tracks" to refresh the view and show the latest off-target information.
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="myModalLabel">Off-Target Computation Status</h3>
+      </div>
+      <div class="modal-body" id="dialog_content">
+      </div>
+      <div class="modal-body" id="dialog_success">
+       This may take several minutes. Click "Reload Tracks" to refresh the view and show the latest off-target information.
+      </div>
+    </div>
   </div>
 </div>
 
@@ -268,7 +280,7 @@
 <script type="text/javascript">
 
   function add_download_button(track,url){
-    var download_btn = $("<button class='btn-xs btn-primary'>download <i class='icon-download icon-white'></i></button>");
+    var download_btn = $("<button class='btn-xs btn-primary'><i class='glyphicon glyphicon-download'></i>download</button>");
 
     $(".name[title='" + track + "']").append(download_btn);
 
@@ -618,7 +630,7 @@
 
   // Add event handlers to filter forms
   $(document).ready( function() {
-
+    
     // Close selection and refresh tracks when modal is closed
     $("#dialog").on('hidden', function(){
       $(window)[0].genoverse.cancelSelect();
@@ -626,6 +638,10 @@
     });
 
     $("#ot_filters_panel").draggable();
+    $("#colour_key").draggable({ stack: ".drag", zIndex: 2500  });
+    $("#colour_key").css('boxShadow','0px 0px 1px 1px grey');
+    $('#colour_key').css('z-index', '100');
+    console.log($("#genoverse").offset());
 
     // Handle clicks on the show/hide radio inputs
     $("#hide_single").change(function (event){

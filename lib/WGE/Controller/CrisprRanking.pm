@@ -1,7 +1,7 @@
 package WGE::Controller::CrisprRanking;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::CrisprRanking::VERSION = '0.092';
+    $WGE::Controller::CrisprRanking::VERSION = '0.093';
 }
 ## use critic
 

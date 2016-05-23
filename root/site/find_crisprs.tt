@@ -349,7 +349,7 @@
     else {
       //if it has no off target data add a button to get it
       status = $("<button>", {
-        "class": 'btn btn-mini btn-block ots-button',
+        "class": 'btn btn-xs btn-block ots-button',
         value: pair_id,
         text: "Find off targets"
       });
@@ -405,7 +405,7 @@
 
   function create_exon_ots_button(exon_id){
     var exon_ots_button = $("<button>", {
-      "class": 'btn btn-mini btn-block exon-ots-button',
+      "class": 'btn btn-xs btn-block exon-ots-button',
       value: exon_id,
       text: "Compute All Off-Targets"
     });
@@ -609,9 +609,9 @@
                 <div class="species_label">[% s.display_name %]</div>
               </label>
             [% END %]
-          </div>  
+          </div>
         </div>
-        <br/>        
+        <br/>
         <div>
           <div class="control-group" id="marker_symbol">
             <label class="control-label"><br/>Marker Symbol</label>
