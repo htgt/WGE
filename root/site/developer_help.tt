@@ -40,6 +40,7 @@ $(window).load(function() {
             <li><a href="#crispr_off_targets">&nbsp;&nbsp;&nbsp;Off-Targets for Crisprs</a></li>
             <li><a href="#crispr_pair_off_targets">&nbsp;&nbsp;&nbsp;Off-Targets for Crispr Pairs</a></li>
             <li><a href="#search_by_seq">&nbsp;&nbsp;&nbsp;Find Crispr ID for Sequence</a></li>
+            <li><a href="#off_targets_by_seq">&nbsp;&nbsp;&nbsp;Find Off-Targets for Sequence</a></li>
             <li><a href="#gene_search">&nbsp;&nbsp;&nbsp;Find Marker Symbols for Search Term</a></li>
             <li><a href="#exon_search">&nbsp;&nbsp;&nbsp;Find Exons for Marker Symbol</a></li>
             </li>
@@ -323,6 +324,36 @@ Or, with get_db_data set to 1 a list of CRISPRs:
 ]
 </pre>
             </section>
+
+            <section id="off_targets_by_seq">
+            <h3>Find Off-Targets for Sequence</h3>
+            Fetch off-target summary and list of off-target crispr IDs for any 20bp sequence.
+            <br>
+            Required fields: seq, species, pam_right
+            <br>
+            pam_right must be set to 'true' or 'false'
+            <br>
+            [% url = c.uri_for('/api/off_targets_by_seq', { seq=>"TTAATTGGTCAGCCTAACTC", species=>"mouse", pam_right="false"}) %]
+            <a href="[% url %]">[% url %]</a>
+            <br>
+            Returns off-target summary and off-target list. If a CRISPR site is found in the genome that exactly matches the search sequence then the ID of this is given. If there are multiple exact matches then the ID is that of the first match. If no exact match is found in the genome the ID returned will be 0.
+            <pre>
+{
+"off_targets": [
+302072111,
+310736349,
+310901261,
+320182042,
+456345367,
+...
+],
+"off_target_summary": "{0: 1, 1: 0, 2: 0, 3: 6, 4: 48}",
+"id": 456345367
+}
+            </pre>
+            </section>
+
+
             <section id="gene_search">
             <h3>Find Marker Symbols for Search Term</h3>
             Find all marker symbols matching your search, with wildcards either side of your value:

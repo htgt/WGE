@@ -33,34 +33,24 @@ $(document).ready(function() {
             { seq: seq, species: species.toLowerCase(), pam_right: orientation },
             function (data) {
                 $("#off_targets_table tr:last td:nth-last-child(2)").text(data.off_target_summary);
+
+                var link = "";
+                if(data.id == 0){
+                  // No ID - it is a novel crispr
+                  var url = "[% c.uri_for('/novel_crispr_off_targets') %]"
+                             + "?species=" + species.toLowerCase() + "&seq=" + seq + "&pam_right=" + orientation;
+                  link = '<a href="' + url + '">novel crispr</a>';
+                }
+                else{
+                  var url = "[% c.uri_for('/crispr/') %]" + data.id;
+                  link = '<a href="' + url + '">' + data.id + '</a>';
+                }
+
+                $("#off_targets_table tr:last td:nth-last-child(1)").html(link);
             }
         ).fail(function(){
           $("#off_targets_table tr:last td:nth-last-child(2)").text("search error");
-        });
-
-        $.getJSON( "[% c.uri_for( '/api/search_by_seq') %]" ,
-            { seq: seq, species: species.toLowerCase(), pam_right: orientation_for_search },
-            function (crispr_ids) {
-              $("#off_targets_table td:last").find('img').remove();
-              console.log('search by seq got crispr_ids: ' + crispr_ids);
-              var link_list = [];
-              $.each(crispr_ids, function(i,val){
-                var link = "[% c.uri_for('/crispr/') %]" + val;
-                console.log(link);
-                link_list.push('<a href="' + link + '">' + val + '</a>');
-              });
-
-              // If we got no crispr IDs link to novel crispr report for details
-              if(link_list.length == 0){
-                var link = "[% c.uri_for('/novel_crispr_off_targets') %]"
-                           + "?species=" + species.toLowerCase() + "&seq=" + seq + "&pam_right=" + orientation;
-                link_list.push('<a href="' + link + '">novel crispr</a>');
-              }
-
-              $("#off_targets_table td:last").append( link_list.join(", ") );
-            }
-        ).fail(function(){
-          $("#off_targets_table td:last").text("search error");
+          $("#off_targets_table tr:last td:nth-last-child(1)").text("search error");
         });
 
     })
@@ -88,7 +78,7 @@ $(document).ready(function() {
                 <div class="species_label">[% s.display_name %]</div>
               </label>
             [% END %]
-          </div>    
+          </div>
         </div>
         <div class="control-group" id="orientation">
           <label class="control-label">Orientation</label>
