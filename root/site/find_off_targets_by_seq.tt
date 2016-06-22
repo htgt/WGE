@@ -33,34 +33,24 @@ $(document).ready(function() {
             { seq: seq, species: species.toLowerCase(), pam_right: orientation },
             function (data) {
                 $("#off_targets_table tr:last td:nth-last-child(2)").text(data.off_target_summary);
+
+                var link = "";
+                if(data.id == 0){
+                  // No ID - it is a novel crispr
+                  var url = "[% c.uri_for('/novel_crispr_off_targets') %]"
+                             + "?species=" + species.toLowerCase() + "&seq=" + seq + "&pam_right=" + orientation;
+                  link = '<a href="' + url + '">novel crispr</a>';
+                }
+                else{
+                  var url = "[% c.uri_for('/crispr/') %]" + data.id;
+                  link = '<a href="' + url + '">' + data.id + '</a>';
+                }
+
+                $("#off_targets_table tr:last td:nth-last-child(1)").html(link);
             }
         ).fail(function(){
           $("#off_targets_table tr:last td:nth-last-child(2)").text("search error");
-        });
-
-        $.getJSON( "[% c.uri_for( '/api/search_by_seq') %]" ,
-            { seq: seq, species: species.toLowerCase(), pam_right: orientation_for_search },
-            function (crispr_ids) {
-              $("#off_targets_table td:last").find('img').remove();
-              console.log('search by seq got crispr_ids: ' + crispr_ids);
-              var link_list = [];
-              $.each(crispr_ids, function(i,val){
-                var link = "[% c.uri_for('/crispr/') %]" + val;
-                console.log(link);
-                link_list.push('<a href="' + link + '">' + val + '</a>');
-              });
-
-              // If we got no crispr IDs link to novel crispr report for details
-              if(link_list.length == 0){
-                var link = "[% c.uri_for('/novel_crispr_off_targets') %]"
-                           + "?species=" + species.toLowerCase() + "&seq=" + seq + "&pam_right=" + orientation;
-                link_list.push('<a href="' + link + '">novel crispr</a>');
-              }
-
-              $("#off_targets_table td:last").append( link_list.join(", ") );
-            }
-        ).fail(function(){
-          $("#off_targets_table td:last").text("search error");
+          $("#off_targets_table tr:last td:nth-last-child(1)").text("search error");
         });
 
     })
@@ -70,36 +60,42 @@ $(document).ready(function() {
 </script>
 
 <div class="row">
-  <div class="span9">
+  <div class="col-md-9">
     <form role="form" id="search_form">
       <fieldset id="fields">
-        <div class="control-group" id="sequence">
-            <label class="control-label">Sequence</label>
-            <input type="text" class="form-control span4" id="sequence_field" placeholder="Enter sequence" autocomplete="off" />
-        </div>
+        <div class="control-group row" id="sequence">
+            <label class="col-md-12">Sequence</label>
+            <div class="col-md-4">
+              <input type="text" class="form-control" id="sequence_field" placeholder="Enter sequence" autocomplete="off" />
+            </div>
+        </div><br>
         <div class="control-group" id="species">
           <label class="control-label">Species</label>
+          <div class="col-md-offset-1">
             [% FOR s IN species %]
               <label class="radio">
                 <input type="radio" name="species" id="radio_[% s.id FILTER lower %]" value="[% s.id %]" />
                 <div class="species_label">[% s.display_name %]</div>
               </label>
             [% END %]
+          </div>
         </div>
         <div class="control-group" id="orientation">
           <label class="control-label">Orientation</label>
-              <label class="radio">
-                <input type="radio" name="orientation" id="pam_right" value="true" checked />
-                <div class="species_label">PAM Right (NGG)</div>
-              </label>
-              <label class="radio">
-                <input type="radio" name="orientation" id="pam_left" value="false" />
-                <div class="species_label">PAM Left (CCN)</div>
-              </label>
+          <div class="col-md-offset-1">
+            <label class="radio">
+              <input type="radio" name="orientation" id="pam_right" value="true" checked />
+              <div class="species_label">PAM Right (NGG)</div>
+            </label>
+            <label class="radio">
+              <input type="radio" name="orientation" id="pam_left" value="false" />
+              <div class="species_label">PAM Left (CCN)</div>
+            </label>
+          </div>
         </div>
         <br/>
         <div>
-          <button class="btn btn-default" id="search_button" autocomplete="off">Find Off-Targets</button>
+          <button class="btn btn-primary" id="search_button" autocomplete="off">Find Off-Targets</button>
         </div>
       </fieldset>
       <br/>

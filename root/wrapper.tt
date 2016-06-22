@@ -1,20 +1,58 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<style type="text/css">
+.navbar-default .navbar-nav > li > .dropdown-menu > li > a:hover,
+.navbar-default .navbar-nav > li > .dropdown-menu > li > a:focus {
+  color: #ffffff;
+  background-color: #3691c8;
+}
+.navbar-default .navbar-nav > li > .dropdown-menu > li > .divider {
+  background-color: #3691c8;
+}
+.navbar-default .navbar-nav .open .dropdown-menu > .active > a,
+.navbar-default .navbar-nav .open .dropdown-menu > .active > a:hover,
+.navbar-default .navbar-nav .open .dropdown-menu > .active > a:focus {
+  color: #ffffff;
+  background-color: #3691c8;
+}
+
+.tabs > .active > a,
+.tabs > .active > a:hover,
+.tabs > .active > a:focus {
+  color: #ffffff;
+  background-color: #3691c8;
+}
+.navbar-nav > .open > a,
+.navbar-nav > .open > a:hover,
+.navbar-nav > .open > a:focus {
+  color: #ffffff;
+  background-color: #3691c8;
+}
+.navbar-default .navbar-toggle {
+  border-color: #3691c8;
+}
+.navbar-default .navbar-toggle:hover,
+.navbar-default .navbar-toggle:focus {
+  background-color: #3691c8;
+}</style>       
+
+        
+        
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="Content-type" content="text/html; charset=[% settings.charset %]" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>[% template.title || "WGE" %]</title>
 
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/2.3.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="[% c.uri_for('static/css/jquery-ui-1.9.2.custom.min.css') %]" />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="[% c.uri_for('static/css/jquery-ui-1.12.0.custom.css') %]" />
     <link rel="stylesheet" href="[% c.uri_for('static/css/style.css', { id => 5 }) %]" />
     <link rel="shortcut icon" type="image/x-icon" href="[% c.uri_for('favicon.ico') %]">
 
     <!-- Grab Google CDN's jQuery. fall back to local if necessary -->
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" type="text/javascript"></script>
+    <script src="[% c.uri_for('static/js/jquery-1.12.3.min.js') %]" type="text/javascript"></script>
 
-    <script src="[% c.uri_for('static/js/jquery-ui-1.9.2.custom.min.js') %]"></script>
+    <script src="[% c.uri_for('static/js/jquery-ui-1.12.0.custom.min.js') %]"></script>
     <script type="text/javascript">
       //set this here so all js classes can know the base_url
       var base_url = "[% c.uri_for( '' ) %]"
@@ -25,8 +63,8 @@
     <!-- Poller for the design status progress bar -->
     <script src="[% c.uri_for('static/js/poller.js') %]"></script>
 
-    <script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
-    <script src="//netdna.bootstrapcdn.com/bootstrap/2.3.2/js/bootstrap.min.js" type="text/javascript"></script>
+    <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" type="text/javascript"></script>
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -36,14 +74,16 @@
 </head>
 <body>
 
-    <div class="navbar">
-        <div class="navbar-inner">
-          <a class="brand" href="[% c.uri_for('/') %]">HTGT WGE
+    <div class="navbar navbar-default">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <a class="navbar-brand" href="[% c.uri_for('/') %]">HTGT WGE
               [%- IF settings.environment == 'development' -%]
                 [ DEVEL ]
               [%- END -%]
           </a>
-          <ul class="nav">
+      </div>
+          <ul class="nav navbar-nav tabs">
             <li [% IF (template.tab_name == 'WGE' OR template.tab_name == undef) %] class="active" [% END %]>
               <a href="[% c.uri_for('/') %]">Home</a>
             </li>
@@ -93,9 +133,9 @@
               <a href="[% c.uri_for('/contact') %]">Contact</a>
             </li>
           </ul>
-          <ul class='nav pull-right'>
+          <ul class='nav navbar-nav navbar-right'>
 
-            <li onclick="getAnnouncements()"><a><i class="icon-envelope"></i></a></li>
+            <li onclick="getAnnouncements()"><a><i class="glyphicon glyphicon-envelope"></i></a></li>
             [% INCLUDE message/announcements.tt sys = 'wge' %]
 
            [% IF c.user %]
@@ -105,19 +145,19 @@
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">[% c.user.name %] <b class="caret"></b></a>
               <ul class="dropdown-menu">
-                <li><a href="[% c.uri_for('/logout') %]"><i class="icon-off"></i> Logout</a></li>
+                <li><a href="[% c.uri_for('/logout') %]"><i class="glyphicon glyphicon-off"></i> Logout</a></li>
               </ul>
             </li>
            [% ELSE %]
-            <li><a href="[% c.uri_for('/login') %]" class="btn-info" style="color:white">Login with Google</a></li>
+            <li><a href="[% c.uri_for('/login') %]" class="btn btn-info" style="color:white">Login with Google</a></li>
            [% END %]
           </ul>
-        </div>
+      </div>
     </div>
     [% IF c.uri_for('/').match('internal|staging') %]
-    <div class="navbar">
-      <div class="navbar-inner">
-        <div class="brand">This version of WGE is used for software testing. The stable version is <a href="http://www.sanger.ac.uk/htgt/wge">here</a></div>
+    <div class="navbar-nav">
+      <div class="navbar-body">
+        <div class="navbar-brand">This version of WGE is used for software testing. The stable version is <a href="http://www.sanger.ac.uk/htgt/wge">here</a></div>
         <div class="container">
           <p class="nav pull-right navbar-text">
           version: <strong>[% c.model('DB').software_version %]</strong> |

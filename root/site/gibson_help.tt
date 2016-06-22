@@ -6,6 +6,7 @@ section img {
     border-color: #000000;
     border-width: 1px;
     border-style: solid;
+    max-width: 100%;
 }
 
 .affix {
@@ -29,15 +30,15 @@ $(window).load(function() {
 
 <div class="content">
   <div class="row">
-    <div class="span3 bs-docs-sidebar">
-        <ul id="navigation" data-spy="affix" data-offset-top="180" class="nav nav-list bs-docs-sidenav">
+    <div class="col-md-3 bs-docs-sidebar">
+        <ul id="navigation" data-spy="affix" data-offset-top="180" class="nav nav-pills nav-stacked bs-docs-sidenav">
             <li><a href="#disclaimer">Disclaimer</a></li>
             <li><a href="#usage">Gibson Design Tool Usage</a></li>
             <li><a href="#design_attempts">Design Attempts</a></li>
             <li><a href="#view_designs">Designs</a></li>
         </ul>
     </div>
-    <div class="span9">
+    <div class="col-md-9">
 
         [% PROCESS disclaimer %]
 
@@ -50,7 +51,7 @@ $(window).load(function() {
             </p>
             <p>
                 Firstly, login with your Google account.<br/>
-                <img class="img-polaroid" src="[% c.uri_for('/static/images/about/login.png') %]" title="login" />
+                <img class="img-polaroid" src="[% c.uri_for('/static/images/about/login.png') %]" title="login"  />
             </p>
             <p>
                 Next, select 'Create Design' from the 'Gibson Designer' menu and choose your species of interest.<br/>

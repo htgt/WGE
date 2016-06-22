@@ -1,4 +1,24 @@
 [% META title="Browse Crisprs" %]
+
+<style type="text/css">
+.row.no-gutter {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.row.no-gutter [class*='col-']:not(:first-child),
+.row.no-gutter [class*='col-']:not(:last-child) {
+  padding-right: 0;
+  padding-left: 0;
+}
+
+.unit {
+    display: table-cell;
+    vertical-align: middle;
+    padding-top: 4px;
+}
+</style>
+
 <div class="page-header">
   <h1>[%- genes -%]
     <small>[% IF design_id %]design: <strong>[%design_id%]</strong>[% END %]
@@ -9,47 +29,75 @@
   species: [% species %]
   [% END %]
   </small>
-  <a id="go_to_filters" class="btn btn-default pull-right">Show Options and Filters <i class="icon-chevron-down"></i></a><br>
-  <a id="reload_tracks" class="btn btn-default pull-right">Reload Tracks <i class="icon-refresh"></i></a>
+  <a id="go_to_filters" class="btn btn-default pull-right">Show Options and Filters <i class="glyphicon glyphicon-chevron-down"></i></a><br>
+  <a id="reload_tracks" class="btn btn-default pull-right">Reload Tracks <i class="glyphicon glyphicon-refresh"></i></a>
   </h1>
 </div>
 
 
 
-  <form class="form-inline" action="[% c.uri_for( '/genoverse_browse/' ) %]">
-    Chr <input type="text" class="input-small" placeholder="Chr" name="chromosome" value="[% chromosome %]">
-    <input type="text" class="input-small" placeholder="Start coord" name="browse_start" value="[% browse_start %]">
-     : <input type="text" class="input-small" placeholder="End coord" name="browse_end" value="[% browse_end %]">
+<form class="form form-horizontal" action="[% c.uri_for( '/genoverse_browse/' ) %]">
+    <div class="form-group">
+  <div class="col-md-12 row no-gutter">
+    <div class="col-md-2">  
+      <p class="col-md-3 unit" align="center">Chr</p> 
+      <div class="col-md-6">
+        <input type="text" class="form-control" placeholder="Chr" name="chromosome" value="[% chromosome %]">
+      </div>
+    </div>
+    
+    <div class="col-md-2">
+      <div class="col-md-11">
+        <input type="text" class="form-control" placeholder="Start coord" name="browse_start" value="[% browse_start %]">
+      </div><p class="col-md-1 unit" align="center">:</p>
+    </div>
+        
+    <div class="col-md-2">
+      <input type="text" class="form-control" placeholder="End coord" name="browse_end" value="[% browse_end %]">
+    </div>
+     
     <input type="hidden" name="genome" value="[% genome %]">
-    <select NAME="species" class="formtextarea">
-    [% IF species == 'Grch38' %]
-    <OPTION VALUE="Grch38" SELECTED>Human</OPTION>
-    <OPTION VALUE="Mouse">Mouse</OPTION>
-    [% ELSE %]
-    <OPTION VALUE="Mouse" SELECTED>Mouse</OPTION>
-    <OPTION VALUE="Grch38">Human</OPTION>
-    [% END %]
-    </SELECT>
-    <input type="hidden" name="view_single" value="[% view_single %]">
-    <input type="hidden" name="view_paired" value="[% view_paired %]">
-    <button type="submit" class="btn">Go </button>
-  </form>
+     
+    <div class="col-md-3"> 
+      <div class="col-md-offset-2 col-md-4">
+        <select NAME="species" class="form-control">
+        [% IF species == 'Grch38' %]
+          <OPTION VALUE="Grch38" SELECTED>Human</OPTION>
+          <OPTION VALUE="Mouse">Mouse</OPTION>
+        [% ELSE %]
+          <OPTION VALUE="Mouse" SELECTED>Mouse</OPTION>
+          <OPTION VALUE="Grch38">Human</OPTION>
+        [% END %]
+        </select>
+      </div>
+      <input type="hidden" name="view_single" value="[% view_single %]">
+      <input type="hidden" name="view_paired" value="[% view_paired %]">
+      <button type="submit" class="col-md-offset-2 col-md-3 btn btn-primary">Go </button>
+  </div>
+<p class="col-md-offset-1">
+  <a href="javascript:update_coords();" class="btn btn-primary" name="crispr_ranking button">
+    Crispr off-target report
+  </a>
+</p>
+</div>
+</div>
+</form>
 
 <div class="container-fluid">
-<div class="alert alert-info"><strong>Zoom:</strong> use "+" and "-" buttons. <strong>Move:</strong> drag or scroll with the mouse. <strong>Select region:</strong> hold shift key and drag with the mouse.
+  <div class="alert alert-info"><strong>Zoom:</strong> use "+" and "-" buttons. <strong>Move:</strong> drag or scroll with the mouse. <strong>Select region:</strong> hold shift key and drag with the mouse.
   <a href="[% c.uri_for('/crispr_help') _ '#genoverse_view' %]" target="_blank">
-    <i class="icon-question-sign"></i>Help
+    <i class="glyphicon glyphicon-question-sign"></i> Help
   </a>
   <button type="button" class="close" data-dismiss="alert">×</button>
 </div>
-<div id="genoverse" style="margin: 0;" class="span12"></div>
+<div id="genoverse" style="margin: 0;" class="col-md-12"></div>
 
 <div class="row-fluid">
   <div class="well" id="silent_mutations" style="display:none"></div>
 </div>
 
 <div class="row-fluid">
-<div class="span9">
+<div class="col-md-9">
 <form action="[% c.uri_for( '/genoverse_browse' ) %]" class="well">
   <input type="hidden" name="genome" value=[%genome%] />
   <input type="hidden" name="chromosome" value=[%chromosome%] />
@@ -108,8 +156,8 @@
          Crispr Pair Spacer Length<br/>(-10 to 30 bp)<br />
          Min Spacer Length <input type="number" name="spacer_min" id="spacer_min" min="-10" max="30" step="1" style="width: 60px"></input> bp<br />
          Max Spacer Length <input type="number" name="spacer_max" id="spacer_max" min="-10" max="30" step="1" style="width: 60px"></input> bp<br />
-         <button type="button" class="btn btn-default btn-mini" id="reset_spacer_filters">Reset</button>
-         <button type="button" class="btn btn-primary btn-small" id="apply_spacer_filters">Apply Spacer Filter</button>
+         <button type="button" class="btn btn-default btn-xs" id="reset_spacer_filters">Reset</button>
+         <button type="button" class="btn btn-primary btn-sm" id="apply_spacer_filters">Apply Spacer Filter</button>
        </fieldset>
       </td>
     </tr>
@@ -121,16 +169,19 @@
             <p id="MAF_error_text"> Enter a decimal number. </p>
             <br/>
             </input>
-            <button type="button" class="btn btn-primary btn-small" id="apply_MAF_threshold">Apply MAF filter</button>
+            <button type="button" class="btn btn-primary btn-sm" id="apply_MAF_threshold">Apply MAF filter</button>
         </td>
     </tr>
   </tbody>
   </table>
+
   <a href="[% c.uri_for('/crispr_help') _ '#basic_filters' %]" target="_blank" class="pull-right">
-    <i class="icon-question-sign"></i>Help
+    <i class="glyphicon glyphicon-question-sign"></i> Help
   </a>
 </form>
-<div class="well">
+<div >
+<form id="colour_key" class="col-md-9 well">
+ <i id="pan" class="pull-right glyphicon glyphicon-move"></i>
  <table><tr>
  <td style="padding-right: 20px;">
   <strong>Crispr Colour Key:</strong><br>
@@ -142,9 +193,9 @@
 
   <div style="background: [%colours.pam%]; width: 10px; height: 20px; float: left"></div>
   <div style="margin-left: 30px">PAM site</div>
-
  </td>
- <td>
+
+ <td style="padding-bottom:20px;">
   <strong>Crispr Pair Colour Key:</strong><br>
   <div style="background: [%colours.left_crispr%]; width: 20px; height: 20px; float: left"></div>
   <div style="background: [%colours.right_crispr%]; width: 20px; height: 20px; float: left"></div>
@@ -156,25 +207,31 @@
 
   </td>
   </tr></table>
+</form>
 </div>
 </div> [%# end of left-hand div %]
 
-<div class="span3">
+<div class="col-md-3">
 <div id="ot_filters_panel">
-<form  class="well">
+<form class="well">
+ <i id="pan" class="pull-right glyphicon glyphicon-move"></i>
   <table class='table' id="ot_filters_table">
-   <thead>
+      <thead>
+
     <tr>
-      <th id="crispr_ot_filters_heading" [% UNLESS view_single OR view_paired %]class="muted"[% END %]>Off-Target Filters</th>
+        <th id="crispr_ot_filters_heading" [% UNLESS view_single OR view_paired %]class="muted"[% END %]> Off-Target Filters</th>
+
     </tr>
    </thead>
    <tbody>
     <tr>
       <td>
         <fieldset name="crispr_ot_filters" [% UNLESS view_paired OR view_single %]disabled[% END %]>
-        <button type="button" class="btn btn-mini" id="best_10_percent">Best 10%</button>
-        <button type="button" class="btn btn-mini" id="best_25_percent">Best 25%</button>
-        <button type="button" class="btn btn-mini" id="best_50_percent">Best 50%</button><br/>
+        <div class="row">    
+          <button type="button" class="btn btn-default btn-xs" id="best_10_percent">Best 10%</button>
+          <button type="button" class="btn btn-default btn-xs" id="best_25_percent">Best 25%</button>
+          <button type="button" class="btn btn-default btn-xs" id="best_50_percent">Best 50%</button>
+        </div><br/>
          Maximum number of off-targets with:<br />
          0 mismatch <input type="number" name="0_mismatch" id="0_mismatch" min="1" step="1" style="width: 60px"></input><span id="0_mismatch_no_max" class="help-inline"><small>no max</small></span><br />
          <p class="text-error" id="0_mismatch_input_error" style="display: none;">Enter 1 or more. There is always 1 perfect match to the crispr itself.</p>
@@ -182,11 +239,13 @@
          2 mismatch <input type="number" name="2_mismatch" id="2_mismatch" min="0" step="1" style="width: 60px"></input><span id="2_mismatch_no_max" class="help-inline"><small>no max</small></span><br />
          3 mismatch <input type="number" name="3_mismatch" id="3_mismatch" min="0" step="1" style="width: 60px"></input><span id="3_mismatch_no_max" class="help-inline"><small>no max</small></span><br />
          4 mismatch <input type="number" name="4_mismatch" id="4_mismatch" min="0" step="1" style="width: 60px"></input><span id="4_mismatch_no_max" class="help-inline"><small>no max</small></span><br />
-         <button type="button" class="btn btn-mini" id="reset_ot_filters">Reset</button>
-         <button type="button" class="btn btn-primary btn-small" id="apply_ot_filters">Apply Off-Target Filters</button>
+         <div class="row">
+           <button type="button" class="btn btn-default btn-xs" id="reset_ot_filters">Reset</button>
+           <button type="button" class="btn btn-primary btn-sm" id="apply_ot_filters">Apply Off-Target Filters</button>
+         </div>
          </fieldset>
          <a href="[% c.uri_for('/crispr_help') _ '#ot_filters' %]" target="_blank" class="pull-right">
-          <i class="icon-question-sign"></i>Help
+          <i class="glyphicon glyphicon-question-sign"></i> Help
          </a>
       </td>
     </tr>
@@ -194,11 +253,7 @@
   </table>
 </form>
 </div>
-<p>
-  <a href="javascript:update_coords();" class="btn btn-primary" name="crispr_ranking button">
-    Rank Crisprs by Off-Targets
-  </a>
-</p>
+
 
 
 </div> [%# end of right-hand div %]
@@ -206,14 +261,18 @@
 </div>
 
 <div class="modal" id="dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-    <h3 id="myModalLabel">Off-Target Computation Status</h3>
-  </div>
-  <div class="modal-body" id="dialog_content">
-  </div>
-  <div class="modal-body" id="dialog_success">
-    This may take several minutes. Click "Reload Tracks" to refresh the view and show the latest off-target information.
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="myModalLabel">Off-Target Computation Status</h3>
+      </div>
+      <div class="modal-body" id="dialog_content">
+      </div>
+      <div class="modal-body" id="dialog_success">
+       This may take several minutes. Click "Reload Tracks" to refresh the view and show the latest off-target information.
+      </div>
+    </div>
   </div>
 </div>
 
@@ -221,7 +280,7 @@
 <script type="text/javascript">
 
   function add_download_button(track,url){
-    var download_btn = $("<button class='btn-mini btn-primary'>download <i class='icon-download icon-white'></i></button>");
+    var download_btn = $("<button class='btn-xs btn-primary'><i class='glyphicon glyphicon-download'></i>download</button>");
 
     $(".name[title='" + track + "']").append(download_btn);
 
@@ -571,7 +630,7 @@
 
   // Add event handlers to filter forms
   $(document).ready( function() {
-
+    
     // Close selection and refresh tracks when modal is closed
     $("#dialog").on('hidden', function(){
       $(window)[0].genoverse.cancelSelect();
@@ -579,6 +638,10 @@
     });
 
     $("#ot_filters_panel").draggable();
+    $("#colour_key").draggable({ stack: ".drag", zIndex: 2500  });
+    $("#colour_key").css('boxShadow','0px 0px 1px 1px grey');
+    $('#colour_key').css('z-index', '100');
+    console.log($("#genoverse").offset());
 
     // Handle clicks on the show/hide radio inputs
     $("#hide_single").change(function (event){

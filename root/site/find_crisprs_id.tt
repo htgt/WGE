@@ -34,14 +34,20 @@ $(document).ready(function() {
 </script>
 
 <div class="row">
-  <div class="span12">
+  <div class="col-md-12">
     <div class="well" id="barcode_group">
       <fieldset>
         <legend>Individual CRISPR search</legend>
           <div class="control-group">
-            <div class="form-inline">
-              <input type="text" name="crispr_id" id="crispr_id" placeholder="CRISPR ID" />
-              <input type="button" id="crispr_search" name="action" class="btn btn-primary" value="Find CRISPR" />
+              <div class="form-inline">
+                  <div class="col-md-2">
+              <input type="text" class="form-control" name="crispr_id" id="crispr_id" placeholder="CRISPR ID" />
+          </div>
+            <div class="col-md-6">
+                  <div class="col-md-4">
+              <input type="button" id="crispr_search" name="action" class=" btn btn-primary" value="Find CRISPR" />
+          </div>
+          </div>
             </div>
           </div>
       </fieldset>
@@ -51,9 +57,15 @@ $(document).ready(function() {
       <fieldset>
         <legend>Paired CRISPR search</legend>
           <div class="control-group">
-            <div class="form-inline">
-              <input type="text" name="pair_id" id="pair_id" placeholder="CRISPR Pair ID" />
-              <input type="button" id="pair_search" class="btn btn-primary" value="Find Pair" />
+              <div class="form-inline">
+                  <div class="col-md-2">
+                <input type="text" name="pair_id" id="pair_id" class="form-control" placeholder="CRISPR Pair ID" />
+          </div>
+            <div class="col-md-6">
+                  <div class="col-md-4">
+                      <input type="button" id="pair_search" class="btn btn-primary" value="Find Pair" />
+          </div>
+          </div>
             </div>
           </div>
       </fieldset>

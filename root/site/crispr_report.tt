@@ -157,7 +157,7 @@
     <td><h4>ID: [% crispr.id %]</h4></td>
     <td>
        <a class='btn btn-info pull-right' href="[% c.uri_for( '/genoverse_browse', { crispr_id => crispr.id, view_single => 1 }) %]">
-          <i class="icon-eye-open icon-white"></i>
+          <i class="glyphicon glyphicon-eye-open icon-white"></i>
           View in Genome Browser
         </a>
     </td>
@@ -231,16 +231,16 @@
 </div>
 
 
-<div class="accordion" id="accordion">
-  <div class="accordion-group well">
-    <div class="accordion-heading">
+<div class="panel-group" id="accordion">
+  <div class="panel panel-default well">
+    <div class="panel-heading">
       <p><strong>Found [% crispr_pairs.size %] Related Crispr Pairs</strong></p>
-      <a class="accordion-toggle collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
-        <i class='icon-list'></i> Show Crispr Pairs
+      <a class="panel-toggle collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+        <i class='glyphicon glyphicon-list'></i> Show Crispr Pairs
       </a>
     </div>
-    <div id="collapseOne" class="accordion-body collapse">
-      <div class="accordion-inner">
+    <div id="collapseOne" class="panel-body collapse">
+      <div class="panel-body">
         <table  class="table table-bordered table-condensed">
           <tr>
     <th>ID</th>
@@ -284,7 +284,7 @@
 </div>
 
 
-<h3>Off-Target Sites <small><button class="btn btn-info" id="ot_info"><i class="icon-info-sign icon-white"></i></button></small></h3>
+<h3>Off-Target Sites <small><button class="btn btn-info" id="ot_info"><span class="glyphicon glyphicon-info-sign"></span></button></small></h3>
 
 
 <p><b>Note</b>: the row highlighted in blue is the original CRISPR</p>
@@ -294,6 +294,7 @@
 
 <table class='table table-bordered table-hover' id='offtarget_table'>
   <tr>
+    <th>WGE ID</th>
     <th>Location</th>
     <th>Sequence</th>
     <th>Mismatches</th>
@@ -301,6 +302,7 @@
     <th>Type</th>
   </tr>
   <tr>
+    <td>crispr.id</td>
     <td>Original CRISPR</td>
     <td class="seq">
       [%- crispr_grna _ " " _ crispr_pam -%]
@@ -315,6 +317,7 @@
   <tr id="spacer_row"><td colspan="5"></td></tr>
 [% FOREACH off_target IN crispr.off_targets %]
   <tr class="ots[% off_target.id == crispr.id ? " info" : "" %]">
+    <td><a href="[% c.uri_for('/crispr/') %][% off_target.id %]">[% off_target.id %]</a></td>
     <td class="location">[% ensembl_link(chr_name=off_target.chr_name, chr_start=off_target.chr_start, chr_end=off_target.chr_end) %]</td>
     <td class="seq">[% off_target.seq %]</td>
     <td class="mm"></td>
@@ -326,7 +329,7 @@
   <tr>
     <td colspan="5" style="text-align: center">No off target data available for this crispr</td>
   </tr>
-  <button class="btn btn-block ots-button" value="[% crispr_id %]">Find off targets</button>
+  <button class="btn btn-default btn-block ots-button" value="[% crispr_id %]">Find off targets</button>
 [% END %]
 
 [% IF crispr.off_target_summary AND crispr.off_targets.size == 0 %]
