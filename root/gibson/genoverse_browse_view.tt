@@ -39,26 +39,26 @@
 <form class="form form-horizontal" action="[% c.uri_for( '/genoverse_browse/' ) %]">
     <div class="form-group">
   <div class="col-md-12 row no-gutter">
-    <div class="col-md-2">  
-      <p class="col-md-3 unit" align="center">Chr</p> 
+    <div class="col-md-2">
+      <p class="col-md-3 unit" align="center">Chr</p>
       <div class="col-md-6">
         <input type="text" class="form-control" placeholder="Chr" name="chromosome" value="[% chromosome %]">
       </div>
     </div>
-    
+
     <div class="col-md-2">
       <div class="col-md-11">
         <input type="text" class="form-control" placeholder="Start coord" name="browse_start" value="[% browse_start %]">
       </div><p class="col-md-1 unit" align="center">:</p>
     </div>
-        
+
     <div class="col-md-2">
       <input type="text" class="form-control" placeholder="End coord" name="browse_end" value="[% browse_end %]">
     </div>
-     
+
     <input type="hidden" name="genome" value="[% genome %]">
-     
-    <div class="col-md-3"> 
+
+    <div class="col-md-3">
       <div class="col-md-offset-2 col-md-4">
         <select NAME="species" class="form-control">
         [% IF species == 'Grch38' %]
@@ -227,7 +227,7 @@
     <tr>
       <td>
         <fieldset name="crispr_ot_filters" [% UNLESS view_paired OR view_single %]disabled[% END %]>
-        <div class="row">    
+        <div class="row">
           <button type="button" class="btn btn-default btn-xs" id="best_10_percent">Best 10%</button>
           <button type="button" class="btn btn-default btn-xs" id="best_25_percent">Best 25%</button>
           <button type="button" class="btn btn-default btn-xs" id="best_50_percent">Best 50%</button>
@@ -279,30 +279,56 @@
 
 <script type="text/javascript">
 
-  function add_download_button(track,url){
-    var download_btn = $("<button class='btn-xs btn-primary'><i class='glyphicon glyphicon-download'></i>download</button>");
+  function add_csv_download_button(track,url){
+    var download_btn = $("<button class='btn-xs btn-primary'><i class='glyphicon glyphicon-download'></i>download csv</button>");
 
     $(".name[title='" + track + "']").append(download_btn);
 
     download_btn.click(function(){
+      download_as_bed(url);
       download_as_csv(url);
     });
   }
+  function add_bed_download_button(track,url){
+    var download_btn = $("<button class='btn-xs btn-primary'><i class='glyphicon glyphicon-download'></i>download bed</button>");
+
+    $(".name[title='" + track + "']").append(download_btn);
+
+    download_btn.click(function(){
+      download_as_bed(url);
+    });
+  }
+
 
   // Use this to query a url with the current region params
   // and download csv it returns
   function download_as_csv(url){
     var region_params = {
-      "species_id" : "[% species %]",
-      "start"      : $(window)[0].genoverse.start,
-      "end"        : $(window)[0].genoverse.end,
-      "chr"        : "[% chromosome %]",
-      "assembly"   : "[% genome %]",
+      "species_id"    : "[% species %]",
+      "start"         : $(window)[0].genoverse.start,
+      "end"           : $(window)[0].genoverse.end,
+      "chr"           : "[% chromosome %]",
+      "assembly"      : "[% genome %]",
       "crispr_filter" : $('input[name=crispr_filter]:checked').val(),
       "flank_size"    :  $('#flank_size').val()
     };
     region_params["csv"] = 1;
     window.open( build_url(url, region_params) );
+  }
+
+  function download_as_bed(url){
+    var region_params = {
+      "species_id"    : "[% species %]",
+      "start"         : $(window)[0].genoverse.start,
+      "end"           : $(window)[0].genoverse.end,
+      "chr"           : "[% chromosome %]",
+      "assembly"      : "[% genome %]",
+      "crispr_filter" : $('input[name=crispr_filter]:checked').val(),
+      "flank_size"    :  $('#flank_size').val()
+    };
+    region_params["bed"] = 1;
+    window.open( build_url(url, region_params) );
+
   }
 
   //Function to retrieve the current coords on display to the user
@@ -347,7 +373,8 @@
   function show_single (){
       show_tracks(["Crisprs", "Bookmarked Crisprs"]);
       enable_crispr_filters();
-      add_download_button("Crisprs","[% c.uri_for('/api/crisprs_in_region') %]");
+      add_csv_download_button("Crisprs","[% c.uri_for('/api/crisprs_in_region') %]");
+      add_bed_download_button("Crisprs","[% c.uri_for('/api/crisprs_in_region') %]");
   }
 
   function hide_paired (){
@@ -358,7 +385,9 @@
   function show_paired (){
       show_tracks(["Crispr Pairs","Bookmarked Crispr Pairs"]);
       enable_crispr_pair_filters();
-      add_download_button("Crispr Pairs","[% c.uri_for('/api/crispr_pairs_in_region') %]");
+      add_csv_download_button("Crispr Pairs","[% c.uri_for('/api/crispr_pairs_in_region') %]");
+      add_bed_download_button("Crispr Pairs","[% c.uri_for('/api/crispr_pairs_in_region') %]");
+
   }
 
   function hide_designs (){
@@ -630,7 +659,7 @@
 
   // Add event handlers to filter forms
   $(document).ready( function() {
-    
+
     // Close selection and refresh tracks when modal is closed
     $("#dialog").on('hidden', function(){
       $(window)[0].genoverse.cancelSelect();
@@ -858,7 +887,8 @@
             id        : 'Bookmarked Crisprs',
             name      : 'Bookmarked Crisprs',
             url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&species_id=[%species%]&design_id=[%design_id%]&bookmarked_only=1" ,
-            crispr_report_uri : "[%c.uri_for('/crispr')%]"
+            crispr_report_uri : "[%c.uri_for('/crispr')%]",
+            autoheight : false
           }),
 [% END %]
           Genoverse.Track.Crisprs.extend({
@@ -868,7 +898,7 @@
             view      : Genoverse.Track.View.FilterCrisprs,
             crispr_report_uri : "[%c.uri_for('/crispr')%]",
             crispr_id : "[%crispr_id || '' %]",
-            urlParams : { crispr_filter: "[%crispr_filter%]", flank_size: "[%flank_size%]"}
+            urlParams : { crispr_filter: "[%crispr_filter%]", flank_size: "[%flank_size%]"},
           }),
 
 [% IF c.user %]
@@ -926,8 +956,12 @@
           }
 
           // Add buttons to allow users to download crisprs from tracks
-          add_download_button("Crisprs","[% c.uri_for('/api/crisprs_in_region') %]");
-          add_download_button("Crispr Pairs","[% c.uri_for('/api/crispr_pairs_in_region') %]");
+          add_csv_download_button("Crisprs","[% c.uri_for('/api/crisprs_in_region') %]");
+          add_bed_download_button("Crisprs","[% c.uri_for('/api/crisprs_in_region') %]");
+          add_csv_download_button("Crispr Pairs","[% c.uri_for('/api/crispr_pairs_in_region') %]");
+          add_bed_download_button("Crispr Pairs","[% c.uri_for('/api/crispr_pairs_in_region') %]");
+
+
 
           var spinner = "[% c.uri_for( '/static/images/spinner-circle.gif' ) %]";
 
