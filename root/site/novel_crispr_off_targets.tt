@@ -110,6 +110,7 @@
 
 <table class='table table-bordered table-hover' id='offtarget_table'>
   <tr>
+    <th>WGE ID</th>
     <th>Location</th>
     <th>Sequence</th>
     <th>Mismatches</th>
@@ -118,6 +119,7 @@
   </tr>
   <tr>
     <td>Original CRISPR</td>
+    <td>-</td>
     <td class="seq">
       [%- crispr_grna _ " " _ crispr_pam -%]
       [%- IF pam_right=="false" -%]
@@ -131,6 +133,7 @@
   <tr id="spacer_row"><td colspan="5"></td></tr>
 [% FOREACH off_target IN data.off_targets %]
   <tr class="ots">
+    <td><a href="[% c.uri_for('/crispr/') %][% off_target.id %]">[% off_target.id %]</a></td>
     <td class="location">[% ensembl_link(chr_name=off_target.chr_name, chr_start=off_target.chr_start, chr_end=off_target.chr_end) %]</td>
     <td class="seq">[% off_target.seq %]</td>
     <td class="mm"></td>
