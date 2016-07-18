@@ -187,7 +187,6 @@ sub format_crisprs_for_bed{
 
     return \@bed_data;
 }
-use Smart::Comments;
 
 sub format_pairs_for_bed{
     my ($pair_list, $with_exon_id) = @_;
