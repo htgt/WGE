@@ -1,4 +1,10 @@
 package WGE::Util::CrisprRole;
+## no critic(RequireUseStrict,RequireUseWarnings)
+{
+    $WGE::Util::CrisprRole::VERSION = '0.095';
+}
+## use critic
+
 
 use Moose::Role;
 use List::MoreUtils qw(any);

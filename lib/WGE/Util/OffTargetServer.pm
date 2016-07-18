@@ -1,4 +1,10 @@
 package WGE::Util::OffTargetServer;
+## no critic(RequireUseStrict,RequireUseWarnings)
+{
+    $WGE::Util::OffTargetServer::VERSION = '0.095';
+}
+## use critic
+
 
 use Moose;
 use LWP::UserAgent;

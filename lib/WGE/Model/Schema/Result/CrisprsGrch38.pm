@@ -1,5 +1,11 @@
 use utf8;
 package WGE::Model::Schema::Result::CrisprsGrch38;
+## no critic(RequireUseStrict,RequireUseWarnings)
+{
+    $WGE::Model::Schema::Result::CrisprsGrch38::VERSION = '0.095';
+}
+## use critic
+
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE

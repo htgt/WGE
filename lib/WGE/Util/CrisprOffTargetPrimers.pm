@@ -1,4 +1,10 @@
 package WGE::Util::CrisprOffTargetPrimers;
+## no critic(RequireUseStrict,RequireUseWarnings)
+{
+    $WGE::Util::CrisprOffTargetPrimers::VERSION = '0.095';
+}
+## use critic
+
 
 =head1 NAME
 

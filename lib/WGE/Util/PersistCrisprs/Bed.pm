@@ -1,4 +1,10 @@
 package WGE::Util::PersistCrisprs::Bed;
+## no critic(RequireUseStrict,RequireUseWarnings)
+{
+    $WGE::Util::PersistCrisprs::Bed::VERSION = '0.095';
+}
+## use critic
+
 
 use Moose;
 with qw( WGE::Util::PersistCrisprs );

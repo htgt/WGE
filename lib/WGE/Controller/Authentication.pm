@@ -1,4 +1,10 @@
 package WGE::Controller::Authentication;
+## no critic(RequireUseStrict,RequireUseWarnings)
+{
+    $WGE::Controller::Authentication::VERSION = '0.095';
+}
+## use critic
+
 use Moose;
 use namespace::autoclean;
 use Data::Dumper;
