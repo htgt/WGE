@@ -26,7 +26,6 @@ use WGE::Util::ExportCSV qw(format_crisprs_for_csv format_pairs_for_csv format_c
 
 use LWP::UserAgent;
 
-use Smart::Comments;
 
 use Sub::Exporter -setup => {
     exports => [ qw(
