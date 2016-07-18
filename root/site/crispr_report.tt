@@ -119,34 +119,60 @@
       }
     }
 
-    $("#ot_info").popover({content: "The off-targets on this page are sorted by total mismatch count and those with mismatches close to the PAM site are shown lower in the list. Structural analysis suggests that mismatches in the PAM-proximal region produce a greater reduction in cas9 off-target activity."});
-    //order everything by number of mismatches
-    var tbl_top = $("#spacer_row");
+    $("#ot_info").popover({content: "By default the off-targets on this page are sorted by total mismatch count and those with mismatches close to the PAM site are shown lower in the list. Structural analysis suggests that mismatches in the PAM-proximal region produce a greater reduction in cas9 off-target activity."});
 
-    for ( var mm = rows.length-1; mm >= 0; mm-- ) {
+    var sort_by = document.getElementById("sort_by").value;
+    //order everything by number of mismatches
+    if (sort_by == 1) {
+
+      for ( var mm = rows.length-1; mm >= 0; mm-- ) {
       // within each mismatch category sort by mm_positions
       // sort function looks at position of mm closest to PAM
       // if both have closest mm at same pos look at the pos
       // of the next closest mm
-      rows[mm] = rows[mm].sort(function(a,b){
-        var result = 0;
-        var array_a = a.data('mm_positions');
-        var array_b = b.data('mm_positions');
-        for ( var mm_index = mm - 1; mm_index >=0; mm_index--){
+        rows[mm] = rows[mm].sort(function(a,b){
+          var result = 0;
+          var array_a = a.data('mm_positions');
+          var array_b = b.data('mm_positions');
+          for ( var mm_index = mm - 1; mm_index >=0; mm_index--){
             result = array_a[mm_index] - array_b[mm_index];
             if(result != 0){
               return result;
             }
-        }
-        return result;
-      });
+          }
+          return result;
+        });
 
-      for ( var i = rows[mm].length-1; i >= 0; i-- ) {
-        rows[mm][i].insertAfter( tbl_top );
+        for ( var i = rows[mm].length-1; i >= 0; i-- ) {
+          rows[mm][i].prependTo("#offtarget_table > tbody");
+        }
       }
+      document.getElementById("ot_sort").innerHTML = "Sort by Location <span class=\"glyphicon glyphicon-sort\"></span>";
+      document.getElementById("sorted_by").innerHTML = "Sorted by Mismatches";
+    } else if (sort_by == 0) {
+      for ( var mm = rows.length-1; mm >= 0; mm-- ) {
+        for ( var i = rows[mm].length-1; i >= 0; i-- ) {
+          rows[mm][i].prependTo("#offtarget_table > tbody");
+        }
+      }
+      document.getElementById("ot_sort").innerHTML = "Sort by Mismatches <span class=\"glyphicon glyphicon-sort\"></span>";
+      document.getElementById("sorted_by").innerHTML = "Sorted by Location";
     }
+
   });
 
+
+
+  function sort() {
+    var sort_by = document.getElementById("sort_by").value;
+
+    if (sort_by == 1) {
+      document.getElementById("sort_by").value = 0;
+    } else if (sort_by == 0) {
+      document.getElementById("sort_by").value = 1;
+    }
+    location.reload();
+  }
 
 </script>
 
@@ -284,7 +310,14 @@
 </div>
 
 
-<h3>Off-Target Sites <small><button class="btn btn-info" id="ot_info"><span class="glyphicon glyphicon-info-sign"></span></button></small></h3>
+<h3>Off-Target Sites
+  <small>
+    <p id="sorted_by"></p>
+    <input type="" name="" id="sort_by" value="1" hidden="">
+    <button class="btn btn-info" id="ot_sort" onclick="sort()""></button>
+    <button class="btn btn-info" id="ot_info"><span class="glyphicon glyphicon-info-sign"></span></button>
+  </small>
+</h3>
 
 
 <p><b>Note</b>: the row highlighted in blue is the original CRISPR</p>
@@ -293,6 +326,7 @@
 [%# RETURN UNLESS crispr.off_targets.size %]
 
 <table class='table table-bordered table-hover' id='offtarget_table'>
+<thead>
   <tr>
     <th>WGE ID</th>
     <th>Location</th>
@@ -314,10 +348,11 @@
     <td></td>
     <td>[% type(c=crispr) %]</td>
   </tr>
-  <tr id="spacer_row"><td colspan="5"></td></tr>
+  </thead>
+  <tbody id="offtarget_tbody">
 [% FOREACH off_target IN crispr.off_targets %]
   <tr class="ots[% off_target.id == crispr.id ? " info" : "" %]">
-    <td><a href="[% c.uri_for('/crispr/') %][% off_target.id %]">[% off_target.id %]</a></td>
+    <td ><a href="[% c.uri_for('/crispr/') %][% off_target.id %]">[% off_target.id %]</a></td>
     <td class="location">[% ensembl_link(chr_name=off_target.chr_name, chr_start=off_target.chr_start, chr_end=off_target.chr_end) %]</td>
     <td class="seq">[% off_target.seq %]</td>
     <td class="mm"></td>
@@ -337,4 +372,5 @@
     <td colspan="5" style="text-align: center">Too many off-targets to display for this crispr</td>
   </tr>
 [% END %]
+</tbody>
 </table>
