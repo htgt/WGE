@@ -123,6 +123,7 @@
 
     var sort_by = document.getElementById("sort_by").value;
     //order everything by number of mismatches
+    //by default, or if Sort by Sequence is selected, sub order by mm_positions
     if (sort_by == 1) {
 
       for ( var mm = rows.length-1; mm >= 0; mm-- ) {
@@ -150,6 +151,7 @@
       document.getElementById("ot_sort").innerHTML = "Sort by Location <span class=\"glyphicon glyphicon-sort\"></span>";
       document.getElementById("sorted_by").innerHTML = "Sorted by Sequence";
     } else if (sort_by == 0) {
+      //if Sort by Location is selected, sub order by genomic location
       for ( var mm = rows.length-1; mm >= 0; mm-- ) {
         for ( var i = rows[mm].length-1; i >= 0; i-- ) {
           rows[mm][i].prependTo("#offtarget_table > tbody");
