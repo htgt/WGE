@@ -29,7 +29,7 @@ use LWP::UserAgent;
 use Sub::Exporter -setup => {
     exports => [ qw(
         handle_public_api
-    ) ] 
+    ) ]
 };
 
 BEGIN { extends 'Catalyst::Controller' }
@@ -243,8 +243,8 @@ sub crispr_search :Local('crispr_search') {
             }
         }
 
-        my $show_exon_id = 1;
-        my $csv_data = format_crisprs_for_csv(\@crispr_list, $show_exon_id);
+        my $extra_fields = [ 'ensembl_exon_id' ];
+        my $csv_data = format_crisprs_for_csv(\@crispr_list, $extra_fields);
         $c->log->debug( "Total CSV rows:" . scalar( @$csv_data ) );
 
 
@@ -1075,13 +1075,13 @@ sub announcements :Local('announcements') {
 
 sub handle_public_api {
     my ($self, $c) = @_;
-    print Dumper "Entered"; 
+    print Dumper "Entered";
     my $agent = LWP::UserAgent->new;
     my $url = "http://www.sanger.ac.uk/htgt/lims2/public_api/announcements/?sys=wge";
- 
+
     my $req = HTTP::Request->new(GET => $url);
     $req->header('content-type' => 'application/json');
- 
+
     my $response = $agent->request($req);
     if ($response->is_success) {
         my $message = $response->decoded_content;

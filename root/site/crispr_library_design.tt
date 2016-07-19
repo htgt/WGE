@@ -1,0 +1,64 @@
+[%- META title = "CRISPR Library Design Tool"; META tab_name = "crispr"; META header_text = "CRISPR Library Design Tool" -%]
+
+<div class="well">
+Use this tool to find crisprs targeting a list of locations. Locations can be genes, exons or genomic coordinates. You can use the tool to find crisprs within, and/or flanking, the specified regions.
+</div>
+
+<form enctype="multipart/form-data" method="post">
+  <div class="form-group">
+  	<label for="species_input">Species:</label>
+    <div class="radio">
+      <label>
+      	<input type="radio" name="species" value="Grch38" [%IF species == "Grch38"%]checked[%END%]>
+      	Human (GRCh38)
+      </label>
+    </div>
+    <div class="radio">
+      <label>
+      	<input type="radio" name="species" value="Mouse" [%IF species == "Mouse"%]checked[%END%]>
+      	Mouse (GRCm38)
+      </label>
+    </div>
+  </div>
+  <div class="form-group">
+  	<label for="location_input">Target locations:</label>
+    <div class="radio">
+      <label>
+      	<input type="radio" name="location" value="gene" [%IF location == "gene"%]checked[%END%]>
+      	Genes (e.g. BRCA1 or ENSG00000012048)
+      </label>
+    </div>
+    <div class="radio">
+      <label>
+      	<input type="radio" name="location" value="exon" [%IF location == "exon"%]checked[%END%]>
+      	Exons (e.g. ENSE00003559512)
+      </label>
+    </div>
+    <div class="radio">
+      <label>
+      	<input type="radio" name="location" value="coordinate" [%IF location == "coordinate"%]checked[%END%]>
+      	Coordinates (e.g. 17:43044295-43125370)
+      </label>
+    </div>
+  </div>
+  <div class="form-group">
+  	<label for="range_input">Find the best <input name="num_crisprs" value="[% num_crisprs || 1 %]" min="1" max="20" type="number" placeholder="1">CRISPR sites:</label>
+    <div class="checkbox">
+      <label>
+      	<input type="checkbox" name="within" value="1" [%IF within == 1 %]checked[%END%]>
+      	Within Target Location
+      </label>
+    </div>
+    <div class="checkbox">
+      <label>
+      	<input type="checkbox" name="flanking" value="1" [%IF flanking == 1%]checked[%END%]>
+      	Flanking Target Location By:
+      </label>
+    </div>
+    <input name="flank_size" type="number" value="[% flank_size %]"> bp
+  </div>
+  <div class="form-group">
+  	<label>Upload text file containing target locations (1 location per line)</label>
+  	<input type="file" class="file" accept=".txt,.csv,.tsv" name="datafile">
+  	<input type="submit" class="btn btn-primary" name="submit" value="submit">
+</form>

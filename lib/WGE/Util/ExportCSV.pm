@@ -60,7 +60,7 @@ sub write_design_data_csv{
 }
 
 sub format_crisprs_for_csv{
-    my ($crispr_list, $with_exon_id) = @_;
+    my ($crispr_list, $extra_fields) = @_;
 
     $crispr_list ||= [];
 
@@ -69,13 +69,14 @@ sub format_crisprs_for_csv{
 
     my @csv_data;
     my @fields = qw( crispr_id location strand seq off_target_summary );
-    if($with_exon_id){
-        unshift @fields, 'exon_id';
+    if($extra_fields){
+        unshift @fields, @$extra_fields;
     }
     push @csv_data, \@fields;
 
     foreach my $crispr ( @crisprs ) {
-        my $location = $crispr->{chr_name}.":".$crispr->{chr_start}."-".$crispr->{chr_end};
+        my $location = $crispr->{chr_start} ? $crispr->{chr_name}.":".$crispr->{chr_start}."-".$crispr->{chr_end}
+                                            : '';
         my $strand = $crispr->{pam_right} ? "+" : "-";
         my @row = (
             $crispr->{id},
@@ -84,8 +85,9 @@ sub format_crisprs_for_csv{
             $crispr->{seq},
             $crispr->{off_target_summary} // '',
         );
-        if($with_exon_id){
-            unshift @row, ($crispr->{ensembl_exon_id} // '');
+        if($extra_fields){
+            my @extra_data = map { $crispr->{$_} // '' } @$extra_fields;
+            unshift @row, @extra_data;
         }
         push @csv_data, \@row;
     }

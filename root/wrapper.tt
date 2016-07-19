@@ -34,10 +34,10 @@
 .navbar-default .navbar-toggle:hover,
 .navbar-default .navbar-toggle:focus {
   background-color: #3691c8;
-}</style>       
+}</style>
 
-        
-        
+
+
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="Content-type" content="text/html; charset=[% settings.charset %]" />
@@ -155,17 +155,14 @@
       </div>
     </div>
     [% IF c.uri_for('/').match('internal|staging') %]
-    <div class="navbar-nav">
-      <div class="navbar-body">
-        <div class="navbar-brand">This version of WGE is used for software testing. The stable version is <a href="http://www.sanger.ac.uk/htgt/wge">here</a></div>
-        <div class="container">
-          <p class="nav pull-right navbar-text">
+        <div class="alert alert-warning">This version of WGE is used for software testing. The stable version is <a href="http://www.sanger.ac.uk/htgt/wge">here</a>
+          <p class="pull-right">
           version: <strong>[% c.model('DB').software_version %]</strong> |
           database: <strong>[% c.model('DB').database_name %]</strong>
           </p>
         </div>
-      </div>
-    </div>
+
+    </nav>
     [% END %]
 
     <div id="page_container" class="container">
@@ -177,7 +174,7 @@
 
         <!-- catalyst error message disply taken from LIMS2 -->
         [% SET error = error_msg || c.stash.error_msg || c.flash.error_msg; IF error.length > 0 %]
-        <div class="alert alert-error">
+        <div class="alert alert-danger">
           <button class="close" data-dismiss="alert" href="#">&times;</button>
           <p>[% error | html_line_break %]</p>
         </div>
