@@ -285,7 +285,6 @@
     $(".name[title='" + track + "']").append(download_btn);
 
     download_btn.click(function(){
-      download_as_bed(url);
       download_as_csv(url);
     });
   }
