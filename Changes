@@ -1,5 +1,9 @@
 0.096     2016-07-19 12:54:55 Europe/London
 
+0.096     2016-07-19 12:54:55 Europe/London
+
+    Bugfix with csv download on genome browser	
+
 0.095     2016-07-18 14:25:40 Europe/London
 
     Added offtarger sorting function to crispr reports and bed download to genome browser
