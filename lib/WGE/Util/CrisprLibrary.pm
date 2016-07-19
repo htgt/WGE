@@ -109,6 +109,7 @@ sub _build_targets{
 	# Go through input fh and generate a hash for each target
 	# target_name   => (input from file)
 	# target_coords => coords computed as required for input type
+    $self->log->debug("Getting coordinates for library targets");
 	my $fh = $self->input_fh;
 	while (my $line = <$fh>){
         chomp $line;
@@ -128,18 +129,41 @@ sub _coords_for_exon{
     my ($self, $exon_id) = @_;
 
     my $coords;
-    my $exon = $self->ensembl->exon_adaptor->fetch_by_stable_id($exon_id);
+
+    # Try to get exon coords from wge
+    my $exon = $self->model->schema->resultset('Exon')->search({
+            ensembl_exon_id => $exon_id,
+            'gene.species_id' => $self->species_name,
+        },
+        {
+            prefetch => 'gene',
+        })->first;
+
     if($exon){
         $coords = {
-        	start => $exon->start,
-        	end   => $exon->end,
-        	chr   => $exon->seq_region_name,
+            start => $exon->chr_start,
+            end   => $exon->chr_end,
+            chr   => $exon->chr_name,
         };
     }
     else{
-    	$coords = {
-    		error => 'Exon not found',
-    	};
+        # Failing that (we only have exons from canonical transcripts i think)
+        # fetch it from ensembl
+        $self->log->debug("Searching for exon $exon_id in ensembl");
+        $exon = $self->ensembl->exon_adaptor->fetch_by_stable_id($exon_id);
+        if($exon){
+            $coords = {
+            	start => $exon->start,
+            	end   => $exon->end,
+            	chr   => $exon->seq_region_name,
+            };
+        }
+        else{
+            $self->log->warn("Exon $exon_id not found in ensembl");
+        	$coords = {
+        		error => 'Exon not found',
+        	};
+        }
     }
     return $coords;
 }
@@ -155,6 +179,8 @@ sub _coords_for_coord{
 sub _find_crispr_sites{
     my ($self, $targets) = @_;
 
+    my $count = scalar @{ $targets };
+    $self->log->debug("Finding crisprs for $count targets");
     foreach my $target (@{ $targets }){
     	# Find crisprs within/flanking target region
         next if $target->{target_coords}->{error};
@@ -217,8 +243,7 @@ sub _search_crisprs{
             $crisprs->{$crispr->id} = $crispr_hash;
         }
     }
-
-    # FIXME: crispr ranking currently ingores crisprs missing off-target summary
+    # FIXME: crispr ranking currently ignores crisprs missing off-target summary
     my @crisprs = score_and_sort_crisprs([ values %$crisprs ]);
 
     my @best = @crisprs[0..($self->num_crisprs - 1)];
@@ -231,7 +256,6 @@ sub get_csv_data{
     my @all_data;
 
     foreach my $target (@{ $self->targets }){
-        $self->log->debug("target: ".Dumper($target));
         if($target->{target_coords}->{error}){
             push @all_data, { target_name => $target->{target_name} };
             next;
