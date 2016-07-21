@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+	Added Ensembl links to homepage
+
 0.096     2016-07-19 12:54:55 Europe/London
 
     Bugfix with csv download on genome browser	
