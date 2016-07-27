@@ -10,10 +10,23 @@ BEGIN { extends 'Catalyst::Controller' }
 
 __PACKAGE__->config(namespace => '');
 
+sub _require_login {
+    my ( $self, $c ) = @_;
+
+    my $login_uri = $c->uri_for('/login');
+    unless ($c->user_exists){
+        $c->flash( error_msg => "You must <a href=\"$login_uri\">log in</a> to use the CRISPR Library Design Tool" );
+        $c->res->redirect($c->uri_for('/crispr_library_design'));
+    }
+    return;
+}
+
 sub crispr_library_design :Path('/crispr_library_design') :Args(0){
 	my ($self,$c) = @_;
 
     if($c->req->param('submit')){
+
+    	$self->_require_login($c);
 
 	    my @params = qw(flank_size location species num_crisprs range location within flanking);
 
@@ -46,6 +59,9 @@ sub crispr_library_design :Path('/crispr_library_design') :Args(0){
                 location_type => $location_type,
                 num_crisprs   => $num_crisprs,
                 within        => $c->req->param('within'),
+                user_id       => $c->user->id,
+                write_progress_to_db => 1,
+                job_name      => $c->req->param('datafile'),
             };
 
             if($c->req->param('flanking')){
@@ -54,6 +70,7 @@ sub crispr_library_design :Path('/crispr_library_design') :Args(0){
 
             try{
                 my $library = WGE::Util::CrisprLibrary->new($lib_params);
+                $c->log->debug("Starting library design job with ID ".$library->job_id);
                 my $csv_data = $library->get_csv_data;
 
                 $c->stash(

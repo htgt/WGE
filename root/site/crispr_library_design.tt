@@ -4,6 +4,7 @@
 Use this tool to find crisprs targeting a list of locations. Locations can be genes, exons or genomic coordinates. You can use the tool to find crisprs within, and/or flanking, the specified regions.
 </div>
 
+[% IF c.user %]
 <form enctype="multipart/form-data" method="post">
   <div class="form-group">
   	<label for="species_input">Species:</label>
@@ -62,3 +63,7 @@ Use this tool to find crisprs targeting a list of locations. Locations can be ge
   	<input type="file" class="file" accept=".txt,.csv,.tsv" name="datafile">
   	<input type="submit" class="btn btn-primary" name="submit" value="submit">
 </form>
+
+[% ELSE %]
+  <h4><a href="[% c.uri_for('/login') %]">Login with Google</a> to use the CRISPR library design tool.</h4>
+[% END %]

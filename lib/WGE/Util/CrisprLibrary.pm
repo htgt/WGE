@@ -5,8 +5,12 @@ use warnings FATAL => 'all';
 
 use WGE::Util::ExportCSV qw(format_crisprs_for_csv);
 use WGE::Util::ScoreCrisprs qw(score_and_sort_crisprs);
+use Data::UUID;
+use Path::Class;
 use Data::Dumper;
 use Moose;
+use POSIX qw(ceil);
+use JSON;
 
 with 'MooseX::Log::Log4perl';
 
@@ -23,6 +27,18 @@ has model => (
     is  => 'ro',
     isa => 'WGE::Model::DB',
     required => 1,
+);
+
+has user_id => (
+    is  => 'ro',
+    isa => 'Int',
+    required => 0,
+);
+
+has job_name => (
+    is => 'ro',
+    isa => 'Str',
+    default => '',
 );
 
 has input_fh => (
@@ -61,6 +77,12 @@ has flank_size => (
     required => 0,
 );
 
+has write_progress_to_db => (
+    is  => 'rw',
+    isa => 'Bool',
+    default => 0,
+);
+
 has species_numerical_id => (
     is => 'ro',
     isa => 'Int',
@@ -87,6 +109,68 @@ sub _build_ensembl{
 	return WGE::Util::EnsEMBL->new({ species => $ens_species });
 }
 
+has job_id => (
+    is  => 'ro',
+    isa => 'Str',
+    lazy_build => 1,
+);
+
+sub _build_job_id{
+    return Data::UUID->new->create_str;
+}
+
+has workdir => (
+    is  => 'ro',
+    isa => 'Path::Class::Dir',
+    lazy_build => 1,
+);
+
+sub _build_workdir{
+    my ($self) = @_;
+
+    my $library_job_dir = $ENV{WGE_LIBRARY_JOB_DIR}
+        or die "No WGE_LIBRARY_JOB_DIR environment variable set";
+
+    my $dir = Path::Class::Dir->new($library_job_dir, $self->job_id);
+    $dir->mkpath or die "Could not create directory $dir";
+    return $dir;
+}
+
+has design_job => (
+    is => 'ro',
+    isa => 'WGE::Model::Schema::Result::LibraryDesignJob',
+    lazy_build => 1,
+);
+
+sub _build_design_job{
+    my ($self) = @_;
+
+    # find or create
+    my $job = $self->model->schema->resultset('LibraryDesignJob')->find({ id => $self->job_id});
+
+    unless($job){
+        $self->user_id
+            or die "CrisprLibrary user not specified - cannot create LibraryDesignJob without user";
+
+        my $job_params = {
+            species_name  => $self->species_name,
+            location_type => $self->location_type,
+            within        => $self->within,
+            flank_size    => $self->flank_size,
+        };
+
+        $job = $self->model->schema->resultset('LibraryDesignJob')->create({
+            id   => $self->job_id,
+            name => $self->job_name,
+            params => to_json($job_params),
+            target_region_count => 0,
+            created_by_id => $self->user_id,
+            progress_percent => 0,
+        });
+    }
+    return $job;
+}
+
 has targets => (
     is => 'rw',
     isa => 'ArrayRef',
@@ -109,16 +193,29 @@ sub _build_targets{
 	# Go through input fh and generate a hash for each target
 	# target_name   => (input from file)
 	# target_coords => coords computed as required for input type
-    $self->log->debug("Getting coordinates for library targets");
 	my $fh = $self->input_fh;
-	while (my $line = <$fh>){
+    my @inputs = <$fh>;
+    my $input_count = scalar @inputs;
+    $self->log->debug("Getting coordinates for $input_count library targets");
+
+    $self->_update_job({
+        target_region_count => $input_count,
+        library_design_stage_id => 'find_targets',
+        progress_percent => 0,
+    });
+
+    my $progress_count = 0;
+	foreach my $line (@inputs){
         chomp $line;
         # remove leading/trailing whitespace
         $line =~ s/\A\s+//g;
         $line =~ s/\s+\Z//g;
         my $coords = $get_coords->($self, $line);
         push @targets, { target_name => $line, target_coords => $coords };
+        $progress_count++;
+        $self->_update_progress('find_targets',$input_count,$progress_count);
 	}
+    $self->_update_job({ progress_percent => 100 });
 
     # Find crisprs as per search params and add to target
     # crisprs => [ $crispr1->as_hash, $crispr2->as_hash, etc  ]
@@ -180,8 +277,16 @@ sub _find_crispr_sites{
     my ($self, $targets) = @_;
 
     my $count = scalar @{ $targets };
+    my $progress_count = 0;
     $self->log->debug("Finding crisprs for $count targets");
+
+    $self->_update_job({
+        library_design_stage_id => 'find_crisprs',
+        progress_percent        => 0,
+    });
+
     foreach my $target (@{ $targets }){
+        $progress_count++;
     	# Find crisprs within/flanking target region
         next if $target->{target_coords}->{error};
         my @search_regions;
@@ -219,7 +324,11 @@ sub _find_crispr_sites{
     	# Rank them and take first n
     	# Store crispr list in targets hash
         $target->{crisprs} = $self->_search_crisprs(\@search_regions);
+
+        # Update progress
+        $self->_update_progress('find_crisprs',$count,$progress_count);
     }
+    $self->_update_job({ progress_percent => 100 });
 
     return $targets;
 }
@@ -277,6 +386,42 @@ sub get_csv_data{
 
     my $extra_fields = [ qw(target_name target_chromosome target_start target_end) ];
     return format_crisprs_for_csv(\@all_data, $extra_fields);
+}
+
+sub write_csv_data_to_file{
+    my ($self, $filename) = @_;
+
+    my $csv_data = $self->get_csv_data();
+    my $file = $self->workdir->file($filename)->spew_lines($csv_data);
+    return $file;
+}
+
+sub _update_progress{
+    my ($self, $stage, $total, $progress) = @_;
+
+    # Do update every 20 records if the progress to db flag is set
+    if($self->write_progress_to_db){
+        if( ($progress % 20) == 0 ){
+            my $percent  = ceil( ($progress / $total) * 100 );
+            $self->design_job->update({
+                library_design_stage_id => $stage,
+                progress_percent        => $percent,
+            });
+            $self->log->debug("Progress updated to $stage $percent%");
+        }
+    }
+    return;
+}
+
+
+# Wrap update to check write to db flag before attempting to update
+sub _update_job{
+    my ($self, $update_params) = @_;
+
+    if($self->write_progress_to_db){
+        $self->design_job->update($update_params);
+    }
+    return;
 }
 
 1;
