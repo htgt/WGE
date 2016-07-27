@@ -1,0 +1,41 @@
+[%- META title = "CRISPR Library Design Tool"; META tab_name = "crispr"; META header_text = "CRISPR Library Jobs" -%]
+
+<a href="[% c.uri_for('crispr_library_design') %]" class="btn btn-primary pull-right">Create New Library</a>
+
+
+[% IF jobs.size %]
+  [% FOR job IN jobs %]
+    <h2>Job [% job.name %] <small>[% job.id %]</small></h2>
+    <p><strong>Start time:</strong> [% job.created_at %]</p>
+    <p><strong>Target region count:</strong> [% job.target_region_count %]</p>
+    [% IF job.complete %]
+    <p><strong>Job completed:</strong> [% job.last_modified %]</p>
+    <a class="btn" href="[% c.uri_for('/download_library_csv') %]">Download results</a>
+    [% ELSIF job.error %]
+    <p>Job failed at [% job.last_modified %] with error: [% job.error %]</p>
+    [% ELSE %]
+        <strong id="[% job.id %]_stage">Job in progress. [% job.library_design_stage.description %]...</strong>
+        <div class="progress">
+          <div id="[% job.id %]_progress" class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: [% job.progress_percent %]%">
+          [% job.progress_percent %]%
+          </div>
+        </div>
+    [% END %]
+  [% END %]
+[% ELSE %]
+  <p>You have no CRISPR library design jobs. Start one using the <a href="[% c.uri_for('/crispr_library_design/') %]">CRISPR library design tool</a>.</p>
+[% END %]
+
+<script type="text/javascript">
+  var progress_url = "[% c.uri_for('/library_job_progress/') %]";
+
+  $(document).ready( function() {
+  	setInterval( function(){
+      $(".progress-bar").each(function(i,bar){
+        // get job id from div id. ajax call to progress_url/job_id (not yet written)
+        // update progress and <job_id>_stage with returned info
+        // refresh page if complete or error
+      });
+  	}, 1000);
+  });
+</script>

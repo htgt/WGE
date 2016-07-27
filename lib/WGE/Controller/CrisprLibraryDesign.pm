@@ -11,12 +11,14 @@ BEGIN { extends 'Catalyst::Controller' }
 __PACKAGE__->config(namespace => '');
 
 sub _require_login {
-    my ( $self, $c ) = @_;
+    my ( $self, $c, $redirect ) = @_;
+
+    $redirect ||= '/crispr_library_design';
 
     my $login_uri = $c->uri_for('/login');
     unless ($c->user_exists){
         $c->flash( error_msg => "You must <a href=\"$login_uri\">log in</a> to use the CRISPR Library Design Tool" );
-        $c->res->redirect($c->uri_for('/crispr_library_design'));
+        $c->res->redirect($c->uri_for($redirect));
     }
     return;
 }
@@ -68,22 +70,37 @@ sub crispr_library_design :Path('/crispr_library_design') :Args(0){
             	$lib_params->{flank_size} = $c->req->param('flank_size');
             }
 
-            try{
-                my $library = WGE::Util::CrisprLibrary->new($lib_params);
-                $c->log->debug("Starting library design job with ID ".$library->job_id);
-                my $csv_data = $library->get_csv_data;
 
-                $c->stash(
-                    filename     => "WGE_crispr_library.tsv",
-                    data         => $csv_data,
-                    current_view => 'CSV',
-                );
+            my $library = WGE::Util::CrisprLibrary->new($lib_params);
+            $c->log->debug("Starting library design job with ID ".$library->job_id);
+
+            my $child_pid = fork();
+            if($child_pid){
+                # parent forwards to user's library overview
+                sleep(5); # Give the child a chance to create job in db
+                $c->response->redirect( $c->uri_for('/crispr_library_jobs'));
             }
-            catch($e){
-            	_add_err($c, "CRISPR library generation failed with error: $e");
-            };
+            elsif($child_pid == 0){
+            	# child runs the library creation step
+            	$library->write_csv_data_to_file('WGE_crispr_library.tsv');
+            }
+            else{
+            	$c->stash->{error_msg} = "Could not fork - $!";
+            }
 	    }
     }
+
+    return;
+}
+
+sub crispr_library_jobs :Path('/crispr_library_jobs'){
+	my ($self,$c) = @_;
+
+    $self->_require_login($c, '/crispr_library_jobs');
+
+    my @jobs = $c->user->library_design_jobs;
+    my @sorted = sort{ $b->created_at cmp $a->created_at } @jobs;
+    $c->stash->{jobs} = \@sorted;
 
     return;
 }

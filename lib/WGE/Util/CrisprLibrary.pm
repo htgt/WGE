@@ -392,7 +392,12 @@ sub write_csv_data_to_file{
     my ($self, $filename) = @_;
 
     my $csv_data = $self->get_csv_data();
-    my $file = $self->workdir->file($filename)->spew_lines($csv_data);
+    my $file = $self->workdir->file($filename);
+    my $fh = $file->openw or die "Could not open file $file for writing - $!";
+    print $fh join "\n", @$csv_data;
+
+    $self->_update_job({ complete => 1 });
+
     return $file;
 }
 
