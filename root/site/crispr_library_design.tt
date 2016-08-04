@@ -5,6 +5,9 @@ Use this tool to find crisprs targeting a list of locations. Locations can be ge
 </div>
 
 [% IF c.user %]
+<div class="well">
+View your existing library design jobs: <a href="[% c.uri_for('/crispr_library_jobs') %]" class="btn btn-default">View <span class="glyphicon glyphicon-arrow-right"></span></a>
+</div>
 <form enctype="multipart/form-data" method="post">
   <div class="form-group">
   	<label for="species_input">Species:</label>

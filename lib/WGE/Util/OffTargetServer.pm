@@ -38,8 +38,9 @@ sub ots_server_uri {
 
 sub _get_json {
     my ( $self, $uri, $as_string ) = @_;
-
+DEBUG "getting URI: $uri";
     my $response = $self->ua->get( $uri );
+DEBUG "got response";
     unless ( $response->is_success ) {
         die "Off target server query failed: " . $response->message;
     }

@@ -60,7 +60,7 @@ sub crispr_library_design :Path('/crispr_library_design') :Args(0){
                 species_name  => $species,
                 location_type => $location_type,
                 num_crisprs   => $num_crisprs,
-                within        => $c->req->param('within'),
+                within        => ( $c->req->param('within') // 0 ),
                 user_id       => $c->user->id,
                 write_progress_to_db => 1,
                 job_name      => $c->req->param('datafile'),
@@ -77,7 +77,7 @@ sub crispr_library_design :Path('/crispr_library_design') :Args(0){
             my $child_pid = fork();
             if($child_pid){
                 # parent forwards to user's library overview
-                sleep(5); # Give the child a chance to create job in db
+                sleep(2); # Give the child a chance to create job in db
                 $c->response->redirect( $c->uri_for('/crispr_library_jobs'));
             }
             elsif($child_pid == 0){
@@ -102,6 +102,62 @@ sub crispr_library_jobs :Path('/crispr_library_jobs'){
     my @sorted = sort{ $b->created_at cmp $a->created_at } @jobs;
     $c->stash->{jobs} = \@sorted;
 
+    return;
+}
+
+sub download_library_csv :Path('/download_library_csv') :Args(1){
+    my ($self, $c, $job_id) = @_;
+
+    my $job = $c->user->search_related('library_design_jobs', { id => $job_id })->first;
+    unless($job){
+        $c->stash->error_msg("Could not find library design job $job_id for user ".$c->user->name);
+        return;
+    }
+
+    my $path = $job->results_file;
+    open(my $fh, "<", $path) or die "Could not open file $path - $!";
+
+    $c->res->content_type('text/tab-separated-values');
+    $c->response->body($fh);
+    return;
+}
+
+sub crispr_library_job_progress :Path('/crispr_library_job_progress') :Args(1){
+    my ($self, $c, $job_id) = @_;
+
+    my $job = $c->user->search_related('library_design_jobs', { id => $job_id })->first;
+
+    my $data;
+    if($job){
+        $data = {
+            job_id            => $job->id,
+            progress_percent  => $job->progress_percent,
+            stage_id          => $job->library_design_stage_id,
+            stage_description => $job->library_design_stage->description,
+            complete          => $job->complete,
+            error             => $job->error,
+        };
+    }
+    $c->stash->{json_data} = $data;
+    $c->forward('View::JSON');
+
+    return;
+}
+
+sub delete_library_design_job :Path('/delete_library_design_job') :Args(1){
+    my ($self, $c, $job_id) = @_;
+
+    my $job = $c->user->search_related('library_design_jobs', { id => $job_id })->first;
+
+    if($job){
+        $job->delete;
+        # FIXME: delete from filesystem too
+    }
+    else{
+        $c->flash->{error_msg} = "Could not find job with ID $job_id for user ".$c->user->name;
+    }
+
+    $c->response->redirect( $c->uri_for('/crispr_library_jobs'));
     return;
 }
 

@@ -11,6 +11,9 @@ use Data::Dumper;
 use Moose;
 use POSIX qw(ceil);
 use JSON;
+use WGE::Util::OffTargetServer;
+use List::MoreUtils qw(natatime);
+use Text::CSV;
 
 with 'MooseX::Log::Log4perl';
 
@@ -83,6 +86,12 @@ has write_progress_to_db => (
     default => 0,
 );
 
+has update_after_n_items => (
+    is  => 'rw',
+    isa => 'Int',
+    default => 20,
+);
+
 has species_numerical_id => (
     is => 'ro',
     isa => 'Int',
@@ -94,6 +103,16 @@ sub _build_species_numerical_id{
     my $species = $self->model->schema->resultset('Species')->search({ id => $self->species_name })->first
         or die "Could not find species ".$self->species_name;
     return $species->numerical_id;
+}
+
+has ots_server => (
+    is => 'ro',
+    isa => 'WGE::Util::OffTargetServer',
+    lazy_build => 1,
+);
+
+sub _build_ots_server {
+    return WGE::Util::OffTargetServer->new;
 }
 
 has ensembl => (
@@ -198,6 +217,13 @@ sub _build_targets{
     my $input_count = scalar @inputs;
     $self->log->debug("Getting coordinates for $input_count library targets");
 
+    # Change the update interval for very small jobs
+    if($input_count < $self->update_after_n_items){
+        my $interval = ceil( $input_count / 20 );
+        $self->log->debug("setting to update progress after $interval items");
+        $self->update_after_n_items($interval);
+    }
+
     $self->_update_job({
         target_region_count => $input_count,
         library_design_stage_id => 'find_targets',
@@ -266,11 +292,106 @@ sub _coords_for_exon{
 }
 
 sub _coords_for_gene{
+    my ($self, $gene_id) = @_;
 
+    my $coords;
+
+    # Try to find gene in WGE
+    my $search_params = {
+        species_id => $self->species_name,
+    };
+
+    my $is_ens_id = 0;
+    if($gene_id =~ /^ENS/){
+        $search_params->{ensembl_gene_id} = $gene_id;
+        $is_ens_id = 1;
+    }
+    else{
+        $search_params->{marker_symbol} = $gene_id;
+    }
+
+    my $gene = $self->model->schema->resultset('Gene')->search($search_params)->first;
+    if($gene){
+        $coords = {
+            start => $gene->chr_start,
+            end   => $gene->chr_end,
+            chr   => $gene->chr_name,
+        };
+    }
+    else{
+        # Failing that fetch it from ensembl
+        $self->log->debug("Searching for gene $gene_id in ensembl");
+        if($is_ens_id){
+            $gene = $self->ensembl->gene_adaptor->fetch_by_gene_stable_id($gene_id);
+        }
+        else{
+            my @gene_list = @{ $self->ensembl->gene_adaptor->fetch_all_by_display_label($gene_id) || [] };
+            if (@gene_list == 1){
+                $gene = $gene_list[0];
+            }
+        }
+        if($gene){
+            $coords = {
+                start => $gene->start,
+                end   => $gene->end,
+                chr   => $gene->seq_region_name,
+            };
+        }
+        else{
+            $self->log->warn("Gene $gene_id not found in ensembl");
+            $coords = {
+                error => 'Gene not found',
+            };
+        }
+    }
+    return $coords;
 }
 
 sub _coords_for_coord{
+    my ($self, $coord_string) = @_;
+
+    # accepts chr1:1234-1235
+    # or         1:1234-1235
+    # start must be smaller than end
+
+    my $coords;
+
+    # remove any whitespace
+    $coord_string =~ s/\s//g;
 	# Just do some sanity checking and return
+    my ($chr, $start_end) = split ":", $coord_string;
+
+    unless ($chr and $start_end){
+        $coords = {
+            error => "Could not parse coordinate string",
+        };
+        return $coords;
+    }
+
+    $chr =~ s/^chr//;
+
+    my ($start, $end) = split "-", $start_end;
+    unless ($start and $end){
+        $coords = {
+            error => "Could not parse start and end coordinates",
+        };
+        return $coords;
+    }
+
+    if($start > $end){
+        $coords = {
+            error => "Start coordinate must be before end",
+        };
+        return $coords;
+    }
+
+    $coords = {
+        start => $start,
+        end   => $end,
+        chr   => $chr,
+    };
+
+    return $coords;
 }
 
 sub _find_crispr_sites{
@@ -337,6 +458,8 @@ sub _search_crisprs{
     my ($self, $search_regions) = @_;
     my $crisprs;
 
+    my $ots_species = lc($self->species_name);
+
     # Search for any crispr starting in the search region
     # This ignores crisprs which span the region start, but includes those that span the end
     # This may need adapting based on user requirements
@@ -352,7 +475,23 @@ sub _search_crisprs{
             $crisprs->{$crispr->id} = $crispr_hash;
         }
     }
-    # FIXME: crispr ranking currently ignores crisprs missing off-target summary
+    # crispr ranking ignores crisprs missing off-target summary
+    # so we need to generate any missing ones
+    my @crisprs_missing_offs = grep { not defined $_->{off_target_summary} } values %$crisprs;
+    my $missing_count = @crisprs_missing_offs;
+    $self->log->debug("off-target info missing for $missing_count crisprs");
+    my $iter = natatime 100, @crisprs_missing_offs;
+    while (my @tmp = $iter->() ){
+        my @ids = map { $_->{id} } @tmp;
+        $self->log->debug("updating off-targets for crisprs: ".join ",", @ids);
+        $self->ots_server->update_off_targets($self->model, { ids => \@ids, species => $ots_species } );
+
+        foreach my $id (@ids){
+            my $updated_crispr = $self->model->schema->resultset('Crispr')->find({ id => $id });
+            $crisprs->{ $id } = $updated_crispr->as_hash;
+        }
+    }
+
     my @crisprs = score_and_sort_crisprs([ values %$crisprs ]);
 
     my @best = @crisprs[0..($self->num_crisprs - 1)];
@@ -394,9 +533,14 @@ sub write_csv_data_to_file{
     my $csv_data = $self->get_csv_data();
     my $file = $self->workdir->file($filename);
     my $fh = $file->openw or die "Could not open file $file for writing - $!";
-    print $fh join "\n", @$csv_data;
 
-    $self->_update_job({ complete => 1 });
+    foreach my $result (@$csv_data){
+        print $fh join "\t", @$result;
+        print $fh "\n";
+    }
+    close $fh;
+
+    $self->_update_job({ complete => 1, results_file => "$file" });
 
     return $file;
 }

@@ -100,6 +100,16 @@ __PACKAGE__->table("library_design_jobs");
   is_nullable: 0
   original: {default_value => \"now()"}
 
+=head2 warning
+
+  data_type: 'text'
+  is_nullable: 1
+
+=head2 results_file
+
+  data_type: 'text'
+  is_nullable: 1
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -135,6 +145,10 @@ __PACKAGE__->add_columns(
     is_nullable   => 0,
     original      => { default_value => \"now()" },
   },
+  "warning",
+  { data_type => "text", is_nullable => 1 },
+  "results_file",
+  { data_type => "text", is_nullable => 1 },
 );
 
 =head1 PRIMARY KEY
@@ -187,8 +201,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2016-07-27 11:33:10
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:sAB8CmFYd5rQmiOp4ibnHQ
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2016-08-04 10:20:38
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:MOssy424/uI18YNHN0C2/w
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
