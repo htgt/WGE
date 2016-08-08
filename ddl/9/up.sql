@@ -19,6 +19,7 @@ CREATE TABLE library_design_jobs(
     complete BOOL NOT NULL DEFAULT FALSE,
     error TEXT,
     warning TEXT,
+    info TEXT,
     results_file TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_by_id INT NOT NULL REFERENCES users(id),

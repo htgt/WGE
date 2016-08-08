@@ -136,6 +136,7 @@ sub crispr_library_job_progress :Path('/crispr_library_job_progress') :Args(1){
             stage_description => $job->library_design_stage->description,
             complete          => $job->complete,
             error             => $job->error,
+            info              => $job->info,
         };
     }
     $c->stash->{json_data} = $data;

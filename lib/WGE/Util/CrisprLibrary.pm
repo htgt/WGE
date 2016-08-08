@@ -14,6 +14,10 @@ use JSON;
 use WGE::Util::OffTargetServer;
 use List::MoreUtils qw(natatime);
 use Text::CSV;
+use Try::Tiny;
+use WGE::Util::PersistCrisprs::TSV;
+use IPC::System::Simple qw( run );
+use WebAppCommon::Util::FarmJobRunner;
 
 with 'MooseX::Log::Log4perl';
 
@@ -103,6 +107,26 @@ sub _build_species_numerical_id{
     my $species = $self->model->schema->resultset('Species')->search({ id => $self->species_name })->first
         or die "Could not find species ".$self->species_name;
     return $species->numerical_id;
+}
+
+has index_file => (
+    is => 'ro',
+    isa => 'Path::Class::File',
+    lazy_build => 1,
+);
+
+sub _build_index_file{
+    my ($self) = @_;
+    my $species = lc($self->species_name);
+
+    my %INDEX_FILES = (
+        mouse  => $ENV{'GRCM38_CRISPR_INDEX'},
+        human  => $ENV{'GRCH37_CRISPR_INDEX'},
+        grch38 => $ENV{'GRCH38_CRISPR_INDEX'},
+    );
+
+    die "Invalid species '$species'" unless exists $INDEX_FILES{$species};
+    return file($INDEX_FILES{$species});
 }
 
 has ots_server => (
@@ -444,7 +468,7 @@ sub _find_crispr_sites{
 
     	# Rank them and take first n
     	# Store crispr list in targets hash
-        $target->{crisprs} = $self->_search_crisprs(\@search_regions);
+        $target->{crisprs} = $self->_search_crisprs(\@search_regions, $target->{target_name});
 
         # Update progress
         $self->_update_progress('find_crisprs',$count,$progress_count);
@@ -455,10 +479,8 @@ sub _find_crispr_sites{
 }
 
 sub _search_crisprs{
-    my ($self, $search_regions) = @_;
+    my ($self, $search_regions, $target) = @_;
     my $crisprs;
-
-    my $ots_species = lc($self->species_name);
 
     # Search for any crispr starting in the search region
     # This ignores crisprs which span the region start, but includes those that span the end
@@ -479,23 +501,99 @@ sub _search_crisprs{
     # so we need to generate any missing ones
     my @crisprs_missing_offs = grep { not defined $_->{off_target_summary} } values %$crisprs;
     my $missing_count = @crisprs_missing_offs;
-    $self->log->debug("off-target info missing for $missing_count crisprs");
-    my $iter = natatime 100, @crisprs_missing_offs;
-    while (my @tmp = $iter->() ){
-        my @ids = map { $_->{id} } @tmp;
-        $self->log->debug("updating off-targets for crisprs: ".join ",", @ids);
-        $self->ots_server->update_off_targets($self->model, { ids => \@ids, species => $ots_species } );
-
-        foreach my $id (@ids){
+    if($missing_count){
+        $self->log->debug("off-target info missing for $missing_count crisprs");
+        $self->_update_job({ info => "Computing off-targets for $missing_count crisprs in $target region"});
+        $self->_generate_missing_ots(\@crisprs_missing_offs);
+        foreach my $crispr (@crisprs_missing_offs){
+            my $id = $crispr->{id};
             my $updated_crispr = $self->model->schema->resultset('Crispr')->find({ id => $id });
             $crisprs->{ $id } = $updated_crispr->as_hash;
         }
+        $self->_update_job({ info => "" });
     }
 
     my @crisprs = score_and_sort_crisprs([ values %$crisprs ]);
 
     my @best = @crisprs[0..($self->num_crisprs - 1)];
     return \@best;
+}
+
+sub _generate_missing_ots{
+    my ($self, $crisprs_missing_offs) = @_;
+
+    # crisprs_missing_offs is array of cripsr->as_hash
+    my $ots_species = lc($self->species_name);
+
+    my $iter = natatime 100, @{ $crisprs_missing_offs };
+    while (my @tmp = $iter->() ){
+        my @ids = map { $_->{id} } @tmp;
+        $self->log->debug("updating off-targets for crisprs: ".join ",", @ids);
+        $self->ots_server->update_off_targets($self->model, { ids => \@ids, species => $ots_species } );
+    }
+    return;
+}
+
+# FIXME: tried this but it was still slow and presents other problems..
+sub _generate_missing_ots_batch{
+    my ($self, $crisprs_missing_offs) = @_;
+
+    my $fh = $self->workdir->file( "ids_missing_ots.txt" )->openw();
+    my @ids = map { $_->{id} } @$crisprs_missing_offs;
+    print $fh join "\n", @ids;
+    close $fh;
+
+    my $outfile = $self->workdir->file('missing_ots.tsv');
+    my $failed = 0;
+
+    my $iter = natatime 50, @ids;
+    while (my @tmp = $iter->() ){
+        try {
+            my $align_cmd = join " ", (
+                $ENV{'OFF_TARGET_BINARY_PATH'} || "/nfs/team87/CRISPR-Analyser/bin/crispr_analyser",
+                "align",
+                "-i", $self->index_file->stringify,
+                @tmp,
+                '>', $outfile->stringify,
+            );
+
+            # Must quote entire command so that cmd output is redirected to file
+            # but bsub output containing the job id is not redirected
+            my @cmd = ("\"$align_cmd\"");
+
+            my $farm_runner = WebAppCommon::Util::FarmJobRunner->new();
+
+            my $retval = $farm_runner->submit_and_wait({
+                out_file => $self->workdir->file('farm_output.txt')->stringify,
+                err_file => $self->workdir->file('farm_errors.txt')->stringify,
+                cmd      => \@cmd,
+                memory_required => 3000,
+                timeout         => 1200,
+                interval        => 20,
+            });
+
+            $self->log->debug("returned $retval");
+
+            if($retval == 1){
+                $self->log->debug("Persisting $outfile");
+
+                WGE::Util::PersistCrisprs::TSV->new_with_config(
+                    configfile => $ENV{WGE_REST_CLIENT_CONFIG},
+                    species    => $self->species_name,
+                    dry_run    => 0, #never dry run -- should add cmd line options
+                    tsv_file   => $outfile,
+                )->execute;
+
+                $self->log->debug("Everything successful");
+            }
+        }
+        catch {
+            $self->log->warn($_);
+            $failed = 1;
+        };
+    }
+
+    return;
 }
 
 sub get_csv_data{
@@ -505,7 +603,7 @@ sub get_csv_data{
 
     foreach my $target (@{ $self->targets }){
         if($target->{target_coords}->{error}){
-            push @all_data, { target_name => $target->{target_name} };
+            #push @all_data, { target_name => $target->{target_name} };
             next;
         }
         foreach my $crispr (@{ $target->{crisprs} }){
