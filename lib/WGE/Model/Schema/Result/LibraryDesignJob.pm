@@ -213,5 +213,15 @@ __PACKAGE__->belongs_to(
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+use JSON;
+
+__PACKAGE__->inflate_column( params => {
+    inflate => sub{ from_json( +shift ) },
+    deflate => sub{
+      my $json = shift;
+      ref $json ? to_json($json) : $json;
+    },
+});
+
 __PACKAGE__->meta->make_immutable;
 1;

@@ -15,9 +15,6 @@ use WGE::Util::OffTargetServer;
 use List::MoreUtils qw(natatime);
 use Text::CSV;
 use Try::Tiny;
-use WGE::Util::PersistCrisprs::TSV;
-use IPC::System::Simple qw( run );
-use WebAppCommon::Util::FarmJobRunner;
 
 with 'MooseX::Log::Log4perl';
 
@@ -109,26 +106,6 @@ sub _build_species_numerical_id{
     return $species->numerical_id;
 }
 
-has index_file => (
-    is => 'ro',
-    isa => 'Path::Class::File',
-    lazy_build => 1,
-);
-
-sub _build_index_file{
-    my ($self) = @_;
-    my $species = lc($self->species_name);
-
-    my %INDEX_FILES = (
-        mouse  => $ENV{'GRCM38_CRISPR_INDEX'},
-        human  => $ENV{'GRCH37_CRISPR_INDEX'},
-        grch38 => $ENV{'GRCH38_CRISPR_INDEX'},
-    );
-
-    die "Invalid species '$species'" unless exists $INDEX_FILES{$species};
-    return file($INDEX_FILES{$species});
-}
-
 has ots_server => (
     is => 'ro',
     isa => 'WGE::Util::OffTargetServer',
@@ -200,6 +177,7 @@ sub _build_design_job{
             location_type => $self->location_type,
             within        => $self->within,
             flank_size    => $self->flank_size,
+            num_crisprs   => $self->num_crisprs,
         };
 
         $job = $self->model->schema->resultset('LibraryDesignJob')->create({
@@ -260,7 +238,12 @@ sub _build_targets{
         # remove leading/trailing whitespace
         $line =~ s/\A\s+//g;
         $line =~ s/\s+\Z//g;
+
         my $coords = $get_coords->($self, $line);
+        if($coords->{error}){
+            $self->_add_warning($line, $coords->{error});
+        }
+
         push @targets, { target_name => $line, target_coords => $coords };
         $progress_count++;
         $self->_update_progress('find_targets',$input_count,$progress_count);
@@ -534,68 +517,6 @@ sub _generate_missing_ots{
     return;
 }
 
-# FIXME: tried this but it was still slow and presents other problems..
-sub _generate_missing_ots_batch{
-    my ($self, $crisprs_missing_offs) = @_;
-
-    my $fh = $self->workdir->file( "ids_missing_ots.txt" )->openw();
-    my @ids = map { $_->{id} } @$crisprs_missing_offs;
-    print $fh join "\n", @ids;
-    close $fh;
-
-    my $outfile = $self->workdir->file('missing_ots.tsv');
-    my $failed = 0;
-
-    my $iter = natatime 50, @ids;
-    while (my @tmp = $iter->() ){
-        try {
-            my $align_cmd = join " ", (
-                $ENV{'OFF_TARGET_BINARY_PATH'} || "/nfs/team87/CRISPR-Analyser/bin/crispr_analyser",
-                "align",
-                "-i", $self->index_file->stringify,
-                @tmp,
-                '>', $outfile->stringify,
-            );
-
-            # Must quote entire command so that cmd output is redirected to file
-            # but bsub output containing the job id is not redirected
-            my @cmd = ("\"$align_cmd\"");
-
-            my $farm_runner = WebAppCommon::Util::FarmJobRunner->new();
-
-            my $retval = $farm_runner->submit_and_wait({
-                out_file => $self->workdir->file('farm_output.txt')->stringify,
-                err_file => $self->workdir->file('farm_errors.txt')->stringify,
-                cmd      => \@cmd,
-                memory_required => 3000,
-                timeout         => 1200,
-                interval        => 20,
-            });
-
-            $self->log->debug("returned $retval");
-
-            if($retval == 1){
-                $self->log->debug("Persisting $outfile");
-
-                WGE::Util::PersistCrisprs::TSV->new_with_config(
-                    configfile => $ENV{WGE_REST_CLIENT_CONFIG},
-                    species    => $self->species_name,
-                    dry_run    => 0, #never dry run -- should add cmd line options
-                    tsv_file   => $outfile,
-                )->execute;
-
-                $self->log->debug("Everything successful");
-            }
-        }
-        catch {
-            $self->log->warn($_);
-            $failed = 1;
-        };
-    }
-
-    return;
-}
-
 sub get_csv_data{
     my ($self) = @_;
 
@@ -646,9 +567,9 @@ sub write_csv_data_to_file{
 sub _update_progress{
     my ($self, $stage, $total, $progress) = @_;
 
-    # Do update every 20 records if the progress to db flag is set
+    # Do update every n records if the progress to db flag is set
     if($self->write_progress_to_db){
-        if( ($progress % 20) == 0 ){
+        if( ($progress % $self->update_after_n_items) == 0 ){
             my $percent  = ceil( ($progress / $total) * 100 );
             $self->design_job->update({
                 library_design_stage_id => $stage,
@@ -660,6 +581,16 @@ sub _update_progress{
     return;
 }
 
+sub _add_warning{
+    my ($self, $target_name, $warning) = @_;
+
+    if($self->write_progress_to_db){
+        my $warning_from_db = $self->design_job->warning // "" ;
+        my $new_warning = $warning_from_db."<br>$target_name: ".$warning;
+        $self->design_job->update({ warning => $new_warning });
+    }
+    return;
+}
 
 # Wrap update to check write to db flag before attempting to update
 sub _update_job{

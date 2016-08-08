@@ -82,7 +82,17 @@ sub crispr_library_design :Path('/crispr_library_design') :Args(0){
             }
             elsif($child_pid == 0){
             	# child runs the library creation step
-            	$library->write_csv_data_to_file('WGE_crispr_library.tsv');
+                try{
+                	$library->write_csv_data_to_file('WGE_crispr_library.tsv');
+                }
+                catch($e){
+                    $library->design_job->update({
+                        complete => 1,
+                        error    => $e,
+                    });
+                }
+                # Ensure child does not complete before parent does redirect
+                sleep(3);
             }
             else{
             	$c->stash->{error_msg} = "Could not fork - $!";

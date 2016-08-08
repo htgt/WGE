@@ -1,6 +1,6 @@
 [%- META title = "CRISPR Library Design Tool"; META tab_name = "crispr"; META header_text = "CRISPR Library Design Tool" -%]
 
-<div class="well">
+<div class="well lead">
 Use this tool to find crisprs targeting a list of locations. Locations can be genes, exons or genomic coordinates. You can use the tool to find crisprs within, and/or flanking, the specified regions.
 </div>
 
