@@ -9,12 +9,12 @@ use Data::UUID;
 use Path::Class;
 use Data::Dumper;
 use Moose;
-use POSIX qw(ceil);
+use POSIX qw(ceil sys_wait_h);
 use JSON;
 use WGE::Util::OffTargetServer;
 use List::MoreUtils qw(natatime);
 use Text::CSV;
-use Try::Tiny;
+use TryCatch;
 
 with 'MooseX::Log::Log4perl';
 
@@ -508,12 +508,77 @@ sub _generate_missing_ots{
     # crisprs_missing_offs is array of cripsr->as_hash
     my $ots_species = lc($self->species_name);
 
-    my $iter = natatime 100, @{ $crisprs_missing_offs };
+    my $iter = natatime 10, @{ $crisprs_missing_offs };
+    my %pids;
+
+    # ensure we get signals from child processes
+    $SIG{CHLD} = 'DEFAULT';
+
     while (my @tmp = $iter->() ){
-        my @ids = map { $_->{id} } @tmp;
-        $self->log->debug("updating off-targets for crisprs: ".join ",", @ids);
-        $self->ots_server->update_off_targets($self->model, { ids => \@ids, species => $ots_species } );
+        $self->log->debug("Starting new child process to generate off-targets");
+        my $pid = fork();
+        if($pid==-1){
+            warn($!);
+            last;
+        }
+        if($pid){
+            # parent keeps track of child pids
+            $pids{$pid} = 1;
+            my $child_pid_count = keys %pids;
+            $self->log->debug("Currently running $child_pid_count children");
+            # Do not exceed 5 child processes
+            while(keys %pids > 4){
+                $self->_monitor_children(\%pids);
+            }
+        }
+        else{
+            # child runs ots query
+            my @ids = map { $_->{id} } @tmp;
+            $self->log->debug("updating off-targets for crisprs [PID: $$]: ".join ",", @ids);
+
+            try{
+                $self->ots_server->update_off_targets($self->model, { ids => \@ids, species => $ots_species } );
+            }
+            catch($e){
+                $self->log->error("error doing OT search [PID: $$]: $e");
+                $self->_update_job({ complete => 1, error => $e });
+                $self->log->debug("exiting child process $$ with exit code 1");
+                exit(1);
+            }
+            $self->log->debug("off-target update done [PID: $$]");
+            exit(0);
+        }
+        sleep(2); # small delay between queries
     }
+    # Wait for all pids to complete
+    while(keys %pids){
+        $self->_monitor_children(\%pids);
+    }
+    return;
+}
+
+sub _monitor_children{
+    my ($self, $pids) = @_;
+#$self->log->debug("monitoring children [PID: $$] ".Dumper($pids));
+    my $pid = waitpid( -1, WNOHANG );
+    return if $pid == -1;
+    if($pid){
+        my $exit_status = $? >> 8;
+        $self->log->debug("Exit status of $pid: $exit_status ($?)");
+
+        if($exit_status > 0){
+            foreach my $id (keys %$pids){
+                $self->log->debug("killing child process $id");
+                kill(15,$id);
+                delete $pids->{$id};
+            }
+            die "Child process $pid exited with error";
+        }
+        else{
+            delete $pids->{$pid};
+        }
+    }
+    sleep(1);
     return;
 }
 

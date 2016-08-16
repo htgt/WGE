@@ -74,6 +74,9 @@ sub crispr_library_design :Path('/crispr_library_design') :Args(0){
             my $library = WGE::Util::CrisprLibrary->new($lib_params);
             $c->log->debug("Starting library design job with ID ".$library->job_id);
 
+            # avoids library creation child process becoming defunct
+            $SIG{CHLD} = 'IGNORE';
+
             my $child_pid = fork();
             if($child_pid){
                 # parent forwards to user's library overview
@@ -81,18 +84,28 @@ sub crispr_library_design :Path('/crispr_library_design') :Args(0){
                 $c->response->redirect( $c->uri_for('/crispr_library_jobs'));
             }
             elsif($child_pid == 0){
+                my $pid = $$;
+                $c->log->debug("Library creation process ID: $pid");
             	# child runs the library creation step
                 try{
                 	$library->write_csv_data_to_file('WGE_crispr_library.tsv');
                 }
                 catch($e){
-                    $library->design_job->update({
-                        complete => 1,
-                        error    => $e,
-                    });
+                    $c->log->debug("caught error in process $$. child process id: $pid");
+
+                    my $update_params = { complete => 1 };
+                    $library->design_job->discard_changes;
+                    if(not $library->design_job->error){
+                        $update_params->{error} = $e;
+                    }
+
+                    $library->design_job->update($update_params);
+                    exit(1);
                 }
+
                 # Ensure child does not complete before parent does redirect
                 sleep(3);
+                exit;
             }
             else{
             	$c->stash->{error_msg} = "Could not fork - $!";

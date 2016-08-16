@@ -24,15 +24,15 @@
         </div>
       </div>
 
-    [% IF job.complete %]
+    [% IF job.error %]
+    <p class="bg-danger">Job failed at [% job.last_modified %] with error: [% job.error %]</p>
+
+    [% ELSIF job.complete %]
     <p class="bg-success"><strong>Job completed:</strong> [% job.last_modified %]</p>
     <a class="btn btn-default" href="[% c.uri_for('/download_library_csv/') _ job.id %]">Download results</a>
       [% IF job.warning %]
         <p class="bg-warning">Warnings: [% job.warning %]</p>
       [% END %]
-
-    [% ELSIF job.error %]
-    <p class="bg-danger">Job failed at [% job.last_modified %] with error: [% job.error %]</p>
 
     [% ELSE %]
         <strong>Job in progress. <span id="[% job.id %]_stage">[% job.library_design_stage.description %]</span>...</strong>

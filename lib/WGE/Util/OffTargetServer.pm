@@ -38,9 +38,9 @@ sub ots_server_uri {
 
 sub _get_json {
     my ( $self, $uri, $as_string ) = @_;
-DEBUG "getting URI: $uri";
+DEBUG "getting URI [PID: $$]: $uri";
     my $response = $self->ua->get( $uri );
-DEBUG "got response";
+DEBUG "got response [PID: $$]";
     unless ( $response->is_success ) {
         die "Off target server query failed: " . $response->message;
     }
@@ -129,6 +129,7 @@ sub update_off_targets {
             #dont update the off targets if we didnt get any (because the crispr has >5000)
             $update{off_target_ids} = $data->{off_targets} if @{ $data->{off_targets} } > 0;
 
+            DEBUG "Updating crispr $id in database";
             my $crispr = $model->schema->resultset('Crispr')->find( $id );
             $crispr->update( \%update );
         }
