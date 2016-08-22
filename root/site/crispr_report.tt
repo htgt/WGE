@@ -121,10 +121,15 @@
 
     $("#ot_info").popover({content: "Off-targets on this page are sorted by total mismatch count. In the default Sort by Sequence, those with mismatches close to the PAM site are shown lower in the list (structural analysis suggests that mismatches in the PAM-proximal region produce a greater reduction in cas9 off-target activity). Sort by Location will list the off-targets based on the genomic location."});
 
-    var sort_by = document.getElementById("sort_by").value;
+    //if sessionStorage for 'sort_by' has not been initialised, initalise to 1
+    if (sessionStorage.getItem('sort_by') == null) {
+      sessionStorage.setItem('sort_by', 1);
+    }
+    //get value in sessionStorage for 'sort_by'
+    var sort_by_value = sessionStorage.getItem('sort_by');
     //order everything by number of mismatches
     //by default, or if Sort by Sequence is selected, sub order by mm_positions
-    if (sort_by == 1) {
+    if (sort_by_value == 1) {
 
       for ( var mm = rows.length-1; mm >= 0; mm-- ) {
       // within each mismatch category sort by mm_positions
@@ -150,7 +155,7 @@
       }
       document.getElementById("ot_sort").innerHTML = "Sort by Location <span class=\"glyphicon glyphicon-sort\"></span>";
       document.getElementById("sorted_by").innerHTML = "Sorted by Sequence";
-    } else if (sort_by == 0) {
+    } else if (sort_by_value == 0) {
       //if Sort by Location is selected, sub order by genomic location
       for ( var mm = rows.length-1; mm >= 0; mm-- ) {
         for ( var i = rows[mm].length-1; i >= 0; i-- ) {
@@ -161,20 +166,24 @@
       document.getElementById("sorted_by").innerHTML = "Sorted by Location";
     }
 
+    $("#ot_sort").click(function (event){
+      //get value in sessionStorage for 'sort_by'
+      var sort_by_value = sessionStorage.getItem('sort_by');
+      //set value of sessionStorage 'sort_by' based on previous value, then reload page.
+      if (sort_by_value == 1) {
+        sessionStorage.setItem('sort_by', 0);
+      } else if (sort_by_value == 0) {
+        sessionStorage.setItem('sort_by', 1);
+      }
+      location.reload();
+
+    });
+
   });
 
 
 
-  function sort() {
-    var sort_by = document.getElementById("sort_by").value;
 
-    if (sort_by == 1) {
-      document.getElementById("sort_by").value = 0;
-    } else if (sort_by == 0) {
-      document.getElementById("sort_by").value = 1;
-    }
-    location.reload();
-  }
 
 </script>
 
@@ -315,8 +324,7 @@
 <h3>Off-Target Sites
   <small>
     <p id="sorted_by"></p>
-    <input type="" name="" id="sort_by" value="1" hidden="">
-    <button class="btn btn-info" id="ot_sort" onclick="sort()""></button>
+    <button class="btn btn-info" id="ot_sort"></button>
     <button class="btn btn-info" id="ot_info"><span class="glyphicon glyphicon-info-sign"></span></button>
   </small>
 </h3>

@@ -1,7 +1,7 @@
 package WGE::Util::CrisprRole;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::CrisprRole::VERSION = '0.097';
+    $WGE::Util::CrisprRole::VERSION = '0.098';
 }
 ## use critic
 

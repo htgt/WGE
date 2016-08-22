@@ -1,7 +1,7 @@
 package WGE::Controller::API;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::API::VERSION = '0.097';
+    $WGE::Controller::API::VERSION = '0.098';
 }
 ## use critic
 
@@ -156,6 +156,71 @@ sub exon_search :Local('exon_search') {
     $c->forward('View::JSON');
 
     return;
+}
+
+sub crispr_by_id :Local('crispr_by_id') {
+    my ( $self, $c ) = @_;
+
+    my $params = $c->req->params;
+    check_params_exist( $c, $params, [ qw( species id ) ]);
+
+    my $ids = $params->{id} ;
+    if ( ref $ids ne 'ARRAY' ) {
+        $ids = [ $ids ];
+    }
+
+    my $data = {};
+    my @crisprs = $c->model('DB')->resultset('Crispr')->search( {
+        id => { -IN => $ids }
+    });
+
+    foreach my $crispr (@crisprs){
+        $data->{ $crispr->id } = {
+            id                 => $crispr->id,
+            chr_name           => $crispr->chr_name,
+            chr_start          => $crispr->chr_start,
+            chr_end            => $crispr->chr_end,
+            seq                => $crispr->seq,
+            species_id         => $crispr->species_id,
+            pam_right          => $crispr->pam_right,
+            off_target_summary => $crispr->off_target_summary,
+            exonic             => $crispr->exonic,
+            genic              => $crispr->genic,
+
+        };
+    }
+
+    $c->stash->{json_data} = $data;
+    $c->forward('View::JSON');
+    return;
+}
+
+sub crispr_seq_by_id :Local('crispr_seq_by_id') {
+    my ( $self, $c ) = @_;
+
+    my $params = $c->req->params;
+    check_params_exist( $c, $params, [ qw( species id ) ]);
+
+    my $ids = $params->{id} ;
+    if ( ref $ids ne 'ARRAY' ) {
+        $ids = [ $ids ];
+    }
+
+    my $data = {};
+    my @crisprs = $c->model('DB')->resultset('Crispr')->search( {
+        id => { -IN => $ids }
+    });
+
+    foreach my $crispr (@crisprs){
+        $data->{ $crispr->id } = {
+            seq                 => $crispr->seq
+        };
+    }
+
+    $c->stash->{json_data} = $data;
+    $c->forward('View::JSON');
+    return;
+
 }
 
 sub off_targets_by_seq :Local('off_targets_by_seq') {
