@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.098     2016-08-22 14:58:27 Europe/London
+
 	Fixed offtarget sorting function, added public API to get crispr info, updated API docs.
 
 0.097     2016-07-21 16:12:59 Europe/London
