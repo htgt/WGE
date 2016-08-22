@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+	Fixed offtarget sorting function, added public API to get crispr info, updated API docs.
+
 0.097     2016-07-21 16:12:59 Europe/London
 
 	Added Ensembl links to homepage
@@ -10,7 +12,7 @@
 
 0.095     2016-07-18 14:25:40 Europe/London
 
-    Added offtarger sorting function to crispr reports and bed download to genome browser
+    Added offtarget sorting function to crispr reports and bed download to genome browser
 
 0.094     2016-06-22 11:36:09 Europe/London
 
