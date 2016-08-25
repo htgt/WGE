@@ -337,7 +337,7 @@
       var genome = '[% genome %]';
       var species = '[% species %]';
       var chromosome = '[% chromosome %]';
-      var url_base = '[% c.uri_for('/crispr_ranking') %]';
+      var url_base = "[% c.uri_for('/crispr_ranking') %]";
       window.location.replace(url_base + '?loc=' + browse_start + "_" + browse_end + "_" + genome + "_" + species + "_" + chromosome);
 
   }
@@ -806,12 +806,12 @@
         tracks    : [
           Genoverse.Track.Scalebar,
           Genoverse.Track.SequenceSelect.extend({
-            name      : 'Sequence',
-            id        : 'Sequence', //need this for tracksById
-            url       : ensembl_url + '/sequence/region/' + ensembl_species + '/__CHR__:__START__-__END__?content-type=text/plain',
-            resizable : 'auto',
-            100000    : false,
-            controls  : 'off',
+            name       : 'Sequence',
+            id         : 'Sequence', //need this for tracksById
+            url        : ensembl_url + '/sequence/region/' + ensembl_species + '/__CHR__:__START__-__END__?content-type=text/plain',
+            resizable  : 'auto',
+            100000     : false,
+            controls   : 'off',
             unsortable : true
           }),
           Genoverse.Track.Variation.extend({
@@ -876,7 +876,7 @@
                 Type   : feature.type,
                 Start  : feature.start,
                 End    : feature.end,
-                Strand : feature.strand
+                Strand : feature.strand,
               };
               return atts;
             }
@@ -970,12 +970,14 @@
 
           $(window)[0].genoverse.makeMenu = function (feature, event, track) {
             // run existing makeMenu code to create popup
+            console.log(arguments);
             old_makeMenu.apply(this, arguments);
 
             // append the bookmarking button to the popup
             var settings;
             if(feature.type == 'Crispr'){
               console.log('this is a crispr - adding bookmark button');
+              console.log(feature);
               settings = {
                  'id'           : feature.name,
                  'type'         : 'Crispr',
@@ -984,6 +986,12 @@
                  'spinner'      : spinner,
                  'bookmark_track' : get_track('Bookmarked Crisprs')
               };
+
+              if (!document.getElementById(feature.sequence)){
+                $('table', feature.menuEl).append("<tr><td>Sequence</td><td id=" + feature.sequence + ">" + feature.sequence + "</td></tr>");
+              }
+
+
               add_bookmark_button(feature.menuEl,settings);
             }
             else if(feature.type == 'crispr_pair'){
@@ -996,6 +1004,13 @@
                  'spinner'      : spinner,
                  'bookmark_track' : get_track('Bookmarked Crispr Pairs')
               };
+              if (!document.getElementById(feature.left_sequence)){
+                $('table', feature.menuEl).append("<tr><td>Left Sequence</td><td id=" + feature.left_sequence + ">" + feature.left_sequence + "</td></tr>");
+              }
+              if (!document.getElementById(feature.right_sequence)){
+                $('table', feature.menuEl).append("<tr><td>Right Sequence</td><td id=" + feature.right_sequence + ">" + feature.right_sequence + "</td></tr>");
+              }
+
               add_bookmark_button(feature.menuEl,settings);
             }
           };

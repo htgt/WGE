@@ -523,7 +523,8 @@ sub crisprs_to_gff {
                 'phase' => '.',
                 'attributes' => 'ID='
                     . $parent_id . ';'
-                    . 'Name=' . $crispr_r->id
+                    . 'Name=' . $crispr_r->id . ';'
+                    . 'Sequence=' . $crispr_r->seq
                 );
 
             my $ot_summary = $crispr_r->off_target_summary;
@@ -568,7 +569,8 @@ sub crisprs_to_gff {
                     . 'Cr_' . $crispr_r->id . ';'
                     . 'Parent=' . $parent_id . ';'
                     . 'Name=' . $crispr_r->id . ';'
-                    . 'color=' . $colour;
+                    . 'color=' . $colour . ';'
+                    . 'Sequence=' . $crispr_r->seq;
             my $crispr_child_datum = prep_gff_datum( \%crispr_format_hash );
 
             # This is the PAM
@@ -578,7 +580,8 @@ sub crisprs_to_gff {
                     . 'PAM_' . $crispr_r->id . ';'
                     . 'Parent=' . $parent_id . ';'
                     . 'Name=' . $crispr_r->id . ';'
-                    . 'color=' . colours->{pam} ;
+                    . 'color=' . colours->{pam} . ';'
+                    . 'Sequence=' . $crispr_r->seq;
             my $pam_child_datum = prep_gff_datum( \%crispr_format_hash );
 
             push @crisprs_gff, $crispr_parent_datum, $crispr_child_datum, $pam_child_datum ;
@@ -640,7 +643,9 @@ sub crispr_pairs_to_gff {
                 'attributes' => 'ID='
                     . $id . ';'
                     . 'Name=' . $id .';'
-                    . 'Spacer=' . $crispr_pair->{spacer}
+                    . 'Spacer=' . $crispr_pair->{spacer} . ';'
+                    . 'Left_sequence=' . $crispr_pair->{left_crispr}->{seq} . ';'
+                    . 'Right_sequence=' . $crispr_pair->{right_crispr}->{seq}
                 );
 
             # Add paired OT summary information if pair has data in DB
