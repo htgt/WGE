@@ -115,6 +115,11 @@ __PACKAGE__->table("library_design_jobs");
   data_type: 'text'
   is_nullable: 1
 
+=head2 input_file
+
+  data_type: 'text'
+  is_nullable: 1
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -155,6 +160,8 @@ __PACKAGE__->add_columns(
   "results_file",
   { data_type => "text", is_nullable => 1 },
   "info",
+  { data_type => "text", is_nullable => 1 },
+  "input_file",
   { data_type => "text", is_nullable => 1 },
 );
 
@@ -208,8 +215,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2016-08-04 15:47:14
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:l83deF+LJvcDMhx8kW3jVg
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2016-08-22 14:28:33
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:oZEG8Ri99GFFgDgJo2QHTw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

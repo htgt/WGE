@@ -24,7 +24,7 @@ has ua => (
 );
 
 sub _build_ua {
-    return LWP::UserAgent->new();
+    return LWP::UserAgent->new( timeout => 300 );
 }
 
 sub ots_server_uri {
@@ -94,6 +94,9 @@ sub find_off_targets_by_seq {
 
 sub update_off_targets {
     my ( $self, $model, $params ) = @_;
+#my $ua = $self->ua;
+#sleep(20);
+#die "Test die handling";
 
     my %all_results;
 

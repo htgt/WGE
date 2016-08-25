@@ -9,7 +9,7 @@ use Data::UUID;
 use Path::Class;
 use Data::Dumper;
 use Moose;
-use POSIX qw(ceil sys_wait_h);
+use POSIX qw(ceil sys_wait_h _exit);
 use JSON;
 use WGE::Util::OffTargetServer;
 use List::MoreUtils qw(natatime);
@@ -192,6 +192,12 @@ sub _build_design_job{
     return $job;
 }
 
+has crisprs_missing_offs => (
+    is => 'rw',
+    isa => 'ArrayRef',
+    default => sub{ [] },
+);
+
 has targets => (
     is => 'rw',
     isa => 'ArrayRef',
@@ -215,6 +221,8 @@ sub _build_targets{
 	# target_name   => (input from file)
 	# target_coords => coords computed as required for input type
 	my $fh = $self->input_fh;
+    seek($fh,0,0);
+
     my @inputs = <$fh>;
     my $input_count = scalar @inputs;
     $self->log->debug("Getting coordinates for $input_count library targets");
@@ -252,7 +260,15 @@ sub _build_targets{
 
     # Find crisprs as per search params and add to target
     # crisprs => [ $crispr1->as_hash, $crispr2->as_hash, etc  ]
-    return $self->_find_crispr_sites(\@targets);
+
+    # First pass finds crispr sites and stores IDs of any crisprs missing off-targets
+    $self->_find_crispr_sites(\@targets);
+
+    # Then we generate off targets where missing
+    $self->generate_off_targets;
+
+    # This time repeat the crispr search but sort and store the best crisprs
+    return $self->_find_crispr_sites(\@targets, 1);
 }
 
 sub _coords_for_exon{
@@ -359,7 +375,6 @@ sub _coords_for_coord{
 
     # accepts chr1:1234-1235
     # or         1:1234-1235
-    # start must be smaller than end
 
     my $coords;
 
@@ -385,31 +400,39 @@ sub _coords_for_coord{
         return $coords;
     }
 
-    if($start > $end){
+    if($start < $end){
         $coords = {
-            error => "Start coordinate must be before end",
+            start => $start,
+            end   => $end,
+            chr   => $chr,
         };
-        return $coords;
     }
-
-    $coords = {
-        start => $start,
-        end   => $end,
-        chr   => $chr,
-    };
+    else{
+        $self->log->debug("swapping start and end coords");
+        $coords = {
+            start => $end,
+            end   => $start,
+            chr   => $chr,
+        };
+    }
 
     return $coords;
 }
 
 sub _find_crispr_sites{
-    my ($self, $targets) = @_;
+    my ($self, $targets, $sort_and_store) = @_;
+
+    my $stage = 'find_crisprs';
+    if($sort_and_store){
+        $stage = 'rank_crisprs';
+    }
 
     my $count = scalar @{ $targets };
     my $progress_count = 0;
     $self->log->debug("Finding crisprs for $count targets");
 
     $self->_update_job({
-        library_design_stage_id => 'find_crisprs',
+        library_design_stage_id => $stage,
         progress_percent        => 0,
     });
 
@@ -449,12 +472,18 @@ sub _find_crispr_sites{
             die "No CRISPR site search regions requested!";
         }
 
-    	# Rank them and take first n
-    	# Store crispr list in targets hash
-        $target->{crisprs} = $self->_search_crisprs(\@search_regions, $target->{target_name});
+        if($sort_and_store){
+            # Rank them and take first n
+            # Store crispr list in targets hash
+            $target->{crisprs} = $self->_search_crisprs(\@search_regions, $target->{target_name}, 1);
+        }
+        else{
+            $self->_search_crisprs(\@search_regions, $target->{target_name});
+        }
+
 
         # Update progress
-        $self->_update_progress('find_crisprs',$count,$progress_count);
+        $self->_update_progress($stage,$count,$progress_count);
     }
     $self->_update_job({ progress_percent => 100 });
 
@@ -462,7 +491,7 @@ sub _find_crispr_sites{
 }
 
 sub _search_crisprs{
-    my ($self, $search_regions, $target) = @_;
+    my ($self, $search_regions, $target, $sort_and_store) = @_;
     my $crisprs;
 
     # Search for any crispr starting in the search region
@@ -486,6 +515,8 @@ sub _search_crisprs{
     my $missing_count = @crisprs_missing_offs;
     if($missing_count){
         $self->log->debug("off-target info missing for $missing_count crisprs");
+        push @{ $self->crisprs_missing_offs }, map { $_->{id} } @crisprs_missing_offs;
+=head
         $self->_update_job({ info => "Computing off-targets for $missing_count crisprs in $target region"});
         $self->_generate_missing_ots(\@crisprs_missing_offs);
         foreach my $crispr (@crisprs_missing_offs){
@@ -494,12 +525,28 @@ sub _search_crisprs{
             $crisprs->{ $id } = $updated_crispr->as_hash;
         }
         $self->_update_job({ info => "" });
+=cut
     }
 
-    my @crisprs = score_and_sort_crisprs([ values %$crisprs ]);
+    if($sort_and_store){
+        my @crisprs = score_and_sort_crisprs([ values %$crisprs ]);
 
-    my @best = @crisprs[0..($self->num_crisprs - 1)];
-    return \@best;
+        my @best = @crisprs[0..($self->num_crisprs - 1)];
+        return \@best;
+    }
+
+    return [];
+}
+
+sub generate_off_targets{
+    my ($self) = @_;
+    my $count = scalar( @{ $self->crisprs_missing_offs} );
+    if($count){
+        $self->_update_job({ info => "Generating off-targets for $count crispr sites"});
+        $self->_generate_missing_ots($self->crisprs_missing_offs);
+        $self->_update_job({ info => '' });
+    }
+    return;
 }
 
 sub _generate_missing_ots{
@@ -508,32 +555,49 @@ sub _generate_missing_ots{
     # crisprs_missing_offs is array of cripsr->as_hash
     my $ots_species = lc($self->species_name);
 
-    my $iter = natatime 10, @{ $crisprs_missing_offs };
+    my $batch_size = 10;
+    my $max_children = 5;
+
+    my $missing_count = scalar @{$crisprs_missing_offs};
+
+    # Ensure smaller lists of crisprs are processed in parallel
+    if($missing_count < ($batch_size * $max_children) ){
+        $batch_size = ceil( $missing_count / $max_children );
+    }
+
+    my $iter = natatime $batch_size, @{ $crisprs_missing_offs };
     my %pids;
 
     # ensure we get signals from child processes
     $SIG{CHLD} = 'DEFAULT';
 
+    my $done = 0;
     while (my @tmp = $iter->() ){
         $self->log->debug("Starting new child process to generate off-targets");
         my $pid = fork();
-        if($pid==-1){
-            warn($!);
-            last;
+
+        if(!defined($pid)){
+            die "Could not fork - $!";
         }
+
         if($pid){
             # parent keeps track of child pids
             $pids{$pid} = 1;
             my $child_pid_count = keys %pids;
             $self->log->debug("Currently running $child_pid_count children");
             # Do not exceed 5 child processes
-            while(keys %pids > 4){
+            while(keys %pids >= $max_children){
                 $self->_monitor_children(\%pids);
             }
         }
         else{
             # child runs ots query
-            my @ids = map { $_->{id} } @tmp;
+
+            # Child does not need the target info array so clear it to reduce mem usage
+            $self->targets([]);
+
+            #my @ids = map { $_->{id} } @tmp;
+            my @ids = @tmp;
             $self->log->debug("updating off-targets for crisprs [PID: $$]: ".join ",", @ids);
 
             try{
@@ -543,11 +607,18 @@ sub _generate_missing_ots{
                 $self->log->error("error doing OT search [PID: $$]: $e");
                 $self->_update_job({ complete => 1, error => $e });
                 $self->log->debug("exiting child process $$ with exit code 1");
-                exit(1);
+                # Using standard exit() did not always return the exit code of 1
+                # possibly due to object destructors and END routines changing $?
+                # see perldocs: http://perldoc.perl.org/functions/exit.html
+                # Using _exit() causes immediate exit so correct $? is seen by parent process
+                _exit(1);
             }
             $self->log->debug("off-target update done [PID: $$]");
             exit(0);
         }
+        $done += $batch_size;
+        $self->_update_progress('off_targets',$missing_count,$done);
+
         sleep(2); # small delay between queries
     }
     # Wait for all pids to complete
@@ -625,6 +696,24 @@ sub write_csv_data_to_file{
     close $fh;
 
     $self->_update_job({ complete => 1, results_file => "$file" });
+
+    return $file;
+}
+
+sub write_input_data_to_file{
+    my ($self, $filename) = @_;
+
+    my $file = $self->workdir->file($filename);
+    my $out_fh = $file->openw or die "Could not open file $file for writing - $!";
+
+    my $in_fh = $self->input_fh;
+    seek($in_fh,0,0);
+
+    foreach my $line(<$in_fh>){
+        print $out_fh $line;
+    }
+
+    $self->_update_job({ input_file => "$file" });
 
     return $file;
 }

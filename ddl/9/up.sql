@@ -7,7 +7,9 @@ CREATE TABLE library_design_stages(
 INSERT INTO library_design_stages (id,description,rank) values
 ('find_targets','Finding target regions',1),
 ('find_crisprs','Finding CRISPR sites',2),
-('generate_csv','Generating file for download',3);
+('off_targets','Generating off-target information',3),
+('rank_crisprs','Ranking CRISPR sites', 4),
+('generate_csv','Generating file for download',5);
 
 CREATE TABLE library_design_jobs(
     id TEXT NOT NULL PRIMARY KEY,
@@ -20,6 +22,7 @@ CREATE TABLE library_design_jobs(
     error TEXT,
     warning TEXT,
     info TEXT,
+    input_file TEXT,
     results_file TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_by_id INT NOT NULL REFERENCES users(id),

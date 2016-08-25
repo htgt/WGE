@@ -26,11 +26,16 @@ sub _require_login {
 sub crispr_library_design :Path('/crispr_library_design') :Args(0){
 	my ($self,$c) = @_;
 
+    if(my $job_id = $c->req->param('retry_job_id')){
+        $self->_stash_from_previous_job($c,$job_id);
+        return;
+    }
+
     if($c->req->param('submit')){
 
     	$self->_require_login($c);
 
-	    my @params = qw(flank_size location species num_crisprs range location within flanking);
+	    my @params = qw(flank_size location species num_crisprs range within flanking job_name);
 
 	    $c->stash( map { $_ => ( $c->req->param($_) // undef ) } @params );
 
@@ -48,7 +53,17 @@ sub crispr_library_design :Path('/crispr_library_design') :Args(0){
 	        $c->req->param('flank_size') or _add_err($c, "You must provide a flank size to search in flanking regions");
 	    }
 
-	    $c->req->param('datafile') or _add_err($c, "You must upload a file");
+        my $input_fh;
+	    if( $c->req->param('datafile') ){
+            $input_fh = $c->request->upload('datafile')->fh;
+        }
+        elsif( my $prev_job_id = $c->req->param('input_from_job') ){
+            my $old_job = $c->user->search_related('library_design_jobs', { id => $prev_job_id })->first;
+            open ($input_fh, "<", $old_job->input_file) or _add_err($c, $!);
+        }
+        else{
+            _add_err($c, "You must upload a file");
+        }
 
 	    if($c->stash->{error_msg}){
 	    	return;
@@ -56,14 +71,14 @@ sub crispr_library_design :Path('/crispr_library_design') :Args(0){
 	    else{
             my $lib_params = {
             	model         => $c->model,
-            	input_fh      => $c->request->upload('datafile')->fh,
+            	input_fh      => $input_fh,
                 species_name  => $species,
                 location_type => $location_type,
                 num_crisprs   => $num_crisprs,
                 within        => ( $c->req->param('within') // 0 ),
                 user_id       => $c->user->id,
                 write_progress_to_db => 1,
-                job_name      => $c->req->param('datafile'),
+                job_name      => ( $c->req->param('job_name') || $c->req->param('datafile') ),
             };
 
             if($c->req->param('flanking')){
@@ -88,6 +103,7 @@ sub crispr_library_design :Path('/crispr_library_design') :Args(0){
                 $c->log->debug("Library creation process ID: $pid");
             	# child runs the library creation step
                 try{
+                    $library->write_input_data_to_file('input.txt');
                 	$library->write_csv_data_to_file('WGE_crispr_library.tsv');
                 }
                 catch($e){
@@ -195,4 +211,30 @@ sub _add_err{
 	}
 	return;
 }
+
+sub _stash_from_previous_job{
+    my ($self, $c, $job_id) = @_;
+
+    my $job = $c->user->search_related('library_design_jobs', { id => $job_id })->first;
+
+    if($job){
+        $c->stash({
+            job_name       => $job->name."_retry",
+            flank_size     => $job->params->{flank_size},
+            location       => $job->params->{location_type},
+            species        => $job->params->{species_name},
+            num_crisprs    => $job->params->{num_crisprs},
+            within         => $job->params->{within},
+            flanking       => $job->params->{flanking},
+            input_from_job => $job_id,
+        });
+
+        $c->stash->{info_msg} = "Parameters retrieved from library design job ".$job->name;
+    }
+    else{
+        $c->stash->{error_msg} = "Could not find job with ID $job_id for user ".$c->user->name;
+    }
+    return;
+}
+
 1;

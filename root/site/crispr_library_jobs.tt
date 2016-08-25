@@ -16,7 +16,7 @@
           <p><strong>Target region count:</strong> [% job.target_region_count %]</p>
         </div>
         <div class="col-xs-6">
-          <p>Job description: For each target [% job.params.location_type %] find the [% job.params.num_crisprs %] best crisprs</p>
+          <p>Job description: For each target <strong>[% job.params.location_type %]</strong> find the <strong>[% job.params.num_crisprs %]</strong> best crisprs</p>
             <ul>
             [% IF job.params.within %]<li>within the target</li>[% END %]
             [% IF job.params.flank_size %]<li>flanking the target by [% job.params.flank_size %]bp</li>[% END %]
@@ -26,7 +26,7 @@
 
     [% IF job.error %]
     <p class="bg-danger">Job failed at [% job.last_modified %] with error: [% job.error %]</p>
-
+    <a class="btn btn-primary" href="[% c.uri_for('/crispr_library_design', { retry_job_id => job.id }) %]"><span class="glyphicon glyphicon-repeat"></span> Retry Job</a>
     [% ELSIF job.complete %]
     <p class="bg-success"><strong>Job completed:</strong> [% job.last_modified %]</p>
     <a class="btn btn-default" href="[% c.uri_for('/download_library_csv/') _ job.id %]">Download results</a>
