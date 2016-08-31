@@ -512,7 +512,9 @@ sub crisprs_to_gff {
         while ( my $crispr_r = $crisprs_rs->next ) {
             my $parent_id = 'C_' . $crispr_r->id;
 
+            # process crispr hash into correct format to be passed into method
             my %crispr_hash = %{$crispr_r->{_column_data}};
+            # process crispr seq
             my $seq = _split_crispr_seq(%crispr_hash);
 
             my %crispr_format_hash = (
@@ -598,22 +600,25 @@ sub crisprs_to_gff {
     return \@crisprs_gff;
 }
 
+=head _split_crispr_seq
+Returns a string containing the crispr sequence split into 10-10-3 or 3-10-10 depending on PAM site
+=cut
 sub _split_crispr_seq {
     my %crispr = @_;
 
-    my @seq_split;
     my $seq = $crispr{seq};
 
+    # choose method of splitting (based on PAM site)
     if ($crispr{pam_right}) {
-        @seq_split = ( $seq =~ m/.{10}/g );
-        $seq =~ m/(.{3})$/;
-        return join(' ', @seq_split, $1);
+        # use regex to find correct regions
+        $seq =~ m/^(.{10})(.{10})(.{3})$/;
+        # join regions found with regex with ' '
+        return join(' ', $1, $2, $3);
     } else {
-        $seq =~ m/^(.{3})/;
-        push(@seq_split, $1);
-        $seq =~ m/(.{20})$/;
-        push(@seq_split, ($1 =~ m/.{10}/g));
-        return join(' ', @seq_split);
+        # use regex to find correct regions
+        $seq =~ m/^(.{3})(.{10})(.{10})$/;
+        # join regions found with regex with ' '
+        return join(' ', $1, $2, $3);
     }
 }
 
@@ -653,9 +658,12 @@ sub crispr_pairs_to_gff {
             my $left = $crispr_pair->{left_crispr};
             my $id = $left->{id}."_".$right->{id};
 
+            # process crispr info to pass into method in correct format
             my %crispr_hash = %{$$crispr_pair{left_crispr}};
+            # process left seq
             my $left_seq = _split_crispr_seq(%crispr_hash);
             %crispr_hash = %{$$crispr_pair{right_crispr}};
+            #process right seq
             my $right_seq = _split_crispr_seq(%crispr_hash);
 
             my %crispr_format_hash = (
