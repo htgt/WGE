@@ -511,21 +511,10 @@ sub crisprs_to_gff {
 
         while ( my $crispr_r = $crisprs_rs->next ) {
             my $parent_id = 'C_' . $crispr_r->id;
-            my $seq;
-            if ($crispr_r->pam_right){
-                $seq = $crispr_r->seq;
-                my @seq_split = ( $seq =~ m/.{10}/g );
-                $seq =~ m/(.{3})$/;
-                $seq = join(' ', @seq_split, $1);
-            } else {
-                $seq = $crispr_r->seq;
-                $seq =~ m/^(.{3})/;
-                push(my @seq_split, $1);
-                $seq =~ m/(.{20})$/;
-                $seq = $1;
-                push(@seq_split, ($seq =~ m/.{10}/g));
-                $seq = join(' ', @seq_split);
-            }
+
+            my %crispr_hash = %{$crispr_r->{_column_data}};
+            my $seq = _split_crispr_seq(%crispr_hash);
+
             my %crispr_format_hash = (
                 'seqid' => $params->{'chromosome_number'},
                 'source' => 'WGE',
@@ -609,6 +598,24 @@ sub crisprs_to_gff {
     return \@crisprs_gff;
 }
 
+sub _split_crispr_seq {
+    my %crispr = @_;
+
+    my @seq_split;
+    my $seq = $crispr{seq};
+
+    if ($crispr{pam_right}) {
+        @seq_split = ( $seq =~ m/.{10}/g );
+        $seq =~ m/(.{3})$/;
+        return join(' ', @seq_split, $1);
+    } else {
+        $seq =~ m/^(.{3})/;
+        push(@seq_split, $1);
+        $seq =~ m/(.{20})$/;
+        push(@seq_split, ($1 =~ m/.{10}/g));
+        return join(' ', @seq_split);
+    }
+}
 
 =head crispr_pairs_to_gff
 Returns an array representing a set of strings ready for
@@ -646,36 +653,10 @@ sub crispr_pairs_to_gff {
             my $left = $crispr_pair->{left_crispr};
             my $id = $left->{id}."_".$right->{id};
 
-            my $left_seq;
-            my $right_seq;
-
-            if ($left->{pam_right}){
-                $left_seq = $left->{seq};
-                $right_seq = $right->{seq};
-                my @seq_split = ( $left_seq =~ m/.{10}/g );
-                $left_seq =~ m/(.{3})$/;
-                $left_seq = join(' ', @seq_split, $1);
-                @seq_split = ( $right_seq =~ m/.{10}/g );
-                $right_seq =~ m/(.{3})$/;
-                $right_seq = join(' ', @seq_split, $1);
-
-            } else {
-                $left_seq = $left->{seq};
-                $right_seq = $right->{seq};
-                $left_seq =~ m/^(.{3})/;
-                push(my @seq_split, $1);
-                $left_seq =~ m/(.{20})$/;
-                $left_seq = $1;
-                push(@seq_split, ($left_seq =~ m/.{10}/g));
-                $left_seq = join(' ', @seq_split);
-                @seq_split = '';
-                $right_seq =~ m/^(.{3})/;
-                push(@seq_split, $1);
-                $right_seq =~ m/(.{20})$/;
-                $right_seq = $1;
-                push(@seq_split, ($right_seq =~ m/.{10}/g));
-                $right_seq = join(' ', @seq_split);
-            }
+            my %crispr_hash = %{$$crispr_pair{left_crispr}};
+            my $left_seq = _split_crispr_seq(%crispr_hash);
+            %crispr_hash = %{$$crispr_pair{right_crispr}};
+            my $right_seq = _split_crispr_seq(%crispr_hash);
 
             my %crispr_format_hash = (
                 'seqid' => $params->{'chromosome_number'},

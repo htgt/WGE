@@ -84,83 +84,84 @@
 </form>
 
 <div class="container-fluid">
-  <div class="alert alert-info"><strong>Zoom:</strong> use "+" and "-" buttons. <strong>Move:</strong> drag or scroll with the mouse. <strong>Select region:</strong> hold shift key and drag with the mouse.
+<button type="button" class="close" onclick='$("#alert_help_info").hide(); $(this).hide();'>&times;&nbsp;</button>
+  <div class="alert alert-info" id="alert_help_info"><strong>Zoom:</strong> use "+" and "-" buttons. <strong>Move:</strong> drag or scroll with the mouse. <strong>Select region:</strong> hold shift key and drag with the mouse.<br /><strong>Copy crispr:</strong> right click crispr sequence to copy.
   <a href="[% c.uri_for('/crispr_help') _ '#genoverse_view' %]" target="_blank">
     <i class="glyphicon glyphicon-question-sign"></i> Help
   </a>
-  <button type="button" class="close" data-dismiss="alert">×</button>
-</div>
-<div id="genoverse" style="margin: 0;" class="col-md-12"></div>
 
-<div class="row-fluid">
-  <div class="well" id="silent_mutations" style="display:none"></div>
-</div>
+  </div>
+  <div id="genoverse" style="margin: 0;" class="col-md-12"></div>
 
-<div class="row-fluid">
-<div class="col-md-9">
-<form action="[% c.uri_for( '/genoverse_browse' ) %]" class="well">
-  <input type="hidden" name="genome" value=[%genome%] />
-  <input type="hidden" name="chromosome" value=[%chromosome%] />
-  <input id="browse_start" type="hidden" name="browse_start" value=[%browse_start%] />
-  <input id="browse_end" type="hidden" name="browse_end" value=[%browse_end%] />
-  <input type="hidden" name="genes" value="[%genes%]" />
-  [% IF design_id %]<input type="hidden" name="design_id" value=[%design_id%] />[% END %]
+  <div class="row-fluid">
+    <div class="well" id="silent_mutations" style="display:none"></div>
+  </div>
 
-  <table class='table'>
-   <thead>
-    <tr>
-     <th>Single Crisprs</th><th>Paired Crisprs</th><th>Designs</th>
-     <th><p id="crispr_filters_heading" [% UNLESS view_single OR view_paired %]class="muted"[% END %]>Crispr Filters</p></th>
-     <th><p id="spacer_filters_heading" [% UNLESS view_paired %]class="muted"[% END %]>Spacer Filter</p></th>
-    </tr>
-   </thead>
-   <tbody>
-    <tr>
-      <td>
-        <input id="show_single" type="radio" name="view_single" value="1" [% IF view_single %]checked[% END %]>
-        Show</input>
-        <br />
-        <input id="hide_single" type="radio" name="view_single" value="0"  [% IF not view_single %]checked[% END %]>
-        Hide</input>
-      </td>
-      <td>
-        <input id="show_paired" type="radio" name="view_paired" value="1" [% IF view_paired %]checked[% END %]>
-        Show</input>
-        <br />
-        <input id="hide_paired" type="radio" name="view_paired" value="0" [% IF not view_paired %]checked[% END %]>
-        Hide</input>
-      </td>
-      <td>
-        <input id="show_designs" type="radio" name="view_designs" value="1" checked>
-        Show</input>
-        <br />
-        <input id="hide_designs" type="radio" name="view_designs" value="0" >
-        Hide</input>
-      </td>
-      <td>
-       <fieldset name="crispr_filters" [% UNLESS view_paired OR view_single %]disabled[% END %]>
-        <input type="radio" name="crispr_filter" value="all" [% IF crispr_filter == 'all'  or not crispr_filter %]checked[% END %]>
-        Show All</input>
-        <br />
-        <input type="radio" name="crispr_filter" value="exonic" [% IF crispr_filter == 'exonic' %]checked[% END %]>
-        Exon Only</input>
-        <br />
-        <input type="radio" name="crispr_filter" value="exon_flanking" [% IF crispr_filter == 'exon_flanking' %]checked[% END %]>
-        Exon Flanking Only</input>
-        <br />
-        Flanking region: <br/><input type="number" id="flank_size" name="flank_size" value="[% flank_size OR 100 %]" min="1" max="1000" style="width: 60px"/>
-       </fieldset>
-      </td>
-      <td>
-       <fieldset name="spacer_filters" [% UNLESS view_paired %]disabled[% END %]>
-         Crispr Pair Spacer Length<br/>(-10 to 30 bp)<br />
-         Min Spacer Length <input type="number" name="spacer_min" id="spacer_min" min="-10" max="30" step="1" style="width: 60px"></input> bp<br />
-         Max Spacer Length <input type="number" name="spacer_max" id="spacer_max" min="-10" max="30" step="1" style="width: 60px"></input> bp<br />
-         <button type="button" class="btn btn-default btn-xs" id="reset_spacer_filters">Reset</button>
-         <button type="button" class="btn btn-primary btn-sm" id="apply_spacer_filters">Apply Spacer Filter</button>
-       </fieldset>
-      </td>
-    </tr>
+  <div class="row-fluid">
+  <div class="col-md-9">
+  <form action="[% c.uri_for( '/genoverse_browse' ) %]" class="well">
+    <input type="hidden" name="genome" value=[%genome%] />
+    <input type="hidden" name="chromosome" value=[%chromosome%] />
+    <input id="browse_start" type="hidden" name="browse_start" value=[%browse_start%] />
+    <input id="browse_end" type="hidden" name="browse_end" value=[%browse_end%] />
+    <input type="hidden" name="genes" value="[%genes%]" />
+    [% IF design_id %]<input type="hidden" name="design_id" value=[%design_id%] />[% END %]
+
+    <table class='table'>
+    <thead>
+      <tr>
+        <th>Single Crisprs</th><th>Paired Crisprs</th><th>Designs</th>
+        <th><p id="crispr_filters_heading" [% UNLESS view_single OR view_paired %]class="muted"[% END %]>Crispr Filters</p></th>
+        <th><p id="spacer_filters_heading" [% UNLESS view_paired %]class="muted"[% END %]>Spacer Filter</p></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <input id="show_single" type="radio" name="view_single" value="1" [% IF view_single %]checked[% END %]>
+          Show</input>
+          <br />
+          <input id="hide_single" type="radio" name="view_single" value="0"  [% IF not view_single %]checked[% END %]>
+          Hide</input>
+        </td>
+        <td>
+          <input id="show_paired" type="radio" name="view_paired" value="1" [% IF view_paired %]checked[% END %]>
+          Show</input>
+          <br />
+          <input id="hide_paired" type="radio" name="view_paired" value="0" [% IF not view_paired %]checked[% END %]>
+          Hide</input>
+        </td>
+        <td>
+          <input id="show_designs" type="radio" name="view_designs" value="1" checked>
+          Show</input>
+          <br />
+          <input id="hide_designs" type="radio" name="view_designs" value="0" >
+          Hide</input>
+        </td>
+        <td>
+          <fieldset name="crispr_filters" [% UNLESS view_paired OR view_single %]disabled[% END %]>
+            <input type="radio" name="crispr_filter" value="all" [% IF crispr_filter == 'all'  or not crispr_filter %]checked[% END %]>
+            Show All</input>
+            <br />
+            <input type="radio" name="crispr_filter" value="exonic" [% IF crispr_filter == 'exonic' %]checked[% END %]>
+            Exon Only</input>
+            <br />
+            <input type="radio" name="crispr_filter" value="exon_flanking" [% IF crispr_filter == 'exon_flanking' %]checked[% END %]>
+            Exon Flanking Only</input>
+            <br />
+            Flanking region: <br/><input type="number" id="flank_size" name="flank_size" value="[% flank_size OR 100 %]" min="1" max="1000" style="width: 60px"/>
+          </fieldset>
+        </td>
+        <td>
+          <fieldset name="spacer_filters" [% UNLESS view_paired %]disabled[% END %]>
+            Crispr Pair Spacer Length<br/>(-10 to 30 bp)<br />
+            Min Spacer Length <input type="number" name="spacer_min" id="spacer_min" min="-10" max="30" step="1" style="width: 60px"></input> bp<br />
+            Max Spacer Length <input type="number" name="spacer_max" id="spacer_max" min="-10" max="30" step="1" style="width: 60px"></input> bp<br />
+            <button type="button" class="btn btn-default btn-xs" id="reset_spacer_filters">Reset</button>
+            <button type="button" class="btn btn-primary btn-sm" id="apply_spacer_filters">Apply Spacer Filter</button>
+          </fieldset>
+        </td>
+      </tr>
 
     <th>Variation</th>
     <tr>
