@@ -511,6 +511,21 @@ sub crisprs_to_gff {
 
         while ( my $crispr_r = $crisprs_rs->next ) {
             my $parent_id = 'C_' . $crispr_r->id;
+            my $seq;
+            if ($crispr_r->pam_right){
+                $seq = $crispr_r->seq;
+                my @seq_split = ( $seq =~ m/.{10}/g );
+                $seq =~ m/(.{3})$/;
+                $seq = join(' ', @seq_split, $1);
+            } else {
+                $seq = $crispr_r->seq;
+                $seq =~ m/^(.{3})/;
+                push(my @seq_split, $1);
+                $seq =~ m/(.{20})$/;
+                $seq = $1;
+                push(@seq_split, ($seq =~ m/.{10}/g));
+                $seq = join(' ', @seq_split);
+            }
             my %crispr_format_hash = (
                 'seqid' => $params->{'chromosome_number'},
                 'source' => 'WGE',
@@ -524,7 +539,8 @@ sub crisprs_to_gff {
                 'attributes' => 'ID='
                     . $parent_id . ';'
                     . 'Name=' . $crispr_r->id . ';'
-                    . 'Sequence=' . $crispr_r->seq
+                    . 'Sequence=' . $seq . ';'
+                    . 'CopySequence=' . $crispr_r->seq
                 );
 
             my $ot_summary = $crispr_r->off_target_summary;
@@ -630,6 +646,37 @@ sub crispr_pairs_to_gff {
             my $left = $crispr_pair->{left_crispr};
             my $id = $left->{id}."_".$right->{id};
 
+            my $left_seq;
+            my $right_seq;
+
+            if ($left->{pam_right}){
+                $left_seq = $left->{seq};
+                $right_seq = $right->{seq};
+                my @seq_split = ( $left_seq =~ m/.{10}/g );
+                $left_seq =~ m/(.{3})$/;
+                $left_seq = join(' ', @seq_split, $1);
+                @seq_split = ( $right_seq =~ m/.{10}/g );
+                $right_seq =~ m/(.{3})$/;
+                $right_seq = join(' ', @seq_split, $1);
+
+            } else {
+                $left_seq = $left->{seq};
+                $right_seq = $right->{seq};
+                $left_seq =~ m/^(.{3})/;
+                push(my @seq_split, $1);
+                $left_seq =~ m/(.{20})$/;
+                $left_seq = $1;
+                push(@seq_split, ($left_seq =~ m/.{10}/g));
+                $left_seq = join(' ', @seq_split);
+                @seq_split = '';
+                $right_seq =~ m/^(.{3})/;
+                push(@seq_split, $1);
+                $right_seq =~ m/(.{20})$/;
+                $right_seq = $1;
+                push(@seq_split, ($right_seq =~ m/.{10}/g));
+                $right_seq = join(' ', @seq_split);
+            }
+
             my %crispr_format_hash = (
                 'seqid' => $params->{'chromosome_number'},
                 'source' => 'WGE',
@@ -644,8 +691,10 @@ sub crispr_pairs_to_gff {
                     . $id . ';'
                     . 'Name=' . $id .';'
                     . 'Spacer=' . $crispr_pair->{spacer} . ';'
-                    . 'Left_sequence=' . $crispr_pair->{left_crispr}->{seq} . ';'
-                    . 'Right_sequence=' . $crispr_pair->{right_crispr}->{seq}
+                    . 'Left_sequence=' . $left_seq . ';'
+                    . 'Right_sequence=' . $right_seq . ';'
+                    . 'Copy_sequence_left=' . $left->{seq} . ';'
+                    . 'Copy_sequence_right=' . $right->{seq}
                 );
 
             # Add paired OT summary information if pair has data in DB
