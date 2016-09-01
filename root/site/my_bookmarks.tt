@@ -22,8 +22,8 @@
      </tr>
      [% FOREACH crispr IN bookmarks.$species.assembly.$assembly.crisprs %]
      <tr>
-      <td><a class="btn btn-info btn-small" href="[% c.uri_for('/genoverse_browse', { crispr_id => crispr.id, view_single => 1 }) %]" title="view in genome browser">View</a></td>
-      <td><a class="btn btn-small" type="crispr_remove_bookmark" id="[% crispr.id %]" title="remove bookmark"><i class="icon-remove"></i></a></td>
+      <td><a class="btn btn-info btn-sm" href="[% c.uri_for('/genoverse_browse', { crispr_id => crispr.id, view_single => 1 }) %]" title="view in genome browser">View</a></td>
+      <td><a class="btn btn-sm" type="crispr_remove_bookmark" id="[% crispr.id %]" title="remove bookmark"><i class="icon-remove"></i></a></td>
       <td><a href="[% c.uri_for('/crispr', crispr.id) %]">[% crispr.id %]</a></td>
       <td class="location">[% ensembl_link(chr_name=crispr.chr_name, chr_start=crispr.chr_start, chr_end=crispr.chr_end) %]</td>
       <td>[% crispr.seq %]</td>
@@ -60,8 +60,8 @@
      </tr>
      [% FOREACH pair IN bookmarks.$species.assembly.$assembly.crispr_pairs %]
      <tr>
-       <td rowspan="2"><a class="btn btn-info btn-small" href="[% c.uri_for('/genoverse_browse', {crispr_pair_id => pair.id, view_paired => 1}) %]" title="view in genome browser">View</a></td>
-      <td rowspan="2"><a class="btn btn-small" type="crispr_pair_remove_bookmark" id="[% pair.id %]" title="remove bookmark"><i class="icon-remove"></i></a></td>
+       <td rowspan="2"><a class="btn btn-info btn-sm" href="[% c.uri_for('/genoverse_browse', {crispr_pair_id => pair.id, view_paired => 1}) %]" title="view in genome browser">View</a></td>
+      <td rowspan="2"><a class="btn btn-sm" type="crispr_pair_remove_bookmark" id="[% pair.id %]" title="remove bookmark"><i class="icon-remove"></i></a></td>
        <td rowspan="2"><a href="[% c.uri_for('/crispr_pair', pair.id) %]">[% pair.id %]</a></td>
        <td rowspan="2">[% pair.spacer %]</td>
        <td rowspan="2">[% pair.status %]</td>
@@ -103,7 +103,7 @@
   </tr>
   [% FOREACH design IN bookmarks.$species.designs %]
   <tr>
-    <td><a class="btn btn-info btn-small" href="[% c.uri_for('/genoverse_browse', { design_id => design.id }) %]">View</a></td>
+    <td><a class="btn btn-info btn-sm" href="[% c.uri_for('/genoverse_browse', { design_id => design.id }) %]">View</a></td>
     <td><a href="[% c.uri_for('/view_gibson_design', { design_id => design.id } ) %]">[% design.id %]</a></td>
     <td>[% design.type %]</td>
     <td>[% design.assigned_genes.join(', ') %]</td>

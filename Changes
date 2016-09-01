@@ -1,5 +1,94 @@
 {{$NEXT}}
 
+	Fixed offtarget sorting function, added public API to get crispr info, updated API docs.
+
+0.097     2016-07-21 16:12:59 Europe/London
+
+	Added Ensembl links to homepage
+
+0.096     2016-07-19 12:54:55 Europe/London
+
+    Bugfix with csv download on genome browser	
+
+0.095     2016-07-18 14:25:40 Europe/London
+
+    Added offtarget sorting function to crispr reports and bed download to genome browser
+
+0.094     2016-06-22 11:36:09 Europe/London
+
+   Update to API docs and display of off-target IDs in crispr report
+
+0.093     2016-05-23 17:01:54 Europe/London
+    Bootstrap fix
+0.092     2016-05-16 14:00:03 Europe/London
+
+0.088     2016-05-16 13:51:15 Europe/London
+    Bootstrap v3
+0.091     2016-05-09 16:42:41 Europe/London
+
+  Bugfix in fetching bookmarked crispr pairs
+
+0.090     2016-04-27 10:42:53 Europe/London
+
+  Info to distinguish staging version from live
+
+0.089     2016-04-26 10:35:50 Europe/London
+
+  Link SNPs back to ensembl
+  Reload ensembl tracks which may have timed out
+
+0.088     2016-04-25 11:18:28 Europe/London
+
+  Explanation of PAM-proximal OT sorting
+
+0.087     2016-04-22 15:31:43 Europe/London
+
+0.086     2016-04-21 16:18:01 Europe/London
+    Possible announcements fix
+0.085     2016-04-21 15:25:52 Europe/London
+    Implemented announcements
+    Added tsv download options to genoverse and exon search results
+    Off-targets sorted by position of mismatches with respect to PAM
+
+0.082     2016-04-07 14:38:44 Europe/London
+
+  Show off-target counts by type on crispr report page
+  Upgraded to EnsEMBL API v83
+
+0.081     2016-04-05 16:17:33 Europe/London
+
+   Added APIs to get off-target info for crisprs and pairs 
+
+0.080     2016-03-23 14:56:50 Europe/London
+
+   Added timeout to other methods using ensembl API
+
+0.079     2016-03-09 13:44:10 Europe/London
+
+0.078     2016-03-08 16:21:01 Europe/London
+
+   Timeout set for MAF variation in region search which sometimes hangs
+
+0.077     2016-03-07 14:07:24 Europe/London
+
+    Search off-targets by seq bug fixes
+    More debugging statements added
+ 
+0.076     2016-01-07 11:55:57 Europe/London
+    Desgin creation bug fix
+0.075     2016-01-07 11:17:40 Europe/London
+    Fixed design creation bug
+0.074     2015-11-11 11:47:41 Europe/London
+
+    Reordered info on crispr report page
+
+0.073     2015-11-11 10:03:56 Europe/London
+
+    Added genoverse region selected size display
+
+0.072     2015-10-22 13:49:24 Europe/London
+    Added XLSX and CSV support to Crispr Damage script
+
 0.071     2015-10-20 12:46:05 Europe/London
 
     Added AGPL licence information to github and to WGE website

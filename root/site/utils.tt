@@ -717,15 +717,15 @@ copy of the Program in return for a fee.
 [% END %]
 
 [% BLOCK gibson_help %]
-<div class="accordion" id="accordion">
-  <div class="accordion-group">
-    <div class="accordion-heading">
-      <a class="accordion-toggle collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
-        <i class="icon-question-sign"></i> Help
+<div class="panel-group" id="accordion">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <a class="panel-toggle collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+        <i class="glyphicon glyphicon-question-sign"></i> Help
       </a>
     </div>
-    <div id="collapseOne" class="accordion-body collapse">
-      <div class="accordion-inner">
+    <div id="collapseOne" class="panel-body collapse">
+      <div class="panel-body">
         <p class="lead">This tool helps you choose genomic oligos to use when constructing a knockout vector by Gibson Assembly:</p>
         <ol>
           <li>

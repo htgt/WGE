@@ -16,6 +16,8 @@
     font-weight: bold;
     color: #FF0000;
 }
+.pam_proximal_mm{
+}
 </style>
 
 <script type="text/javascript">
@@ -51,6 +53,13 @@
     });
 
     var rows = new Array([], [], [], [], []);
+    var ots_by_type = {
+        'Exonic'     : [0,0,0,0,0],
+        'Intergenic' : [0,0,0,0,0],
+        'Intronic'   : [0,0,0,0,0],
+
+    };
+
     var total_erroneous = 0;
     $("#offtarget_table .ots").each(function() {
       var tr = $(this);
@@ -59,14 +68,22 @@
       var seq = tr.children(".seq");
       var match = crispr_grna.match_str( seq.text().substr(0, 20) );
 
+      if(match.pam_proximal_mm > 0){
+        tr.addClass('pam_proximal_mm');
+      }
+
+      tr.data('mm_positions',match.mm_positions);
+
       //update the rows
       seq.html(match.str + " " + seq.text().substr(20, 3));
       tr.children(".mm").text(match.total);
 
-      //exclude 4 because by removing everything else they'll already be sorted
-      if ( match.total < 4 ) {
+      if ( match.total < 5 ) {
         rows[match.total].push(tr);
       }
+
+      var type = tr.children(".ot_type").text();
+      ots_by_type[type][match.total]++;
 
       //quick hack to remove the handful of CC-GG matches
       //that aren't right. need to stop persisting them.
@@ -78,17 +95,94 @@
 
     var t = $("#total_offs");
     if( t.text() != 'No data') { //only do this if there's data
+      // adjust the total OT count
       t.text( t.text() - total_erroneous );
-    }
 
-    //order everything by number of mismatches
-    var tbl_top = $("#spacer_row");
-    for ( var mm = rows.length-1; mm >= 0; mm-- ) {
-      for ( var i = rows[mm].length-1; i >= 0; i-- ) {
-        rows[mm][i].insertAfter( tbl_top );
+      // Add the OT counts by type
+      var count_table = $("#ot_count_table");
+      if( $(".too_many_ots").size() ){
+        count_table.after("<small>Off-target counts by type not available as there are too many off-targets to list</small>");
+      }
+      else{
+        for (var type in ots_by_type){
+          var total = 0;
+          var mm_counts = [];
+          for ( var mm = 0; mm <=4; mm++ ){
+            var count = ots_by_type[type][mm];
+            total += count;
+            mm_counts.push(mm + ":" + count);
+          }
+          var summary = "{" + mm_counts.join(", ") + "}";
+          count_table.find(".ot_total").filter("." + type).text(total);
+          count_table.find(".ot_summary").filter("." + type).text(summary);
+        }
       }
     }
+
+    $("#ot_info").popover({content: "Off-targets on this page are sorted by total mismatch count. In the default Sort by Sequence, those with mismatches close to the PAM site are shown lower in the list (structural analysis suggests that mismatches in the PAM-proximal region produce a greater reduction in cas9 off-target activity). Sort by Location will list the off-targets based on the genomic location."});
+
+    //if sessionStorage for 'sort_by' has not been initialised, initalise to 1
+    if (sessionStorage.getItem('sort_by') == null) {
+      sessionStorage.setItem('sort_by', 1);
+    }
+    //get value in sessionStorage for 'sort_by'
+    var sort_by_value = sessionStorage.getItem('sort_by');
+    //order everything by number of mismatches
+    //by default, or if Sort by Sequence is selected, sub order by mm_positions
+    if (sort_by_value == 1) {
+
+      for ( var mm = rows.length-1; mm >= 0; mm-- ) {
+      // within each mismatch category sort by mm_positions
+      // sort function looks at position of mm closest to PAM
+      // if both have closest mm at same pos look at the pos
+      // of the next closest mm
+        rows[mm] = rows[mm].sort(function(a,b){
+          var result = 0;
+          var array_a = a.data('mm_positions');
+          var array_b = b.data('mm_positions');
+          for ( var mm_index = mm - 1; mm_index >=0; mm_index--){
+            result = array_a[mm_index] - array_b[mm_index];
+            if(result != 0){
+              return result;
+            }
+          }
+          return result;
+        });
+
+        for ( var i = rows[mm].length-1; i >= 0; i-- ) {
+          rows[mm][i].prependTo("#offtarget_table > tbody");
+        }
+      }
+      document.getElementById("ot_sort").innerHTML = "Sort by Location <span class=\"glyphicon glyphicon-sort\"></span>";
+      document.getElementById("sorted_by").innerHTML = "Sorted by Sequence";
+    } else if (sort_by_value == 0) {
+      //if Sort by Location is selected, sub order by genomic location
+      for ( var mm = rows.length-1; mm >= 0; mm-- ) {
+        for ( var i = rows[mm].length-1; i >= 0; i-- ) {
+          rows[mm][i].prependTo("#offtarget_table > tbody");
+        }
+      }
+      document.getElementById("ot_sort").innerHTML = "Sort by Sequence <span class=\"glyphicon glyphicon-sort\"></span>";
+      document.getElementById("sorted_by").innerHTML = "Sorted by Location";
+    }
+
+    $("#ot_sort").click(function (event){
+      //get value in sessionStorage for 'sort_by'
+      var sort_by_value = sessionStorage.getItem('sort_by');
+      //set value of sessionStorage 'sort_by' based on previous value, then reload page.
+      if (sort_by_value == 1) {
+        sessionStorage.setItem('sort_by', 0);
+      } else if (sort_by_value == 0) {
+        sessionStorage.setItem('sort_by', 1);
+      }
+      location.reload();
+
+    });
+
   });
+
+
+
 
 
 </script>
@@ -100,7 +194,7 @@
     <td><h4>ID: [% crispr.id %]</h4></td>
     <td>
        <a class='btn btn-info pull-right' href="[% c.uri_for( '/genoverse_browse', { crispr_id => crispr.id, view_single => 1 }) %]">
-          <i class="icon-eye-open icon-white"></i>
+          <i class="glyphicon glyphicon-eye-open icon-white"></i>
           View in Genome Browser
         </a>
     </td>
@@ -148,29 +242,42 @@
   </table>
 </div>
 <div class="well">
-  <table>
+  <table class="table table-bordered" id="ot_count_table">
     <tr>
-      <td>Total off-targets</td>
-      <td id="total_offs">[% crispr.off_targets.size or crispr.off_target_total or 'No data' %]</td>
+      <th>Off-Target Counts</th>
+      <th>All</th>
+      <th>Exonic</th>
+      <th>Intronic</th>
+      <th>Intergenic</th>
     </tr>
     <tr>
-      <td>Off-target summary</td>
+      <td>Total</td>
+      <td id="total_offs">[% crispr.off_targets.size or crispr.off_target_total or 'No data' %]</td>
+      <td class="Exonic ot_total"></td>
+      <td class="Intronic ot_total"></td>
+      <td class="Intergenic ot_total"></td>
+    </tr>
+    <tr>
+      <td>Summary</td>
       <td>[% crispr.off_target_summary or 'No data' %]</td>
+      <td class="Exonic ot_summary"></td>
+      <td class="Intronic ot_summary"></td>
+      <td class="Intergenic ot_summary"></td>
     </tr>
   </table>
 </div>
 
 
-<div class="accordion" id="accordion">
-  <div class="accordion-group well">
-    <div class="accordion-heading">
+<div class="panel-group" id="accordion">
+  <div class="panel panel-default well">
+    <div class="panel-heading">
       <p><strong>Found [% crispr_pairs.size %] Related Crispr Pairs</strong></p>
-      <a class="accordion-toggle collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
-        <i class='icon-list'></i> Show Crispr Pairs
+      <a class="panel-toggle collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+        <i class='glyphicon glyphicon-list'></i> Show Crispr Pairs
       </a>
     </div>
-    <div id="collapseOne" class="accordion-body collapse">
-      <div class="accordion-inner">
+    <div id="collapseOne" class="panel-body collapse">
+      <div class="panel-body">
         <table  class="table table-bordered table-condensed">
           <tr>
     <th>ID</th>
@@ -213,14 +320,25 @@
   </div>
 </div>
 
-<h3>Off-Target Sites</h3>
+
+<h3>Off-Target Sites
+  <small>
+    <p id="sorted_by"></p>
+    <button class="btn btn-info" id="ot_sort"></button>
+    <button class="btn btn-info" id="ot_info"><span class="glyphicon glyphicon-info-sign"></span></button>
+  </small>
+</h3>
+
+
 <p><b>Note</b>: the row highlighted in blue is the original CRISPR</p>
 
 [%# if we have no off targets to show hide the table %]
 [%# RETURN UNLESS crispr.off_targets.size %]
 
 <table class='table table-bordered table-hover' id='offtarget_table'>
+<thead>
   <tr>
+    <th>WGE ID</th>
     <th>Location</th>
     <th>Sequence</th>
     <th>Mismatches</th>
@@ -228,6 +346,7 @@
     <th>Type</th>
   </tr>
   <tr>
+    <td>crispr.id</td>
     <td>Original CRISPR</td>
     <td class="seq">
       [%- crispr_grna _ " " _ crispr_pam -%]
@@ -239,26 +358,29 @@
     <td></td>
     <td>[% type(c=crispr) %]</td>
   </tr>
-  <tr id="spacer_row"><td colspan="5"></td></tr>
+  </thead>
+  <tbody id="offtarget_tbody">
 [% FOREACH off_target IN crispr.off_targets %]
   <tr class="ots[% off_target.id == crispr.id ? " info" : "" %]">
+    <td ><a href="[% c.uri_for('/crispr/') %][% off_target.id %]">[% off_target.id %]</a></td>
     <td class="location">[% ensembl_link(chr_name=off_target.chr_name, chr_start=off_target.chr_start, chr_end=off_target.chr_end) %]</td>
     <td class="seq">[% off_target.seq %]</td>
     <td class="mm"></td>
     <td>[% display_strand(pam_right=off_target.pam_right) %]</td>
-    <td>[% type(c=off_target) %]</td>
+    <td class="ot_type">[% type(c=off_target) %]</td>
   </tr>
 [% END %]
 [% UNLESS crispr.off_target_summary %]
   <tr>
     <td colspan="5" style="text-align: center">No off target data available for this crispr</td>
   </tr>
-  <button class="btn btn-block ots-button" value="[% crispr_id %]">Find off targets</button>
+  <button class="btn btn-default btn-block ots-button" value="[% crispr_id %]">Find off targets</button>
 [% END %]
 
 [% IF crispr.off_target_summary AND crispr.off_targets.size == 0 %]
-  <tr class="warning">
+  <tr class="warning too_many_ots">
     <td colspan="5" style="text-align: center">Too many off-targets to display for this crispr</td>
   </tr>
 [% END %]
+</tbody>
 </table>

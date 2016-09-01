@@ -299,40 +299,41 @@ function Iterator(list) {
 
 
 <div class="row">
-  <div class="span10 offset1">
-
-    <div class="well">
+  <div class="col-md-10 col-md-offset-1">
+    <div class="well well-sm">
       <div>
         <h5 style="text-align:center">Find CRISPRs in genomic sequence</h5>
       </div>
       <form role="form" id="crispr_search" class="form-horizontal">
         <fieldset id="fields">
           <div id="bulk_placeholder" class="wordwrap"></div><br/>
-          <button class="btn" id="reset" style="display:none;">Search Again</button>
-              <div id="bulk_form">
-                  <label class="control-label">Sequence</label>
-                  <div class="controls">
-                    <textarea class="input-xxlarge" rows="5" name="seq_block" id="seq_block" placeholder="Paste sequence here (max 250bp)"></textarea>
-                  </div>
-                  <label class="control-label">Species</label>
-                  <div class="control-group" id="bulk_species">
-                    <div class="controls">
-                      [% FOR s IN species %]
-                        <label class="radio">
-                          <input type="radio" name="bulk_species" value="[% s.id %]" />
-                          <div class="species_label">[% s.display_name %]</div>
-                        </label>
-                      [% END %]
-                    </div>
-                  </div>
-                  <div class="control-group">
-                      <div class="controls">
-                          <button class="btn" id="bulk">Find CRISPRs</button>
-                      </div>
-                  </div>
+          <button class="btn btn-default" id="reset" style="display:none;">Search Again</button>
+          <div id="bulk_form">
+            <div class="col-md-12">
+              <label class="col-md-2">Sequence</label>
+              <textarea class="input" style="min-width: 60%" rows="5" name="seq_block" id="seq_block" placeholder="Paste sequence here (max 250bp)"></textarea>
+            </div>
+            <div class="col-md-12">
+              <label class="col-md-2">Species</label>
+              <div class="control-group" id="bulk_species">
+                <div class="col-md-10">
+                  [% FOR s IN species %]
+                    <label class="radio">
+                      <input type="radio" name="bulk_species" value="[% s.id %]" />
+                      <div class="species_label">[% s.display_name %]</div>
+                    </label>
+                  [% END %]
+                </div>
               </div>
-          </fieldset>
-        </form>
+            </div>
+            <div class="col-md-12 control-group"><br>
+              <div class="col-md-offset-2">
+                <button class="btn btn-primary" id="bulk">Find CRISPRs</button>
+              </div>
+            </div>
+          </div>
+        </fieldset>
+      </form>
     </div>
 
     <div class="well">
@@ -345,21 +346,23 @@ function Iterator(list) {
 
       <form role="form" id="crispr_search" class="form-horizontal">
         <fieldset id="fields">
-          <div class="control-group" id="sequence">
-            <label class="control-label">Sequence</label>
-            <div class="controls">
-              <input type="text" class="form-control span4" id="seq" placeholder="Enter Sequence" />
+          <div class="col-md-12 row" id="sequence">
+            <label class="col-md-2">Sequence</label>
+            <div class="col-md-4">
+              <input type="text" class="form-control" id="seq" placeholder="Enter Sequence" />
             </div>
           </div>
           <div class="control-group" id="species">
-            <label class="control-label">Species</label>
-            <div class="controls">
+            <label class="col-md-2">Species</label>
+            <div class="col-md-10">
+            <div class="col-md-12">
               [% FOR s IN species %]
                 <label class="radio">
                   <input type="radio" name="species" value="[% s.id %]" />
                   <div class="species_label">[% s.display_name %]</div>
                 </label>
               [% END %]
+          </div>
             </div>
           </div>
           <!--
@@ -375,9 +378,9 @@ function Iterator(list) {
             </div>
           </div>
           -->
-          <div class="control-group">
-            <div class="controls">
-              <button class="btn btn-default" id="search" autocomplete="off">Find CRISPRs</button>
+          <div class="col-md-12 control-group"><br>
+            <div class="col-md-offset-2">
+              <button class="btn btn-primary" id="search" autocomplete="off">Find CRISPRs</button>
             </div>
           </div>
         </fieldset>

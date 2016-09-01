@@ -56,6 +56,14 @@ around BUILDARGS => sub {
     return $data;
 };
 
+sub database_name {
+    return $ENV{WGE_DB};
+}
+
+sub software_version {
+    return $WGE::Model::DB::VERSION || 'dev';
+}
+
 sub clear_schema {
     my ( $self ) = @_;
 

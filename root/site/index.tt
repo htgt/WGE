@@ -2,9 +2,17 @@
 
 <div class="content">
   <div class="row">
-    <div class="span12">
+    <div class="col-md-12">
+[% FOREACH status IN high %]
+    [% INCLUDE message/warning_message.tt warning = status.message prior = 'warning' date = status.created sid = status.id %]
+[% END %]
+[% FOREACH status IN normal %]
+    [% INCLUDE message/warning_message.tt warning = status.message prior = 'info' date = status.created sid = status.id %]
+[% END %]
         <h4>WTSI Genome Editing (WGE) is a website that provides tools to aid with genome editing of human and mouse genomes</h4><br/>
-        <h5><a href="[% c.uri_for('/find_crisprs') %]">CRISPR Finder</a></h5>
+        <h5 style="display:inline;"><a href="[% c.uri_for('/find_crisprs') %]">CRISPR Finder</a></h5>&emsp;&emsp;
+        <h6 style="display:inline;"><a href="http://www.ensembl.org/Homo_sapiens/Location/View?db=core;r=17:63998085-63998525;contigviewbottom=crispr_WGE_CRISPR_sites=as_alignment_nolabel">Ensembl for Human</a></h6>&emsp;
+        <h6 style="display:inline;"><a href="http://www.ensembl.org/Mus_musculus/Location/View?r=4:136447166-136447522 ;contigviewbottom=crispr_WGE_CRISPR_sites=as_alignment_nolabel">Ensembl for Mouse</a></h6>
         <p>
             The CRISPR Finder will show CRISPR sites (paired or single) in and around genes. You can ask the finder to score the pairs for potential off-target sites, and browse individual and paired CRISPR sites using the Genoverse genome browser tool. We also provide the ability to find CRISPRs in genomic sequence or by gRNA:
         </p>
@@ -12,35 +20,35 @@
     </div>
   </div>
   <div class="row">
-    <div class="span2">
+    <div class="col-md-2">
         <b>Find CRISPRs in our genome browser</b>:<br/>
         <a href="[% c.uri_for('/genoverse_browse',{view_single => 1, view_paired => 1, exon_id => 'ENSE00000939167', species_id => 'Grch38' }) %]">
          <img src="[% c.uri_for('/static/images/genoverse_view.png') %]" class="img-polaroid" height="160px" width="160px" title="crispr pairs for BRCA2 (ENSE00000939167) in genome browser"/>
         </a>
     </div>
 
-    <div class="span2">
+    <div class="col-md-2">
         <b>Find CRISPRs by gene using our table</b>:<br/>
         <a href="[% c.uri_for('/find_crisprs', {show_example => 1}) %]">
         <img id="table_view_example" src="[% c.uri_for('/static/images/table_view.png') %]" class="img-polaroid" height="160px" width="160px" title="crispr pairs for BRCA2 (ENSE00000939167) in table"/>
         </a>
     </div>
 
-    <div class="span2">
+    <div class="col-md-2">
         <b>Find CRISPRs by 20bp gRNA</b>:<br/>
         <a href="[% c.uri_for('/search_by_seq', {show_example => 1}) %]">
         <img id="grna_search_example" src="[% c.uri_for('/static/images/search_by_grna_view.png') %]" class="img-polaroid" height="160px" width="160px" title="CRISPR lookup by gRNA"/>
         </a>
     </div>
 
-    <div class="span2">
+    <div class="col-md-2">
         <b>Find CRISPRs in genomic sequence</b>:<br/>
         <a href="[% c.uri_for('/search_by_seq', {show_example => 1}) %]">
         <img id="seq_search_example" src="[% c.uri_for('/static/images/bulk_seq_search_view.png') %]" class="img-polaroid" height="160px" width="160px" title="Find CRISPRs in genomic sequence"/>
         </a>
     </div>
 
-    <div class="span2">
+    <div class="col-md-2">
         <b>Find off-targets by sequence</b>:<br/>
         <a href="[% c.uri_for('/find_off_targets_by_seq', {show_example => 1}) %]">
         <img id="seq_search_example" src="[% c.uri_for('/static/images/find_off_targets_view.png') %]" class="img-polaroid" height="160px" width="160px" title="Find off-targets for gRNA"/>
@@ -50,7 +58,7 @@
   </div>
 
   <div class="row">
-    <div class="span12">
+    <div class="col-md-12">
         <br>
         <h5><a href="[% c.uri_for('/gibson_designer') %]">Gibson Designer</a></h5>
         <p>
@@ -68,3 +76,10 @@
     </div>
   </div>
 </div>
+<script type="text/javascript">
+
+$(".close").click(function(test) {
+    $.cookie(this.id, 'true', { expires: 7, path: '/' });
+});
+
+</script>

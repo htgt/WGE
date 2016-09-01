@@ -6,6 +6,7 @@ section img {
     border-color: #000000;
     border-width: 1px;
     border-style: solid;
+    max-width: 100%;
 }
 
 .affix {
@@ -29,28 +30,28 @@ $(window).load(function() {
 
 <div class="content">
   <div class="row">
-    <div class="span3 bs-docs-sidebar">
-        <ul id="navigation" data-spy="affix" data-offset-top="180" class="nav nav-list bs-docs-sidenav">
+    <div class="col-md-3 bs-docs-sidebar">
+        <ul id="navigation" data-spy="affix" data-offset-top="180" class="nav nav-pills nav-stacked bs-docs-sidenav">
             <li><a href="#disclaimer">Disclaimer</a></li>
             <li><a href="#api">WGE API</a></li>
-            <li>
-                <ul class="nav nav-list">
-                    <li><a href="#crispr_search">Crispr Search by Exon</a></li>
-                    <li><a href="#crisprs_in_region">Crispr Search by Region</a></li>
-                    <li><a href="#pair_search">Crispr Pair Search by Exon</a></li>
-                    <li><a href="#individual_off_target_search">Off-Targets for Crisprs</a></li>
-                    <li><a href="#pair_off_target_search">Off-Targets for Crispr Pairs</a></li>
-                    <li><a href="#search_by_seq">Find Crispr ID for Sequence</a></li>
-                    <li><a href="#gene_search">Find Marker Symbols for Search Term</a></li>
-                    <li><a href="#exon_search">Find Exons for Marker Symbol</a></li>
-                </ul>
+            <li><a href="#crispr_search">&nbsp;&nbsp;&nbsp;Crispr Search by Exon</a></li>
+            <li><a href="#crisprs_in_region">&nbsp;&nbsp;&nbsp;Crispr Search by Region</a></li>
+            <li><a href="#pair_search">&nbsp;&nbsp;&nbsp;Crispr Pair Search by Exon</a></li>
+            <li><a href="#crispr_off_targets">&nbsp;&nbsp;&nbsp;Off-Targets for Crisprs</a></li>
+            <li><a href="#crispr_pair_off_targets">&nbsp;&nbsp;&nbsp;Off-Targets for Crispr Pairs</a></li>
+            <li><a href="#search_by_seq">&nbsp;&nbsp;&nbsp;Find Crispr ID for Sequence</a></li>
+            <li><a href="#off_targets_by_seq">&nbsp;&nbsp;&nbsp;Find Off-Targets for Sequence</a></li>
+            <li><a href="#crispr_seq_by_id">&nbsp;&nbsp;&nbsp;Find Crispr Sequence by ID</a></li>
+            <li><a href="#crispr_by_id">&nbsp;&nbsp;&nbsp;Find Crispr by ID</a></li>
+            <li><a href="#gene_search">&nbsp;&nbsp;&nbsp;Find Marker Symbols for Search Term</a></li>
+            <li><a href="#exon_search">&nbsp;&nbsp;&nbsp;Find Exons for Marker Symbol</a></li>
             </li>
             <li><a href="#components">WGE Components</a></li>
             <li><a href="#crispr_analyser">CRISPR-Analyser</a></li>
             <li><a href="#source">Source Code</a></li>
         </ul>
     </div>
-    <div class="span9">
+    <div class="col-md-9">
 
         [% PROCESS disclaimer %]
 
@@ -203,62 +204,74 @@ $(window).load(function() {
 }
 </pre>
             </section>
-            <section id="individual_off_target_search">
+            <section id="crispr_off_targets">
             <h3>Off-Targets for Crisprs</h3>
-
-            Calculate off-targets for individual CRISPRs, persisting into WGE.
+            Fetch off-target summaries and list of off-target crispr IDs for 1 or more crisprs (up to max of 100).
             <br>
-            Required: species, ids[]
+            Required: species, id
             <br>
-            ids[] is a list of CRISPR IDs that do not have off-target data. Any IDs provided that already have off-target data will be ignored
-            <br>
-            [% url = c.uri_for('/api/individual_off_target_search', { "ids[]" => [322289792], "species" => "Mouse" } ) %]
+            [% url = c.uri_for('/api/crispr_off_targets', { id => [1106710989,1106710985], species => 'Human' }) %]
             <a href="[% url %]">[% url %]</a>
             <br>
-            Returns an object in JSON mapping CRISPR id -> off target data ONLY for CRISPR IDs that were updated. If there were no CRISPRs needing off-targets the returned object will be empty. A maximum of 100 CRISPR IDs will be processed.
-
-<pre>
+            Returns an object mapping crispr ID to its off-target summary and off-target list
+            <pre>
 {
-   "322289792":{
-      "off_targets":[
-         "300894653",
-         "300947249",
-         "301353461",
-         "301376066",
-         ...
-         "573722530",
-         "573805949",
-         "576503162",
-         "576681220"
-      ],
-      "off_target_summary":"{0: 1, 1: 0, 2: 1, 3: 35, 4: 413}",
-      "id":322289792
-   }
+  "1106710985": {
+    "off_targets": [
+      904032520,
+      904764939,
+      ...
+      1197488029,
+      1199013883
+    ],
+    "off_target_summary": "{0: 1, 1: 0, 2: 0, 3: 2, 4: 66}",
+    "id": 1106710985
+  },
+  "1106710989": {
+    "off_targets": [
+      902582231,
+      906234136,
+      ...
+      1188165849,
+      1201450411
+    ],
+    "off_target_summary": "{0: 1, 1: 0, 2: 0, 3: 4, 4: 49}",
+    "id": 1106710989
+  }
 }
-</pre>
+            </pre>
             </section>
-            <section id="pair_off_target_search">
+
+
+
+            <section id="crispr_pair_off_targets">
             <h3>Off-Targets for Crispr Pairs</h3>
-            <p>
-                Calculate off-targets for a single CRISPR pair, persisting into WGE.
+                Fetch an off-target summary and list of off-target pair IDs for a crispr pair
                 <br>
                 Required: species, left_id, right_id
                 <br>
                 where left_id is the CRISPR ID of the left crispr and right_id is the CRISPR ID of the right CRISPR.
                 <br>
-                Note: this method can be slow (10-20 seconds per pair)
+                Note: this method can be slow (10-20 seconds) if the off-targets for this pair have not been pre-computed
                 <br>
-                [% url = c.uri_for('/api/pair_off_target_search',{ left_id => 322289790, right_id => 322289791, species => "Mouse" }) %]
+                [% url = c.uri_for('/api/crispr_pair_off_targets',{ left_id => 322289790, right_id => 322289791, species => "Mouse" }) %]
 
                 <a href="[% url %]">[% url %]</a>
                 <br>
-                Returns an json string with two fields:
-
+                Returns an json string mapping the crispr pair ID to its off-target summary and list of off-target IDs.
 <pre>
-{success: 1, pair_status: 5}
+{
+  "1106711016_1106711017": {
+    "off_targets": [
+      "1106711016_1106711017"
+    ],
+    "off_target_summary": "{\"closest\":\"None\",\"total_pairs\":1,\"max_distance\":1000}",
+    "id": "1106711016_1106711017"
+    }
+}
 </pre>
+            </section>
 
-                So unlike the individual method does not return the off-targets that were found.
 
             <section id="search_by_seq">
             <h3>Find Crispr ID for Sequence</h3>
@@ -313,6 +326,107 @@ Or, with get_db_data set to 1 a list of CRISPRs:
 ]
 </pre>
             </section>
+
+            <section id="off_targets_by_seq">
+            <h3>Find Off-Targets for Sequence</h3>
+            Fetch off-target summary and list of off-target crispr IDs for any 20bp sequence.
+            <br>
+            Required fields: seq, species, pam_right
+            <br>
+            pam_right must be set to 'true' or 'false'
+            <br>
+            [% url = c.uri_for('/api/off_targets_by_seq', { seq=>"TTAATTGGTCAGCCTAACTC", species=>"mouse", pam_right="false"}) %]
+            <a href="[% url %]">[% url %]</a>
+            <br>
+            Returns off-target summary and off-target list. If a CRISPR site is found in the genome that exactly matches the search sequence then the ID of this is given. If there are multiple exact matches then the ID is that of the first match. If no exact match is found in the genome the ID returned will be 0.
+            <pre>
+{
+"off_targets": [
+302072111,
+310736349,
+310901261,
+320182042,
+456345367,
+...
+],
+"off_target_summary": "{0: 1, 1: 0, 2: 0, 3: 6, 4: 48}",
+"id": 456345367
+}
+            </pre>
+
+            </section>
+            <section id="crispr_seq_by_id">
+            <h3>Find Crispr Sequence by ID</h3>
+            Fetch Crispr sequence for 1 or more crispr IDs.
+            <br>
+            Required: species, id
+            <br>
+            [% url = c.uri_for('/api/crispr_seq_by_id', { id => [1106710999,1106711006], species => 'Human' }) %]
+            <a href="[% url %]">[% url %]</a>
+            <br>
+            Returns an JSON containing the crispr sequence:
+
+<pre>
+{
+  "1106711006":
+    {
+      "seq":"GCCATTAAATGAGGAAACAGTGG"
+    },
+  "1106710999":
+    {
+      "seq":"CCTATTGCATATTTCTTCATGTG"
+    }
+}
+</pre>
+            </section>
+
+            <section id="crispr_by_id">
+            <h3>Find Crispr by ID</h3>
+            Fetch Crispr information and an off-target summary for 1 or more crispr IDs.
+            <br>
+            Required: species, id
+            <br>
+            [% url = c.uri_for('/api/crispr_by_id', { id => [1106710999,1106711006], species => 'Human' }) %]
+            <a href="[% url %]">[% url %]</a>
+            <br>
+            Returns an JSON containing the crispr:
+
+            <pre>
+{
+  "1106711006":
+    {
+      "chr_start":32332849,
+      "pam_right":1,
+      "species_id":4,
+      "exonic":1,
+      "chr_end":32332871,
+      "id":1106711006,
+      "off_target_summary":"{0: 1, 1: 0, 2: 1, 3: 30, 4: 301}",
+      "genic":1,
+      "chr_name":"13",
+      "seq":"GCCATTAAATGAGGAAACAGTGG"
+    },
+  "1106710999":
+    {
+      "chr_start":32332714,
+      "pam_right":0,
+      "species_id":4,
+      "exonic":1,
+      "chr_end":32332736,
+      "id":1106710999,
+      "off_target_summary":"{0: 1, 1: 0, 2: 3, 3: 46, 4: 563}",
+      "genic":1,
+      "chr_name":"13",
+      "seq":"CCTATTGCATATTTCTTCATGTG"
+    }
+}
+            </pre>
+
+            </section>
+
+
+
+
             <section id="gene_search">
             <h3>Find Marker Symbols for Search Term</h3>
             Find all marker symbols matching your search, with wildcards either side of your value:
@@ -361,6 +475,69 @@ Or, with get_db_data set to 1 a list of CRISPRs:
 </pre>
             </section>
         </section>
+
+        <hr class="docs-separator" />
+                    <section id="individual_off_target_search">
+            <h3>Off-Targets for Crisprs (DEPRECATED)</h3>
+            <h4>This method has now been replaced by <a href="#crispr_off_targets">crispr_off_targets</a> which returns off-target information for all IDs queried</h4>
+
+            Calculate off-targets for individual CRISPRs, persisting into WGE.
+            <br>
+            Required: species, ids[]
+            <br>
+            ids[] is a list of CRISPR IDs that do not have off-target data. Any IDs provided that already have off-target data will be ignored
+            <br>
+            [% url = c.uri_for('/api/individual_off_target_search', { "ids[]" => [322289792], "species" => "Mouse" } ) %]
+            <a href="[% url %]">[% url %]</a>
+            <br>
+            Returns an object in JSON mapping CRISPR id -> off target data ONLY for CRISPR IDs that were updated. If there were no CRISPRs needing off-targets the returned object will be empty. A maximum of 100 CRISPR IDs will be processed.
+
+<pre>
+{
+   "322289792":{
+      "off_targets":[
+         "300894653",
+         "300947249",
+         "301353461",
+         "301376066",
+         ...
+         "573722530",
+         "573805949",
+         "576503162",
+         "576681220"
+      ],
+      "off_target_summary":"{0: 1, 1: 0, 2: 1, 3: 35, 4: 413}",
+      "id":322289792
+   }
+}
+</pre>
+            </section>
+
+            <section id="pair_off_target_search">
+            <h3>Off-Targets for Crispr Pairs (DEPRECATED)</h3>
+            <h4>This method has been replaced by <a href="#crispr_pair_off_targets">crispr_pair_off_targets</a> which returns the list of off-targets identified
+            for the crispr pair</h4>
+            <p>
+                Calculate off-targets for a single CRISPR pair, persisting into WGE.
+                <br>
+                Required: species, left_id, right_id
+                <br>
+                where left_id is the CRISPR ID of the left crispr and right_id is the CRISPR ID of the right CRISPR.
+                <br>
+                Note: this method can be slow (10-20 seconds per pair)
+                <br>
+                [% url = c.uri_for('/api/pair_off_target_search',{ left_id => 322289790, right_id => 322289791, species => "Mouse" }) %]
+
+                <a href="[% url %]">[% url %]</a>
+                <br>
+                Returns an json string with two fields:
+
+<pre>
+{success: 1, pair_status: 5}
+</pre>
+
+            </p>
+            </section>
 
         <hr class="docs-separator" />
 

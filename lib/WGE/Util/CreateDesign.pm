@@ -6,6 +6,7 @@ use WGE::Exception::Validation;
 use Const::Fast;
 use Path::Class;
 use namespace::autoclean;
+use WGE::Util::TimeOut qw(timeout);
 
 use warnings FATAL => 'all';
 
@@ -116,11 +117,15 @@ Optionally get all exons or just exons from canonical transcript.
 sub exons_for_gene {
     my ( $self, $gene_name, $exon_types ) = @_;
 
-    my $gene = $self->ensembl_util->get_ensembl_gene( $gene_name );
-    return unless $gene;
+    my ($gene_data, $exon_data);
 
-    my $gene_data = $self->c_build_gene_data( $gene );
-    my $exon_data = $self->c_build_gene_exon_data( $gene, $gene_data->{gene_id}, $exon_types );
+    timeout(10,sub{
+        my $gene = $self->ensembl_util->get_ensembl_gene( $gene_name );
+        return unless $gene;
+
+        $gene_data = $self->c_build_gene_data( $gene );
+        $exon_data = $self->c_build_gene_exon_data( $gene, $gene_data->{gene_id}, $exon_types );
+    });
 
     return ( $gene_data, $exon_data );
 }
@@ -134,9 +139,9 @@ initiate the creation of a gibson design with a exon target.
 sub create_exon_target_gibson_design {
     my ( $self ) = @_;
 
-    my $params         = $self->c_parse_and_validate_exon_target_gibson_params();
+    my $params         = $self->c_parse_and_validate_exon_target_design_params();
     my $design_attempt = $self->c_initiate_design_attempt( $params );
-    my $cmd            = $self->c_generate_gibson_design_cmd( $params );
+    my $cmd            = $self->c_generate_design_cmd( $params );
     my $job_id         = $self->c_run_design_create_cmd( $cmd, $params );
 
     return ( $design_attempt, $job_id );
@@ -151,9 +156,9 @@ initiate the creation of a gibson design with a custom target.
 sub create_custom_target_gibson_design {
     my ( $self ) = @_;
 
-    my $params         = $self->c_parse_and_validate_custom_target_gibson_params();
+    my $params         = $self->c_parse_and_validate_custom_target_design_params();
     my $design_attempt = $self->c_initiate_design_attempt( $params );
-    my $cmd            = $self->c_generate_gibson_design_cmd( $params );
+    my $cmd            = $self->c_generate_design_cmd( $params );
     my $job_id         = $self->c_run_design_create_cmd( $cmd, $params );
 
     return ( $design_attempt, $job_id );

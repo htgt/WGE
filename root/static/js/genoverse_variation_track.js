@@ -6,16 +6,19 @@ Genoverse.Track.Variation = Genoverse.Track.extend({
         // then Genoverse will do the right thing because populateMenu accepts a deferred object.
         //
     populateMenu: function ( feature ) {
-        
+
         var deferred = $.Deferred();
 
         $.get("http://rest.ensembl.org/variation/" + ensembl_species + "/" + feature.id + "?content-type=application/json",
             write_menu);
 
         function write_menu ( data ) {
+            var snp_url = "http://www.ensembl.org/" + ensembl_species + "/Variation/Explore?v=" + feature.id;
+            var id_link = "<a href='" + snp_url
+                          + "' target='_blank'><font color='#00FFFF'>" + feature.id + "</font></a>";
             var atts = {
                 type: feature.feature_type,
-                ID:   feature.id,
+                ID:   id_link,
                 alt_alleles: feature.alt_alleles,
                 ambiguity: data.ambiguity || "N/A",
                 consequence: feature.consequence_type,
@@ -27,7 +30,7 @@ Genoverse.Track.Variation = Genoverse.Track.extend({
                 strand: feature.strand,
                 start: feature.start,
                 end: feature.end
-            };        
+            };
             deferred.resolve(atts);
          }
         return( deferred );
@@ -37,9 +40,12 @@ Genoverse.Track.Variation = Genoverse.Track.extend({
 Genoverse.Track.MAFVariation = Genoverse.Track.extend({
 
     populateMenu: function ( feature ) {
-        
+
+        var snp_url = "http://www.ensembl.org/" + ensembl_species + "/Variation/Explore?v=" + feature.variation_name;
+        var id_link = "<a href='" + snp_url
+                          + "' target='_blank'><font color='#00FFFF'>" + feature.variation_name + "</font></a>";
         var atts = {
-            ID: feature.variation_name,
+            ID: id_link,
             allele: feature.allele_string,
             SO: feature.class_SO_term,
             MAF: feature.minor_allele_frequency,
@@ -49,7 +55,7 @@ Genoverse.Track.MAFVariation = Genoverse.Track.extend({
             start: feature.start,
             end: feature.end,
             strand: feature.strand
-        };        
+        };
         return atts;
     }
 });

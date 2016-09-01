@@ -19,11 +19,17 @@ String.prototype.match_str = function(q, result_obj) {
 
   var result = "";
   var total = 0;
+  var pam_proximal_mm = 0;
+  var mm_positions = [];
 
   for (var i = 0; i < this.length; i++) {
     if (this.charCodeAt(i) ^ q.charCodeAt(i)) {
         result += "<span class='mismatch'>" + q.charAt(i) + "</span>";
         total++;
+        if(i > 15){
+            pam_proximal_mm++;
+        }
+        mm_positions.push(i);
     }
     else {
         result += q.charAt(i)
@@ -37,6 +43,8 @@ String.prototype.match_str = function(q, result_obj) {
 
   result_obj.str   = result;
   result_obj.total = total;
+  result_obj.pam_proximal_mm = pam_proximal_mm;
+  result_obj.mm_positions = mm_positions;
 
   return result_obj;
 }
