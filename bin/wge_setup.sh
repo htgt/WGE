@@ -29,6 +29,12 @@ function wge {
         'pg9.3')
             wge_pg9.3
             ;;
+        cpanm)
+            wge_cpanm $2
+            ;;
+        force)
+            wge_force $2
+            ;;
         *)
             printf "Unknown WGE command\n"
             wge_usage
@@ -95,6 +101,24 @@ function check_and_set_dir {
         printf "$W2W_STRING: directory $2 does not exist but you are setting $1 to its location\n"
     fi
     export $1=$2
+}
+
+function wge_cpanm {
+    if [[ "$1" ]] ; then
+        cpanm -l $WGE_OPT/perl5 $1
+        echo $1 >> $WGE_OPT/perl_depend.log
+    else
+        printf "$W2E_STRING: no module specified: wge_cpanm <module>\n"
+    fi
+}
+
+function wge_force {
+    if [[ "$1" ]] ; then
+        cpanm -l $WGE_OPT/perl5 --force $1
+        echo $1 >> $WGE_OPT/perl_depend.log
+    else
+        printf "$W2E_STRING: no module specified: wge_cpanm <module>\n"
+    fi
 }
 
 function wge_pg9.3 {
