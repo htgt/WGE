@@ -210,10 +210,10 @@ function wge_farm3 {
 function wge_local {
 #use lims2-common
     wge_opt
-    check_annd_set LIMS2_REST_CLIENT_CONFIG $WGE_OPT/conf/wge/wge-rest-client.conf
-    check_annd_set WGE_REST_CLIENT_CONFIG $WGE_OPT/conf/wge/wge-rest-client.conf
-    check_annd_set WGE_DBCONNECT_CONFIG $WGE_OPT/conf/wge/wge_dbconnect.yml
-    export WGE_DB=$(WGE_CONFIGURE_DB)
+    check_and_set LIMS2_REST_CLIENT_CONFIG $WGE_OPT/conf/wge/wge-rest-client.conf
+    check_and_set WGE_REST_CLIENT_CONFIG $WGE_OPT/conf/wge/wge-rest-client.conf
+    check_and_set WGE_DBCONNECT_CONFIG $WGE_OPT/conf/wge/wge_dbconnect.yml
+    export WGE_DB=$WGE_CONFIGURE_DB
     export WGE_SESSION_STORE=/tmp/wge-devel.session.dp10
     unset LIMS2_DB
     check_and_set WGE_OAUTH_CLIENT $WGE_OPT/conf/wge/oauth2_client_info.json
