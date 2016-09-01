@@ -115,6 +115,15 @@ function wge_pg_restore {
     $PG_RERTORE_EXE
 }
 
+function perl5lib_prepend ()
+{
+    test -n "$1" || {
+        warn "COMPONENT not specified";
+        return 1
+    };
+    export PERL5LIB=$(perl -le "print join ':', '$1', grep { length and \$_ ne '$1' } split ':', \$ENV{PERL5LIB}")
+}
+
 function wge_show {
 cat << END
 WGE useful environment variables:
