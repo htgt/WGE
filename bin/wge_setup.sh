@@ -3,6 +3,9 @@ export W2W_STRING=WGE-Warning
 export W2E_STRING=WGE-Error
 export WGE_DEBUG_DEFINITION="perl -d"
 
+# Don;t forget to set this symbol before you call this script
+export WGE_CONFIGURE_DB=
+
 function wge {
     case $1 in
         live)
@@ -206,17 +209,18 @@ function wge_farm3 {
 
 function wge_local {
 #use lims2-common
-    export LIMS2_REST_CLIENT_CONFIG=~/conf/wge/wge-rest-client.conf
-    export WGE_REST_CLIENT_CONFIG=~/conf/wge/wge-rest-client.conf
-    export WGE_DBCONNECT_CONFIG=~/conf/wge/wge_dbconnect.yml
-    export WGE_DB=WGE_BUILD_DB
+    wge_opt
+    check_annd_set LIMS2_REST_CLIENT_CONFIG $WGE_OPT/conf/wge/wge-rest-client.conf
+    check_annd_set WGE_REST_CLIENT_CONFIG $WGE_OPT/conf/wge/wge-rest-client.conf
+    check_annd_set WGE_DBCONNECT_CONFIG $WGE_OPT/conf/wge/wge_dbconnect.yml
+    export WGE_DB=$(WGE_CONFIGURE_DB)
     export WGE_SESSION_STORE=/tmp/wge-devel.session.dp10
     unset LIMS2_DB
-    export WGE_OAUTH_CLIENT=~/conf/wge/oauth2_client_info.json
-    export WGE_GMAIL_CONFIG=~/conf/wge/wge_gmail_account.yml
-    export WGE_LOG4PERL_CONFIG=/nfs/team87/farm3_lims2_vms/conf/wge.log4perl.default.conf
-    export SHARED_WEBAPP_STATIC_DIR=$WGE_SHARED/WebApp-Common/shared_static
-    export SHARED_WEBAPP_TT_DIR=$WGE_SHARED/WebApp-Common/shared_templates
+    check_and_set WGE_OAUTH_CLIENT $WGE_OPT/conf/wge/oauth2_client_info.json
+    check_and_set WGE_GMAIL_CONFIG $WGE_OPT/conf/wge/wge_gmail_account.yml
+    check_and_set WGE_LOG4PERL_CONFIG $WGE_OPT/conf/wge.log4perl.default.conf
+    check_and_set_dir SHARED_WEBAPP_STATIC_DIR $WGE_SHARED/WebApp-Common/shared_static
+    check_and_set_dir SHARED_WEBAPP_TT_DIR $WGE_SHARED/WebApp-Common/shared_templates
     export WGE_SESSION_STORE=/var/tmp/wge
 
 
@@ -225,7 +229,6 @@ function wge_local {
     lims2_lib
 
     wge_lib
-    wge_opt
 }
 
 function wge_opt {
