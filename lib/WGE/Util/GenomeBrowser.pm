@@ -674,7 +674,7 @@ sub crispr_pairs_to_gff {
                 'end' => $right->{chr_start}+22,
                 'score' => '.',
                 'strand' => '+' ,
-#                'strand' => '.',
+#               'strand' => '.',
                 'phase' => '.',
                 'attributes' => 'ID='
                     . $id . ';'

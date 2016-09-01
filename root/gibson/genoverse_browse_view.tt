@@ -987,7 +987,8 @@
               };
 
               if (!document.getElementById(feature.name)){
-                $('table', feature.menuEl).append('<tr><td>Sequence</td><td id="' + feature.name + '" oncontextmenu="return false;">' + feature.sequence + '</td></tr>');
+                $('table', feature.menuEl).append('<tr><td>Sequence</td><td id="' + feature.name + '" oncontextmenu="return false;">'
+                  + feature.sequence + '</td></tr>');
                 document.getElementById(feature.name).addEventListener("mousedown", handle_mousedown);
               }
 
@@ -1004,8 +1005,10 @@
                  'bookmark_track' : get_track('Bookmarked Crispr Pairs')
               };
               if (!document.getElementById(feature.name)){
-                $('table', feature.menuEl).append('<tr><td>Left Sequence</td><td id="L_' + feature.name + '" oncontextmenu="return false;">' + feature.left_sequence + '</td></tr>');
-                $('table', feature.menuEl).append('<tr><td>Right Sequence</td><td id="R_' + feature.name + '" oncontextmenu="return false;">' + feature.right_sequence + '</td></tr>');
+                $('table', feature.menuEl).append('<tr><td>Left Sequence</td><td id="L_' + feature.name + '" oncontextmenu="return false;">'
+                  + feature.left_sequence + '</td></tr>');
+                $('table', feature.menuEl).append('<tr><td>Right Sequence</td><td id="R_' + feature.name + '" oncontextmenu="return false;">'
+                  + feature.right_sequence + '</td></tr>');
                 document.getElementById("L_" + feature.name).addEventListener("mousedown", handle_mousedown);
                 document.getElementById("R_" + feature.name).addEventListener("mousedown", handle_mousedown);
               }
