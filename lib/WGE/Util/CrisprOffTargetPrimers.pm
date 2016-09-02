@@ -1,7 +1,7 @@
 package WGE::Util::CrisprOffTargetPrimers;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::CrisprOffTargetPrimers::VERSION = '0.098';
+    $WGE::Util::CrisprOffTargetPrimers::VERSION = '0.099';
 }
 ## use critic
 

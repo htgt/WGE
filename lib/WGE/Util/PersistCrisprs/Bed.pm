@@ -1,7 +1,7 @@
 package WGE::Util::PersistCrisprs::Bed;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::PersistCrisprs::Bed::VERSION = '0.098';
+    $WGE::Util::PersistCrisprs::Bed::VERSION = '0.099';
 }
 ## use critic
 

@@ -84,83 +84,84 @@
 </form>
 
 <div class="container-fluid">
-  <div class="alert alert-info"><strong>Zoom:</strong> use "+" and "-" buttons. <strong>Move:</strong> drag or scroll with the mouse. <strong>Select region:</strong> hold shift key and drag with the mouse.
+<button type="button" class="close" onclick='$("#alert_help_info").hide(); $(this).hide();'>&times;&nbsp;</button>
+  <div class="alert alert-info" id="alert_help_info"><strong>Zoom:</strong> use "+" and "-" buttons. <strong>Move:</strong> drag or scroll with the mouse. <strong>Select region:</strong> hold shift key and drag with the mouse.<br /><strong>Copy crispr:</strong> right click crispr sequence to copy.
   <a href="[% c.uri_for('/crispr_help') _ '#genoverse_view' %]" target="_blank">
     <i class="glyphicon glyphicon-question-sign"></i> Help
   </a>
-  <button type="button" class="close" data-dismiss="alert">×</button>
-</div>
-<div id="genoverse" style="margin: 0;" class="col-md-12"></div>
 
-<div class="row-fluid">
-  <div class="well" id="silent_mutations" style="display:none"></div>
-</div>
+  </div>
+  <div id="genoverse" style="margin: 0;" class="col-md-12"></div>
 
-<div class="row-fluid">
-<div class="col-md-9">
-<form action="[% c.uri_for( '/genoverse_browse' ) %]" class="well">
-  <input type="hidden" name="genome" value=[%genome%] />
-  <input type="hidden" name="chromosome" value=[%chromosome%] />
-  <input id="browse_start" type="hidden" name="browse_start" value=[%browse_start%] />
-  <input id="browse_end" type="hidden" name="browse_end" value=[%browse_end%] />
-  <input type="hidden" name="genes" value="[%genes%]" />
-  [% IF design_id %]<input type="hidden" name="design_id" value=[%design_id%] />[% END %]
+  <div class="row-fluid">
+    <div class="well" id="silent_mutations" style="display:none"></div>
+  </div>
 
-  <table class='table'>
-   <thead>
-    <tr>
-     <th>Single Crisprs</th><th>Paired Crisprs</th><th>Designs</th>
-     <th><p id="crispr_filters_heading" [% UNLESS view_single OR view_paired %]class="muted"[% END %]>Crispr Filters</p></th>
-     <th><p id="spacer_filters_heading" [% UNLESS view_paired %]class="muted"[% END %]>Spacer Filter</p></th>
-    </tr>
-   </thead>
-   <tbody>
-    <tr>
-      <td>
-        <input id="show_single" type="radio" name="view_single" value="1" [% IF view_single %]checked[% END %]>
-        Show</input>
-        <br />
-        <input id="hide_single" type="radio" name="view_single" value="0"  [% IF not view_single %]checked[% END %]>
-        Hide</input>
-      </td>
-      <td>
-        <input id="show_paired" type="radio" name="view_paired" value="1" [% IF view_paired %]checked[% END %]>
-        Show</input>
-        <br />
-        <input id="hide_paired" type="radio" name="view_paired" value="0" [% IF not view_paired %]checked[% END %]>
-        Hide</input>
-      </td>
-      <td>
-        <input id="show_designs" type="radio" name="view_designs" value="1" checked>
-        Show</input>
-        <br />
-        <input id="hide_designs" type="radio" name="view_designs" value="0" >
-        Hide</input>
-      </td>
-      <td>
-       <fieldset name="crispr_filters" [% UNLESS view_paired OR view_single %]disabled[% END %]>
-        <input type="radio" name="crispr_filter" value="all" [% IF crispr_filter == 'all'  or not crispr_filter %]checked[% END %]>
-        Show All</input>
-        <br />
-        <input type="radio" name="crispr_filter" value="exonic" [% IF crispr_filter == 'exonic' %]checked[% END %]>
-        Exon Only</input>
-        <br />
-        <input type="radio" name="crispr_filter" value="exon_flanking" [% IF crispr_filter == 'exon_flanking' %]checked[% END %]>
-        Exon Flanking Only</input>
-        <br />
-        Flanking region: <br/><input type="number" id="flank_size" name="flank_size" value="[% flank_size OR 100 %]" min="1" max="1000" style="width: 60px"/>
-       </fieldset>
-      </td>
-      <td>
-       <fieldset name="spacer_filters" [% UNLESS view_paired %]disabled[% END %]>
-         Crispr Pair Spacer Length<br/>(-10 to 30 bp)<br />
-         Min Spacer Length <input type="number" name="spacer_min" id="spacer_min" min="-10" max="30" step="1" style="width: 60px"></input> bp<br />
-         Max Spacer Length <input type="number" name="spacer_max" id="spacer_max" min="-10" max="30" step="1" style="width: 60px"></input> bp<br />
-         <button type="button" class="btn btn-default btn-xs" id="reset_spacer_filters">Reset</button>
-         <button type="button" class="btn btn-primary btn-sm" id="apply_spacer_filters">Apply Spacer Filter</button>
-       </fieldset>
-      </td>
-    </tr>
+  <div class="row-fluid">
+  <div class="col-md-9">
+  <form action="[% c.uri_for( '/genoverse_browse' ) %]" class="well">
+    <input type="hidden" name="genome" value=[%genome%] />
+    <input type="hidden" name="chromosome" value=[%chromosome%] />
+    <input id="browse_start" type="hidden" name="browse_start" value=[%browse_start%] />
+    <input id="browse_end" type="hidden" name="browse_end" value=[%browse_end%] />
+    <input type="hidden" name="genes" value="[%genes%]" />
+    [% IF design_id %]<input type="hidden" name="design_id" value=[%design_id%] />[% END %]
+
+    <table class='table'>
+    <thead>
+      <tr>
+        <th>Single Crisprs</th><th>Paired Crisprs</th><th>Designs</th>
+        <th><p id="crispr_filters_heading" [% UNLESS view_single OR view_paired %]class="muted"[% END %]>Crispr Filters</p></th>
+        <th><p id="spacer_filters_heading" [% UNLESS view_paired %]class="muted"[% END %]>Spacer Filter</p></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <input id="show_single" type="radio" name="view_single" value="1" [% IF view_single %]checked[% END %]>
+          Show</input>
+          <br />
+          <input id="hide_single" type="radio" name="view_single" value="0"  [% IF not view_single %]checked[% END %]>
+          Hide</input>
+        </td>
+        <td>
+          <input id="show_paired" type="radio" name="view_paired" value="1" [% IF view_paired %]checked[% END %]>
+          Show</input>
+          <br />
+          <input id="hide_paired" type="radio" name="view_paired" value="0" [% IF not view_paired %]checked[% END %]>
+          Hide</input>
+        </td>
+        <td>
+          <input id="show_designs" type="radio" name="view_designs" value="1" checked>
+          Show</input>
+          <br />
+          <input id="hide_designs" type="radio" name="view_designs" value="0" >
+          Hide</input>
+        </td>
+        <td>
+          <fieldset name="crispr_filters" [% UNLESS view_paired OR view_single %]disabled[% END %]>
+            <input type="radio" name="crispr_filter" value="all" [% IF crispr_filter == 'all'  or not crispr_filter %]checked[% END %]>
+            Show All</input>
+            <br />
+            <input type="radio" name="crispr_filter" value="exonic" [% IF crispr_filter == 'exonic' %]checked[% END %]>
+            Exon Only</input>
+            <br />
+            <input type="radio" name="crispr_filter" value="exon_flanking" [% IF crispr_filter == 'exon_flanking' %]checked[% END %]>
+            Exon Flanking Only</input>
+            <br />
+            Flanking region: <br/><input type="number" id="flank_size" name="flank_size" value="[% flank_size OR 100 %]" min="1" max="1000" style="width: 60px"/>
+          </fieldset>
+        </td>
+        <td>
+          <fieldset name="spacer_filters" [% UNLESS view_paired %]disabled[% END %]>
+            Crispr Pair Spacer Length<br/>(-10 to 30 bp)<br />
+            Min Spacer Length <input type="number" name="spacer_min" id="spacer_min" min="-10" max="30" step="1" style="width: 60px"></input> bp<br />
+            Max Spacer Length <input type="number" name="spacer_max" id="spacer_max" min="-10" max="30" step="1" style="width: 60px"></input> bp<br />
+            <button type="button" class="btn btn-default btn-xs" id="reset_spacer_filters">Reset</button>
+            <button type="button" class="btn btn-primary btn-sm" id="apply_spacer_filters">Apply Spacer Filter</button>
+          </fieldset>
+        </td>
+      </tr>
 
     <th>Variation</th>
     <tr>
@@ -337,7 +338,7 @@
       var genome = '[% genome %]';
       var species = '[% species %]';
       var chromosome = '[% chromosome %]';
-      var url_base = '[% c.uri_for('/crispr_ranking') %]';
+      var url_base = "[% c.uri_for('/crispr_ranking') %]";
       window.location.replace(url_base + '?loc=' + browse_start + "_" + browse_end + "_" + genome + "_" + species + "_" + chromosome);
 
   }
@@ -806,12 +807,12 @@
         tracks    : [
           Genoverse.Track.Scalebar,
           Genoverse.Track.SequenceSelect.extend({
-            name      : 'Sequence',
-            id        : 'Sequence', //need this for tracksById
-            url       : ensembl_url + '/sequence/region/' + ensembl_species + '/__CHR__:__START__-__END__?content-type=text/plain',
-            resizable : 'auto',
-            100000    : false,
-            controls  : 'off',
+            name       : 'Sequence',
+            id         : 'Sequence', //need this for tracksById
+            url        : ensembl_url + '/sequence/region/' + ensembl_species + '/__CHR__:__START__-__END__?content-type=text/plain',
+            resizable  : 'auto',
+            100000     : false,
+            controls   : 'off',
             unsortable : true
           }),
           Genoverse.Track.Variation.extend({
@@ -876,7 +877,7 @@
                 Type   : feature.type,
                 Start  : feature.start,
                 End    : feature.end,
-                Strand : feature.strand
+                Strand : feature.strand,
               };
               return atts;
             }
@@ -984,6 +985,13 @@
                  'spinner'      : spinner,
                  'bookmark_track' : get_track('Bookmarked Crisprs')
               };
+
+              if (!document.getElementById(feature.name)){
+                $('table', feature.menuEl).append('<tr><td>Sequence</td><td id="' + feature.name + '" oncontextmenu="return false;">'
+                  + feature.sequence + '</td></tr>');
+                document.getElementById(feature.name).addEventListener("mousedown", handle_mousedown);
+              }
+
               add_bookmark_button(feature.menuEl,settings);
             }
             else if(feature.type == 'crispr_pair'){
@@ -996,11 +1004,126 @@
                  'spinner'      : spinner,
                  'bookmark_track' : get_track('Bookmarked Crispr Pairs')
               };
+              if (!document.getElementById(feature.name)){
+                $('table', feature.menuEl).append('<tr><td>Left Sequence</td><td id="L_' + feature.name + '" oncontextmenu="return false;">'
+                  + feature.left_sequence + '</td></tr>');
+                $('table', feature.menuEl).append('<tr><td>Right Sequence</td><td id="R_' + feature.name + '" oncontextmenu="return false;">'
+                  + feature.right_sequence + '</td></tr>');
+                document.getElementById("L_" + feature.name).addEventListener("mousedown", handle_mousedown);
+                document.getElementById("R_" + feature.name).addEventListener("mousedown", handle_mousedown);
+              }
+
               add_bookmark_button(feature.menuEl,settings);
             }
+
+            function handle_mousedown(ev) {
+                    if(ev.which == 3)
+                    {
+                      if(ev.target.id == "L_" + feature.name){
+                        copyTextToClipboard(feature.copy_sequence_left);
+                      } else if(ev.target.id == "R_" + feature.name){
+                        copyTextToClipboard(feature.copy_sequence_right);
+                      } else {
+                        copyTextToClipboard(feature.copysequence);
+                      }
+                    }
+              }
+
+            function detectIE() {
+                    var ua = window.navigator.userAgent;
+
+                    var msie = ua.indexOf('MSIE ');
+                    if (msie > 0) {
+                        // IE 10 or older => return version number
+                        return parseInt(ua.substring(msie + 5, ua.indexOf('.', msie)), 10);
+                    }
+
+                    var trident = ua.indexOf('Trident/');
+                    if (trident > 0) {
+                        // IE 11 => return version number
+                        var rv = ua.indexOf('rv:');
+                        return parseInt(ua.substring(rv + 3, ua.indexOf('.', rv)), 10);
+                    }
+
+                    // other browser or edge
+                    return false;
+                }
+
+                // source: http://stackoverflow.com/questions/400212/how-do-i-copy-to-the-clipboard-in-javascript
+                // enhancement with special case for IEs, otherwise the temp textarea will be visible
+                function copyTextToClipboard(text) {
+                    if (detectIE()) {
+                        try {
+                            window.clipboardData.setData('Text', text);
+                            console.log('Copying text command via IE-setData');
+                        } catch (err) {
+                            console.log('Oops, unable to copy via IE-setData');
+                        }
+                    }
+                    else {
+
+                        var textArea = document.createElement("textarea");
+
+                        //
+                        //  This styling is an extra step which is likely not required.
+                        //
+                        // Why is it here? To ensure:
+                        // 1. the element is able to have focus and selection.
+                        // 2. if element was to flash render it has minimal visual impact.
+                        // 3. less flakyness with selection and copying which might occur if
+                        //    the textarea element is not visible.
+                        //
+                        // The likelihood is the element won't even render, not even a flash,
+                        // so some of these are just precautions.
+                        //
+                        // However in IE the element
+                        // is visible whilst the popup box asking the user for permission for
+                        // the web page to copy to the clipboard. To prevent this, we are using
+                        // the detectIE workaround.
+
+                        // Place in top-left corner of screen regardless of scroll position.
+                        textArea.style.position = 'fixed';
+                        textArea.style.top = 0;
+                        textArea.style.left = 0;
+
+                        // Ensure it has a small width and height. Setting to 1px / 1em
+                        // doesn't work as this gives a negative w/h on some browsers.
+                        textArea.style.width = '2em';
+                        textArea.style.height = '2em';
+
+                        // We don't need padding, reducing the size if it does flash render.
+                        textArea.style.padding = 0;
+
+                        // Clean up any borders.
+                        textArea.style.border = 'none';
+                        textArea.style.outline = 'none';
+                        textArea.style.boxShadow = 'none';
+
+                        // Avoid flash of white box if rendered for any reason.
+                        textArea.style.background = 'transparent';
+
+                        textArea.value = text;
+
+                        document.body.appendChild(textArea);
+
+                        textArea.select();
+
+                        try {
+                            var successful = document.execCommand('copy');
+                            var msg = successful ? 'successful' : 'unsuccessful';
+                            console.log('Copying text command was ' + msg);
+                        } catch (err) {
+                            console.log('Oops, unable to copy');
+                        }
+
+                        document.body.removeChild(textArea);
+                    }
+                }
           };
         });
       });
+
+
     </script>
 
 

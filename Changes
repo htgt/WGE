@@ -1,3 +1,7 @@
+0.099     2016-09-02 10:59:51 Europe/London
+	
+	Added ability to right click crispr sequence to copy
+
 0.098     2016-08-22 14:58:27 Europe/London
 
 	Fixed offtarget sorting function, added public API to get crispr info, updated API docs.

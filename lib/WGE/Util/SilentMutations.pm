@@ -1,7 +1,7 @@
 package WGE::Util::SilentMutations;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::SilentMutations::VERSION = '0.098';
+    $WGE::Util::SilentMutations::VERSION = '0.099';
 }
 ## use critic
 

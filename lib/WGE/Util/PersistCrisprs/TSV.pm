@@ -1,7 +1,7 @@
 package WGE::Util::PersistCrisprs::TSV;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::PersistCrisprs::TSV::VERSION = '0.098';
+    $WGE::Util::PersistCrisprs::TSV::VERSION = '0.099';
 }
 ## use critic
 
