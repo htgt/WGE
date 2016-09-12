@@ -3,8 +3,20 @@ export W2W_STRING=WGE-Warning
 export W2E_STRING=WGE-Error
 export WGE_DEBUG_DEFINITION="perl -d"
 
-# Don;t forget to set this symbol before you call this script
-export WGE_CONFIGURE_DB=
+# Don't forget to set this symbol before you call this script
+if [[ "$WGE_CONFIGURE_DB" ]] ; then
+        printf "$W2I_STRING: Database set to $WGE_CONFIGURE_DB\n";
+    else
+	printf "$W2E_STRING: Set WGE_CONFIGURE_DB to the database profile for WGE\n";
+	return
+fi
+
+if [[ ! "$WGE_SHARED" ]] ; then
+	printf "$W2I_STRING: Set WGE_SHARED to the root directory of git checkouts\n";
+	return
+fi
+
+unset PERL5LIB
 
 function wge {
     case $1 in
@@ -61,13 +73,22 @@ commands:
 END_USAGE
 }
 
+function perlmodpath ()
+{
+    test -n "$1" || {
+	echo 'Usage: perlmodpath MODULE' 1>&2;
+	return
+    };
+    perl -m"$1" -le '$ARGV[0]=~s/::/\//g; print $INC{"$ARGV[0].pm"}' "$1"
+}
+
 function wge_webapp {
     if [[  "$1"   ]] ; then
         WGE_PORT=$1 
     elif [[ "$WGE_WEBAPP_SERVER_PORT"  ]] ; then
         WGE_PORT=$WGE_WEBAPP_SERVER_PORT
     else
-        WGE=3000
+        WGE_PORT=3000
     fi
     printf "starting WGE webapp on port $WGE_PORT";
     if [[ "$WGE_WEBAPP_SERVER_OPTIONS" ]] ; then
@@ -184,10 +205,10 @@ wge_local_environment
 }
 
 function wge_ensembl_modules {
-
-    perl5lib_prepend /software/pubseq/PerlModules/Ensembl/www_76_1/ensembl-variation/modules
-    perl5lib_prepend /software/pubseq/PerlModules/Ensembl/www_76_1/ensembl/modules
-    perl5lib_prepend /software/pubseq/PerlModules/Ensembl/www_76_1/ensembl-compara/module
+    export PATH=$WGE_SHARED/ensembl-git-tools/bin:$PATH
+    perl5lib_prepend $WGE_SHARED/ensembl-variation/modules
+    perl5lib_prepend $WGE_SHARED/ensembl/modules
+    perl5lib_prepend $WGE_SHARED/ensembl-compara/module
 }
 
 function wge_lib {
@@ -210,15 +231,21 @@ function wge_farm3 {
 function wge_local {
 #use lims2-common
     wge_opt
+    export PERL_CPANM_OPT="--local-lib=$WGE_OPT/perl5"
+    perl5lib_prepend $WGE_SHARED/LIMS2-REST-Client/lib
+    perl5lib_prepend $WGE_SHARED/Design-Creation/lib
+    perl5lib_prepend $WGE_SHARED/LIMS2-Exception/lib
+    perl5lib_prepend $WGE_SHARED/WebApp-Common/lib
+    perl5lib_prepend $WGE_OPT/perl5/lib/perl5
     check_and_set LIMS2_REST_CLIENT_CONFIG $WGE_OPT/conf/wge/wge-rest-client.conf
     check_and_set WGE_REST_CLIENT_CONFIG $WGE_OPT/conf/wge/wge-rest-client.conf
     check_and_set WGE_DBCONNECT_CONFIG $WGE_OPT/conf/wge/wge_dbconnect.yml
     export WGE_DB=$WGE_CONFIGURE_DB
-    export WGE_SESSION_STORE=/tmp/wge-devel.session.dp10
+    export WGE_SESSION_STORE=/tmp/wge-devel.session.$USER
     unset LIMS2_DB
-    check_and_set WGE_OAUTH_CLIENT $WGE_OPT/conf/wge/oauth2_client_info.json
+    check_and_set WGE_OAUTH_CLIENT $WGE_OPT/conf/wge/oauth.json
     check_and_set WGE_GMAIL_CONFIG $WGE_OPT/conf/wge/wge_gmail_account.yml
-    check_and_set WGE_LOG4PERL_CONFIG $WGE_OPT/conf/wge.log4perl.default.conf
+    check_and_set WGE_LOG4PERL_CONFIG $WGE_OPT/conf/wge/wge.log4perl.default.conf
     check_and_set_dir SHARED_WEBAPP_STATIC_DIR $WGE_SHARED/WebApp-Common/shared_static
     check_and_set_dir SHARED_WEBAPP_TT_DIR $WGE_SHARED/WebApp-Common/shared_templates
     export WGE_SESSION_STORE=/var/tmp/wge
@@ -234,7 +261,7 @@ function wge_local {
 function wge_opt {
 # Location of optional software to support admin of WGE
 
-    export WGE_OPT=~/wge/opt
+    export WGE_OPT=~/opt
 }
 
 function wge_local_environment {
