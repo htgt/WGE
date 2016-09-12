@@ -10,6 +10,7 @@ use WGE::Util::GenomeBrowser qw(crisprs_for_region_as_arrayref);
 use WGE::Util::OffTargetServer;
 use feature 'switch';
 use Text::CSV;
+no warnings 'experimental::smartmatch';
 
 BEGIN { extends 'Catalyst::Controller' }
 

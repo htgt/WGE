@@ -5,6 +5,7 @@ use TryCatch;
 use Log::Log4perl qw(:easy);
 use warnings FATAL => 'all';
 use Scalar::Util qw(looks_like_number);
+no warnings 'experimental::smartmatch';
 
 
 BEGIN {
