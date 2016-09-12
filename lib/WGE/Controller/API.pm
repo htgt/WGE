@@ -448,6 +448,25 @@ sub crispr_off_targets :Local('crispr_off_targets'){
             off_targets        => $crispr->off_target_ids,
             off_target_summary => $crispr->off_target_summary,
         };
+
+        if($c->req->param('with_detail')){
+            $data->{ $crispr->id }->{off_target_details} = {};
+            my $details = $data->{ $crispr->id }->{off_target_details};
+            my $target_seq = $crispr->target_seq;
+            $c->log->debug("Target seq: $target_seq");
+
+            foreach my $ot ($crispr->off_targets){
+                my $mm_count = ( $target_seq ^ $ot->seq ) =~ tr/\0//c;
+                $details->{$ot->id} = {
+                    chr_name  => $ot->chr_name,
+                    chr_start => $ot->chr_start,
+                    chr_end   => $ot->chr_end,
+                    pam_right => $ot->pam_right,
+                    seq       => $ot->seq,
+                    mismatch_count => $ot->mismatches($target_seq),
+                };
+            }
+        }
     }
 
     $c->stash->{json_data} = $data;
