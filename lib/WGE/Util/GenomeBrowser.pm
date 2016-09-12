@@ -1,7 +1,7 @@
 package WGE::Util::GenomeBrowser;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::GenomeBrowser::VERSION = '0.094';
+    $WGE::Util::GenomeBrowser::VERSION = '0.100';
 }
 ## use critic
 
@@ -517,6 +517,12 @@ sub crisprs_to_gff {
 
         while ( my $crispr_r = $crisprs_rs->next ) {
             my $parent_id = 'C_' . $crispr_r->id;
+
+            # process crispr hash into correct format to be passed into method
+            my %crispr_hash = %{$crispr_r->{_column_data}};
+            # process crispr seq
+            my $seq = _split_crispr_seq(%crispr_hash);
+
             my %crispr_format_hash = (
                 'seqid' => $params->{'chromosome_number'},
                 'source' => 'WGE',
@@ -529,7 +535,9 @@ sub crisprs_to_gff {
                 'phase' => '.',
                 'attributes' => 'ID='
                     . $parent_id . ';'
-                    . 'Name=' . $crispr_r->id
+                    . 'Name=' . $crispr_r->id . ';'
+                    . 'Sequence=' . $seq . ';'
+                    . 'CopySequence=' . $crispr_r->seq
                 );
 
             my $ot_summary = $crispr_r->off_target_summary;
@@ -574,7 +582,8 @@ sub crisprs_to_gff {
                     . 'Cr_' . $crispr_r->id . ';'
                     . 'Parent=' . $parent_id . ';'
                     . 'Name=' . $crispr_r->id . ';'
-                    . 'color=' . $colour;
+                    . 'color=' . $colour . ';'
+                    . 'Sequence=' . $crispr_r->seq;
             my $crispr_child_datum = prep_gff_datum( \%crispr_format_hash );
 
             # This is the PAM
@@ -584,7 +593,8 @@ sub crisprs_to_gff {
                     . 'PAM_' . $crispr_r->id . ';'
                     . 'Parent=' . $parent_id . ';'
                     . 'Name=' . $crispr_r->id . ';'
-                    . 'color=' . colours->{pam} ;
+                    . 'color=' . colours->{pam} . ';'
+                    . 'Sequence=' . $crispr_r->seq;
             my $pam_child_datum = prep_gff_datum( \%crispr_format_hash );
 
             push @crisprs_gff, $crispr_parent_datum, $crispr_child_datum, $pam_child_datum ;
@@ -596,6 +606,27 @@ sub crisprs_to_gff {
     return \@crisprs_gff;
 }
 
+=head _split_crispr_seq
+Returns a string containing the crispr sequence split into 10-10-3 or 3-10-10 depending on PAM site
+=cut
+sub _split_crispr_seq {
+    my %crispr = @_;
+
+    my $seq = $crispr{seq};
+
+    # choose method of splitting (based on PAM site)
+    if ($crispr{pam_right}) {
+        # use regex to find correct regions
+        $seq =~ m/^(.{10})(.{10})(.{3})$/;
+        # join regions found with regex with ' '
+        return join(' ', $1, $2, $3);
+    } else {
+        # use regex to find correct regions
+        $seq =~ m/^(.{3})(.{10})(.{10})$/;
+        # join regions found with regex with ' '
+        return join(' ', $1, $2, $3);
+    }
+}
 
 =head crispr_pairs_to_gff
 Returns an array representing a set of strings ready for
@@ -633,6 +664,14 @@ sub crispr_pairs_to_gff {
             my $left = $crispr_pair->{left_crispr};
             my $id = $left->{id}."_".$right->{id};
 
+            # process crispr info to pass into method in correct format
+            my %crispr_hash = %{$$crispr_pair{left_crispr}};
+            # process left seq
+            my $left_seq = _split_crispr_seq(%crispr_hash);
+            %crispr_hash = %{$$crispr_pair{right_crispr}};
+            #process right seq
+            my $right_seq = _split_crispr_seq(%crispr_hash);
+
             my %crispr_format_hash = (
                 'seqid' => $params->{'chromosome_number'},
                 'source' => 'WGE',
@@ -641,12 +680,16 @@ sub crispr_pairs_to_gff {
                 'end' => $right->{chr_start}+22,
                 'score' => '.',
                 'strand' => '+' ,
-#                'strand' => '.',
+#               'strand' => '.',
                 'phase' => '.',
                 'attributes' => 'ID='
                     . $id . ';'
                     . 'Name=' . $id .';'
-                    . 'Spacer=' . $crispr_pair->{spacer}
+                    . 'Spacer=' . $crispr_pair->{spacer} . ';'
+                    . 'Left_sequence=' . $left_seq . ';'
+                    . 'Right_sequence=' . $right_seq . ';'
+                    . 'Copy_sequence_left=' . $left->{seq} . ';'
+                    . 'Copy_sequence_right=' . $right->{seq}
                 );
 
             # Add paired OT summary information if pair has data in DB

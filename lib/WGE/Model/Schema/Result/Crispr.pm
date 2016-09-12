@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::Crispr;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::Crispr::VERSION = '0.094';
+    $WGE::Model::Schema::Result::Crispr::VERSION = '0.100';
 }
 ## use critic
 
@@ -184,6 +184,8 @@ __PACKAGE__->might_have( ots_pending => 'WGE::Model::Schema::Result::CrisprOtPen
 with 'WGE::Util::CrisprRole';
 
 use YAML::Any;
+use Bio::Perl qw( revcom_as_string );
+
 sub as_hash {
   my ( $self, $options ) = @_;
 
@@ -262,5 +264,20 @@ sub remove_link_to_user_id{
 
     return;
 }
+
+# The genomic sequence that will be targeted, i.e. PAM removed, stored sequence reverse
+# complemented if PAM left
+sub target_seq{
+    my ($self) = @_;
+    my $target_seq;
+    if($self->pam_right){
+        $target_seq = substr($self->seq, 0, 20);
+    }
+    else{
+        $target_seq = substr( revcom_as_string($self->seq), 0, 20);
+    }
+    return $target_seq;
+}
+
 __PACKAGE__->meta->make_immutable;
 1;

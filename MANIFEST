@@ -30,8 +30,7 @@ bin/persist_crisprs.pl
 bin/promotor_region_crisprs.pl
 bin/recovery_pairs.pl
 bin/update_crispr_pair.pl
-crispr_off_targets.tsv~
-crispr_off_targets_success.tsv~
+gene_missing.txt~
 human_genes_75.yaml
 human_genes_76.yaml
 lib/Catalyst/Authentication/Credential/OAuth2.pm
