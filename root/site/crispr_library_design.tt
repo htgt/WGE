@@ -11,7 +11,7 @@ View your existing library design jobs: <a href="[% c.uri_for('/crispr_library_j
 <form enctype="multipart/form-data" method="post">
   <div class="form-group">
     <label for="job_name">Job Name </label>
-    <input type="text" name="job_name" id="job_name">[% job_name %]</input>
+    <input type="text" name="job_name" id="job_name" value="[% job_name %]"></input>
   </div>
   <div class="form-group">
   	<label for="species_input">Species:</label>
@@ -67,6 +67,7 @@ View your existing library design jobs: <a href="[% c.uri_for('/crispr_library_j
   </div>
   [% IF input_from_job %]
   Using input file from job [% input_from_job %]
+  <input type="submit" class="btn btn-primary" name="submit" value="submit">
   [% ELSE %]
   <div class="form-group">
   	<label>Upload text file containing target locations (1 location per line)</label>

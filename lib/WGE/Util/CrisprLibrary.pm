@@ -3,7 +3,7 @@ package WGE::Util::CrisprLibrary;
 use strict;
 use warnings FATAL => 'all';
 
-use WGE::Util::ExportCSV qw(format_crisprs_for_csv);
+use WGE::Util::ExportCSV qw(format_crisprs_for_csv_header format_crisprs_for_csv_data);
 use WGE::Util::ScoreCrisprs qw(score_and_sort_crisprs);
 use Data::UUID;
 use Path::Class;
@@ -15,6 +15,8 @@ use WGE::Util::OffTargetServer;
 use List::MoreUtils qw(natatime);
 use Text::CSV;
 use TryCatch;
+use WebAppCommon::Util::FarmJobRunner;
+use HTGT::QC::Util::FileAccessServer;
 
 with 'MooseX::Log::Log4perl';
 
@@ -265,7 +267,8 @@ sub _build_targets{
     $self->_find_crispr_sites(\@targets);
 
     # Then we generate off targets where missing
-    $self->generate_off_targets;
+    #$self->generate_off_targets;
+    $self->generate_off_targets_on_farm(\@targets);
 
     # This time repeat the crispr search but sort and store the best crisprs
     return $self->_find_crispr_sites(\@targets, 1);
@@ -427,6 +430,13 @@ sub _find_crispr_sites{
         $stage = 'rank_crisprs';
     }
 
+    my $update_progress = 1;
+    if($stage eq 'find_crisprs' and scalar(@{ $self->crisprs_missing_offs })){
+        # This is just a check for the number of remaining missing offs
+        # We don't want to store the progress of this in the db
+        $update_progress = 0;
+    }
+
     my $count = scalar @{ $targets };
     my $progress_count = 0;
     $self->log->debug("Finding crisprs for $count targets");
@@ -434,7 +444,9 @@ sub _find_crispr_sites{
     $self->_update_job({
         library_design_stage_id => $stage,
         progress_percent        => 0,
-    });
+    }) if $update_progress;
+
+    $self->crisprs_missing_offs([]);
 
     foreach my $target (@{ $targets }){
         $progress_count++;
@@ -483,9 +495,9 @@ sub _find_crispr_sites{
 
 
         # Update progress
-        $self->_update_progress($stage,$count,$progress_count);
+        $self->_update_progress($stage,$count,$progress_count) if $update_progress;
     }
-    $self->_update_job({ progress_percent => 100 });
+    $self->_update_job({ progress_percent => 100 }) if $update_progress;
 
     return $targets;
 }
@@ -514,7 +526,7 @@ sub _search_crisprs{
     my @crisprs_missing_offs = grep { not defined $_->{off_target_summary} } values %$crisprs;
     my $missing_count = @crisprs_missing_offs;
     if($missing_count){
-        $self->log->debug("off-target info missing for $missing_count crisprs");
+        #$self->log->debug("off-target info missing for $missing_count crisprs");
         push @{ $self->crisprs_missing_offs }, map { $_->{id} } @crisprs_missing_offs;
 =head
         $self->_update_job({ info => "Computing off-targets for $missing_count crisprs in $target region"});
@@ -536,6 +548,72 @@ sub _search_crisprs{
     }
 
     return [];
+}
+
+sub generate_off_targets_on_farm{
+    my ($self, $targets) = @_;
+
+    my $count = scalar( @{ $self->crisprs_missing_offs } );
+    $self->log->debug("** generating off-targets on farm for $count crisprs");
+    if($count){
+        $self->_update_job({
+            info => "Generating off-targets for $count crispr sites",
+            progress_percent => 0,
+        });
+        my $farm_dir = dir($ENV{'OFF_TARGET_RUN_DIR'})->subdir($self->job_id);
+        my $file_api = HTGT::QC::Util::FileAccessServer->new({ file_api_url => $ENV{FILE_API_URL} });
+        $file_api->make_dir("$farm_dir");
+
+        my $farm_runner =  WebAppCommon::Util::FarmJobRunner->new({
+            dry_run => 1,
+            bsub_wrapper => "/nfs/team87/farm3_lims2_vms/conf/run_in_farm3_af11"
+        });
+        # split list of offs into batches of 500
+        # submit each one to farm basement queue using wge_off_targets.pl script
+        my $iter = natatime(500, @{ $self->crisprs_missing_offs });
+        my $batch_num = 0;
+        while (my @tmp = $iter->() ){
+            $batch_num++;
+
+            my $input_file = $farm_dir->file("ot_input_list_$batch_num.txt");
+            $file_api->post_file_content("$input_file", (join "\n", @tmp));
+
+            my $out_file = $farm_dir->file("ot_job_$batch_num.out");
+            my $err_file = $farm_dir->file("ot_job_$batch_num.err");
+
+            my $cmd = ["perl"," /nfs/team87/CRISPR-Analyser/bin/wge_off_targets.pl", $self->species_name, $input_file];
+            my $farm_cmd = $farm_runner->submit({
+                out_file => $out_file,
+                err_file => $err_file,
+                cmd      => $cmd,
+                queue    => 'basement',
+                memory_required => 3000,
+            });
+            $self->log->debug("Running command: ".(join " ", @{$farm_cmd}));
+            # FIXME: why does bsub return -1 when job has been submitted?
+            my $return = system(@{$farm_cmd});
+            $self->log->debug("command returned: $return");
+        }
+
+        # every 10 mins repeat the check for missing offs, update progress percent
+        # only continue when no more offs are missing or timeout is reached
+        while(1){
+            sleep(600);
+            $self->_find_crispr_sites($targets);
+            my $missing_count = scalar( @{ $self->crisprs_missing_offs } );
+            if($missing_count){
+                $self->log->debug("Still have $missing_count crisprs missing offs");
+                my $off_targets_done = $count - $missing_count;
+                $self->_force_update_progress('off_targets', $count, $off_targets_done);
+            }
+            else{
+                # All done!
+                return
+            }
+        }
+    }
+
+    return;
 }
 
 sub generate_off_targets{
@@ -653,10 +731,17 @@ sub _monitor_children{
     return;
 }
 
-sub get_csv_data{
-    my ($self) = @_;
+sub write_csv_data_to_file{
+    my ($self, $filename) = @_;
 
-    my @all_data;
+    my $file = $self->workdir->file($filename);
+    my $fh = $file->openw or die "Could not open file $file for writing - $!";
+
+    my $extra_fields = [ qw(target_name target_chromosome target_start target_end) ];
+
+    # print header to file
+    print $fh join "\t", @{ format_crisprs_for_csv_header($extra_fields) };
+    print $fh "\n";
 
     foreach my $target (@{ $self->targets }){
         if($target->{target_coords}->{error}){
@@ -670,7 +755,9 @@ sub get_csv_data{
                 $crispr_info{target_chromosome} = $target->{target_coords}->{chr};
                 $crispr_info{target_start} = $target->{target_coords}->{start};
                 $crispr_info{target_end} = $target->{target_coords}->{end};
-                push @all_data, \%crispr_info;
+
+                print $fh join "\t", @{ format_crisprs_for_csv_data(\%crispr_info, $extra_fields) };
+                print $fh "\n";
             }
             else{
                 $self->log->warn("Not enough crisprs found for target ".$target->{target_name});
@@ -678,21 +765,6 @@ sub get_csv_data{
         }
     }
 
-    my $extra_fields = [ qw(target_name target_chromosome target_start target_end) ];
-    return format_crisprs_for_csv(\@all_data, $extra_fields);
-}
-
-sub write_csv_data_to_file{
-    my ($self, $filename) = @_;
-
-    my $csv_data = $self->get_csv_data();
-    my $file = $self->workdir->file($filename);
-    my $fh = $file->openw or die "Could not open file $file for writing - $!";
-
-    foreach my $result (@$csv_data){
-        print $fh join "\t", @$result;
-        print $fh "\n";
-    }
     close $fh;
 
     $self->_update_job({ complete => 1, results_file => "$file" });
@@ -718,12 +790,17 @@ sub write_input_data_to_file{
     return $file;
 }
 
-sub _update_progress{
+sub _force_update_progress{
     my ($self, $stage, $total, $progress) = @_;
+    return $self->_update_progress($stage,$total,$progress,1);
+}
+
+sub _update_progress{
+    my ($self, $stage, $total, $progress, $force) = @_;
 
     # Do update every n records if the progress to db flag is set
     if($self->write_progress_to_db){
-        if( ($progress % $self->update_after_n_items) == 0 ){
+        if( $force or ($progress % $self->update_after_n_items) == 0 ){
             my $percent  = ceil( ($progress / $total) * 100 );
             $self->design_job->update({
                 library_design_stage_id => $stage,

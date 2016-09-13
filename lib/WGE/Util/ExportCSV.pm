@@ -20,6 +20,8 @@ use Sub::Exporter -setup => {
     exports => [ qw(
         write_design_data_csv
         format_crisprs_for_csv
+        format_crisprs_for_csv_header
+        format_crisprs_for_csv_data
         format_pairs_for_csv
     ) ]
 };
@@ -64,35 +66,51 @@ sub format_crisprs_for_csv{
 
     $crispr_list ||= [];
 
-    # Make sure we have hashes instead of objects
-    my @crisprs = map { blessed($_) ? $_->as_hash : $_ } @$crispr_list;
-
     my @csv_data;
+
+    push @csv_data, format_crisprs_for_csv_header($extra_fields);
+
+    foreach my $crispr ( @$crispr_list ) {
+        push @csv_data, format_crisprs_for_csv_data($crispr,$extra_fields);
+    }
+
+    return \@csv_data;
+}
+
+sub format_crisprs_for_csv_header{
+    my ($extra_fields) = @_;
     my @fields = qw( crispr_id location strand seq off_target_summary );
     if($extra_fields){
         unshift @fields, @$extra_fields;
     }
-    push @csv_data, \@fields;
+    return \@fields;
+}
 
-    foreach my $crispr ( @crisprs ) {
-        my $location = $crispr->{chr_start} ? $crispr->{chr_name}.":".$crispr->{chr_start}."-".$crispr->{chr_end}
-                                            : '';
-        my $strand = $crispr->{pam_right} ? "+" : "-";
-        my @row = (
-            $crispr->{id},
-            $location,
-            $strand,
-            $crispr->{seq},
-            $crispr->{off_target_summary} // '',
-        );
-        if($extra_fields){
-            my @extra_data = map { $crispr->{$_} // '' } @$extra_fields;
-            unshift @row, @extra_data;
-        }
-        push @csv_data, \@row;
+sub format_crisprs_for_csv_data{
+    my ($crispr, $extra_fields) = @_;
+
+    # Make sure we have hashes instead of objects
+    if(blessed($crispr)){
+        $crispr = $crispr->as_hash;
     }
 
-    return \@csv_data;
+    my $location = $crispr->{chr_start} ? $crispr->{chr_name}.":".$crispr->{chr_start}."-".$crispr->{chr_end}
+                                        : '';
+    my $strand = $crispr->{pam_right} ? "+" : "-";
+    my @row = (
+        $crispr->{id},
+        $location,
+        $strand,
+        $crispr->{seq},
+        $crispr->{off_target_summary} // '',
+    );
+
+    if($extra_fields){
+        my @extra_data = map { $crispr->{$_} // '' } @$extra_fields;
+        unshift @row, @extra_data;
+    }
+
+    return \@row;
 }
 
 sub format_pairs_for_csv{
