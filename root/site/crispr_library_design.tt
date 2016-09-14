@@ -65,16 +65,18 @@ View your existing library design jobs: <a href="[% c.uri_for('/crispr_library_j
     </div>
     <input name="flank_size" type="number" value="[% flank_size %]"> bp
   </div>
-  [% IF input_from_job %]
-  Using input file from job [% input_from_job %]
-  <input type="submit" class="btn btn-primary" name="submit" value="submit">
-  [% ELSE %]
   <div class="form-group">
+  [% IF input_from_job %]
+    <label>Using input file from job [% input_from_job %]</label>
+    <input type="submit" class="btn btn-default" name="change_file" value="Change File">
+    <br>
+    <input type="hidden" name="input_from_job" value="[% input_from_job %]">
+  [% ELSE %]
   	<label>Upload text file containing target locations (1 location per line)</label>
   	<input type="file" class="file" accept=".txt,.csv,.tsv" name="datafile">
-  	<input type="submit" class="btn btn-primary" name="submit" value="submit">
-  </div>
   [% END %]
+    <input type="submit" class="btn btn-primary" name="submit" value="submit">
+  </div>
 </form>
 
 [% ELSE %]

@@ -383,7 +383,7 @@ sub _coords_for_coord{
 
     # remove any whitespace
     $coord_string =~ s/\s//g;
-	# Just do some sanity checking and return
+
     my ($chr, $start_end) = split ":", $coord_string;
 
     unless ($chr and $start_end){

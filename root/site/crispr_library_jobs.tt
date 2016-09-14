@@ -26,7 +26,6 @@
 
     [% IF job.error %]
     <p class="bg-danger">Job failed at [% job.last_modified %] with error: [% job.error %]</p>
-    <a class="btn btn-primary" href="[% c.uri_for('/crispr_library_design', { retry_job_id => job.id }) %]"><span class="glyphicon glyphicon-repeat"></span> Retry Job</a>
     [% ELSIF job.complete %]
     <p class="bg-success"><strong>Job completed:</strong> [% job.last_modified %]</p>
     <a class="btn btn-default" href="[% c.uri_for('/download_library_csv/') _ job.id %]">Download results</a>
@@ -43,6 +42,7 @@
           </div>
         </div>
     [% END %]
+        <a class="btn btn-primary" href="[% c.uri_for('/crispr_library_design', { retry_job_id => job.id }) %]"><span class="glyphicon glyphicon-repeat"></span> Retry Job</a>
     </div>
   [% END %]
 [% ELSE %]

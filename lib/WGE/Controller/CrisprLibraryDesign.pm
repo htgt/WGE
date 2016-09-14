@@ -10,32 +10,32 @@ BEGIN { extends 'Catalyst::Controller' }
 
 __PACKAGE__->config(namespace => '');
 
-sub _require_login {
-    my ( $self, $c, $redirect ) = @_;
-
-    $redirect ||= '/crispr_library_design';
+sub _logged_in {
+    my ( $self, $c ) = @_;
 
     my $login_uri = $c->uri_for('/login');
     unless ($c->user_exists){
-        $c->flash( error_msg => "You must <a href=\"$login_uri\">log in</a> to use the CRISPR Library Design Tool" );
-        $c->res->redirect($c->uri_for($redirect));
+        $c->stash( error_msg => "You must <a href=\"$login_uri\">log in</a> to use the CRISPR Library Design Tool" );
+        return 0;
     }
-    return;
+    return 1;
 }
 
 sub crispr_library_design :Path('/crispr_library_design') :Args(0){
 	my ($self,$c) = @_;
 
-    if(my $job_id = $c->req->param('retry_job_id')){
-        $self->_stash_from_previous_job($c,$job_id);
+    my @params = qw(flank_size location species num_crisprs range within flanking job_name input_from_job);
+
+    if($c->req->param('change_file')){
+        $c->stash( map { $_ => ( $c->req->param($_) // undef ) } @params );
+        delete $c->stash->{input_from_job};
         return;
     }
 
     if($c->req->param('submit')){
 
-    	$self->_require_login($c);
+    	return unless $self->_logged_in($c);
 
-	    my @params = qw(flank_size location species num_crisprs range within flanking job_name);
 
 	    $c->stash( map { $_ => ( $c->req->param($_) // undef ) } @params );
 
@@ -59,7 +59,8 @@ sub crispr_library_design :Path('/crispr_library_design') :Args(0){
         }
         elsif( my $prev_job_id = $c->req->param('input_from_job') ){
             my $old_job = $c->user->search_related('library_design_jobs', { id => $prev_job_id })->first;
-            open ($input_fh, "<", $old_job->input_file) or _add_err($c, $!);
+            $c->log->debug("Using input file ".$old_job->input_file);
+            $input_fh = IO::File->new( $old_job->input_file, "r" ) or _add_err($c, $!);
         }
         else{
             _add_err($c, "You must upload a file");
@@ -129,13 +130,18 @@ sub crispr_library_design :Path('/crispr_library_design') :Args(0){
 	    }
     }
 
+    if(my $job_id = $c->req->param('retry_job_id')){
+        return unless $self->_logged_in($c);
+        $self->_stash_from_previous_job($c,$job_id);
+    }
+
     return;
 }
 
 sub crispr_library_jobs :Path('/crispr_library_jobs'){
 	my ($self,$c) = @_;
 
-    $self->_require_login($c, '/crispr_library_jobs');
+    return unless $self->_logged_in($c);
 
     my @jobs = $c->user->library_design_jobs;
     my @sorted = sort{ $b->created_at cmp $a->created_at } @jobs;
