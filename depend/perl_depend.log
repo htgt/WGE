@@ -1,0 +1,26 @@
+Catalyst::Plugin::Session::State::Cookie
+Catalyst::Plugin::Session::Store::FastMmap
+Catalyst::Plugin::Authorization::Roles
+Catalyst::Plugin::Static::Simple
+Catalyst::Plugin::ConfigLoader
+Config::General
+Catalyst::Authentication::Credential::OAuth2
+TryCatch
+JSON
+MooseX::ClassAttribute
+Catalyst::Authentication::Store::DBIx::Class
+Throwable::Error
+DateTime::Format::ISO8601
+Text::CSV
+Const::Fast
+Data::FormValidator
+Hash::MoreUtils
+MooseX::Log::Log4perl
+Catalyst::View::CSV
+Catalyst::View::CSV
+Catalyst::View::TT
+Catalyst::View::JSON
+MooseX::NonMoose
+-- Make sure to use the Ubuntu packages for DBIx::Class, Module::Runtime etc as these have been properly patched
+MooseX::Types::Path::Class::MoreCoercions
+Catalyst::Controller::REST
