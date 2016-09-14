@@ -17,6 +17,7 @@ use Text::CSV;
 use TryCatch;
 use WebAppCommon::Util::FarmJobRunner;
 use HTGT::QC::Util::FileAccessServer;
+use IPC::Run 'run';
 
 with 'MooseX::Log::Log4perl';
 
@@ -568,6 +569,10 @@ sub generate_off_targets_on_farm{
             dry_run => 1,
             bsub_wrapper => "/nfs/team87/farm3_lims2_vms/conf/run_in_farm3_af11"
         });
+
+        my $id_file = my $fh = $self->workdir->file("job_ids.txt");
+        $id_file->touch();
+
         # split list of offs into batches of 500
         # submit each one to farm basement queue using wge_off_targets.pl script
         my $iter = natatime(500, @{ $self->crisprs_missing_offs });
@@ -589,10 +594,18 @@ sub generate_off_targets_on_farm{
                 queue    => 'basement',
                 memory_required => 3000,
             });
-            $self->log->debug("Running command: ".(join " ", @{$farm_cmd}));
+            my $cmd_string = join " ", @{$farm_cmd};
+            $self->log->debug("Running command: $cmd_string");
             # FIXME: why does bsub return -1 when job has been submitted?
-            my $return = system(@{$farm_cmd});
-            $self->log->debug("command returned: $return");
+            run $farm_cmd, ">", \my $output;
+
+            $self->log->debug("command output: $output");
+            my ($job_id) = ( $output =~ /(\d+)/g );
+            $self->log->debug("adding bjob ID $job_id to file");
+            my $fh = $id_file->opena
+                or die "Cannot open $id_file for append - $!";
+            print $fh "$job_id\n";
+            close $fh;
         }
 
         # every 10 mins repeat the check for missing offs, update progress percent
@@ -608,6 +621,7 @@ sub generate_off_targets_on_farm{
             }
             else{
                 # All done!
+                rm $id_file;
                 return
             }
         }

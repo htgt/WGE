@@ -5,6 +5,8 @@ use Data::Dumper;
 use TryCatch;
 use IO::File;
 use WGE::Util::CrisprLibrary;
+use WebAppCommon::Util::FarmJobRunner;
+use Path::Class::Dir;
 
 BEGIN { extends 'Catalyst::Controller' }
 
@@ -196,8 +198,31 @@ sub delete_library_design_job :Path('/delete_library_design_job') :Args(1){
     my $job = $c->user->search_related('library_design_jobs', { id => $job_id })->first;
 
     if($job){
+        my $library_job_dir = $ENV{WGE_LIBRARY_JOB_DIR}
+            or die "No WGE_LIBRARY_JOB_DIR environment variable set";
+
+        my $dir = Path::Class::Dir->new($library_job_dir, $job_id);
+        my $bjob_id_file = $dir->file("job_ids.txt");
+        if(-e $bjob_id_file){
+            my $job_runner = WebAppCommon::Util::FarmJobRunner->new({ dry_run => 0 });
+            my @ids = $bjob_id_file->slurp(chomp => 1);
+            foreach my $id (@ids){
+                $c->log->debug("Killing job $id");
+                # Catch errors and ignore those for already finished jobs
+                try{
+                    $job_runner->kill_job($id);
+                }
+                catch($e){
+                    unless($e =~ /already finished/ ){
+                        $c->flash->{error_msg} = "Could not kill farm job - $e";
+                        $c->response->redirect( $c->uri_for('/crispr_library_jobs'));
+                        return;
+                    }
+                }
+            }
+        }
         $job->delete;
-        # FIXME: delete from filesystem too
+        $dir->rmtree;
     }
     else{
         $c->flash->{error_msg} = "Could not find job with ID $job_id for user ".$c->user->name;
