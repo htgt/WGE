@@ -260,8 +260,9 @@ function wge_local {
 
 function wge_opt {
 # Location of optional software to support admin of WGE
-
-    export WGE_OPT=~/opt
+    if [[ ! $WGE_OPT ]] ; then
+    	export WGE_OPT=~/opt
+    fi
 }
 
 function wge_local_environment {
