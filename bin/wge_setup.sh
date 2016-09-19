@@ -198,7 +198,8 @@ PERL5LIB :
 \$PATH :
 `perl -e 'print( join("\n", split(":", $ENV{PATH}))."\n")'`
 
-\$WGE_REST_CLIENT_CONFIG        : $WGE_REST_CLIENT_CONFIG
+\$WGE_REST_CLIENT_CONFIG            : $WGE_REST_CLIENT_CONFIG
+\$WGE_NO_TIMEOUT                    : $WGE_NO_TIMEOUT
 \$WGE_DBCONNECT_CONFIG              : $WGE_DBCONNECT_CONFIG
 \$WGE_SESSION_STORE                 : $WGE_SESSION_STORE
 \$WGE_OAUTH_CLIENT                  : $WGE_OAUTH_CLIENT
