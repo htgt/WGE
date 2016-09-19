@@ -1,0 +1,35 @@
+Install packages for Ubuntu 14.04 using apt-get, aptitude etc
+
+Also install basic perl, Catalyst and DBIx::Class
+cpanminus
+bio-perl
+moosex-types-uri
+moosex-params-validate
+file-which
+WebApp-Common
+Design-Creation
+LIMS2-REST-Client
+Moosex-SimpleConfig
+Data-Random
+
+Note: Don't use pg_ctl directly
+To reload the postgresql config use:
+
+pg_ctlcluster 9.3 main reload
+
+where: 9.3 is the server version
+
+Also install the cpan dependencies listed in perl_depend.log to a perl5 local library. The perl5 local library should be stored in a location pointed to by $WGE_OPT
+
+** ALl NEW dependencies to be installed with the 'wge cpanm' command so that dependecies are added to the perl_depend.log file. Existing dependencies can simply be installed with 'cpanm'.
+
+Install ensembl APIs from Github or from tar files. The location for these is $WGE_SHARED in the wge_setup.sh file.
+
+In order to source the bin/wge_setup.sh script create a local startup script for you location:
+
+export WGE_CONFIGURE_DB=MY_WGE_DB
+export WGE_SHARED=location
+export WGE_OPT=location
+source bin/wge_setup.sh
+
+This gives you the wge command and away you go.

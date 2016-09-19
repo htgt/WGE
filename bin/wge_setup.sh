@@ -268,9 +268,9 @@ function wge_local {
 function wge_opt {
 # Location of optional software to support admin of WGE
     if [[ ! $WGE_OPT ]] ; then
-        export WGE_OPT=~/opt
+        printf "$W2I_STRING: WGE_OPT set to: $WGE_OPT\n"
+    	export WGE_OPT=~/opt
     fi
-    printf "$W2I_STRING: WGE_OPT set to: $WGE_OPT\n"
 }
 
 function wge_local_environment {
