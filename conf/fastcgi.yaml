@@ -1,0 +1,7 @@
+---
+- name:            "wge"
+  server_class:    "FCGI::Engine::Manager::Server"
+  scriptname:      "/home/djps/git-checkout/WGE/bin/wge_fastcgi.pl"
+  nproc:            8
+  pidfile:         "/var/tmp/wge/run/fastcgi.pid"
+  socket:          "*:3031"
