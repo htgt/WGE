@@ -12,8 +12,13 @@ if [[ "$WGE_CONFIGURE_DB" ]] ; then
 fi
 
 if [[ ! "$WGE_SHARED" ]] ; then
-	printf "$W2I_STRING: Set WGE_SHARED to the root directory of git checkouts\n";
+	printf "$W2E_STRING: Set WGE_SHARED to the root directory of git checkouts\n";
 	return
+fi
+
+if [[ !$WGE_CONFIGURE_OTS_URL ]] ; then
+    printf "$W2I_STRING: WGE_CONFIGURE_OTS_URL not set - WGE won't find the off target server!\n"
+    return
 fi
 
 unset PERL5LIB
@@ -69,6 +74,9 @@ commands:
     debug:  start the webapp in perl debugging module
     local:  set up a local WGE environment
     farm3:  set up to run off-target scripts on farm3
+    cpanm:  install a Perl module and document it
+    force:  force install (only last resort)
+    pg9.3:  use the Pg9.3 clients
 
 END_USAGE
 }
@@ -197,6 +205,7 @@ PERL5LIB :
 \$WGE_GMAIL_CONFIG                  : $WGE_GMAIL_CONFIG
 \$WGE_LOG4PERL_CONFIG               : $WGE_LOG4PERL_CONFIG
 \$LIMS2_REST_CLIENT_CONFIG          : $LIMS2_REST_CLIENT_CONFIG
+\$OFF_TARGET_SERVER_URL             : $OFF_TARGET_SERVER_URL
 \$WGE_DB                            : $WGE_DB
 
 
@@ -229,7 +238,6 @@ function wge_farm3 {
 }
 
 function wge_local {
-#use lims2-common
     wge_opt
     export PERL_CPANM_OPT="--local-lib=$WGE_OPT/perl5"
     perl5lib_prepend $WGE_SHARED/LIMS2-REST-Client/lib
@@ -240,6 +248,7 @@ function wge_local {
     check_and_set LIMS2_REST_CLIENT_CONFIG $WGE_OPT/conf/wge/wge-rest-client.conf
     check_and_set WGE_REST_CLIENT_CONFIG $WGE_OPT/conf/wge/wge-rest-client.conf
     check_and_set WGE_DBCONNECT_CONFIG $WGE_OPT/conf/wge/wge_dbconnect.yml
+    check_and_set OFF_TARGET_SERVER_URL $WGE_CONFIGURE_OTS_URL
     export WGE_DB=$WGE_CONFIGURE_DB
     export WGE_SESSION_STORE=/tmp/wge-devel.session.$USER
     unset LIMS2_DB
@@ -248,8 +257,6 @@ function wge_local {
     check_and_set WGE_LOG4PERL_CONFIG $WGE_OPT/conf/wge/wge.log4perl.default.conf
     check_and_set_dir SHARED_WEBAPP_STATIC_DIR $WGE_SHARED/WebApp-Common/shared_static
     check_and_set_dir SHARED_WEBAPP_TT_DIR $WGE_SHARED/WebApp-Common/shared_templates
-    export WGE_SESSION_STORE=/var/tmp/wge
-
 
     wge_ensembl_modules
 
@@ -260,8 +267,10 @@ function wge_local {
 
 function wge_opt {
 # Location of optional software to support admin of WGE
-
-    export WGE_OPT=~/opt
+    if [[ ! $WGE_OPT ]] ; then
+        export WGE_OPT=~/opt
+    fi
+    printf "$W2I_STRING: WGE_OPT set to: $WGE_OPT\n"
 }
 
 function wge_local_environment {
