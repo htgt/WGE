@@ -197,12 +197,12 @@ function wge_fcgi ()
 
 function wge_apache ()
 {
-
+    prinf "Implement me.\n"
 }
 
 function wge_service ()
 {
-
+    prinf "Implement me.\n"
 }
 
 
