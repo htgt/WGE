@@ -24,3 +24,4 @@ MooseX::NonMoose
 -- Make sure to use the Ubuntu packages for DBIx::Class, Module::Runtime etc as these have been properly patched
 MooseX::Types::Path::Class::MoreCoercions
 Catalyst::Controller::REST
+FCGI::Engine::Manager
