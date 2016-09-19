@@ -55,6 +55,15 @@ function wge {
         force)
             wge_force $2
             ;;
+        fcgi)
+            wge_fcgi $2
+            ;;
+        apache)
+            wge_apache $2
+            ;;
+        service)
+            wge_service $2
+            ;;
         *)
             printf "Unknown WGE command\n"
             wge_usage
@@ -180,6 +189,21 @@ function perl5lib_prepend ()
     export PERL5LIB=$(perl -le "print join ':', '$1', grep { length and \$_ ne '$1' } split ':', \$ENV{PERL5LIB}")
 }
 
+function wge_fcgi ()
+{
+    $WGE_DEV_ROOT/bin/fcgi-manager.pl --config "${WGE_FCGI_CONFIG}" "$1" wge
+}
+
+
+function wge_apache ()
+{
+}
+
+function wge_service ()
+{
+}
+
+
 function wge_show {
 cat << END
 WGE useful environment variables:
@@ -199,6 +223,7 @@ PERL5LIB :
 `perl -e 'print( join("\n", split(":", $ENV{PATH}))."\n")'`
 
 \$WGE_REST_CLIENT_CONFIG            : $WGE_REST_CLIENT_CONFIG
+\$WGE_FCGI_CONFIG                   : $WGE_FCGI_CONFIG
 \$WGE_NO_TIMEOUT                    : $WGE_NO_TIMEOUT
 \$WGE_DBCONNECT_CONFIG              : $WGE_DBCONNECT_CONFIG
 \$WGE_SESSION_STORE                 : $WGE_SESSION_STORE
@@ -250,6 +275,7 @@ function wge_local {
     check_and_set WGE_REST_CLIENT_CONFIG $WGE_OPT/conf/wge/wge-rest-client.conf
     check_and_set WGE_DBCONNECT_CONFIG $WGE_OPT/conf/wge/wge_dbconnect.yml
     check_and_set OFF_TARGET_SERVER_URL $WGE_CONFIGURE_OTS_URL
+    check_and_set WGE_FCGI_CONFIG $WGE_CONFIGURE_FCGI
     export WGE_DB=$WGE_CONFIGURE_DB
     export WGE_SESSION_STORE=/tmp/wge-devel.session.$USER
     unset LIMS2_DB
