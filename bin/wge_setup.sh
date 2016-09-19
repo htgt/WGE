@@ -197,11 +197,14 @@ function wge_fcgi ()
 
 function wge_apache ()
 {
+
 }
 
 function wge_service ()
 {
+
 }
+
 
 
 function wge_show {
