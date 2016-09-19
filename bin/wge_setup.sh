@@ -16,7 +16,7 @@ if [[ ! "$WGE_SHARED" ]] ; then
 	return
 fi
 
-if [[ !$WGE_CONFIGURE_OTS_URL ]] ; then
+if [[ ! "$WGE_CONFIGURE_OTS_URL" ]] ; then
     printf "$W2I_STRING: WGE_CONFIGURE_OTS_URL not set - WGE won't find the off target server!\n"
     return
 fi
