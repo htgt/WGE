@@ -20,7 +20,7 @@ export WGE_CONFIGURE_OTS_URL="http://localhost:8080/"
 # All the relevant repositories must be installed under one directory - except WGE itself
 # which may be installed in another location (primarily for development).
 
-export WGE_SHARED=/home/djps/git-checkout
+export WGE_SHARED=/home/user/git-checkout
 
 # The location of the root of the WGE package
 
@@ -42,7 +42,7 @@ export WGE_WEBAPP_SERVER_PORT=3031
 export WGE_CONFIGURE_FCGI=$WGE_DEV_ROOT/conf/fastcgi.yaml
 
 # Finally, run the setup script. This configures your environment properly and give you the
-# 'wge' command. From thsi point on you should just be able to use the 'wge' command to manage
+# 'wge' command. From this point on you should just be able to use the 'wge' command to manage
 # the WGE services, start and stop the off-target server (if it is on the same host) and so on.
  
 source $WGE_DEV_ROOT/bin/wge_setup.sh
