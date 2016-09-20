@@ -20,7 +20,7 @@ export WGE_CONFIGURE_OTS_URL="http://localhost:8080/"
 # All the relevant repositories must be installed under one directory - except WGE itself
 # which may be installed in another location (primarily for development).
 
-export WGE_SHARED=/home/user/git-checkout
+export WGE_SHARED=/www/user/git-checkout
 
 # The location of the root of the WGE package
 
@@ -40,6 +40,10 @@ export WGE_WEBAPP_SERVER_PORT=3031
 # There are other options here but we only support FCGI.
 
 export WGE_CONFIGURE_FCGI=$WGE_DEV_ROOT/conf/fastcgi.yaml
+
+# WGE_OPT is where the local perl modules and other ancillary tools live
+
+export WGE_OPT=/www/user/WGE/opt
 
 # Finally, run the setup script. This configures your environment properly and give you the
 # 'wge' command. From this point on you should just be able to use the 'wge' command to manage
