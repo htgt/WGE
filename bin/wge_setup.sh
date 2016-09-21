@@ -191,21 +191,29 @@ function perl5lib_prepend ()
 
 function wge_fcgi ()
 {
-    $WGE_DEV_ROOT/bin/fcgi-manager.pl --config "${WGE_FCGI_CONFIG}" "$1" wge
+    if [[ "$1" ]] ; then
+        $WGE_DEV_ROOT/bin/fcgi-manager.pl --config "${WGE_FCGI_CONFIG}" "$1" wge
+    else
+        printf "ERROR: must supply start|stop|restart to wge fcgi command\n"
+    fi
 }
 
-
-function wge_apache ()
-{
-    prinf "Implement me.\n"
+function wge_apache {
+    if [[ "$1" ]] ; then
+        /usr/sbin/apachectl -f $WGE_OPT/conf/wge/apache.conf -k $1
+    else
+        printf "ERROR: must supply start|stop|restart to wge apache command\n"
+    fi
 }
 
-function wge_service ()
-{
-    prinf "Implement me.\n"
+function wge_service {
+    if [[ "$1" ]] ; then
+        wge_fcgi $1
+        wge_apache $1
+    else
+        printf "ERROR: must supply start|stop|restart to wge service command\n"
+    fi
 }
-
-
 
 function wge_show {
 cat << END
