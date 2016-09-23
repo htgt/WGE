@@ -43,6 +43,9 @@ function wge {
         local)
             wge_local
             ;;
+	production)
+	    wge_production
+	    ;;
         farm3)
             wge_farm3
             ;;
@@ -309,6 +312,9 @@ function wge_opt {
         printf "$W2I_STRING: WGE_OPT set to: $WGE_OPT\n"
     	export WGE_OPT=~/opt
     fi
+}
+function wge_production {
+    check_and_set WGE_LOG4PERL_CONFIG $WGE_OPT/conf/wge/wge.log4perl.production.conf 
 }
 
 function wge_local_environment {
