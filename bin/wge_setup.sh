@@ -43,6 +43,9 @@ function wge {
         local)
             wge_local
             ;;
+	production)
+	    wge_production
+	    ;;
         farm3)
             wge_farm3
             ;;
@@ -191,21 +194,29 @@ function perl5lib_prepend ()
 
 function wge_fcgi ()
 {
-    $WGE_DEV_ROOT/bin/fcgi-manager.pl --config "${WGE_FCGI_CONFIG}" "$1" wge
+    if [[ "$1" ]] ; then
+        $WGE_DEV_ROOT/bin/fcgi-manager.pl --config "${WGE_FCGI_CONFIG}" "$1" wge
+    else
+        printf "$W2E: must supply start|stop|restart to wge fcgi command\n"
+    fi
 }
 
-
-function wge_apache ()
-{
-    prinf "Implement me.\n"
+function wge_apache {
+    if [[ "$1" ]] ; then
+        /usr/sbin/apachectl -f $WGE_OPT/conf/wge/apache.conf -k $1
+    else
+        printf "$W2E: must supply start|stop|restart to wge apache command\n"
+    fi
 }
 
-function wge_service ()
-{
-    prinf "Implement me.\n"
+function wge_service {
+    if [[ "$1" ]] ; then
+        wge_fcgi $1
+        wge_apache $1
+    else
+        printf "$W2E: must supply start|stop|restart to wge service command\n"
+    fi
 }
-
-
 
 function wge_show {
 cat << END
@@ -305,6 +316,12 @@ function wge_opt {
         printf "$W2I_STRING: WGE_OPT set to: $WGE_OPT\n"
     	export WGE_OPT=~/opt
     fi
+}
+function wge_production {
+    check_and_set WGE_LOG4PERL_CONFIG $WGE_OPT/conf/wge/wge.log4perl.production.conf 
+    check_and_set WGE_PRODUCTION_ROOT $WGE_CONFIGURE_PRODUCTION_ROOT
+    check_and_set WGE_APACHE_PORT $WHE_CONFIGURE_APACHE_PORT
+    check_and_set WGE_SERVER_EMAIL $WGE_CONFIGURE_SERVER_EMAIL
 }
 
 function wge_local_environment {
