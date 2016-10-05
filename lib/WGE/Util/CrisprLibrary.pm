@@ -226,7 +226,12 @@ sub _build_targets{
 	my $fh = $self->input_fh;
     seek($fh,0,0);
 
-    my @inputs = <$fh>;
+    my $csv = Text::CSV->new();
+    my @inputs;
+    while (my $line = $csv->getline($fh)){
+        push @inputs, $line->[0];
+    }
+
     my $input_count = scalar @inputs;
     $self->log->debug("Getting coordinates for $input_count library targets");
 
@@ -268,7 +273,6 @@ sub _build_targets{
     $self->_find_crispr_sites(\@targets);
 
     # Then we generate off targets where missing
-    #$self->generate_off_targets;
     $self->generate_off_targets_on_farm(\@targets);
 
     # This time repeat the crispr search but sort and store the best crisprs
@@ -447,6 +451,8 @@ sub _find_crispr_sites{
         progress_percent        => 0,
     }) if $update_progress;
 
+    # clear list of crisprs missing offs as we might be checking
+    # off-target generation status
     $self->crisprs_missing_offs([]);
 
     foreach my $target (@{ $targets }){
@@ -529,16 +535,6 @@ sub _search_crisprs{
     if($missing_count){
         #$self->log->debug("off-target info missing for $missing_count crisprs");
         push @{ $self->crisprs_missing_offs }, map { $_->{id} } @crisprs_missing_offs;
-=head
-        $self->_update_job({ info => "Computing off-targets for $missing_count crisprs in $target region"});
-        $self->_generate_missing_ots(\@crisprs_missing_offs);
-        foreach my $crispr (@crisprs_missing_offs){
-            my $id = $crispr->{id};
-            my $updated_crispr = $self->model->schema->resultset('Crispr')->find({ id => $id });
-            $crisprs->{ $id } = $updated_crispr->as_hash;
-        }
-        $self->_update_job({ info => "" });
-=cut
     }
 
     if($sort_and_store){
@@ -558,6 +554,7 @@ sub generate_off_targets_on_farm{
     $self->log->debug("** generating off-targets on farm for $count crisprs");
     if($count){
         $self->_update_job({
+            library_design_stage_id => 'off_targets',
             info => "Generating off-targets for $count crispr sites",
             progress_percent => 0,
         });
@@ -570,12 +567,17 @@ sub generate_off_targets_on_farm{
             bsub_wrapper => "/nfs/team87/farm3_lims2_vms/conf/run_in_farm3_af11"
         });
 
-        my $id_file = my $fh = $self->workdir->file("job_ids.txt");
+        my $id_file = $self->workdir->file("job_ids.txt");
         $id_file->touch();
 
-        # split list of offs into batches of 500
+        # split list of offs into batches of 500 (or smaller for short lists)
+        my $batch_size = 500;
+        if($count < 1000){
+            $batch_size = ceil ($count / 5);
+        }
+
         # submit each one to farm basement queue using wge_off_targets.pl script
-        my $iter = natatime(500, @{ $self->crisprs_missing_offs });
+        my $iter = natatime($batch_size, @{ $self->crisprs_missing_offs });
         my $batch_num = 0;
         while (my @tmp = $iter->() ){
             $batch_num++;
@@ -621,127 +623,12 @@ sub generate_off_targets_on_farm{
             }
             else{
                 # All done!
-                rm $id_file;
-                return
+                $id_file->remove;
+                return;
             }
         }
     }
 
-    return;
-}
-
-sub generate_off_targets{
-    my ($self) = @_;
-    my $count = scalar( @{ $self->crisprs_missing_offs} );
-    if($count){
-        $self->_update_job({ info => "Generating off-targets for $count crispr sites"});
-        $self->_generate_missing_ots($self->crisprs_missing_offs);
-        $self->_update_job({ info => '' });
-    }
-    return;
-}
-
-sub _generate_missing_ots{
-    my ($self, $crisprs_missing_offs) = @_;
-
-    # crisprs_missing_offs is array of cripsr->as_hash
-    my $ots_species = lc($self->species_name);
-
-    my $batch_size = 10;
-    my $max_children = 5;
-
-    my $missing_count = scalar @{$crisprs_missing_offs};
-
-    # Ensure smaller lists of crisprs are processed in parallel
-    if($missing_count < ($batch_size * $max_children) ){
-        $batch_size = ceil( $missing_count / $max_children );
-    }
-
-    my $iter = natatime $batch_size, @{ $crisprs_missing_offs };
-    my %pids;
-
-    # ensure we get signals from child processes
-    $SIG{CHLD} = 'DEFAULT';
-
-    my $done = 0;
-    while (my @tmp = $iter->() ){
-        $self->log->debug("Starting new child process to generate off-targets");
-        my $pid = fork();
-
-        if(!defined($pid)){
-            die "Could not fork - $!";
-        }
-
-        if($pid){
-            # parent keeps track of child pids
-            $pids{$pid} = 1;
-            my $child_pid_count = keys %pids;
-            $self->log->debug("Currently running $child_pid_count children");
-            # Do not exceed 5 child processes
-            while(keys %pids >= $max_children){
-                $self->_monitor_children(\%pids);
-            }
-        }
-        else{
-            # child runs ots query
-
-            # Child does not need the target info array so clear it to reduce mem usage
-            $self->targets([]);
-
-            #my @ids = map { $_->{id} } @tmp;
-            my @ids = @tmp;
-            $self->log->debug("updating off-targets for crisprs [PID: $$]: ".join ",", @ids);
-
-            try{
-                $self->ots_server->update_off_targets($self->model, { ids => \@ids, species => $ots_species } );
-            }
-            catch($e){
-                $self->log->error("error doing OT search [PID: $$]: $e");
-                $self->_update_job({ complete => 1, error => $e });
-                $self->log->debug("exiting child process $$ with exit code 1");
-                # Using standard exit() did not always return the exit code of 1
-                # possibly due to object destructors and END routines changing $?
-                # see perldocs: http://perldoc.perl.org/functions/exit.html
-                # Using _exit() causes immediate exit so correct $? is seen by parent process
-                _exit(1);
-            }
-            $self->log->debug("off-target update done [PID: $$]");
-            exit(0);
-        }
-        $done += $batch_size;
-        $self->_update_progress('off_targets',$missing_count,$done);
-
-        sleep(2); # small delay between queries
-    }
-    # Wait for all pids to complete
-    while(keys %pids){
-        $self->_monitor_children(\%pids);
-    }
-    return;
-}
-
-sub _monitor_children{
-    my ($self, $pids) = @_;
-#$self->log->debug("monitoring children [PID: $$] ".Dumper($pids));
-    my $pid = waitpid( -1, WNOHANG );
-    return if $pid == -1;
-    if($pid){
-        my $exit_status = $? >> 8;
-        $self->log->debug("Exit status of $pid: $exit_status ($?)");
-
-        if($exit_status > 0){
-            foreach my $id (keys %$pids){
-                $self->log->debug("killing child process $id");
-                kill(15,$id);
-                delete $pids->{$id};
-            }
-            die "Child process $pid exited with error";
-        }
-        else{
-            delete $pids->{$pid};
-        }
-    }
-    sleep(1);
     return;
 }
 
@@ -804,6 +691,9 @@ sub write_input_data_to_file{
     return $file;
 }
 
+# Because _update_progress will only make changes every n items
+# but when checking off-target generation we need to update every 10 minutes
+# regardless of the number of items
 sub _force_update_progress{
     my ($self, $stage, $total, $progress) = @_;
     return $self->_update_progress($stage,$total,$progress,1);
@@ -816,6 +706,11 @@ sub _update_progress{
     if($self->write_progress_to_db){
         if( $force or ($progress % $self->update_after_n_items) == 0 ){
             my $percent  = ceil( ($progress / $total) * 100 );
+
+            # We want the row's modification time to update even
+            # if progress percent has not advanced
+            $self->design_job->make_column_dirty('progress_percent');
+
             $self->design_job->update({
                 library_design_stage_id => $stage,
                 progress_percent        => $percent,

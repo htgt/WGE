@@ -184,6 +184,7 @@ sub crispr_library_job_progress :Path('/crispr_library_job_progress') :Args(1){
             complete          => $job->complete,
             error             => $job->error,
             info              => $job->info,
+            last_modified     => $job->last_modified->format_cldr('yyyy-MM-dd HH:mm:ss'),
         };
     }
     $c->stash->{json_data} = $data;

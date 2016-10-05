@@ -28,3 +28,7 @@ th.group-header {
   color: red;
   position: fixed;
 }
+
+.popover{
+    max-width: 80%;
+}
