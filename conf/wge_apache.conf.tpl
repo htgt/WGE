@@ -12,7 +12,7 @@ Listen $WGE_APACHE_PORT
         Allow from all
     </Directory>
 
-    Alias /htgt/wge/static $WGE_DEV_ROOT/root/static
+    Alias /wge/static $WGE_DEV_ROOT/root/static
     <Directory $WGE_DEV_ROOT/root/static>
         Options -Indexes
         AllowOverride None
