@@ -43,6 +43,10 @@ export WGE_CONFIGURE_FCGI=$WGE_DEV_ROOT/conf/fastcgi.yaml
 
 # WGE_OPT is where the local perl modules and other ancillary tools live
 
+# Ensembl server location
+export WGE_ENSEMBL_HOST=ensembldb.internal.sanger.ac.uk
+export WGE_ENSEMBL_USER=ensro
+
 export WGE_OPT=/www/user/WGE/opt
 
 # Finally, run the setup script. This configures your environment properly and give you the
