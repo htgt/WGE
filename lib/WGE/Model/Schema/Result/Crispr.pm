@@ -256,5 +256,12 @@ sub remove_link_to_user_id{
 
     return;
 }
+
+sub location_type{
+    my ($self) = @_;
+    my $type = $self->exonic ? 'Exonic' : $self->genic ? 'Intergenic' : 'Intronic';
+    return $type;
+}
+
 __PACKAGE__->meta->make_immutable;
 1;

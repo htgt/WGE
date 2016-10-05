@@ -208,5 +208,11 @@ __PACKAGE__->has_many(
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+sub location_type{
+    my ($self) = @_;
+    my $type = $self->exonic ? 'Exonic' : $self->genic ? 'Intergenic' : 'Intronic';
+    return $type;
+}
+
 __PACKAGE__->meta->make_immutable;
 1;
