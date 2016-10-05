@@ -89,6 +89,11 @@ commands:
     cpanm:  install a Perl module and document it
     force:  force install (only last resort)
     pg9.3:  use the Pg9.3 clients
+    fcgi:   start start|stop the fcgi service
+    apache: start|stop|reload the apache2 service
+    service: start|stop the fcgi and apaches2 services
+    production: set things up for production mode logging (to file)
+    dev:    set things up for development logging (to terminal) 
 
 END_USAGE
 }
