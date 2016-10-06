@@ -211,6 +211,8 @@ sub delete_library_design_job :Path('/delete_library_design_job') :Args(1){
                 $c->log->debug("Killing job $id");
                 # Catch errors and ignore those for already finished jobs
                 try{
+                    # FIXME: this is throwing errors even when it works and output says:
+                    # Job <4834669> is being terminated
                     $job_runner->kill_job($id);
                 }
                 catch($e){

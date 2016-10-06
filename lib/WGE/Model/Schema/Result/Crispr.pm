@@ -259,7 +259,17 @@ sub remove_link_to_user_id{
 
 sub location_type{
     my ($self) = @_;
-    my $type = $self->exonic ? 'Exonic' : $self->genic ? 'Intergenic' : 'Intronic';
+    my $type;
+    if( $self->exonic ){
+      $type = 'Exonic';
+    }
+    elsif( $self->genic ){
+      $type = 'Intronic';
+    }
+    else{
+      $type = 'Intergenic'
+    }
+
     return $type;
 }
 
