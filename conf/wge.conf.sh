@@ -1,4 +1,4 @@
-# This is the WGE localisation file for client installations
+# This is the WGE localisation file for server installations
 # All installations require this file to be configured appropriately
 # in order to run WGE successfully.
 
@@ -27,10 +27,16 @@ export WGE_SHARED=/www/user/git-checkout
 export WGE_DEV_ROOT=$WGE_SHARED/WGE
 
 # There may be an issue with Ensembl timeouts resulting in poor performance, if so set this variable to 1
+# In development mode, always set this to 1
+# In production mode, running under FCGI and Apache a timeout from Ensembl will result in that FCGI thread
+# being terminated and the perofrmance of WGE overall will be maintained.
+# Use a local installation of Ensembl to avoid the timeout issue from the public server.
 
 export WGE_NO_TIMEOUT=1
+#unset WGE_NO_TIMEOUT
 
-# The default webapp server port is 3000, the fastcgi expects 3031...
+# The default webapp server port is 3000, the fastcgi in default configuration expects 3031...
+# However, you must use whichever port is on you factcgi file, if you are setting up FCGI support
 
 export WGE_WEBAPP_SERVER_PORT=3031
 
@@ -41,11 +47,18 @@ export WGE_WEBAPP_SERVER_PORT=3031
 
 export WGE_CONFIGURE_FCGI=$WGE_DEV_ROOT/conf/fastcgi.yaml
 
-# WGE_OPT is where the local perl modules and other ancillary tools live
+# Apache configration
+export WGE_APACHE_PORT=8001
+export WGE_PRODUCTION=/opt/wge/live
+export WGE_FCGI_HOST=localhost
+export WGE_PORT=8000
+export WGE_SERVER_EMAIL=wge_admin@local
 
 # Ensembl server location
-export WGE_ENSEMBL_HOST=ensembldb.internal.sanger.ac.uk
+export WGE_ENSEMBL_HOST=myensembldb.local
 export WGE_ENSEMBL_USER=ensro
+
+# WGE_OPT is where the local perl modules and other ancillary tools live
 
 export WGE_OPT=/www/user/WGE/opt
 

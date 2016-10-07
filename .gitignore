@@ -4,3 +4,4 @@ WGE-*
 tmp
 .project
 .prove
+wge_apache.conf
