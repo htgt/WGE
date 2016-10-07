@@ -2,6 +2,8 @@
 # All installations require this file to be configured appropriately
 # in order to run WGE successfully.
 
+export WGE_BASE=/www/user
+
 # The database profile
 # You must have a PostgreSQL database installed with the WGE schema and relevant
 # data loaded. Youj don't need every table to be populate dto use WGE.
@@ -20,7 +22,7 @@ export WGE_CONFIGURE_OTS_URL="http://localhost:8080/"
 # All the relevant repositories must be installed under one directory - except WGE itself
 # which may be installed in another location (primarily for development).
 
-export WGE_SHARED=/www/user/git-checkout
+export WGE_SHARED=$WGE_BASE/git-checkout
 
 # The location of the root of the WGE package
 
@@ -38,20 +40,24 @@ export WGE_NO_TIMEOUT=1
 # The default webapp server port is 3000, the fastcgi in default configuration expects 3031...
 # However, you must use whichever port is on you factcgi file, if you are setting up FCGI support
 
-export WGE_WEBAPP_SERVER_PORT=3031
+export WGE_WEBAPP_SERVER_PORT=8002
+export WGE_LIVE_WEBAPP_SERVER_PORT=8000
 
 # You can run from the command line with
 # wge webapp
 # but this will not support many users, instead we recommend fastCGI.
 # There are other options here but we only support FCGI.
 
-export WGE_CONFIGURE_FCGI=$WGE_DEV_ROOT/conf/fastcgi.yaml
+export WGE_CONFIGURE_FCGI=$WGE_PRODUCTION/conf/fastcgi.yaml
+export WGE_FCGI_SCRIPT_PATH=$WGE_PRODUCTION/bin/wge_fastcgi.pl
+export WGE_FCGI_PROC=8
+export WGE_FCGI_PID_FILE=/var/tmp/wge/run/fastcgi.pid
 
 # Apache configration
 export WGE_APACHE_PORT=8001
 export WGE_PRODUCTION=/opt/wge/live
 export WGE_FCGI_HOST=localhost
-export WGE_PORT=8000
+export WGE_FCGI_PORT=$WGE_LIVE_WEBAPP_SERVER_PORT
 export WGE_SERVER_EMAIL=wge_admin@local
 
 # Ensembl server location
