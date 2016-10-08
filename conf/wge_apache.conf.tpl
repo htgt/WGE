@@ -3,7 +3,7 @@ Listen #WGE_APACHE_PORT
 <VirtualHost *:#WGE_APACHE_PORT>
     ServerAdmin #WGE_SERVER_EMAIL
     
-    FastCGIExternalServer /wge.fcgi -host #WGE_FCGI_HOST:#WGE_PORT -idle-timeout 300 -pass-header Authorization
+    FastCGIExternalServer /wge.fcgi -host #WGE_FCGI_HOST:#WGE_FCGI_PORT -idle-timeout 300 -pass-header Authorization
     
     DocumentRoot #WGE_PRODUCTION/docroots/default
     <Directory #WGE_PRODUCTION/docroots/default>
@@ -12,8 +12,8 @@ Listen #WGE_APACHE_PORT
         Allow from all
     </Directory>
 
-    Alias /wge/static #WGE_DEV_ROOT/root/static
-    <Directory #WGE_DEV_ROOT/root/static>
+    Alias /wge/static #WGE_PRODUCTION/WGE/root/static
+    <Directory #WGE_PRODUCTION/WGE/root/static>
         Options -Indexes
         AllowOverride None
         Order allow,deny
