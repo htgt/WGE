@@ -216,7 +216,7 @@ sub delete_library_design_job :Path('/delete_library_design_job') :Args(1){
                     $job_runner->kill_job($id);
                 }
                 catch($e){
-                    unless($e =~ /already finished/ ){
+                    unless($e =~ /(already finished|No matching job found)/ ){
                         $c->flash->{error_msg} = "Could not kill farm job - $e";
                         $c->response->redirect( $c->uri_for('/crispr_library_jobs'));
                         return;
@@ -261,6 +261,7 @@ sub _stash_from_previous_job{
             within         => $job->params->{within},
             flanking       => $job->params->{flanking},
             input_from_job => $job_id,
+            prev_job_name  => $job->name,
         });
 
         $c->stash->{info_msg} = "Parameters retrieved from library design job ".$job->name;

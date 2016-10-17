@@ -594,6 +594,7 @@ sub generate_off_targets_on_farm{
                 err_file => $err_file,
                 cmd      => $cmd,
                 queue    => 'basement',
+                group    => 'team87-grp', # change this to team229-grp when available
                 memory_required => 3000,
             });
             my $cmd_string = join " ", @{$farm_cmd};
@@ -611,7 +612,7 @@ sub generate_off_targets_on_farm{
         }
 
         # every 10 mins repeat the check for missing offs, update progress percent
-        # only continue when no more offs are missing or timeout is reached
+        # only continue when no more offs are missing
         while(1){
             sleep(600);
             $self->_find_crispr_sites($targets);
@@ -638,7 +639,7 @@ sub write_csv_data_to_file{
     my $file = $self->workdir->file($filename);
     my $fh = $file->openw or die "Could not open file $file for writing - $!";
 
-    my $extra_fields = [ qw(target_name target_chromosome target_start target_end) ];
+    my $extra_fields = [ qw(search_region_name search_region_chromosome search_region_start search_region_end) ];
 
     # print header to file
     print $fh join "\t", @{ format_crisprs_for_csv_header($extra_fields) };
@@ -652,10 +653,10 @@ sub write_csv_data_to_file{
         foreach my $crispr (@{ $target->{crisprs} }){
             if($crispr){
                 my %crispr_info = %{ $crispr };
-                $crispr_info{target_name} = $target->{target_name};
-                $crispr_info{target_chromosome} = $target->{target_coords}->{chr};
-                $crispr_info{target_start} = $target->{target_coords}->{start};
-                $crispr_info{target_end} = $target->{target_coords}->{end};
+                $crispr_info{search_region_name} = $target->{target_name};
+                $crispr_info{search_region_chromosome} = $target->{target_coords}->{chr};
+                $crispr_info{search_region_start} = $target->{target_coords}->{start};
+                $crispr_info{search_region_end} = $target->{target_coords}->{end};
 
                 print $fh join "\t", @{ format_crisprs_for_csv_data(\%crispr_info, $extra_fields) };
                 print $fh "\n";

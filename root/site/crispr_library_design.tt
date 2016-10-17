@@ -1,7 +1,7 @@
 [%- META title = "CRISPR Library Design Tool"; META tab_name = "crispr"; META header_text = "CRISPR Library Design Tool" -%]
 
 <div class="well lead">
-Use this tool to find crisprs targeting a list of locations. Locations can be genes, exons or genomic coordinates. You can use the tool to find crisprs within, and/or flanking, the specified regions.
+Use this tool to find crisprs targeting a list of search regions. Search regions can be genes, exons or genomic coordinates. You can use the tool to find crisprs within, and/or flanking, the specified regions.
 </div>
 
 [% IF c.user %]
@@ -10,7 +10,7 @@ View your existing library design jobs: <a href="[% c.uri_for('/crispr_library_j
 </div>
 <form enctype="multipart/form-data" method="post">
   <div class="form-group">
-    <label for="job_name">Job Name </label>
+    <label for="job_name">Job Name (optional) </label>
     <input type="text" name="job_name" id="job_name" value="[% job_name %]"></input>
   </div>
   <div class="form-group">
@@ -29,7 +29,7 @@ View your existing library design jobs: <a href="[% c.uri_for('/crispr_library_j
     </div>
   </div>
   <div class="form-group">
-  	<label for="location_input">Target locations:</label>
+  	<label for="location_input">Search regions:</label>
     <div class="radio">
       <label>
       	<input type="radio" name="location" value="gene" [%IF location == "gene"%]checked[%END%]>
@@ -54,25 +54,25 @@ View your existing library design jobs: <a href="[% c.uri_for('/crispr_library_j
     <div class="checkbox">
       <label>
       	<input type="checkbox" name="within" value="1" [%IF within == 1 %]checked[%END%]>
-      	Within Target Location
+      	Within Search Region
       </label>
     </div>
     <div class="checkbox">
       <label>
       	<input type="checkbox" name="flanking" value="1" [%IF flanking == 1%]checked[%END%]>
-      	Flanking Target Location By:
+      	Flanking Search Region By:
       </label>
     </div>
     <input name="flank_size" type="number" value="[% flank_size %]"> bp
   </div>
   <div class="form-group">
   [% IF input_from_job %]
-    <label>Using input file from job [% input_from_job %]</label>
+    <label>Using input file from job [% prev_job_name %]</label>
     <input type="submit" class="btn btn-default" name="change_file" value="Change File">
     <br>
     <input type="hidden" name="input_from_job" value="[% input_from_job %]">
   [% ELSE %]
-  	<label>Upload text file containing target locations (1 location per line)</label>
+  	<label>Upload text file containing search regions (1 region per line)</label>
   	<input type="file" class="file" accept=".txt,.csv,.tsv" name="datafile">
   [% END %]
     <input type="submit" class="btn btn-primary" name="submit" value="submit">

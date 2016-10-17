@@ -13,13 +13,13 @@
         <div class="col-xs-6">
           <p><strong>Start time:</strong> [% job.created_at %]</p>
           <p><strong>Species:</strong> [% job.params.species_name %]</p>
-          <p><strong>Target region count:</strong> [% job.target_region_count %]</p>
+          <p><strong>Search region count:</strong> [% job.target_region_count %]</p>
         </div>
         <div class="col-xs-6">
-          <p>Job description: For each target <strong>[% job.params.location_type %]</strong> find the <strong>[% job.params.num_crisprs %]</strong> best crisprs</p>
+          <p>Job description: For each <strong>[% job.params.location_type %]</strong> search region find the <strong>[% job.params.num_crisprs %]</strong> best crisprs</p>
             <ul>
-            [% IF job.params.within %]<li>within the target</li>[% END %]
-            [% IF job.params.flank_size %]<li>flanking the target by [% job.params.flank_size %]bp</li>[% END %]
+            [% IF job.params.within %]<li>within the region</li>[% END %]
+            [% IF job.params.flank_size %]<li>flanking the region by [% job.params.flank_size %]bp</li>[% END %]
             </ul>
         </div>
       </div>

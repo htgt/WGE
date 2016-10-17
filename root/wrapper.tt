@@ -97,6 +97,9 @@
                 <li><a href="[% c.uri_for('/find_crisprs_id') %]">Search by ID</a></li>
                 <li class="divider"></li>
                 <li><a href="[% c.uri_for('/find_off_targets_by_seq') %]">Off-Targets by Sequence</a></li>
+                <li class="divider"></li>
+                <li><a href="[% c.uri_for('/crispr_library_design') %]">Generate CRISPR Library</a></li>
+                <li><a href="[% c.uri_for('/crispr_library_jobs') %]">View CRISPR Library Jobs</a></li>
               </ul>
             </li>
 
