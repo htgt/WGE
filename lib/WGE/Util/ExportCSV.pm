@@ -158,7 +158,7 @@ sub format_crisprs_for_bed{
     my @crisprs = map { blessed($_) ? $_->as_hash : $_ } @$crispr_list;
 
     my @bed_data;
-    my @fields = qw( chrom chrom_start chrom_end name seq strand );
+    my @fields = qw( chrom chrom_start chrom_end name seq gRNA strand );
     if($with_exon_id){
         unshift @fields, 'exon_id';
     }
@@ -171,12 +171,20 @@ sub format_crisprs_for_bed{
         my $name = $crispr->{id};
         my $seq = $crispr->{seq};
         my $strand = $crispr->{pam_right} ? "+" : "-";
+        if ($crispr->{pam_right}) {
+            my $gRNA = $seq;
+        }
+        else {
+            my $gRNA = reverse $seq;
+            $gRNA =~ tr/ATCG/TAGC/;
+        }
         my @row = (
             $chrom,
             $chrom_start,
             $chrom_end,
             $name,
             $seq,
+            $gRNA,
             $strand // '',
         );
         if($with_exon_id){
