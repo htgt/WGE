@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::CrisprPair;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::CrisprPair::VERSION = '0.093';
+    $WGE::Model::Schema::Result::CrisprPair::VERSION = '0.101';
 }
 ## use critic
 
@@ -464,16 +464,30 @@ sub _data_missing {
   #this status has already been calculated, so just return it as is
   return if $self->status_id == -2;
 
+  my @crispr_list;
+  my $crispr_lid;
+  my $crispr_rid;
+
   #if we were provided with crisprs make sure its an arrayref with 2 entries
   if ( defined $crisprs && ref $crisprs eq 'ARRAY' && @{ $crisprs } == 2 ) {
     $self->log->warn( "2 crisprs provided, using those" );
+    for my $crispr ( @{ $crisprs } )
+    {
+      push @crispr_list, $crispr->get_column( 'id' );
+    }
+    $crispr_lid = $crispr_list[0];
+    $crispr_rid = $crispr_list[1];
   }
   else{
     $self->log->warn( "No crisprs provided, searching crispr table" );
 
+    $crispr_lid = $self->left_id;
+    $crispr_rid = $self->right_id;
+  }
+
     my @rows = $self->result_source->schema->resultset('Crispr')->search(
       {
-        id         => { -IN => [ $self->left_id, $self->right_id ] },
+        id         => { -IN => [ $crispr_lid, $crispr_rid ] },
         species_id => $self->species_id
       },
       {
@@ -488,7 +502,7 @@ sub _data_missing {
     $crisprs = \@rows;
 
     die "Couldn't find crisprs!" unless defined $crisprs;
-  }
+
 
   #we allow an arrayref or a resultset in $crisprs
   my @needs_ots_data;

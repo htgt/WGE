@@ -1,7 +1,7 @@
 package WGE::Controller::REST;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::REST::VERSION = '0.093';
+    $WGE::Controller::REST::VERSION = '0.101';
 }
 ## use critic
 
@@ -16,10 +16,23 @@ sub auto : Private {
 
     unless ( $c->user ) {
         $c->log->debug("Attempting to authenticate");
-        my $username = delete $c->req->parameters->{ 'username' };
-        my $password = delete $c->req->parameters->{ 'password' };
+        #my $username = delete $c->req->parameters->{ 'username' };
+        #my $password = delete $c->req->parameters->{ 'password' };
+        my $key = delete $c->req->headers->{pass};
 
-        my $authenticated = $c->authenticate( { username => $username, password => $password } );
+        my $_conf = Config::Tiny->read($ENV{LIMS2_REST_CLIENT_CONFIG});
+        my $serial = Data::Serializer->new();
+        $serial = Data::Serializer->new(
+            serializer  => 'Data::Dumper',
+            digester    => 'SHA-256',
+            cipher      => 'Blowfish',
+            secret      => $_conf->{api}->{transport},
+            compress    => 0,
+        );
+
+        my $frozen = $serial->thaw($key);
+
+        my $authenticated = $c->authenticate( { access_key => $frozen->{access}, secret_key => $frozen->{secret} }, 'rest' );
         
         unless ( $authenticated ) {
             $self->status_bad_request(

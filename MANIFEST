@@ -13,6 +13,7 @@ bin/dump_off_target_counts.pl
 bin/dump_schema.pl
 bin/export_cbx1_crispr_fixtures.sql
 bin/find_crisprs.pl
+bin/find_crisprs_from_fa.pl
 bin/generate_crispr_off_target_primers.pl
 bin/get_all_genes.pl
 bin/get_crisprs.pl
@@ -23,6 +24,7 @@ bin/label_crisprs.pl
 bin/load_genes.pl
 bin/loxp_pairs.pl
 bin/loxp_pairs_report.pl
+bin/merge_offs_from_fa_results.pl
 bin/nearby_crisprs.pl
 bin/persist_crisprs.pl
 bin/promotor_region_crisprs.pl
@@ -151,6 +153,7 @@ root/site/novel_crispr_off_targets.tt
 root/site/rank_by_off_targets.tt
 root/site/search_by_seq.tt
 root/site/utils.tt
+root/static/css/bootstrap-3.3.6.min.css
 root/static/css/images/ui-bg_flat_0_aaaaaa_40x100.png
 root/static/css/images/ui-bg_flat_75_ffffff_40x100.png
 root/static/css/images/ui-bg_glass_55_fbf9ee_1x400.png
@@ -246,9 +249,11 @@ root/static/images/search_by_grna_view.png
 root/static/images/spinner-circle-small.gif
 root/static/images/spinner-circle.gif
 root/static/images/table_view.png
+root/static/js/bootstrap.min.js
 root/static/js/diagram.builder.js
 root/static/js/genoverse_variation_track.js
 root/static/js/jquery-1.12.3.min.js
+root/static/js/jquery-ui-1.11.4.js
 root/static/js/jquery-ui-1.12.0.custom.min.js
 root/static/js/jquery.cookie.js
 root/static/js/jquery.js
@@ -290,6 +295,7 @@ t/fixtures/mouse_crisprs.csv
 t/fixtures/mouse_exons.csv
 t/fixtures/mouse_genes.csv
 t/fixtures/reference_fixtures.sql
+t/js/001_crispr_search.t
 t/lib/Test/WGE.pm
 t/release-no-smart-comments.t
 wge.conf

@@ -1,7 +1,7 @@
 package WGE::Controller::API;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::API::VERSION = '0.093';
+    $WGE::Controller::API::VERSION = '0.101';
 }
 ## use critic
 
@@ -28,14 +28,15 @@ use WGE::Util::FindOffTargets;
 use WebAppCommon::Util::EnsEMBL;
 use JSON;
 use WGE::Util::TimeOut qw(timeout);
-use WGE::Util::ExportCSV qw(format_crisprs_for_csv format_pairs_for_csv);
+use WGE::Util::ExportCSV qw(format_crisprs_for_csv format_pairs_for_csv format_crisprs_for_bed format_pairs_for_bed);
 
 use LWP::UserAgent;
+
 
 use Sub::Exporter -setup => {
     exports => [ qw(
         handle_public_api
-    ) ] 
+    ) ]
 };
 
 BEGIN { extends 'Catalyst::Controller' }
@@ -155,6 +156,71 @@ sub exon_search :Local('exon_search') {
     $c->forward('View::JSON');
 
     return;
+}
+
+sub crispr_by_id :Local('crispr_by_id') {
+    my ( $self, $c ) = @_;
+
+    my $params = $c->req->params;
+    check_params_exist( $c, $params, [ qw( species id ) ]);
+
+    my $ids = $params->{id} ;
+    if ( ref $ids ne 'ARRAY' ) {
+        $ids = [ $ids ];
+    }
+
+    my $data = {};
+    my @crisprs = $c->model('DB')->resultset('Crispr')->search( {
+        id => { -IN => $ids }
+    });
+
+    foreach my $crispr (@crisprs){
+        $data->{ $crispr->id } = {
+            id                 => $crispr->id,
+            chr_name           => $crispr->chr_name,
+            chr_start          => $crispr->chr_start,
+            chr_end            => $crispr->chr_end,
+            seq                => $crispr->seq,
+            species_id         => $crispr->species_id,
+            pam_right          => $crispr->pam_right,
+            off_target_summary => $crispr->off_target_summary,
+            exonic             => $crispr->exonic,
+            genic              => $crispr->genic,
+
+        };
+    }
+
+    $c->stash->{json_data} = $data;
+    $c->forward('View::JSON');
+    return;
+}
+
+sub crispr_seq_by_id :Local('crispr_seq_by_id') {
+    my ( $self, $c ) = @_;
+
+    my $params = $c->req->params;
+    check_params_exist( $c, $params, [ qw( species id ) ]);
+
+    my $ids = $params->{id} ;
+    if ( ref $ids ne 'ARRAY' ) {
+        $ids = [ $ids ];
+    }
+
+    my $data = {};
+    my @crisprs = $c->model('DB')->resultset('Crispr')->search( {
+        id => { -IN => $ids }
+    });
+
+    foreach my $crispr (@crisprs){
+        $data->{ $crispr->id } = {
+            seq                 => $crispr->seq
+        };
+    }
+
+    $c->stash->{json_data} = $data;
+    $c->forward('View::JSON');
+    return;
+
 }
 
 sub off_targets_by_seq :Local('off_targets_by_seq') {
@@ -388,6 +454,25 @@ sub crispr_off_targets :Local('crispr_off_targets'){
             off_targets        => $crispr->off_target_ids,
             off_target_summary => $crispr->off_target_summary,
         };
+
+        if($c->req->param('with_detail')){
+            $data->{ $crispr->id }->{off_target_details} = {};
+            my $details = $data->{ $crispr->id }->{off_target_details};
+            my $target_seq = $crispr->target_seq;
+            $c->log->debug("Target seq: $target_seq");
+
+            foreach my $ot ($crispr->off_targets){
+                my $mm_count = ( $target_seq ^ $ot->seq ) =~ tr/\0//c;
+                $details->{$ot->id} = {
+                    chr_name  => $ot->chr_name,
+                    chr_start => $ot->chr_start,
+                    chr_end   => $ot->chr_end,
+                    pam_right => $ot->pam_right,
+                    seq       => $ot->seq,
+                    mismatch_count => $ot->mismatches($target_seq),
+                };
+            }
+        }
     }
 
     $c->stash->{json_data} = $data;
@@ -609,6 +694,17 @@ sub crisprs_in_region :Local('crisprs_in_region') Args(0){
         return;
     }
 
+    if($c->request->params->{bed}){
+        my $bed_data = format_crisprs_for_bed([$crisprs->all]);
+        $c->stash(
+            filename        => "WGE-chr" . $region . "-crisprs.bed",
+            data            => $bed_data,
+            current_view    => 'CSV',
+        );
+        return;
+
+    }
+
     if(my $design_id = $c->request->params->{design_id}){
         my $five_f = $c->model->c_retrieve_design_oligo({ design_id => $design_id, oligo_type => '5F' });
         my $three_r = $c->model->c_retrieve_design_oligo({ design_id => $design_id, oligo_type => '3R'});
@@ -661,6 +757,17 @@ sub crispr_pairs_in_region :Local('crispr_pairs_in_region') Args(0){
             current_view => 'CSV',
         );
         return;
+    }
+
+    if($c->request->params->{bed}){
+        my $bed_data = format_pairs_for_bed($pairs);
+        $c->stash(
+            filename        => "WGE-chr" . $region . "-pairs.bed",
+            data            => $bed_data,
+            current_view    => 'CSV',
+        );
+        return;
+
     }
 
     if(my $design_id = $c->request->params->{design_id}){
@@ -1081,13 +1188,13 @@ sub announcements :Local('announcements') {
 
 sub handle_public_api {
     my ($self, $c) = @_;
-    print Dumper "Entered"; 
+    print Dumper "Entered";
     my $agent = LWP::UserAgent->new;
     my $url = "http://www.sanger.ac.uk/htgt/lims2/public_api/announcements/?sys=wge";
- 
+
     my $req = HTTP::Request->new(GET => $url);
     $req->header('content-type' => 'application/json');
- 
+
     my $response = $agent->request($req);
     if ($response->is_success) {
         my $message = $response->decoded_content;
