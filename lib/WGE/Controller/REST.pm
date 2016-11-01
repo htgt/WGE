@@ -1,13 +1,15 @@
 package WGE::Controller::REST;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::REST::VERSION = '0.101';
+    $WGE::Controller::REST::VERSION = '0.102';
 }
 ## use critic
 
 use Moose;
 use namespace::autoclean;
 use Data::Dumper;
+use Data::Serializer;
+use Config::Tiny;
 
 BEGIN { extends 'Catalyst::Controller::REST' }
 

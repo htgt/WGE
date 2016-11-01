@@ -1,7 +1,7 @@
 package WGE::Exception::Validation;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Exception::Validation::VERSION = '0.101';
+    $WGE::Exception::Validation::VERSION = '0.102';
 }
 ## use critic
 
