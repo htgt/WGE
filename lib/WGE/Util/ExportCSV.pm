@@ -61,7 +61,7 @@ sub write_design_data_csv{
     return $string;
 }
 
-sub format_crisprs_for_csv{
+sub format_crisprs_for_csv {
     my ($crispr_list, $with_exon_id) = @_;
 
     $crispr_list ||= [];
@@ -104,7 +104,7 @@ sub format_crisprs_for_csv{
     return \@csv_data;
 }
 
-sub format_pairs_for_csv{
+sub format_pairs_for_csv {
     my ($pair_list, $with_exon_id) = @_;
 
     $pair_list ||= [];
@@ -162,7 +162,7 @@ sub format_pairs_for_csv{
     return \@csv_data;
 }
 
-sub format_crisprs_for_bed{
+sub format_crisprs_for_bed {
     my ($crispr_list, $with_exon_id) = @_;
 
     $crispr_list ||= [];
@@ -206,7 +206,7 @@ sub format_crisprs_for_bed{
     return \@bed_data;
 }
 
-sub format_pairs_for_bed{
+sub format_pairs_for_bed {
     my ($pair_list, $with_exon_id) = @_;
 
     $pair_list ||= [];
