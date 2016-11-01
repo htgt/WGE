@@ -2,6 +2,8 @@ package WGE::Controller::REST;
 use Moose;
 use namespace::autoclean;
 use Data::Dumper;
+use Data::Serializer;
+use Config::Tiny;
 
 BEGIN { extends 'Catalyst::Controller::REST' }
 
