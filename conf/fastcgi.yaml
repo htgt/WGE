@@ -1,7 +1,0 @@
----
-- name:            "wge"
-  server_class:    "FCGI::Engine::Manager::Server"
-  scriptname:      "/www/dp10/WGE-production/WGE/bin/wge_fastcgi.pl"
-  nproc:            8
-  pidfile:         "/var/tmp/wge/run/fastcgi.pid"
-  socket:          "localhost:8002"

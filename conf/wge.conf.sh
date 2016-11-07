@@ -30,8 +30,9 @@ export WGE_DEV_ROOT=$WGE_SHARED/WGE
 
 # There may be an issue with Ensembl timeouts resulting in poor performance, if so set this variable to 1
 # In development mode, always set this to 1
-# In production mode, running under FCGI and Apache a timeout from Ensembl will result in that FCGI thread
-# being terminated and the perofrmance of WGE overall will be maintained.
+# In production mode unset this variable.
+# Running under FCGI and Apache a timeout from Ensembl will result in that FCGI thread
+# being terminated and the performance of WGE overall will be maintained.
 # Use a local installation of Ensembl to avoid the timeout issue from the public server.
 
 export WGE_NO_TIMEOUT=1
