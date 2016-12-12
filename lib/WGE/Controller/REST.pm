@@ -1,7 +1,7 @@
 package WGE::Controller::REST;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::REST::VERSION = '0.102';
+    $WGE::Controller::REST::VERSION = '0.103';
 }
 ## use critic
 
@@ -21,7 +21,6 @@ sub auto : Private {
         #my $username = delete $c->req->parameters->{ 'username' };
         #my $password = delete $c->req->parameters->{ 'password' };
         my $key = delete $c->req->headers->{pass};
-
         my $_conf = Config::Tiny->read($ENV{LIMS2_REST_CLIENT_CONFIG});
         my $serial = Data::Serializer->new();
         $serial = Data::Serializer->new(
@@ -34,7 +33,7 @@ sub auto : Private {
 
         my $frozen = $serial->thaw($key);
 
-        my $authenticated = $c->authenticate( { access_key => $frozen->{access}, secret_key => $frozen->{secret} }, 'rest' );
+        my $authenticated = $c->authenticate( { username => $frozen->{access}, password => $frozen->{secret} });
         
         unless ( $authenticated ) {
             $self->status_bad_request(
