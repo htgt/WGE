@@ -88,7 +88,7 @@ sub find_crispr_pairs {
         #say STDERR "Exon length: " .$exon_slice->length;
 
         #expand the slice if expand_seq is set (it is by default)
-        if ( $self->expand_seq ) {        
+        if ( $self->expand_seq ) {
             #we need the gene so we can get the strand and take an asymmetrical slice:
             # 5' -----[ EXON ]----- 3'
             #      200        100
@@ -188,7 +188,7 @@ sub get_pairs {
 
 sub get_matches {
     my ( $self, $slice ) = @_;
-$DB::single=1;
+
     my $seq = $slice->seq;
 
     my ( @pam_left, @pam_right );
@@ -215,7 +215,7 @@ $DB::single=1;
             #its left AND right. what a joke
             $type = "both ";
             #note that they still both point to the same locus, because why would you change that??
-            my $right_data = { %$data }; #shallow copy data so they can be edited separately 
+            my $right_data = { %$data }; #shallow copy data so they can be edited separately
             $data->{id}       .= "A"; #pretend this is called left_data in this block
             $right_data->{id} .= "B";
 
@@ -239,7 +239,7 @@ $DB::single=1;
         }
 
         #say STDERR "Found $type crispr " . $data->{id} . ": $crispr_seq\@" . $slice->seq_region_name . ":"
-        #                                                . $data->{chr_start} . "-" 
+        #                                                . $data->{chr_start} . "-"
         #                                               . $data->{chr_end} . ":"
         #                                               . $slice->strand;
 
