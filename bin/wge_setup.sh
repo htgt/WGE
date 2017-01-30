@@ -38,7 +38,7 @@ function wge {
             wge_webapp
             ;;
         debug)
-            lims2_webapp_debug
+            wge_webapp_debug
             ;;
         local)
             wge_local
