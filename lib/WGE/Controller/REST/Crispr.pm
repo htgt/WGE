@@ -1,4 +1,10 @@
 package WGE::Controller::REST::Crispr;
+## no critic(RequireUseStrict,RequireUseWarnings)
+{
+    $WGE::Controller::REST::Crispr::VERSION = '0.104';
+}
+## use critic
+
 
 use Moose;
 use Try::Tiny;

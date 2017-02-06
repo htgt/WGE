@@ -1,4 +1,10 @@
 package WGE::Util::FindOffTargets;
+## no critic(RequireUseStrict,RequireUseWarnings)
+{
+    $WGE::Util::FindOffTargets::VERSION = '0.104';
+}
+## use critic
+
 
 use Moose;
 use Data::Dumper;

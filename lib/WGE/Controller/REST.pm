@@ -1,4 +1,10 @@
 package WGE::Controller::REST;
+## no critic(RequireUseStrict,RequireUseWarnings)
+{
+    $WGE::Controller::REST::VERSION = '0.104';
+}
+## use critic
+
 use Moose;
 use namespace::autoclean;
 use Data::Dumper;

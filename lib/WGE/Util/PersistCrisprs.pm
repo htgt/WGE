@@ -1,4 +1,10 @@
 package WGE::Util::PersistCrisprs;
+## no critic(RequireUseStrict,RequireUseWarnings)
+{
+    $WGE::Util::PersistCrisprs::VERSION = '0.104';
+}
+## use critic
+
 
 use Moose::Role;
 use MooseX::Types::Path::Class;

@@ -1,5 +1,11 @@
 use utf8;
 package WGE::Model::Schema::ResultSet::Crispr;
+## no critic(RequireUseStrict,RequireUseWarnings)
+{
+    $WGE::Model::Schema::ResultSet::Crispr::VERSION = '0.104';
+}
+## use critic
+
 
 use Moose;
 extends 'DBIx::Class::ResultSet';

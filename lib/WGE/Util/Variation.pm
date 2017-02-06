@@ -1,4 +1,10 @@
 package WGE::Util::Variation;
+## no critic(RequireUseStrict,RequireUseWarnings)
+{
+    $WGE::Util::Variation::VERSION = '0.104';
+}
+## use critic
+
 
 use feature qw( say );
 
