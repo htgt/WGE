@@ -45,12 +45,15 @@ function wge {
             ;;
 	production)
 	    wge_production
-	    ;;
+	        ;;
         farm3)
             wge_farm3
             ;;
         'pg9.3')
             wge_pg9.3
+            ;;
+        psql)
+            wge_psql
             ;;
         cpanm)
             wge_cpanm $2
@@ -66,6 +69,9 @@ function wge {
             ;;
         service)
             wge_service $2
+            ;;
+        setdb)
+            wge_setdb $2 
             ;;
         *)
             printf "Unknown WGE command\n"
@@ -130,6 +136,24 @@ function wge_webapp_debug {
     unset WGE_DEBUG_COMMAND
 }
 
+function wge_setdb {
+    if [[ "$1" ]] ; then
+        if [[ `$WGE_DEV_ROOT/bin/list_db_names.pl $1` == $1 ]] ; then
+        export WGE_DB=$1
+        printf "$W2I_STRING: database is now $WGE_DB\n"
+        else
+            printf "$W2E_STRING: database '$1' does not exist in $WGE_DBCONNECT_CONFIG\n"
+        fi
+    else
+        # List the databases available
+        printf "$W2I_STRING: Available database names from WGE_DBCONNECT_CONFIG\n\n"
+        $WGE_DEV_ROOT/bin/list_db_names.pl
+        printf "Use 'wge psql' command to open a psql command line for this db\n"
+    fi
+}
+
+
+
 function wge_live {
     export WGE_DB=WGE_LIVE
 }
@@ -177,15 +201,18 @@ function wge_pg9.3 {
 }
 
 function wge_psql {
-    $PSQL_EXE
+    export WGE_DB_NAME=`$WGE_DEV_ROOT/bin/list_db_names.pl $WGE_DB --dbname`
+    printf "Opening psql shell with database: $WGE_DB_NAME (profile: $WGE_DB)\n"
+    psql `$WGE_DEV_ROOT/bin/list_db_names.pl $WGE_DB --uri`
 }
+
 
 function wge_pg_dump {
     $PG_DUMP_EXE
 }
 
 function wge_pg_restore {
-    $PG_RERTORE_EXE
+    $PG_RESTORE_EXE
 }
 
 function perl5lib_prepend ()
