@@ -11,7 +11,7 @@ use WGE::Util::TimeOut qw(timeout);
 use warnings FATAL => 'all';
 
 const my $DEFAULT_DESIGNS_DIR => $ENV{DEFAULT_DESIGNS_DIR} //
-                                    '/lustre/scratch109/sanger/team87/wge_designs';
+                                    '/lustre/scratch117/sciops/team87/wge_designs';
 
 has model => (
     is       => 'ro',
