@@ -261,6 +261,31 @@
 </div> [%# end of row div %]
 </div>
 
+<div id="downloadModal" class="modal fade" role="dialog" aria-labelledby="downloadModalLable" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3 id="downloadModalLable">Download in CSV or BED format?</h3>
+      </div>
+      <div class="modal-body">
+        <p>Choose file type to download as.</p>
+      </div>
+      <div class="modal-body" id="download_url">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal" onclick="download('csv')">
+          <i class='glyphicon glyphicon-download'></i> Download csv
+        </button>
+        <button type="button" class="btn btn-default" data-dismiss="modal" onclick="download('bed')">
+          <i class='glyphicon glyphicon-download'></i> Download bed
+        </button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal" id="dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -280,29 +305,20 @@
 
 <script type="text/javascript">
 
-  function add_csv_download_button(track,url){
-    var download_btn = $("<button class='btn-xs btn-primary'><i class='glyphicon glyphicon-download'></i>download csv</button>");
+  function add_download_button(track,url){
+    var download_btn = $("<button class='btn-xs btn-primary' data-toggle='modal' data-target='#downloadModal'><i class='glyphicon glyphicon-download'></i>download</button>");
 
-    $(".name[title='" + track + "']").append(download_btn);
-
-    download_btn.click(function(){
-      download_as_csv(url);
-    });
-  }
-  function add_bed_download_button(track,url){
-    var download_btn = $("<button class='btn-xs btn-primary'><i class='glyphicon glyphicon-download'></i>download bed</button>");
-
-    $(".name[title='" + track + "']").append(download_btn);
+    $(download_btn).appendTo("[title='" + track + "']");
 
     download_btn.click(function(){
-      download_as_bed(url);
+      $("#download_url").text(url);
+      $("#download_url").hide();
     });
   }
-
 
   // Use this to query a url with the current region params
   // and download csv it returns
-  function download_as_csv(url){
+  function download(fileType){
     var region_params = {
       "species_id"    : "[% species %]",
       "start"         : $(window)[0].genoverse.start,
@@ -312,23 +328,9 @@
       "crispr_filter" : $('input[name=crispr_filter]:checked').val(),
       "flank_size"    :  $('#flank_size').val()
     };
-    region_params["csv"] = 1;
+    region_params[fileType] = 1;
+    var url = $("#download_url").text();
     window.open( build_url(url, region_params) );
-  }
-
-  function download_as_bed(url){
-    var region_params = {
-      "species_id"    : "[% species %]",
-      "start"         : $(window)[0].genoverse.start,
-      "end"           : $(window)[0].genoverse.end,
-      "chr"           : "[% chromosome %]",
-      "assembly"      : "[% genome %]",
-      "crispr_filter" : $('input[name=crispr_filter]:checked').val(),
-      "flank_size"    :  $('#flank_size').val()
-    };
-    region_params["bed"] = 1;
-    window.open( build_url(url, region_params) );
-
   }
 
   //Function to retrieve the current coords on display to the user
@@ -373,8 +375,7 @@
   function show_single (){
       show_tracks(["Crisprs", "Bookmarked Crisprs"]);
       enable_crispr_filters();
-      add_csv_download_button("Crisprs","[% c.uri_for('/api/crisprs_in_region') %]");
-      add_bed_download_button("Crisprs","[% c.uri_for('/api/crisprs_in_region') %]");
+      add_download_button("Crisprs","[% c.uri_for('/api/crisprs_in_region') %]");
   }
 
   function hide_paired (){
@@ -385,8 +386,7 @@
   function show_paired (){
       show_tracks(["Crispr Pairs","Bookmarked Crispr Pairs"]);
       enable_crispr_pair_filters();
-      add_csv_download_button("Crispr Pairs","[% c.uri_for('/api/crispr_pairs_in_region') %]");
-      add_bed_download_button("Crispr Pairs","[% c.uri_for('/api/crispr_pairs_in_region') %]");
+      add_download_button("Crispr Pairs","[% c.uri_for('/api/crispr_pairs_in_region') %]");
 
   }
 
@@ -783,10 +783,10 @@
 
 </script>
 
-    <script type="text/javascript" src="[% c.uri_for('/Genoverse/js/genoverse.combined.js', {i => 1})%]"></script>
-    <script type="text/javascript" src="[% c.uri_for('/js/genoverse_custom_tracks.js', {i => 3} )%]"></script>
+    <script type="text/javascript" src="[% c.uri_for('/Genoverse/js/genoverse.combined.js' )%]"></script>
     <script type="text/javascript" src="[% c.uri_for('/static/js/wge_genoverse_custom_tracks.js' )%]"></script>
-    <script type="text/javascript" src="[% c.uri_for('/static/js/genoverse_variation_track.js', {i => 4})%]"></script>
+    <script type="text/javascript" src="[% c.uri_for('/js/genoverse_custom_tracks.js' )%]"></script>
+    <script type="text/javascript" src="[% c.uri_for('/static/js/genoverse_variation_track.js' )%]"></script>
     <script>
       var species = '[% species %]';
       ensembl_species = '[% species == "Grch38" ? "Human" : species %]'.toLowerCase();
@@ -803,7 +803,7 @@
         start     : [% browse_start %] - 200,
         end       : [% browse_end %] + 200,
         summary   : find_off_targets, //override the summary method to find off targets
-        plugins   : [ 'controlPanelWGE', 'karyotype', 'trackControls', 'resizer', 'fileDrop' ],
+        plugins   : [ 'controlPanel', 'karyotype', 'trackControls', 'resizer', 'fileDrop' ],
         tracks    : [
           Genoverse.Track.Scalebar,
           Genoverse.Track.SequenceSelect.extend({
@@ -848,7 +848,7 @@
             unsortable : false,
             threshold  : 5000,
             messages   : { threshold : 'Protein not displayed for regions larger than ' },
-            autoheight : true
+            height     : 22.5
           }),
           [% END %]
           Genoverse.Track.Genes.extend({
@@ -927,9 +927,9 @@
       };
 
       document.addEventListener('DOMContentLoaded', function () {
-        window.genoverse = new Genoverse(genoverseConfig);
+      window.genoverse = new Genoverse(genoverseConfig);
 
-        // From WebApp-Common/shared_static
+        // From WebApp-Common/shared_templates
         [% INCLUDE 'genoverse_mods/selector_size_display.tt' %]
 
         // code that needs to run AFTER genoverse is loaded and initialized
@@ -956,10 +956,8 @@
           }
 
           // Add buttons to allow users to download crisprs from tracks
-          add_csv_download_button("Crisprs","[% c.uri_for('/api/crisprs_in_region') %]");
-          add_bed_download_button("Crisprs","[% c.uri_for('/api/crisprs_in_region') %]");
-          add_csv_download_button("Crispr Pairs","[% c.uri_for('/api/crispr_pairs_in_region') %]");
-          add_bed_download_button("Crispr Pairs","[% c.uri_for('/api/crispr_pairs_in_region') %]");
+          add_download_button("Crisprs","[% c.uri_for('/api/crisprs_in_region') %]");
+          add_download_button("Crispr Pairs","[% c.uri_for('/api/crispr_pairs_in_region') %]");
 
 
 
@@ -970,15 +968,20 @@
           var old_makeMenu = $(window)[0].genoverse.makeMenu;
 
           $(window)[0].genoverse.makeMenu = function (feature, event, track) {
+            if(!feature[0]) {
+              feature[0] = feature;
+            }
+            for (var i = feature.length - 1; i >= 0; i--) {
+
             // run existing makeMenu code to create popup
             old_makeMenu.apply(this, arguments);
 
             // append the bookmarking button to the popup
             var settings;
-            if(feature.type == 'Crispr'){
+            if(feature[i].type == 'Crispr'){
               console.log('this is a crispr - adding bookmark button');
               settings = {
-                 'id'           : feature.name,
+                 'id'           : feature[i].name,
                  'type'         : 'Crispr',
                  'status_uri'   : "[% c.uri_for('/crispr_bookmark_status') %]",
                  'bookmark_uri' : "[% c.uri_for('/bookmark_crispr') %]",
@@ -986,45 +989,45 @@
                  'bookmark_track' : get_track('Bookmarked Crisprs')
               };
 
-              if (!document.getElementById(feature.name)){
-                $('table', feature.menuEl).append('<tr><td>Sequence</td><td id="' + feature.name + '" oncontextmenu="return false;">'
-                  + feature.sequence + '</td></tr>');
-                document.getElementById(feature.name).addEventListener("mousedown", handle_mousedown);
+              if (!document.getElementById(feature[i].name)){
+                $('table', feature[i].menuEl).append('<tr><td>Sequence</td><td id="' + feature[i].name + '" oncontextmenu="return false;">'
+                  + feature[i].sequence + '</td></tr>');
+                document.getElementById(feature[i].name).addEventListener("mousedown", handle_mousedown);
               }
 
-              add_bookmark_button(feature.menuEl,settings);
+              add_bookmark_button(feature[i].menuEl,settings);
             }
-            else if(feature.type == 'crispr_pair'){
+            else if(feature[i].type == 'crispr_pair'){
               console.log('this is a crispr pair - adding bookmark button');
               settings = {
-                 'id'           : feature.name,
+                 'id'           : feature[i].name,
                  'type'         : 'Crispr Pair',
                  'status_uri'   : "[% c.uri_for('/crispr_pair_bookmark_status') %]",
                  'bookmark_uri' : "[% c.uri_for('/bookmark_crispr_pair') %]",
                  'spinner'      : spinner,
                  'bookmark_track' : get_track('Bookmarked Crispr Pairs')
               };
-              if (!document.getElementById(feature.name)){
-                $('table', feature.menuEl).append('<tr><td>Left Sequence</td><td id="L_' + feature.name + '" oncontextmenu="return false;">'
-                  + feature.left_sequence + '</td></tr>');
-                $('table', feature.menuEl).append('<tr><td>Right Sequence</td><td id="R_' + feature.name + '" oncontextmenu="return false;">'
-                  + feature.right_sequence + '</td></tr>');
-                document.getElementById("L_" + feature.name).addEventListener("mousedown", handle_mousedown);
-                document.getElementById("R_" + feature.name).addEventListener("mousedown", handle_mousedown);
+              if (!document.getElementById(feature[i].name)){
+                $('table', feature[i].menuEl).append('<tr><td>Left Sequence</td><td id="L_' + feature[i].name + '" oncontextmenu="return false;">'
+                  + feature[i].left_sequence + '</td></tr>');
+                $('table', feature[i].menuEl).append('<tr><td>Right Sequence</td><td id="R_' + feature[i].name + '" oncontextmenu="return false;">'
+                  + feature[i].right_sequence + '</td></tr>');
+                document.getElementById("L_" + feature[i].name).addEventListener("mousedown", handle_mousedown);
+                document.getElementById("R_" + feature[i].name).addEventListener("mousedown", handle_mousedown);
               }
 
-              add_bookmark_button(feature.menuEl,settings);
+              add_bookmark_button(feature[i].menuEl,settings);
             }
 
             function handle_mousedown(ev) {
                     if(ev.which == 3)
                     {
-                      if(ev.target.id == "L_" + feature.name){
-                        copyTextToClipboard(feature.copy_sequence_left);
-                      } else if(ev.target.id == "R_" + feature.name){
-                        copyTextToClipboard(feature.copy_sequence_right);
+                      if(ev.target.id == "L_" + feature[i].name){
+                        copyTextToClipboard(feature[i].copy_sequence_left);
+                      } else if(ev.target.id == "R_" + feature[i].name){
+                        copyTextToClipboard(feature[i].copy_sequence_right);
                       } else {
-                        copyTextToClipboard(feature.copysequence);
+                        copyTextToClipboard(feature[i].copysequence);
                       }
                     }
               }
@@ -1120,6 +1123,7 @@
                     }
                 }
           };
+        }
         });
       });
 

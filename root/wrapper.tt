@@ -34,10 +34,10 @@
 .navbar-default .navbar-toggle:hover,
 .navbar-default .navbar-toggle:focus {
   background-color: #3691c8;
-}</style>       
+}</style>
 
-        
-        
+
+
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="Content-type" content="text/html; charset=[% settings.charset %]" />

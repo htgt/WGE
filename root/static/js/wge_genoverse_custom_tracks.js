@@ -6,6 +6,7 @@ Genoverse.Track.View.FilterCrisprs = Genoverse.Track.View.Transcript.extend({
     color : '#FFFFFF',
     drawFeature: function (feature, featureContext, labelContext, scale) {
         // Fade color of feature with off-target summary that does not match profile
+        console.log(feature);
         if(feature.ot_summary){
             var ot_summary = feature.ot_summary;
             // Quote keys in JSON string
