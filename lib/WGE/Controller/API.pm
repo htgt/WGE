@@ -834,9 +834,6 @@ sub variation_for_region :Local('variation_for_region') Args(0) {
          $params,
     );
 
-use Data::Dumper;
-    print Dumper($var_feature);
-
     $c->log->debug("variation for region done");
 
     $c->stash->{'json_data'} = $var_feature;
