@@ -733,11 +733,70 @@
             model           : Genoverse.Track.Model.Haplotypes,
             view            : Genoverse.Track.View.Transcript.extend({
               color       : '#FF3535',
-              drawFeature :  function (feature, featureContext, labelContext, scale) {
+              draw        : function (features, featureContext, labelContext, scale) {
+                var feature, f;
+
+                for (var i = 0; i < features.length; i++) {
+                  feature = features[i];
+
+                  if (feature.position[scale].visible !== false) {
+                    // TODO: extend with feature.position[scale], rationalize keys
+                    f = $.extend({}, feature, {
+                      x             : feature.position[scale].X,
+                      y             : feature.position[scale].Y,
+                      width         : feature.position[scale].width,
+                      height        : feature.position[scale].height,
+                      labelPosition : feature.position[scale].label
+                    });
+
+                    console.log(f.alt);
+                    if ( /^[ATCG]{1}$/gm.test(f.alt) ) {
+                      console.log("single base");
+                      f.color = switchStatement(f.alt);
+                      this.drawFeature(f, featureContext, labelContext, scale);
+
+                    } else if ( /^[ATCG]{2,}$/gm.test(f.alt) ) {
+                      console.log(featureBases);
+
+                      var featureBases = f.alt.split("");
+                      var xCoordStep = f.x / featureBases.length;
+
+                      for (var i = 0; i < featureBases.length; i++) {
+                        f.x = xCoordStep * i;
+
+                        f.color = switchStatement(featureBases[i]);
+                        this.drawFeature(f, featureContext, labelContext, scale);
+                      }
+                    }
+                    console.log(f);
+
+                    if (f.legend !== feature.legend) {
+                      feature.legend      = f.legend;
+                      feature.legendColor = f.color;
+                    }
+                  }
+                }
+                function switchStatement (str) {
+                  switch(str) {
+                    case 'A':
+                      return "#73E973";
+                      break;
+                    case 'T':
+                      return "#DE4C61";
+                      break;
+                    case 'C':
+                      return "#688EC0"
+                      break;
+                    case 'G':
+                      return "#FFFF77"
+                      break;
+                  }
+                }
+              },
+              drawFeature: function (feature, featureContext, labelContext, scale) {
                 if (feature.x < 0 || feature.x + feature.width > this.width) {
                   this.truncateForDrawing(feature);
                 }
-                console.log(feature);
 
                 if (feature.color !== false) {
                   if (!feature.color) {
