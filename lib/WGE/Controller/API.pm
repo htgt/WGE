@@ -780,6 +780,38 @@ sub crispr_pairs_in_region :Local('crispr_pairs_in_region') Args(0){
     return $c->response->body( $body );
 }
 
+sub haplotypes_for_region :Local('haplotypes_for_region') Args(0) {
+    my ($self, $c) = @_;
+
+    my $params = $c->request->params();
+
+    $c->log->debug("Finding haplotypes for region " . $params->{chr_name}.":".$params->{chr_start}."-".$params->{chr_end});
+
+use WGE::Util::Haplotype;
+    my $haplotype = WGE::Util::Haplotype->new( { species => $params->{species} } );
+
+    my $haplo_feature = $haplotype->retrieve_haplotypes(
+            $c->model('DB'),
+            $params
+        );
+
+use Data::Dumper;
+    print Dumper($haplo_feature);
+
+    $c->log->debug("Finished finding haplotypes for region");
+
+    $c->stash->{'json_data'} = $haplo_feature;
+
+    $c->log->debug("Saved feature to stash");
+
+    $c->forward('View::JSON');
+
+    return;
+}
+
+
+
+
 sub variation_for_region :Local('variation_for_region') Args(0) {
     my ($self, $c) = @_;
 
@@ -801,6 +833,9 @@ sub variation_for_region :Local('variation_for_region') Args(0) {
          $model,
          $params,
     );
+
+use Data::Dumper;
+    print Dumper($var_feature);
 
     $c->log->debug("variation for region done");
 

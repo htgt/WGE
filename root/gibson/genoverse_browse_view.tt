@@ -725,6 +725,51 @@
             messages        : { threshold : 'MAF variations not displayed for regions larger than ' },
             autoheight      : true
           }),
+          Genoverse.Track.extend({
+            id              : 'Haplotype_variations',
+            name            : 'Haplotype_variations',
+            url             : "[% c.uri_for('/api/haplotypes_for_region') %]" + "?species="+ensembl_species+"&chr_name=__CHR__&chr_start=__START__&chr_end=__END__",
+            controller      : Genoverse.Track.Controller,
+            model           : Genoverse.Track.Model.Haplotypes,
+            view            : Genoverse.Track.View.Transcript.extend({
+              color       : '#FF3535',
+              drawFeature :  function (feature, featureContext, labelContext, scale) {
+                if (feature.x < 0 || feature.x + feature.width > this.width) {
+                  this.truncateForDrawing(feature);
+                }
+                console.log(feature);
+
+                if (feature.color !== false) {
+                  if (!feature.color) {
+                    this.setFeatureColor(feature);
+                  }
+
+                  featureContext.fillStyle = feature.color;
+                  featureContext.fillRect(feature.x, feature.y, feature.width, feature.height);
+                }
+
+                if (feature.clear === true) {
+                  featureContext.clearRect(feature.x, feature.y, feature.width, feature.height);
+                }
+
+                if (this.labels && feature.label) {
+                  this.drawLabel(feature, labelContext, scale);
+                }
+
+                if (feature.borderColor) {
+                  featureContext.strokeStyle = feature.borderColor;
+                  featureContext.strokeRect(feature.x, feature.y + 0.5, feature.width, feature.height);
+                }
+
+                if (feature.decorations) {
+                  this.decorateFeature(feature, featureContext, scale);
+                }
+              }
+            }),
+            threshold       : 5000,
+            messages        : { threshold : 'MAF variations not displayed for regions larger than ' },
+            autoheight      : true
+          }),
           [% IF genome.lower != 'grch37' %]
           Genoverse.Track.extend({
             name       : 'Protein',
