@@ -735,7 +735,59 @@
             view            : Genoverse.Track.View.Transcript.Haplotype,
             threshold       : 5000,
             messages        : { threshold : 'MAF variations not displayed for regions larger than ' },
-            autoheight      : true
+            autoheight      : true,
+            populateMenu    : function (f) {
+              var feature = this.track.model.featuresById[f.id];
+              var mutation = this.track.switchStatement(feature.alt, feature.ref);
+
+              switch(mutation) {
+                case "#73E973":
+                case "#DE4C61":
+                case "#688EC0":
+                case "#FFFF77":
+                  mutation = "Single base substitution";
+                  break;
+                case "#ffb366":
+                  mutation = "Insertion";
+                  break;
+                case "#660066":
+                  mutation = "Deletion";
+                  break;
+              }
+
+              var atts = {
+                ID        : feature.id,
+                Start     : feature.start,
+                End       : feature.end,
+                Allele    : feature.allele,
+                Sequence  : feature.sequence,
+                Mutation  : mutation,
+              };
+              return atts;
+            },
+            switchStatement: function (alt, ref) {
+              if (alt.length === 1 && ref.length === 1) {
+                switch(alt) {
+                  case 'A':
+                    return "#73E973";
+                    break;
+                  case 'T':
+                    return "#DE4C61";
+                    break;
+                  case 'C':
+                    return "#688EC0";
+                    break;
+                  case 'G':
+                    return "#FFFF77";
+                    break;
+                }
+              } else if ( alt.length > ref.length ) {
+                return "#ffb366";
+              } else if ( alt.length < ref.length ) {
+                return "#660066";
+              }
+            }
+
           }),
           [% IF genome.lower != 'grch37' %]
           Genoverse.Track.extend({

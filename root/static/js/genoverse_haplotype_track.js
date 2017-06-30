@@ -5,9 +5,6 @@ Genoverse.Track.View.Transcript.Haplotype = Genoverse.Track.View.Transcript.exte
     for (var i = 0; i < features.length; i++) {
       feature = features[i];
 
-      console.log(feature.allele);
-      if (feature.allele == 'REF') { console.log(feature); }
-
       if (feature.position[scale].visible !== false) {
 
         // TODO: extend with feature.position[scale], rationalize keys
@@ -19,7 +16,7 @@ Genoverse.Track.View.Transcript.Haplotype = Genoverse.Track.View.Transcript.exte
           labelPosition : feature.position[scale].label
         });
 
-        f.color = switchStatement(f.alt);
+        f.color = this.track.switchStatement(f.alt, f.ref);
 
         this.drawFeature(f, featureContext, labelContext, scale);
 
@@ -27,22 +24,6 @@ Genoverse.Track.View.Transcript.Haplotype = Genoverse.Track.View.Transcript.exte
           feature.legend      = f.legend;
           feature.legendColor = f.color;
         }
-      }
-    }
-    function switchStatement (str) {
-      switch(str) {
-        case 'A':
-          return "#73E973";
-          break;
-        case 'T':
-          return "#DE4C61";
-          break;
-        case 'C':
-          return "#688EC0"
-          break;
-        case 'G':
-          return "#FFFF77"
-          break;
       }
     }
   },
