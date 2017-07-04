@@ -738,22 +738,7 @@
             autoheight      : true,
             populateMenu    : function (f) {
               var feature = this.track.model.featuresById[f.id];
-              var mutation = this.track.switchStatement(feature.alt, feature.ref);
-
-              switch(mutation) {
-                case "#73E973":
-                case "#DE4C61":
-                case "#688EC0":
-                case "#FFFF77":
-                  mutation = "Single base substitution";
-                  break;
-                case "#ffb366":
-                  mutation = "Insertion";
-                  break;
-                case "#660066":
-                  mutation = "Deletion";
-                  break;
-              }
+              var mutation = this.track.typeSwitch(feature.alt, feature.ref);
 
               var atts = {
                 ID        : feature.id,
@@ -765,26 +750,22 @@
               };
               return atts;
             },
-            switchStatement: function (alt, ref) {
+            colourSwitch: function (alt, ref) {
               if (alt.length === 1 && ref.length === 1) {
-                switch(alt) {
-                  case 'A':
-                    return "#73E973";
-                    break;
-                  case 'T':
-                    return "#DE4C61";
-                    break;
-                  case 'C':
-                    return "#688EC0";
-                    break;
-                  case 'G':
-                    return "#FFFF77";
-                    break;
-                }
+                return "#5BC0EB"; //blue
               } else if ( alt.length > ref.length ) {
-                return "#ffb366";
+                return "#7DDF64"; //green
               } else if ( alt.length < ref.length ) {
-                return "#660066";
+                return "#FFD438"; //yellow
+              }
+            },
+            typeSwitch: function (alt, ref) {
+              if (alt.length === 1 && ref.length === 1) {
+                return "Substitution";
+              } else if ( alt.length > ref.length ) {
+                return "Insertion";
+              } else if ( alt.length < ref.length ) {
+                return "Deletion";
               }
             }
 

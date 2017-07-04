@@ -16,7 +16,7 @@ Genoverse.Track.View.Transcript.Haplotype = Genoverse.Track.View.Transcript.exte
           labelPosition : feature.position[scale].label
         });
 
-        f.color = this.track.switchStatement(f.alt, f.ref);
+        f.color = this.track.colourSwitch(f.alt, f.ref);
 
         this.drawFeature(f, featureContext, labelContext, scale);
 
