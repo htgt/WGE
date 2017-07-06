@@ -676,7 +676,9 @@
     <script type="text/javascript" src="[% c.uri_for( '/static/js/wge_genoverse_custom_tracks.js'     ) %]"></script>
     <script type="text/javascript" src="[% c.uri_for( '/js/genoverse_custom_tracks.js'                ) %]"></script>
     <script type="text/javascript" src="[% c.uri_for( '/static/js/genoverse_variation_track.js'       ) %]"></script>
+    <script type="text/javascript" src="[% c.uri_for( '/static/js/d3.min.js'                          ) %]"></script>
     <script type="text/javascript" src="[% c.uri_for( '/static/js/genoverse_haplotype_track.js'       ) %]"></script>
+
     <script>
       var species = '[% species %]';
       ensembl_species = '[% species == "Grch38" ? "Human" : species %]'.toLowerCase();
@@ -730,7 +732,7 @@
             id              : 'Haplotype_variations',
             name            : 'Haplotype_variations',
             url             : "[% c.uri_for('/api/haplotypes_for_region') %]" + "?species="+ensembl_species+"&chr_name=__CHR__&chr_start=__START__&chr_end=__END__",
-            controller      : Genoverse.Track.Controller,
+            controller      : Genoverse.Track.Controller.Haplotype,
             model           : Genoverse.Track.Model.Haplotype,
             view            : Genoverse.Track.View.Transcript.Haplotype,
             threshold       : 5000,
