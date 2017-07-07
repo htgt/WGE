@@ -1,3 +1,42 @@
+Genoverse.Track.Haplotype = Genoverse.Track.extend({
+  populateMenu    : function (f) {
+    var feature = this.track.model.featuresById[f.id];
+    var mutation = this.track.typeSwitch(feature.alt, feature.ref);
+
+    var atts = {
+      Position        : feature.chr + ":" + feature.pos,
+      Mutation        : mutation,
+      Allele          : feature.allele,
+      Reference       : feature.ref,
+      Sequence        : feature.sequence,
+      "Phasing Qual \
+        <i class='glyphicon glyphicon-question-sign' \
+        title='The quality score is a Phred-like probability of the correct phasing. Higher scores imply a lower probability of incorrect phasing.'\
+        ></i>"  : feature.qual,
+    };
+    return atts;
+  },
+  colourSwitch: function (alt, ref) {
+    if (alt.length === 1 && ref.length === 1) {
+      return "#5BC0EB"; //blue
+    } else if ( alt.length > ref.length ) {
+      return "#7DDF64"; //green
+    } else if ( alt.length < ref.length ) {
+      return "#FFD438"; //yellow
+    }
+  },
+  typeSwitch: function (alt, ref) {
+    if (alt.length === 1 && ref.length === 1) {
+      return "Substitution";
+    } else if ( alt.length > ref.length ) {
+      return "Insertion";
+    } else if ( alt.length < ref.length ) {
+      return "Deletion";
+    }
+  }
+});
+
+
 Genoverse.Track.View.Transcript.Haplotype = Genoverse.Track.View.Transcript.extend({
   color       : '#FF0000',
   positionFeatures: function (features, params) {
@@ -49,13 +88,14 @@ Genoverse.Track.View.Transcript.Haplotype = Genoverse.Track.View.Transcript.exte
 
         switch(this.track.typeSwitch(f.alt, f.ref)) {
           case "Insertion":
-            f.insertion  = true;
+            f.insertion     = true;
+            f.decorateTriangle   = true;
             break;
           case "Deletion":
-            f.deletion = true;
+            f.deletion      = true;
             break;
           case "Substitution":
-            f.substitution = true;
+            f.substitution  = true;
             break;
         }
 
@@ -85,39 +125,17 @@ Genoverse.Track.View.Transcript.Haplotype = Genoverse.Track.View.Transcript.exte
       }
 
       if (feature.substitution === true) {
-        featureContext.fillStyle = "#E1E1FF";
-        featureContext.fillRect(feature.x, feature.y, feature.width, feature.height);
-
         featureContext.fillStyle = feature.color;
-        var cx    = feature.x + (baseWidth / 2),        // circle x coordinate
-            cy    = feature.y + (feature.height / 2),   // circle y coordinate
-            cr    = totalWidth / 2,                     // circle radius
-            csa   = 0,                                  // circle start angle
-            cea   = Math.PI * 2,                        // circle end angle
-            ccw   = true;                               // circle clockwise
-        featureContext.arc(cx, cy, cr, csa, cea, ccw);
-        featureContext.closePath();
-        featureContext.fill();
-
-
+        featureContext.fillRect(feature.x, feature.y, feature.width, feature.height);
 
       } else if (feature.insertion === true) {
-        console.log(feature);
         featureContext.fillStyle = "#E1FFE1";
-        featureContext.fillRect(feature.x, feature.y, feature.width, feature.height);
-
-        featureContext.fillStyle = feature.color;
-        featureContext.beginPath();
-        featureContext.moveTo(feature.x + (baseWidth / 2), feature.y);
-        featureContext.lineTo(feature.x + ((baseWidth - totalWidth) / 2), feature.y + feature.height);
-        featureContext.lineTo(feature.x + ((baseWidth + totalWidth) / 2), feature.y + feature.height);
-        featureContext.closePath();
-        featureContext.fill();
+        featureContext.fillRect(feature.x, feature.y, feature.width, feature.height, 0.2);
 
       } else if (feature.deletion === true) {
         featureContext.fillStyle = feature.color;
-
         featureContext.fillRect(feature.x, feature.y, feature.width, feature.height);
+
       }
 
     }
@@ -135,10 +153,21 @@ Genoverse.Track.View.Transcript.Haplotype = Genoverse.Track.View.Transcript.exte
       featureContext.strokeStyle = feature.borderColor;
       featureContext.strokeRect(feature.x, feature.y + 0.5, feature.width, feature.height);
     }
-    if (feature.decorations) {
-      this.decorateFeature(feature, featureContext, scale);
+    if (feature.decorateTriangle) {
+      this.decorateFeatureTriangle(feature, featureContext, scale);
     }
-  }
+  },
+  decorateFeatureTriangle: function (feature, context, scale) {
+    var baseWidth = feature.width / feature.alt.length;
+    var totalWidth = baseWidth < 5 ? 5 : baseWidth > 15 ? 15 : baseWidth;
+    context.fillStyle = feature.color;
+    context.beginPath();
+    context.moveTo(feature.x + (baseWidth / 2), feature.y);
+    context.lineTo(feature.x + ((baseWidth - totalWidth) / 2), feature.y + feature.height);
+    context.lineTo(feature.x + ((baseWidth + totalWidth) / 2), feature.y + feature.height);
+    context.closePath();
+    context.fill();
+  },
 });
 
 Genoverse.Track.Model.Haplotype = Genoverse.Track.Model.extend({

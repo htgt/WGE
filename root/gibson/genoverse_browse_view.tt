@@ -182,7 +182,7 @@
   </a>
 </form>
 <div >
-<form id="colour_key" class="col-md-9 well">
+<form id="colour_key" class="col-md-12 well">
  <i id="pan" class="pull-right glyphicon glyphicon-move"></i>
  <table><tr>
  <td style="padding-right: 20px;">
@@ -197,7 +197,7 @@
   <div style="margin-left: 30px">PAM site</div>
  </td>
 
- <td style="padding-bottom:20px;">
+ <td style="padding-bottom: 20px; padding-right: 20px;">
   <strong>Crispr Pair Colour Key:</strong><br>
   <div style="background: [%colours.left_crispr%]; width: 20px; height: 20px; float: left"></div>
   <div style="background: [%colours.right_crispr%]; width: 20px; height: 20px; float: left"></div>
@@ -208,7 +208,19 @@
   <div style="margin-left: 50px">Left and right off-targets not computed</div>
 
   </td>
-  </tr></table>
+
+ <td style="padding-right: 20px;">
+  <strong>Haplotype Colour Key:</strong><br>
+  <div style="background: #5BC0EB; width: 20px; height: 20px; float: left"></div>
+  <div style="margin-left: 30px">Substitution</div>
+
+  <div id="insertionKey" style="background: #E1FFE1; width: 20px; height: 20px; float: left"></div>
+  <div style="margin-left: 30px">Insertion PUT D3 TRIANGLE ON THIS BACKGROUND WITH COLOUR #7DDF64</div>
+
+  <div style="background: #FFD438; width: 10px; height: 20px; float: left"></div>
+  <div style="margin-left: 30px">Deletion</div>
+ </td>
+ </tr></table>
 </form>
 </div>
 </div> [%# end of left-hand div %]
@@ -676,7 +688,6 @@
     <script type="text/javascript" src="[% c.uri_for( '/static/js/wge_genoverse_custom_tracks.js'     ) %]"></script>
     <script type="text/javascript" src="[% c.uri_for( '/js/genoverse_custom_tracks.js'                ) %]"></script>
     <script type="text/javascript" src="[% c.uri_for( '/static/js/genoverse_variation_track.js'       ) %]"></script>
-    <script type="text/javascript" src="[% c.uri_for( '/static/js/d3.min.js'                          ) %]"></script>
     <script type="text/javascript" src="[% c.uri_for( '/static/js/genoverse_haplotype_track.js'       ) %]"></script>
 
     <script>
@@ -728,7 +739,7 @@
             messages        : { threshold : 'MAF variations not displayed for regions larger than ' },
             autoheight      : true
           }),
-          Genoverse.Track.extend({
+          Genoverse.Track.Haplotype.extend({
             id              : 'Haplotype_variations',
             name            : 'Haplotype_variations',
             url             : "[% c.uri_for('/api/haplotypes_for_region') %]" + "?species="+ensembl_species+"&chr_name=__CHR__&chr_start=__START__&chr_end=__END__",
@@ -736,41 +747,8 @@
             model           : Genoverse.Track.Model.Haplotype,
             view            : Genoverse.Track.View.Transcript.Haplotype,
             threshold       : 5000,
-            messages        : { threshold : 'MAF variations not displayed for regions larger than ' },
+            messages        : { threshold : 'Haplotype variations not displayed for regions larger than ' },
             autoheight      : true,
-            populateMenu    : function (f) {
-              var feature = this.track.model.featuresById[f.id];
-              var mutation = this.track.typeSwitch(feature.alt, feature.ref);
-
-              var atts = {
-                ID        : feature.id,
-                Start     : feature.start,
-                End       : feature.end,
-                Allele    : feature.allele,
-                Sequence  : feature.sequence,
-                Mutation  : mutation,
-              };
-              return atts;
-            },
-            colourSwitch: function (alt, ref) {
-              if (alt.length === 1 && ref.length === 1) {
-                return "#5BC0EB"; //blue
-              } else if ( alt.length > ref.length ) {
-                return "#7DDF64"; //green
-              } else if ( alt.length < ref.length ) {
-                return "#FFD438"; //yellow
-              }
-            },
-            typeSwitch: function (alt, ref) {
-              if (alt.length === 1 && ref.length === 1) {
-                return "Substitution";
-              } else if ( alt.length > ref.length ) {
-                return "Insertion";
-              } else if ( alt.length < ref.length ) {
-                return "Deletion";
-              }
-            }
-
           }),
           [% IF genome.lower != 'grch37' %]
           Genoverse.Track.extend({
