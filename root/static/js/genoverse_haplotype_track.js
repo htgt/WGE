@@ -159,11 +159,6 @@ Genoverse.Track.View.Transcript.Haplotype = Genoverse.Track.View.Transcript.exte
 
         f.label[0] = this.track.setLabel(f);
 
-        // #####################################################################################
-        // ## FIXME: possibly only place typeSwitch is used, if so, adjust to not use switch. ##
-        // ##        Use typeSwitch to return bools instead of string.                        ##
-        // #####################################################################################
-
         switch(this.track.typeSwitch(f.alt, f.ref)) {
           case "Insertion":
             f.insertion     = true;
