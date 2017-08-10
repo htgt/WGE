@@ -405,8 +405,6 @@ Genoverse.Track.Controller.Protein = Genoverse.Track.Controller.Sequence.extend(
             .search({ x: x, y: y, w: 1, h: 1 })
             .sort(function (a, b) { return a.sort - b.sort; })[0];
 
-    console.log(f);
-
     this._create_silent_mutation_table( f );
   },
 

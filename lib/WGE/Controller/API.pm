@@ -787,20 +787,31 @@ sub haplotypes_for_region :Local('haplotypes_for_region') Args(0) {
 
     $c->log->debug("Finding haplotypes for region " . $params->{chr_name}.":".$params->{chr_start}."-".$params->{chr_end});
 
-use WGE::Util::Haplotype;
+    use WGE::Util::Haplotype;
     my $haplotype = WGE::Util::Haplotype->new( { species => $params->{species} } );
 
-    my $haplo_feature = $haplotype->retrieve_haplotypes(
-            $c->model('DB'),
+    my $haplo_features = $haplotype->retrieve_haplotypes(
+        $c->model('DB'),
+        $params
+    );
+
+    my $updated_haplo_features = [];
+
+    foreach my $haplo_feature ( @{$haplo_features} ) {
+        my $phased_haplo = $haplotype->phase_haplotype(
+            $haplo_feature,
             $params
         );
 
+        push(@{$updated_haplo_features}, $phased_haplo);
+    }
+
 use Data::Dumper;
-    print Dumper($haplo_feature);
+    print Dumper($params);
 
     $c->log->debug("Finished finding haplotypes for region");
 
-    $c->stash->{'json_data'} = $haplo_feature;
+    $c->stash->{'json_data'} = $updated_haplo_features;
 
     $c->log->debug("Saved feature to stash");
 
@@ -818,11 +829,11 @@ sub variation_for_region :Local('variation_for_region') Args(0) {
     my $model = $c->model('DB');
 
     my $params = ();
-    $params->{species} = $c->request->params->{'species'};
-    $params->{assembly_id} = $c->request->params->{'assembly'};
-    $params->{chr_number}= $c->request->params->{'chr_name'};
-    $params->{start_coord}= $c->request->params->{'chr_start'};
-    $params->{end_coord}= $c->request->params->{'chr_end'};
+    $params->{species}      = $c->request->params->{'species'};
+    $params->{assembly_id}  = $c->request->params->{'assembly'};
+    $params->{chr_number}   = $c->request->params->{'chr_name'};
+    $params->{start_coord}  = $c->request->params->{'chr_start'};
+    $params->{end_coord}    = $c->request->params->{'chr_end'};
 
     $c->log->debug("Finding variation for region ".$params->{chr_number}.":".$params->{start_coord}."-".$params->{end_coord});
 
