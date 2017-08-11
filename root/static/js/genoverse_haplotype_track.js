@@ -12,7 +12,45 @@ Genoverse.Track.Haplotype = Genoverse.Track.extend({
       y = target.height() - y;
     }
 
+    var trackId = "Haplotype_" + (this.track.trackNum === 1 ? 2 : 1);
+
+    var otherHaploTrack = window.genoverse.tracksById[trackId];
+
+    this.track.highlightFeatures(this, otherHaploTrack.controller, x, y, target);
+
     return this.track.makeMenu(this.getClickedFeatures(x, y, target), e, this.track);
+  },
+
+  highlightFeatures: function (thisHaplo, otherHaploController, x, y, target) {
+
+    if (thisHaplo.getClickedFeatures(x, y, target)[0] && otherHaploController.getClickedFeatures(x, y, target)[0]) {
+      thisHaplo.getClickedFeatures(x, y, target)[0].borderColor = "#DD0000";
+      otherHaploController.getClickedFeatures(x, y, target)[0].borderColor = "#DD0000";
+
+      thisHaplo.getClickedFeatures(x, y, target)[0].pairedFeature = otherHaploController.getClickedFeatures(x, y, target)[0];
+
+
+      thisHaplo.resetImages();
+      thisHaplo.imgContainers.empty();
+      thisHaplo.makeFirstImage();
+
+      otherHaploController.resetImages();
+      otherHaploController.imgContainers.empty();
+      otherHaploController.makeFirstImage();
+    }
+  },
+  removeFeatureHighlight: function (feature, otherFeature, thisTrack, otherTrack) {
+
+    feature.borderColor = 0;
+    otherFeature.borderColor = 0;
+
+    thisTrack.controller.resetImages();
+    thisTrack.controller.imgContainers.empty();
+    thisTrack.controller.makeFirstImage();
+
+    otherTrack.controller.resetImages();
+    otherTrack.controller.imgContainers.empty();
+    otherTrack.controller.makeFirstImage();
   },
   // set new menu template to remove highlight feature link.
   makeMenu: function (features, event, track) {
@@ -87,6 +125,12 @@ Genoverse.Track.Haplotype = Genoverse.Track.extend({
       $(this).fadeOut('fast', function () {
         var data = $(this).data();
 
+        var track = data.track;
+        var otherTrackId = track.id === "Haplotype_1" ? "Haplotype_2" : "Haplotype_1";
+        var otherTrack = window.genoverse.tracksById[otherTrackId];
+
+        data.track.removeFeatureHighlight(data.feature, data.feature.pairedFeature, track, otherTrack);
+
         if (data.track) {
           data.track.prop('menus', data.track.prop('menus').not(this));
         }
@@ -101,33 +145,6 @@ Genoverse.Track.Haplotype = Genoverse.Track.extend({
 Genoverse.Track.View.Transcript.Haplotype = Genoverse.Track.View.Transcript.extend({
   // Set default colour to bright red.
   color       : '#FF0000',
-  // Define method to position the features correctly.
-  positionFeatures: function (features, params) {
-    params.margin = this.prop('margin');
-
-    for (var i = 0; i < features.length; i++) {
-      for (var j = 0; j < params.scale.length; j++) {
-        console.log(params.scale);
-
-        // #############################################################################
-        // ## FIXME: doesn't seem to be calling method. Try calling parent method.    ##
-        // ##        Actually calls fine, its params.scale.length that is undef.      ##
-        // ##        params.scale is a number, therefore params.scale.length is undef ##
-        // #############################################################################
-
-        // Ammended the code to set feature width for scale.
-        features[i].position[params.scale[j]].width = features[i].position[params.scale[j]].width < 5 ? 5 : features[i].position[params.scale[j]].width;
-      }
-      this.positionFeature(features[i], params);
-    }
-
-    params.width         = Math.ceil(params.width);
-    params.height        = Math.ceil(params.height);
-    params.featureHeight = Math.max(Math.ceil(params.featureHeight), this.prop('resizable') ? Math.max(this.prop('height'), this.prop('minLabelHeight')) : 0);
-    params.labelHeight   = Math.ceil(params.labelHeight);
-
-    return features;
-  },
   // Define Draw method to prepare features for display
   draw        : function (features, featureContext, labelContext, scale) {
     var feature, f;
@@ -325,6 +342,12 @@ Genoverse.Track.Model.Haplotype = Genoverse.Track.Model.extend({
 });
 
 Genoverse.Track.Controller.Haplotype = Genoverse.Track.Controller.extend({
+
+  addDomElements: function () {
+    this.base.apply(this,arguments);
+
+    this.container.attr("id", "haplo_" + this.track.trackNum);
+  },
 
   render: function (features, img) {
     var params         = img.data();
