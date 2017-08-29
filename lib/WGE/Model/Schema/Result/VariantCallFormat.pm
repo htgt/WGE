@@ -90,7 +90,7 @@ __PACKAGE__->table("variant_call_format");
   data_type: 'text'
   is_nullable: 1
 
-=head2 gt_uspd16080906
+=head2 genome_phasing
 
   data_type: 'text'
   is_nullable: 1
@@ -123,7 +123,7 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 1 },
   "format",
   { data_type => "text", is_nullable => 1 },
-  "gt_uspd16080906",
+  "genome_phasing",
   { data_type => "text", is_nullable => 1 },
 );
 

@@ -38,8 +38,8 @@ sub phase_haplotype {
 
     my $phased;
 
-    my @gt_uspd16080906 = split(/:/, $haplotype->{gt_uspd16080906}); # rename gt_uspd16080906 to phasing_results in DB and code
-    my @gt = split(/[\|,\/]/, $gt_uspd16080906[0]);
+    my @genome_phasing = split(/:/, $haplotype->{genome_phasing});
+    my @gt = split(/[\|,\/]/, $genome_phasing[0]);
     my @alleles = split(/,/, $haplotype->{alt});
     unshift(@alleles, $haplotype->{ref});
 
@@ -50,7 +50,7 @@ sub phase_haplotype {
 
     }
 
-    $haplotype->{phased}        = $gt_uspd16080906[0] =~ /\|/ ? 1 : 0; # If data in gt_uspd16080906[0] contains '|' then mark phased flag 1
+    $haplotype->{phased}        = $genome_phasing[0] =~ /\|/ ? 1 : 0; # If data in genome_phasing[0] contains '|' then mark phased flag 1
 
     return $haplotype;
 }
