@@ -791,7 +791,7 @@
     var button_text = $("#compute_ot").text();
     var spinner = "[% c.uri_for( '/static/images/spinner-circle.gif' ) %]";
     $("#compute_ot").html('<img alt="Waiting" src="' + spinner + '" height="30" width="30">');
-    $.get("[% c.uri_for( 'api/region_off_target_search') %]", params, function(data){
+    $.get("[% c.uri_for('/api/region_off_target_search') %]", params, function(data){
       console.log(data);
       if(data.error_msg){
         $("#offTargetModal_content").text("Off-target computation failed with error: <br>" + data.error_msg);
