@@ -1,7 +1,7 @@
 package WGE::Util::ExportCSV;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::ExportCSV::VERSION = '0.100';
+    $WGE::Util::ExportCSV::VERSION = '0.107';
 }
 ## use critic
 
@@ -67,7 +67,7 @@ sub write_design_data_csv{
     return $string;
 }
 
-sub format_crisprs_for_csv{
+sub format_crisprs_for_csv {
     my ($crispr_list, $with_exon_id) = @_;
 
     $crispr_list ||= [];
@@ -76,7 +76,7 @@ sub format_crisprs_for_csv{
     my @crisprs = map { blessed($_) ? $_->as_hash : $_ } @$crispr_list;
 
     my @csv_data;
-    my @fields = qw( crispr_id location strand seq off_target_summary );
+    my @fields = qw( crispr_id location strand seq gRNA off_target_summary );
     if($with_exon_id){
         unshift @fields, 'exon_id';
     }
@@ -85,11 +85,20 @@ sub format_crisprs_for_csv{
     foreach my $crispr ( @crisprs ) {
         my $location = $crispr->{chr_name}.":".$crispr->{chr_start}."-".$crispr->{chr_end};
         my $strand = $crispr->{pam_right} ? "+" : "-";
+        my $gRNA;
+        if ($crispr->{pam_right}) {
+            $gRNA = $crispr->{seq};
+        }
+        else {
+            $gRNA = reverse $crispr->{seq};             #reverse direction of crispr. E.G. CCN N...N becomes N...N NCC
+            $gRNA =~ tr/ATCG/TAGC/;                     #complement crispr sequence.  E.G. C...A ACC becomes G...T TGG
+        }
         my @row = (
             $crispr->{id},
             $location,
             $strand,
             $crispr->{seq},
+            $gRNA,
             $crispr->{off_target_summary} // '',
         );
         if($with_exon_id){
@@ -101,7 +110,7 @@ sub format_crisprs_for_csv{
     return \@csv_data;
 }
 
-sub format_pairs_for_csv{
+sub format_pairs_for_csv {
     my ($pair_list, $with_exon_id) = @_;
 
     $pair_list ||= [];
@@ -110,7 +119,7 @@ sub format_pairs_for_csv{
 
     my @csv_data;
     my @fields = qw( pair_id spacer pair_status summary );
-    my @crispr_fields = qw( id location seq off_target_summary );
+    my @crispr_fields = qw( id location seq gRNA off_target_summary );
     if($with_exon_id){
         unshift @fields, 'exon_id';
     }
@@ -139,6 +148,10 @@ sub format_pairs_for_csv{
         if($with_exon_id){
             unshift @row, $pair->{ensembl_exon_id};
         }
+
+        $pair->{left_crispr}{gRNA} = reverse $pair->{left_crispr}{seq};
+        $pair->{right_crispr}{gRNA} = $pair->{right_crispr}{seq};
+        $pair->{left_crispr}{gRNA} =~ tr/ATCG/TAGC/;
 
         #add all the individual crispr fields for both crisprs
         for my $dir ( qw( left_crispr right_crispr ) ) {
@@ -155,7 +168,7 @@ sub format_pairs_for_csv{
     return \@csv_data;
 }
 
-sub format_crisprs_for_bed{
+sub format_crisprs_for_bed {
     my ($crispr_list, $with_exon_id) = @_;
 
     $crispr_list ||= [];
@@ -164,7 +177,7 @@ sub format_crisprs_for_bed{
     my @crisprs = map { blessed($_) ? $_->as_hash : $_ } @$crispr_list;
 
     my @bed_data;
-    my @fields = qw( chrom chrom_start chrom_end name seq strand );
+    my @fields = qw( chrom chrom_start chrom_end name seq gRNA strand );
     if($with_exon_id){
         unshift @fields, 'exon_id';
     }
@@ -172,17 +185,22 @@ sub format_crisprs_for_bed{
 
     foreach my $crispr ( @crisprs ) {
         my $chrom = "chr".$crispr->{chr_name};
-        my $chrom_start = $crispr->{chr_start};
-        my $chrom_end = $crispr->{chr_end};
-        my $name = $crispr->{id};
-        my $seq = $crispr->{seq};
         my $strand = $crispr->{pam_right} ? "+" : "-";
+        my $gRNA;
+        if ($crispr->{pam_right}) {
+            $gRNA = $crispr->{seq};
+        }
+        else {
+            $gRNA = reverse $crispr->{seq};         #reverse direction of crispr. E.G. CCN N...N becomes N...N NCC
+            $gRNA =~ tr/ATCG/TAGC/;                 #complement crispr sequence.  E.G. C...A ACC becomes G...T TGG
+        }
         my @row = (
             $chrom,
-            $chrom_start,
-            $chrom_end,
-            $name,
-            $seq,
+            $crispr->{chr_start},
+            $crispr->{chr_end},
+            $crispr->{id},
+            $crispr->{seq},
+            $gRNA,
             $strand // '',
         );
         if($with_exon_id){
@@ -194,7 +212,7 @@ sub format_crisprs_for_bed{
     return \@bed_data;
 }
 
-sub format_pairs_for_bed{
+sub format_pairs_for_bed {
     my ($pair_list, $with_exon_id) = @_;
 
     $pair_list ||= [];
@@ -203,7 +221,7 @@ sub format_pairs_for_bed{
 
     my @bed_data;
     my @fields = qw( pair_id spacer pair_status summary );
-    my @crispr_fields = qw( chrom chrom_start chrom_end name seq strand );
+    my @crispr_fields = qw( chrom chrom_start chrom_end name seq gRNA strand );
     if($with_exon_id){
         unshift @fields, 'exon_id';
     }
@@ -233,6 +251,10 @@ sub format_pairs_for_bed{
             unshift @row, $pair->{ensembl_exon_id};
         }
 
+        $pair->{left_crispr}{gRNA} = reverse $pair->{left_crispr}{seq};
+        $pair->{right_crispr}{gRNA} = $pair->{right_crispr}{seq};
+        $pair->{left_crispr}{gRNA} =~ tr/ATCG/TAGC/;
+
         #add all the individual crispr fields for both crisprs
         for my $dir ( qw( left_crispr right_crispr ) ) {
             #mirror ensembl location format
@@ -245,7 +267,7 @@ sub format_pairs_for_bed{
 
         push @bed_data, \@row;
     }
-    ### \@bed_data
+
     return \@bed_data;
 }
 

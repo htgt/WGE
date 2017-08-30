@@ -28,7 +28,7 @@ for my $species ( @species ) {
     my $e = LIMS2::Util::EnsEMBL->new( species => $species );
     my $ens_version = $e->gene_adaptor->schema_version;
 
-    #if they say all we should just do a fetch_all 
+    #if they say all we should just do a fetch_all
     my $genes = $e->gene_adaptor->fetch_all_by_biotype( $biotype );
     #my $genes = [ $e->gene_adaptor->fetch_by_stable_id( "ENSG00000108468" ) ];
     #my $genes = [ $e->gene_adaptor->fetch_by_stable_id( "ENSMUSG00000018666" ) ];
@@ -53,19 +53,19 @@ for my $species ( @species ) {
 
         #add all the gene fields
         $genes_yaml{ $gene->stable_id } =
-            get_fields( 
-                $gene, 
-                \%gene_fields, 
-                canonical_transcript => $gene->canonical_transcript->stable_id 
+            get_fields(
+                $gene,
+                \%gene_fields,
+                canonical_transcript => $gene->canonical_transcript->stable_id
             );
 
         #populate the exons hash
         my $rank = 1;
         for my $exon ( @{ $gene->canonical_transcript->get_all_Exons} ) {
             $genes_yaml{ $gene->stable_id }->{ exons }{ $exon->stable_id } =
-                get_fields( 
-                    $exon, 
-                    \%exon_fields, 
+                get_fields(
+                    $exon,
+                    \%exon_fields,
                     rank => $rank++
                 );
         }
@@ -74,7 +74,7 @@ for my $species ( @species ) {
     DumpFile( "${species}_genes_${ens_version}.yaml", { $species => \%genes_yaml } );
 }
 
-#method to extract data from an ensembl object driven by a hash of keys mapped 
+#method to extract data from an ensembl object driven by a hash of keys mapped
 #to method names any additional parameters are added into the data hash.
 sub get_fields {
     my ( $object, $fields, %data ) = @_;
@@ -97,7 +97,7 @@ get_all_genes.pl - given a species fetch all genes and exons, storing the output
 =head1 SYNOPSIS
 
 get_all_genes.pl [options]
-               
+
     --species          The species to fetch the data for. Can be multiple.
     --biotype          The biotype to give to the ensembl gene adaptor fetch, defaults to protein coding.
     --output-folder    Change where the yaml file is output. Defaults to cwd

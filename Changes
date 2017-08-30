@@ -1,3 +1,22 @@
+0.107     2017-08-30 16:52:42 Europe/London
+	Update to Genoverse and added Haplotype tracks to Genoverse browse view
+
+0.106     2017-08-21 11:57:03 Europe/London
+    Ensembl internal upgrade
+0.105     2017-02-16 16:36:40 Europe/London
+
+0.104     2017-02-16 16:27:12 Europe/London
+    Off target fix
+0.104     2017-02-06 10:55:13 Europe/London
+
+    Switch from scratch109 to scratch117
+
+0.103     2016-12-12 16:20:01 Europe/London
+    REST fix
+0.102     2016-11-01 13:15:42 Europe/London
+    REST changes
+0.101     2016-11-01 12:15:17 Europe/London
+
 0.100     2016-09-12 10:36:16 Europe/London
 
         Added off-target details to api/crispr_off_targets

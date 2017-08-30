@@ -20,6 +20,7 @@
 </style>
 
 <div class="page-header">
+<br>
   <h1>[%- genes -%]
     <small>[% IF design_id %]design: <strong>[%design_id%]</strong>[% END %]
   assembly: [%- genome -%]
@@ -38,7 +39,7 @@
 
 <form class="form form-horizontal" action="[% c.uri_for( '/genoverse_browse/' ) %]">
     <div class="form-group">
-  <div class="col-md-12 row no-gutter">
+  <div class="row no-gutter">
     <div class="col-md-2">
       <p class="col-md-3 unit" align="center">Chr</p>
       <div class="col-md-6">
@@ -58,7 +59,7 @@
 
     <input type="hidden" name="genome" value="[% genome %]">
 
-    <div class="col-md-3">
+    <div class="col-md-4">
       <div class="col-md-offset-2 col-md-4">
         <select NAME="species" class="form-control">
         [% IF species == 'Grch38' %]
@@ -85,7 +86,7 @@
 
 <div class="container-fluid">
 <button type="button" class="close" onclick='$("#alert_help_info").hide(); $(this).hide();'>&times;&nbsp;</button>
-  <div class="alert alert-info" id="alert_help_info"><strong>Zoom:</strong> use "+" and "-" buttons. <strong>Move:</strong> drag or scroll with the mouse. <strong>Select region:</strong> hold shift key and drag with the mouse.<br /><strong>Copy crispr:</strong> right click crispr sequence to copy.
+  <div class="alert alert-info" id="alert_help_info"><strong>Zoom:</strong> use "+" and "-" buttons. <strong>Move:</strong> drag or scroll with the mouse. <strong>Select region:</strong> hold shift key and drag with the mouse.<br /><strong>Copy crispr:</strong> double click the crispr sequence to copy.
   <a href="[% c.uri_for('/crispr_help') _ '#genoverse_view' %]" target="_blank">
     <i class="glyphicon glyphicon-question-sign"></i> Help
   </a>
@@ -180,37 +181,88 @@
     <i class="glyphicon glyphicon-question-sign"></i> Help
   </a>
 </form>
-<div >
-<form id="colour_key" class="col-md-9 well">
- <i id="pan" class="pull-right glyphicon glyphicon-move"></i>
- <table><tr>
- <td style="padding-right: 20px;">
-  <strong>Crispr Colour Key:</strong><br>
-  <div style="background: [%colours.left_crispr%]; width: 20px; height: 20px; float: left"></div>
-  <div style="margin-left: 30px">Off-targets computed</div>
 
-  <div style="background: [%colours.no_ot_summary%]; width: 20px; height: 20px; float: left"></div>
-  <div style="margin-left: 30px">Off-targets not computed</div>
+<div id="colour_key" class="col-md-12 well">
+  <i id="pan" class="pull-right glyphicon glyphicon-move"></i>
+  <div class="col-md-11">
 
-  <div style="background: [%colours.pam%]; width: 10px; height: 20px; float: left"></div>
-  <div style="margin-left: 30px">PAM site</div>
- </td>
+    <div class="col-md-4">
+      <strong>Crispr Colour Key:</strong><br>
+      <div style="background: [%colours.left_crispr%]; width: 20px; height: 20px; float: left"></div>
+      <div style="margin-left: 30px">Off-targets computed</div>
 
- <td style="padding-bottom:20px;">
-  <strong>Crispr Pair Colour Key:</strong><br>
-  <div style="background: [%colours.left_crispr%]; width: 20px; height: 20px; float: left"></div>
-  <div style="background: [%colours.right_crispr%]; width: 20px; height: 20px; float: left"></div>
-  <div style="margin-left: 50px">Left and right off-targets computed</div>
+      <div style="background: [%colours.no_ot_summary%]; width: 20px; height: 20px; float: left"></div>
+      <div style="margin-left: 30px">Off-targets not computed</div>
 
-  <div style="background: [%colours.no_ot_summary%]; width: 20px; height: 20px; float: left"></div>
-  <div style="background: [%colours.no_ot_summary%]; width: 20px; height: 20px; float: left"></div>
-  <div style="margin-left: 50px">Left and right off-targets not computed</div>
+      <div style="background: [%colours.pam%]; width: 10px; height: 20px; float: left"></div>
+      <div style="margin-left: 30px">PAM site</div>
+    </div>
+    <div class="col-md-4">
+      <strong>Crispr Pair Colour Key:</strong><br>
+      <div style="background: [%colours.left_crispr%]; width: 20px; height: 20px; float: left;"></div>
+      <div style="background: [%colours.right_crispr%]; width: 20px; height: 20px; float: left;"></div>
+      <div style="margin-left: 50px">Left and right off-targets computed</div>
 
-  </td>
-  </tr></table>
-</form>
+      <div style="background: [%colours.no_ot_summary%]; width: 20px; height: 20px; float: left;"></div>
+      <div style="background: [%colours.no_ot_summary%]; width: 20px; height: 20px; float: left;"></div>
+      <div style="margin-left: 50px">Left and right off-targets not computed</div>
+    </div>
+    <div class="col-md-4">
+      <strong>Haplotype Colour Key:</strong><br>
+      <div style="background: #33CCFF; width: 20px; height: 20px; float: left;"></div>
+      <div style="margin-left: 30px">Substitution</div>
+
+      <div id="insertionKey" style="background: #AAFFAA; width: 20px; height: 20px; float: left; border-style: solid; border-width: 1px; border-color: #FFFFFF"></div>
+      <div style="margin-left: 30px">Insertion</div>
+
+      <div style="background: #FFCC33; width: 20px; height: 20px; float: left;"></div>
+      <div style="margin-left: 30px">Deletion</div>
+
+      <div style="background: #CCCCCC; width: 20px; height: 20px; float: left;"></div>
+      <div style="margin-left: 30px">Not on this Haplotype</div>
+    </div>
+  </div>
 </div>
 </div> [%# end of left-hand div %]
+
+<div class="col-md-3">
+  <div id="haplo_filters_panel">
+    <form class="well">
+      <i id="pan" class="pull-right glyphicon glyphicon-move"></i>
+      <table class="table" id="haplo_filters_table">
+        <thead>
+          <tr>
+            <th id="haplo_filters_heading">Haplotype Filters</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <fieldset name="haplo_filters">
+                <!-- Filter so that only DB rows containing PASS in the filters field will be shown -->
+                <input type="checkbox" onclick="apply_haplo_filters();" id="10x_allele_fraction" value="allele_fraction" checked> Allele Fraction<br>
+                <!-- Filters out heterozygous variants with allele fraction under 15% -->
+                <input type="checkbox" onclick="apply_haplo_filters();" id="10x_qual_filter" value="qual_filter" checked> Quality Filter<br>
+                <!-- A basic variant quality filter, turned for 10x data. Heterzygous variants with QUAL under 15 and homozygous variants with QUAL under 50 have this filter applied. -->
+                <input type="checkbox" onclick="apply_haplo_filters();" id="10x_phasing_inconsistent" value="phasing_inconsistent" checked> Phasing Inconsistent<br>
+                <!-- Flags heterozygous variants where the reads supporting each allele do not segregate cleanly onto the local haplotypes. The phasing algorithm compares the likelihoods of a background false-positive model and a sequencing error model to classify likely false-positives. This is a powerful filter for reducing false-positive variant calls. Be aware that somatic or mosaic variants, where only a subset of the sample carries the variant, will be preferentially tagged with this filter. If you are interested in these variants, you may want to include these variants in your analysis -->
+                <input type="checkbox" onclick="apply_haplo_filters();" id="10x_homopolymer_unphased_insertion" value="homopolymer_unphased_insertion" checked> Homopolymer Unphased Insertion<br>
+                <!-- A 10x-specific filter for insertions in homopolymers with length greater than or equal to 4, that are unphased. This class of variations calls in observed to be mostly false positives. -->
+                <input type="checkbox" onclick="apply_haplo_filters();" id="10x_rescued_molecule_high_diversity" value="rescued_molecule_high_diversity" checked> Rescued Molecule High Diversity<br>
+                <!-- Filter variants that are supported primarity by reads that have been 'rescued' with barcode-aware alignment, where the mapped molecule has a high degree of divergence from the reference. This filter reduces false positive variant calls in complex duplicated loci that tend to have missing copies in the reference genome. -->
+              </fieldset>
+              <div>
+                <input class="btn btn-default btn-xs" type="button" onclick="remove_haplo_filters();" name="remove_all" value="Remove All">
+                <input class="btn btn-default btn-xs" type="button" onclick="apply_all_haplo_filters();" name="add_all_haplo_filters" value="Add All"  >
+
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+</div>
 
 <div class="col-md-3">
 <div id="ot_filters_panel">
@@ -261,16 +313,47 @@
 </div> [%# end of row div %]
 </div>
 
-<div class="modal" id="dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div id="downloadModal" class="modal fade" role="dialog" aria-labelledby="downloadModalLable" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+          <i class="glyphicon glyphicon-remove-circle"></i>
+        </button>
+        <h3 id="downloadModalLable">Download in CSV or BED format?</h3>
+      </div>
+      <div class="modal-body">
+        <p>Choose file type to download as.</p>
+      </div>
+      <div class="modal-body" id="download_url">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="download('csv')">
+          <i class='glyphicon glyphicon-download'></i> Download csv
+        </button>
+        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="download('bed')">
+          <i class='glyphicon glyphicon-download'></i> Download bed
+        </button>
+        <button type="button" class="btn btn-danger" data-dismiss="modal">
+          <i class="glyphicon glyphicon-remove-circle"></i> Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="offTargetModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+          <i class="glyphicon glyphicon-remove-circle"></i>
+        </button>
         <h3 id="myModalLabel">Off-Target Computation Status</h3>
       </div>
-      <div class="modal-body" id="dialog_content">
+      <div class="modal-body" id="offTargetModal_content">
       </div>
-      <div class="modal-body" id="dialog_success">
+      <div class="modal-body" id="offTargetModal_success">
        This may take several minutes. Click "Reload Tracks" to refresh the view and show the latest off-target information.
       </div>
     </div>
@@ -280,29 +363,20 @@
 
 <script type="text/javascript">
 
-  function add_csv_download_button(track,url){
-    var download_btn = $("<button class='btn-xs btn-primary'><i class='glyphicon glyphicon-download'></i>download csv</button>");
+  function add_download_button(track,url){
+    var download_btn = $("<button class='btn-xs btn-primary' data-toggle='modal' data-target='#downloadModal'><i class='glyphicon glyphicon-download'></i>download</button>");
 
-    $(".name[title='" + track + "']").append(download_btn);
-
-    download_btn.click(function(){
-      download_as_csv(url);
-    });
-  }
-  function add_bed_download_button(track,url){
-    var download_btn = $("<button class='btn-xs btn-primary'><i class='glyphicon glyphicon-download'></i>download bed</button>");
-
-    $(".name[title='" + track + "']").append(download_btn);
+    $(download_btn).appendTo("[title='" + track + "']");
 
     download_btn.click(function(){
-      download_as_bed(url);
+      $("#download_url").text(url);
+      $("#download_url").hide();
     });
   }
-
 
   // Use this to query a url with the current region params
   // and download csv it returns
-  function download_as_csv(url){
+  function download(fileType){
     var region_params = {
       "species_id"    : "[% species %]",
       "start"         : $(window)[0].genoverse.start,
@@ -312,23 +386,9 @@
       "crispr_filter" : $('input[name=crispr_filter]:checked').val(),
       "flank_size"    :  $('#flank_size').val()
     };
-    region_params["csv"] = 1;
+    region_params[fileType] = 1;
+    var url = $("#download_url").text();
     window.open( build_url(url, region_params) );
-  }
-
-  function download_as_bed(url){
-    var region_params = {
-      "species_id"    : "[% species %]",
-      "start"         : $(window)[0].genoverse.start,
-      "end"           : $(window)[0].genoverse.end,
-      "chr"           : "[% chromosome %]",
-      "assembly"      : "[% genome %]",
-      "crispr_filter" : $('input[name=crispr_filter]:checked').val(),
-      "flank_size"    :  $('#flank_size').val()
-    };
-    region_params["bed"] = 1;
-    window.open( build_url(url, region_params) );
-
   }
 
   //Function to retrieve the current coords on display to the user
@@ -373,8 +433,7 @@
   function show_single (){
       show_tracks(["Crisprs", "Bookmarked Crisprs"]);
       enable_crispr_filters();
-      add_csv_download_button("Crisprs","[% c.uri_for('/api/crisprs_in_region') %]");
-      add_bed_download_button("Crisprs","[% c.uri_for('/api/crisprs_in_region') %]");
+      add_download_button("Crisprs","[% c.uri_for('/api/crisprs_in_region') %]");
   }
 
   function hide_paired (){
@@ -385,8 +444,7 @@
   function show_paired (){
       show_tracks(["Crispr Pairs","Bookmarked Crispr Pairs"]);
       enable_crispr_pair_filters();
-      add_csv_download_button("Crispr Pairs","[% c.uri_for('/api/crispr_pairs_in_region') %]");
-      add_bed_download_button("Crispr Pairs","[% c.uri_for('/api/crispr_pairs_in_region') %]");
+      add_download_button("Crispr Pairs","[% c.uri_for('/api/crispr_pairs_in_region') %]");
 
   }
 
@@ -467,6 +525,99 @@
           track.urlParams.flank_size = flank_size;
         }
       });
+  }
+
+  function apply_all_haplo_filters() {
+    var haploTracks = ['Haplotype_1', 'Haplotype_2'];
+
+    var filterNames = [
+                        '10x_allele_fraction',
+                        '10x_qual_filter',
+                        '10x_phasing_inconsistent',
+                        '10x_homopolymer_unphased_insertion',
+                        '10x_rescued_molecule_high_diversity'
+                      ];
+    haploTracks.map(function (trackId){
+      var track = get_track(trackId);
+      if(track){
+
+        track.filterProfile = filterNames.map(function(filterName){
+          $('#'+filterName).prop("checked", true);
+          return filterName.toUpperCase();
+        });
+        track.controller.resetImages();
+        track.controller.imgContainers.empty();
+        track.controller.makeFirstImage();
+      }
+      libTrack = get_library_track(trackId);
+      if(libTrack) {
+        libTrack.filterProfile = haploFilters;
+      }
+    });
+
+  }
+
+  function remove_haplo_filters() {
+    var haploTracks = ['Haplotype_1', 'Haplotype_2'];
+    var filterNames = [
+                        '10x_allele_fraction',
+                        '10x_qual_filter',
+                        '10x_phasing_inconsistent',
+                        '10x_homopolymer_unphased_insertion',
+                        '10x_rescued_molecule_high_diversity'
+                      ];
+
+    haploTracks.map(function (trackId){
+      var track = get_track(trackId);
+      if(track){
+
+        filterNames.map(function(filterName) {
+          $('#'+filterName).prop("checked", false);
+        });
+        track.filterProfile = ["noFilter"];
+        track.controller.resetImages();
+        track.controller.imgContainers.empty();
+        track.controller.makeFirstImage();
+      }
+      libTrack = get_library_track(trackId);
+      if(libTrack) {
+        libTrack.filterProfile = haploFilters;
+      }
+    });
+  }
+
+  function apply_haplo_filters(){
+    var haploTracks = ['Haplotype_1', 'Haplotype_2'];
+
+    var filterNames = [
+                          '10x_allele_fraction',
+                          '10x_qual_filter',
+                          '10x_phasing_inconsistent',
+                          '10x_homopolymer_unphased_insertion',
+                          '10x_rescued_molecule_high_diversity'
+                        ];
+    var haploFilters = [];
+
+    // loop over filter names array and for each filter if checked push to haplo_filters array, in upper case
+    filterNames.map(function (filterName){
+      if( $('#'+filterName).is(":checked") ){
+        haploFilters.push(filterName.toUpperCase());
+      }
+    });
+    // for each track in haplo_tracks, add filters to the profile and then reload image
+    haploTracks.map(function (trackId){
+      var track = get_track(trackId);
+      if(track){
+        track.filterProfile = haploFilters;
+        track.controller.resetImages();
+        track.controller.imgContainers.empty();
+        track.controller.makeFirstImage();
+      }
+      libTrack = get_library_track(trackId);
+      if(libTrack) {
+        libTrack.filterProfile = haploFilters;
+      }
+    });
   }
 
   function apply_ot_filters(){
@@ -604,13 +755,15 @@
     track.controller.makeFirstImage();
   }
 
-  function reload_tracks(tracks){
-    tracks.map(function (track_id){
-      var track = get_track(track_id);
+  function reload_tracks(){
+    //tracks.map(function (track_id){
+      var track = get_track('Sequence');
       if(track){
-        reload_track(track);
+        var base = "[% c.uri_for('/genoverse_browse' ) %]";
+        var genome = '[% genome %]';
+        reload_track(track, base, species, genome);
       }
-    });
+    //});
   }
 
   function reload_crispr_tracks(){
@@ -625,12 +778,12 @@
 
 
 
-  function find_off_targets(start, end) {
+  function find_off_targets(data) {
     console.log('find off target button clicked');
     var params = {
       species: "[% species %]",
-      start_coord: start,
-      end_coord: end,
+      start_coord: data['start'],
+      end_coord: data['end'],
       chromosome_number: '[% chromosome %]',
       assembly_id: '[% genome %]',
       all_singles: 1
@@ -638,18 +791,19 @@
     var button_text = $("#compute_ot").text();
     var spinner = "[% c.uri_for( '/static/images/spinner-circle.gif' ) %]";
     $("#compute_ot").html('<img alt="Waiting" src="' + spinner + '" height="30" width="30">');
-    $.get('api/region_off_target_search', params, function(data){
+    $.get("[% c.uri_for('/api/region_off_target_search') %]", params, function(data){
       console.log(data);
       if(data.error_msg){
-        $("#dialog_content").text("Off-target computation failed with error: <br>" + data.error_msg);
-        $("#dialog_success").hide();
+        $("#offTargetModal_content").text("Off-target computation failed with error: <br>" + data.error_msg);
+        $("#offTargetModal_success").hide();
       }
       else{
         var text = data.pair_count + " pairs and " + data.crispr_count + " individual crisprs submitted for off-target calculation";
-        $("#dialog_content").text(text);
-        $("#dialog_success").show();
+
+        $("#offTargetModal_content").text(text);
+        $("#offTargetModal_success").show();
       }
-      $("#dialog").modal();
+      $("#offTargetModal").modal("show");
     }).always( function() {
       // remove spinner and restore button text
       $("#compute_ot").html("");
@@ -658,135 +812,17 @@
   }
 
   // Add event handlers to filter forms
-  $(document).ready( function() {
 
-    // Close selection and refresh tracks when modal is closed
-    $("#dialog").on('hidden', function(){
-      $(window)[0].genoverse.cancelSelect();
-      reload_crispr_tracks();
-    });
-
-    $("#ot_filters_panel").draggable();
-    $("#colour_key").draggable({ stack: ".drag", zIndex: 2500  });
-    $("#colour_key").css('boxShadow','0px 0px 1px 1px grey');
-    $('#colour_key').css('z-index', '100');
-    console.log($("#genoverse").offset());
-
-    // Handle clicks on the show/hide radio inputs
-    $("#hide_single").change(function (event){
-      hide_single();
-    });
-
-    $("#show_single").change(function (event){
-      show_single();
-    });
-
-    $("#hide_paired").change(function (event){
-      hide_paired();
-    });
-
-    $("#show_paired").change(function (event){
-      show_paired();
-    });
-
-    $("#hide_designs").change(function (event){
-      hide_designs();
-    });
-
-    $("#show_designs").change(function (event){
-      show_designs();
-    });
-
-    $("#flank_size").keypress(function (event){
-      if(event.which == 13){
-        apply_crispr_filters();
-        // enter key was pressed
-        //$("#browse_start")[0].value = $(window)[0].genoverse.start + 200;
-        //$("#browse_end")[0].value = $(window)[0].genoverse.end - 200;
-        //this.form.submit();
-      }
-    });
-
-    $('input[name=crispr_filter]').click(function (event){
-      apply_crispr_filters();
-      //$("#browse_start")[0].value = $(window)[0].genoverse.start + 200;
-      //$("#browse_end")[0].value = $(window)[0].genoverse.end - 200;
-      //this.form.submit();
-    });
-
-    $("#apply_ot_filters").click(function (event){
-      apply_ot_filters();
-    });
-
-    $("#reset_ot_filters").click(function (event){
-      reset_ot_filters();
-    });
-
-    $('#apply_spacer_filters').click(function (event){
-      apply_spacer_filters();
-    });
-
-    $('#reset_spacer_filters').click(function (event){
-      reset_spacer_filters();
-    });
-
-    $('#apply_MAF_threshold').click(function (event){
-      apply_MAF_threshold();
-    });
-
-    // show/hide help messages when values are entered in mismatch counts
-    $("[id$=mismatch]").bind('keyup mouseup',function (event){
-        var help_span_id = "#" + this.id + "_no_max";
-        if(this.value !== ""){
-            $(help_span_id).hide();
-        }
-        else{
-            $(help_span_id).show();
-        }
-        if(this.id == '0_mismatch'){
-            if(this.value == "0"){
-                $('#0_mismatch_input_error').show();
-            }
-            else{
-                $('#0_mismatch_input_error').hide();
-            }
-        }
-    });
-
-    $('#go_to_filters').click(function (event){
-      $("html, body").animate({ scrollTop: $(document).height() }, 1000);
-    });
-
-    $('#reload_tracks').click(function (event){
-      reload_crispr_tracks();
-      reload_ensembl_tracks();
-    });
-
-    $('#best_10_percent').click(function(){
-        set_ot_filters(10);
-        apply_ot_filters();
-    });
-
-    $('#best_25_percent').click(function(){
-        set_ot_filters(25);
-        apply_ot_filters();
-    });
-
-    $('#best_50_percent').click(function(){
-        set_ot_filters(50);
-        apply_ot_filters();
-    });
-
-    $('#MAF_error_text').hide();
-
-  });
 
 </script>
 
-    <script type="text/javascript" src="[% c.uri_for('/Genoverse/js/genoverse.combined.js', {i => 1})%]"></script>
-    <script type="text/javascript" src="[% c.uri_for('/js/genoverse_custom_tracks.js', {i => 2} )%]"></script>
-    <script type="text/javascript" src="[% c.uri_for('/static/js/wge_genoverse_custom_tracks.js' )%]"></script>
-    <script type="text/javascript" src="[% c.uri_for('/static/js/genoverse_variation_track.js', {i => 4})%]"></script>
+    <script type="text/javascript" src="[% c.uri_for( '/Genoverse/js/genoverse.combined.nojquery.js'  ) %]"></script>
+    <script type="text/javascript" src="[% c.uri_for( '/static/js/wge_genoverse_custom_tracks.js'     ) %]"></script>
+    <script type="text/javascript" src="[% c.uri_for( '/js/genoverse_custom_tracks.js'                ) %]"></script>
+    <script type="text/javascript" src="[% c.uri_for( '/static/js/genoverse_variation_track.js'       ) %]"></script>
+    <script type="text/javascript" src="[% c.uri_for( '/static/js/genoverse_haplotype_track.js'       ) %]"></script>
+    <script type="text/javascript" src="[% c.uri_for( '/static/js/d3.min.js'                          ) %]"></script>
+
     <script>
       var species = '[% species %]';
       ensembl_species = '[% species == "Grch38" ? "Human" : species %]'.toLowerCase();
@@ -798,13 +834,13 @@
         // If no genome supplied, it must have at least chromosomeSize, e.g.:
         // chromosomeSize : 249250621, // chromosome 1, human
         [% USE String(genome) %]
-        genome    : '[% String.lower() %]', // see js/genomes/
-        chr       : '[% chromosome %]',
-        start     : [% browse_start %] - 200,
-        end       : [% browse_end %] + 200,
-        summary   : find_off_targets, //override the summary method to find off targets
-        plugins   : [ 'controlPanelWGE', 'karyotype', 'trackControls', 'resizer', 'fileDrop' ],
-        tracks    : [
+        genome        : '[% String.lower() %]', // see js/genomes/
+        chr           : '[% chromosome %]',
+        start         : [% browse_start %] - 200,
+        end           : [% browse_end %] + 200,
+        addHighlight  : find_off_targets, //override the summary method to find off targets
+        plugins       : [ 'controlPanel', 'karyotype', 'trackControls', 'resizer', 'fileDrop' ],
+        tracks        : [
           Genoverse.Track.Scalebar,
           Genoverse.Track.SequenceSelect.extend({
             name       : 'Sequence',
@@ -836,6 +872,50 @@
             messages        : { threshold : 'MAF variations not displayed for regions larger than ' },
             autoheight      : true
           }),
+          Genoverse.Track.Haplotype.extend({
+            id              : 'Haplotype_1',
+            name            : 'Haplotype_1',
+            trackNum        : 1,
+            filterProfile   : [
+                                '10X_ALLELE_FRACTION',
+                                '10X_QUAL_FILTER',
+                                '10X_PHASING_INCONSISTENT',
+                                '10X_HOMOPOLYMER_UNPHASED_INSERTION',
+                                '10X_RESCUED_MOLECULE_HIGH_DIVERSITY'
+                              ],
+            url             : "[% c.uri_for('/api/haplotypes_for_region') %]" + "?species="+ensembl_species+"&chr_name=__CHR__&chr_start=__START__&chr_end=__END__",
+            controller      : Genoverse.Track.Controller.Haplotype,
+            model           : Genoverse.Track.Model.Haplotype,
+            view            : Genoverse.Track.View.Transcript.Haplotype,
+            threshold       : 5000,
+            messages        : {
+              threshold : 'Haplotype variations not displayed for regions larger than ',
+              resize    : 'Some features are currently hidden, <a class="gv-resize">resize to see all</a>'
+            },
+            autoheight      : true,
+          }),
+          Genoverse.Track.Haplotype.extend({
+            id              : 'Haplotype_2',
+            name            : 'Haplotype_2',
+            trackNum        : 2,
+            filterProfile   : [
+                                '10X_ALLELE_FRACTION',
+                                '10X_QUAL_FILTER',
+                                '10X_PHASING_INCONSISTENT',
+                                '10X_HOMOPOLYMER_UNPHASED_INSERTION',
+                                '10X_RESCUED_MOLECULE_HIGH_DIVERSITY'
+                              ],
+            url             : "[% c.uri_for('/api/haplotypes_for_region') %]" + "?species="+ensembl_species+"&chr_name=__CHR__&chr_start=__START__&chr_end=__END__",
+            controller      : Genoverse.Track.Controller.Haplotype,
+            model           : Genoverse.Track.Model.Haplotype,
+            view            : Genoverse.Track.View.Transcript.Haplotype,
+            threshold       : 5000,
+            messages        : {
+              threshold : 'Haplotype variations not displayed for regions larger than ',
+              resize    : 'Some features are currently hidden, <a class="gv-resize">resize to see all</a>'
+            },
+            autoheight      : true,
+          }),
           [% IF genome.lower != 'grch37' %]
           Genoverse.Track.extend({
             name       : 'Protein',
@@ -848,7 +928,6 @@
             unsortable : false,
             threshold  : 5000,
             messages   : { threshold : 'Protein not displayed for regions larger than ' },
-            autoheight : true
           }),
           [% END %]
           Genoverse.Track.Genes.extend({
@@ -926,18 +1005,31 @@
         ]
       };
 
-      document.addEventListener('DOMContentLoaded', function () {
+      $(function () {
+
+        var svgContainer = d3.select("#insertionKey").append("svg:svg")
+                                                     .attr("width", 20)
+                                                     .attr("height", 20);
+
+        var triangle = svgContainer.append("svg:path")
+                                   .attr("d", "M 9 0 L 4 18 L 14 18")
+                                   .style("fill", "#00AA00");
+
         window.genoverse = new Genoverse(genoverseConfig);
 
-        // From WebApp-Common/shared_static
+
+        // From WebApp-Common/shared_templates
         [% INCLUDE 'genoverse_mods/selector_size_display.tt' %]
 
         // code that needs to run AFTER genoverse is loaded and initialized
         window.genoverse.on('afterInit', function (){
           console.log("doing afterAddDomElements stuff");
           // Change the text of the region summary button
-          $(".summary").text("Compute Off-Targets");
-          $(".summary").attr("id","compute_ot");
+          $(".gv-highlight").text("Compute Off-Targets");
+          $(".gv-highlight").attr("id","compute_ot");
+          $(".gv-highlight").attr("style","white-space: normal !important");
+          //$(".gv-highlight").attr("data-toggle","modal");
+          //$(".gv-highlight").attr("data-target","#offTargetModal");
 
           // All tracks are loaded by default on page refresh
           // Hide the ones we don't want to see
@@ -956,171 +1048,130 @@
           }
 
           // Add buttons to allow users to download crisprs from tracks
-          add_csv_download_button("Crisprs","[% c.uri_for('/api/crisprs_in_region') %]");
-          add_bed_download_button("Crisprs","[% c.uri_for('/api/crisprs_in_region') %]");
-          add_csv_download_button("Crispr Pairs","[% c.uri_for('/api/crispr_pairs_in_region') %]");
-          add_bed_download_button("Crispr Pairs","[% c.uri_for('/api/crispr_pairs_in_region') %]");
+          add_download_button("Crisprs","[% c.uri_for('/api/crisprs_in_region') %]");
+          add_download_button("Crispr Pairs","[% c.uri_for('/api/crispr_pairs_in_region') %]");
 
+      });
+          // Close selection and refresh tracks when modal is closed
+          $("#offTargetModal").on('hidden.bs.modal', function(){
+            $(window)[0].genoverse.cancelSelect();
+            reload_tracks();
+          });
 
+          $("#ot_filters_panel").draggable();
+          $("#haplo_filters_panel").draggable();
+          $("#colour_key").draggable({ stack: ".drag", zIndex: 2500  });
+          $("#colour_key").css('boxShadow','0px 0px 1px 1px grey');
+          $('#colour_key').css('z-index', '100');
+          console.log($("#genoverse").offset());
 
-          var spinner = "[% c.uri_for( '/static/images/spinner-circle.gif' ) %]";
+          // Handle clicks on the show/hide radio inputs
+          $("#hide_single").change(function (event){
+            hide_single();
+          });
 
-          // override the 'makeMenu' method in order to add bookmarking buttons
-          // and necessary click handlers
-          var old_makeMenu = $(window)[0].genoverse.makeMenu;
+          $("#show_single").change(function (event){
+            show_single();
+          });
 
-          $(window)[0].genoverse.makeMenu = function (feature, event, track) {
-            // run existing makeMenu code to create popup
-            old_makeMenu.apply(this, arguments);
+          $("#hide_paired").change(function (event){
+            hide_paired();
+          });
 
-            // append the bookmarking button to the popup
-            var settings;
-            if(feature.type == 'Crispr'){
-              console.log('this is a crispr - adding bookmark button');
-              settings = {
-                 'id'           : feature.name,
-                 'type'         : 'Crispr',
-                 'status_uri'   : "[% c.uri_for('/crispr_bookmark_status') %]",
-                 'bookmark_uri' : "[% c.uri_for('/bookmark_crispr') %]",
-                 'spinner'      : spinner,
-                 'bookmark_track' : get_track('Bookmarked Crisprs')
-              };
+          $("#show_paired").change(function (event){
+            show_paired();
+          });
 
-              if (!document.getElementById(feature.name)){
-                $('table', feature.menuEl).append('<tr><td>Sequence</td><td id="' + feature.name + '" oncontextmenu="return false;">'
-                  + feature.sequence + '</td></tr>');
-                document.getElementById(feature.name).addEventListener("mousedown", handle_mousedown);
-              }
+          $("#hide_designs").change(function (event){
+            hide_designs();
+          });
 
-              add_bookmark_button(feature.menuEl,settings);
+          $("#show_designs").change(function (event){
+            show_designs();
+          });
+
+          $("#flank_size").keypress(function (event){
+            if(event.which == 13){
+              apply_crispr_filters();
+              // enter key was pressed
+              //$("#browse_start")[0].value = $(window)[0].genoverse.start + 200;
+              //$("#browse_end")[0].value = $(window)[0].genoverse.end - 200;
+              //this.form.submit();
             }
-            else if(feature.type == 'crispr_pair'){
-              console.log('this is a crispr pair - adding bookmark button');
-              settings = {
-                 'id'           : feature.name,
-                 'type'         : 'Crispr Pair',
-                 'status_uri'   : "[% c.uri_for('/crispr_pair_bookmark_status') %]",
-                 'bookmark_uri' : "[% c.uri_for('/bookmark_crispr_pair') %]",
-                 'spinner'      : spinner,
-                 'bookmark_track' : get_track('Bookmarked Crispr Pairs')
-              };
-              if (!document.getElementById(feature.name)){
-                $('table', feature.menuEl).append('<tr><td>Left Sequence</td><td id="L_' + feature.name + '" oncontextmenu="return false;">'
-                  + feature.left_sequence + '</td></tr>');
-                $('table', feature.menuEl).append('<tr><td>Right Sequence</td><td id="R_' + feature.name + '" oncontextmenu="return false;">'
-                  + feature.right_sequence + '</td></tr>');
-                document.getElementById("L_" + feature.name).addEventListener("mousedown", handle_mousedown);
-                document.getElementById("R_" + feature.name).addEventListener("mousedown", handle_mousedown);
+          });
+
+          $('input[name=crispr_filter]').click(function (event){
+            apply_crispr_filters();
+            //$("#browse_start")[0].value = $(window)[0].genoverse.start + 200;
+            //$("#browse_end")[0].value = $(window)[0].genoverse.end - 200;
+            //this.form.submit();
+          });
+
+          $("#apply_ot_filters").click(function (event){
+            apply_ot_filters();
+          });
+
+          $("#reset_ot_filters").click(function (event){
+            reset_ot_filters();
+          });
+
+          $('#apply_spacer_filters').click(function (event){
+            apply_spacer_filters();
+          });
+
+          $('#reset_spacer_filters').click(function (event){
+            reset_spacer_filters();
+          });
+
+          $('#apply_MAF_threshold').click(function (event){
+            apply_MAF_threshold();
+          });
+
+          // show/hide help messages when values are entered in mismatch counts
+          $("[id$=mismatch]").bind('keyup mouseup',function (event){
+              var help_span_id = "#" + this.id + "_no_max";
+              if(this.value !== ""){
+                  $(help_span_id).hide();
               }
-
-              add_bookmark_button(feature.menuEl,settings);
-            }
-
-            function handle_mousedown(ev) {
-                    if(ev.which == 3)
-                    {
-                      if(ev.target.id == "L_" + feature.name){
-                        copyTextToClipboard(feature.copy_sequence_left);
-                      } else if(ev.target.id == "R_" + feature.name){
-                        copyTextToClipboard(feature.copy_sequence_right);
-                      } else {
-                        copyTextToClipboard(feature.copysequence);
-                      }
-                    }
+              else{
+                  $(help_span_id).show();
               }
+              if(this.id == '0_mismatch'){
+                  if(this.value == "0"){
+                      $('#0_mismatch_input_error').show();
+                  }
+                  else{
+                      $('#0_mismatch_input_error').hide();
+                  }
+              }
+          });
 
-            function detectIE() {
-                    var ua = window.navigator.userAgent;
+          $('#go_to_filters').click(function (event){
+            $("html, body").animate({ scrollTop: $(document).height() }, 1000);
+          });
 
-                    var msie = ua.indexOf('MSIE ');
-                    if (msie > 0) {
-                        // IE 10 or older => return version number
-                        return parseInt(ua.substring(msie + 5, ua.indexOf('.', msie)), 10);
-                    }
+          $('#reload_tracks').click(function (event){
+            reload_tracks();
+            //reload_ensembl_tracks();
+          });
 
-                    var trident = ua.indexOf('Trident/');
-                    if (trident > 0) {
-                        // IE 11 => return version number
-                        var rv = ua.indexOf('rv:');
-                        return parseInt(ua.substring(rv + 3, ua.indexOf('.', rv)), 10);
-                    }
+          $('#best_10_percent').click(function(){
+              set_ot_filters(10);
+              apply_ot_filters();
+          });
 
-                    // other browser or edge
-                    return false;
-                }
+          $('#best_25_percent').click(function(){
+              set_ot_filters(25);
+              apply_ot_filters();
+          });
 
-                // source: http://stackoverflow.com/questions/400212/how-do-i-copy-to-the-clipboard-in-javascript
-                // enhancement with special case for IEs, otherwise the temp textarea will be visible
-                function copyTextToClipboard(text) {
-                    if (detectIE()) {
-                        try {
-                            window.clipboardData.setData('Text', text);
-                            console.log('Copying text command via IE-setData');
-                        } catch (err) {
-                            console.log('Oops, unable to copy via IE-setData');
-                        }
-                    }
-                    else {
+          $('#best_50_percent').click(function(){
+              set_ot_filters(50);
+              apply_ot_filters();
+          });
 
-                        var textArea = document.createElement("textarea");
+          $('#MAF_error_text').hide();
 
-                        //
-                        //  This styling is an extra step which is likely not required.
-                        //
-                        // Why is it here? To ensure:
-                        // 1. the element is able to have focus and selection.
-                        // 2. if element was to flash render it has minimal visual impact.
-                        // 3. less flakyness with selection and copying which might occur if
-                        //    the textarea element is not visible.
-                        //
-                        // The likelihood is the element won't even render, not even a flash,
-                        // so some of these are just precautions.
-                        //
-                        // However in IE the element
-                        // is visible whilst the popup box asking the user for permission for
-                        // the web page to copy to the clipboard. To prevent this, we are using
-                        // the detectIE workaround.
-
-                        // Place in top-left corner of screen regardless of scroll position.
-                        textArea.style.position = 'fixed';
-                        textArea.style.top = 0;
-                        textArea.style.left = 0;
-
-                        // Ensure it has a small width and height. Setting to 1px / 1em
-                        // doesn't work as this gives a negative w/h on some browsers.
-                        textArea.style.width = '2em';
-                        textArea.style.height = '2em';
-
-                        // We don't need padding, reducing the size if it does flash render.
-                        textArea.style.padding = 0;
-
-                        // Clean up any borders.
-                        textArea.style.border = 'none';
-                        textArea.style.outline = 'none';
-                        textArea.style.boxShadow = 'none';
-
-                        // Avoid flash of white box if rendered for any reason.
-                        textArea.style.background = 'transparent';
-
-                        textArea.value = text;
-
-                        document.body.appendChild(textArea);
-
-                        textArea.select();
-
-                        try {
-                            var successful = document.execCommand('copy');
-                            var msg = successful ? 'successful' : 'unsuccessful';
-                            console.log('Copying text command was ' + msg);
-                        } catch (err) {
-                            console.log('Oops, unable to copy');
-                        }
-
-                        document.body.removeChild(textArea);
-                    }
-                }
-          };
-        });
       });
 
 

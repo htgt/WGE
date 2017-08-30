@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::Exon;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::Exon::VERSION = '0.100';
+    $WGE::Model::Schema::Result::Exon::VERSION = '0.107';
 }
 ## use critic
 
@@ -152,8 +152,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-09-30 10:51:00
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:rJpBxtsELVy+cqO+mL7F8w
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2017-06-20 16:59:38
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:0F3PWxibYTbEEh/CEozsew
 
 use WGE::Util::FindPairs;
 

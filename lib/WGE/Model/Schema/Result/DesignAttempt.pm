@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::DesignAttempt;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::DesignAttempt::VERSION = '0.100';
+    $WGE::Model::Schema::Result::DesignAttempt::VERSION = '0.107';
 }
 ## use critic
 
@@ -201,8 +201,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-07-11 13:28:31
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:eAZCnTmQv5gLRBDoUf+oPA
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2017-06-20 16:59:38
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:35hm6gdXM5hhh/l5FFX8cQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

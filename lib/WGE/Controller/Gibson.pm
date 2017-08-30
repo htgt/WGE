@@ -1,7 +1,7 @@
 package WGE::Controller::Gibson;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::Gibson::VERSION = '0.100';
+    $WGE::Controller::Gibson::VERSION = '0.107';
 }
 ## use critic
 
@@ -534,6 +534,41 @@ sub download_design :Path( '/download_design' ) : Args(0) {
 }
 
 sub genoverse_browse_view :Path( '/genoverse_browse') : Args(0){
+    my ($self, $c) = @_;
+
+    my $region;
+    try{
+        $region = get_region_from_params($c->model, $c->request->params);
+    }
+    catch ($e){
+        $c->stash( error_msg => "Could not display genome browser: $e" );
+        return;
+    }
+
+    $c->log->debug('Displaying region: '.Dumper($region));
+
+    $c->stash(
+        'species'       => $region->{'species'},
+        'genome'        => $region->{'genome'},
+        'chromosome'    => $region->{'chromosome'},
+        'browse_start'  => $region->{'browse_start'},
+        'browse_end'    => $region->{'browse_end'},
+        'genes'         => $region->{'genes'},
+        'design_id'     => $c->request->params->{'design_id'},
+        'view_single'   => $c->request->params->{'view_single'},
+        'view_paired'   => $c->request->params->{'view_paired'},
+        'crispr_filter' => $c->request->params->{'crispr_filter'},
+        'flank_size'    => $c->request->params->{'flank_size'},
+        'colours'       => colours,
+        'crispr_id'     => $c->request->params->{'crispr_id'},
+        'crispr_pair_id' => $c->request->params->{'crispr_pair_id'},
+        'ot_distributions' => human_ot_distributions(),
+    );
+
+    return;
+}
+
+sub genoverse_browse_view_new :Path( '/genoverse_browse_new') : Args(0){
     my ($self, $c) = @_;
 
     my $region;

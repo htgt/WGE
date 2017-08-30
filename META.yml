@@ -5,10 +5,12 @@ author:
 build_requires:
   File::Find: 0
   File::Temp: 0
+  Selenium::Firefox: 0
   Test::MockModule: 0
   Test::More: 0.88
   Test::WWW::Mechanize::Catalyst: 0
   URI: 0
+  WebAppCommon::Testing::JS: 0
   YAML: 0
 dynamic_config: 0
 generated_by: 'Dist::Zilla version 4.300014, CPAN::Meta::Converter version 2.120921'
@@ -38,6 +40,7 @@ requires:
   Catalyst::View::JSON: 0
   Catalyst::View::TT: 0
   Config::Any: 0
+  Config::Tiny: 0
   Const::Fast: 0
   DBI: 0
   DBIx::Class::Core: 0
@@ -47,6 +50,7 @@ requires:
   Data::Dump: 0
   Data::Dumper: 0
   Data::Random: 0
+  Data::Serializer: 0
   DateTime: 0
   DateTime::Format::Pg: 0
   Excel::Writer::XLSX: 0
@@ -105,4 +109,4 @@ requires:
   strict: 0
   utf8: 0
   warnings: 0
-version: 0.100
+version: 0.107
