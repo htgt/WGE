@@ -51,7 +51,7 @@ sub variation_for_region {
             $params->{'end_coord'},
         );
         $self->log->debug("got slice");
-
+$DB::single=1;
         my $vf_adaptor = $self->variation_feature_adaptor( $params->{'species'} );
         $self->log->debug("getting variation features");
         my $vfs = $vf_adaptor->fetch_all_by_Slice( $slice );
@@ -76,7 +76,7 @@ sub variation_for_region {
                 $maff{'end'} = $vf->transform('chromosome')->end;
                 # NB: when we upgrade to ensembl API v83 $vf->source returns object
                 # rather than string so we'll need to fetch the $vf->source->name
-                $maff{'source'} = $vf->source;
+                $maff{'source'} = $vf->source->name;
                 push @vf_mafs, \%maff;
             }
         }
