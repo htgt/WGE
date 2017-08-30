@@ -346,7 +346,7 @@
     <th>Type</th>
   </tr>
   <tr>
-    <td>crispr.id</td>
+    <td><a href="[% c.uri_for( '/genoverse_browse', { crispr_id => crispr.id, view_single => 1 }) %]">[% crispr.id %]</a></td>
     <td>Original CRISPR</td>
     <td class="seq">
       [%- crispr_grna _ " " _ crispr_pam -%]

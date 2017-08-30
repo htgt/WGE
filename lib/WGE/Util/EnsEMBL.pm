@@ -25,7 +25,7 @@ class_has registry => (
 sub _build_registry {
     my $self = shift;
     Bio::EnsEMBL::Registry->load_registry_from_db(
-        -host => $ENV{LIMS2_ENSEMBL_HOST} || 'ensembldb.ensembl.org',
+        -host => $ENV{LIMS2_ENSEMBL_HOST} || 'ensembldb.internal.sanger.ac.uk',
         -user => $ENV{LIMS2_ENSEMBL_USER} || 'anonymous'
     );
 
