@@ -225,6 +225,7 @@
 </div>
 </div> [%# end of left-hand div %]
 
+[% IF species == 'Grch38' %]
 <div class="col-md-3">
   <div id="haplo_filters_panel">
     <form class="well">
@@ -263,6 +264,7 @@
     </form>
   </div>
 </div>
+[% END %]
 
 <div class="col-md-3">
 <div id="ot_filters_panel">
@@ -872,6 +874,7 @@
             messages        : { threshold : 'MAF variations not displayed for regions larger than ' },
             autoheight      : true
           }),
+          [% IF species == 'Grch38' %]
           Genoverse.Track.Haplotype.extend({
             id              : 'Haplotype_1',
             name            : 'Haplotype_1',
@@ -916,6 +919,7 @@
             },
             autoheight      : true,
           }),
+          [% END %]
           [% IF genome.lower != 'grch37' %]
           Genoverse.Track.extend({
             name       : 'Protein',
