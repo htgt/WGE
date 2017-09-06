@@ -19,6 +19,7 @@ use POSIX qw( floor );
 use WGE::Util::FindPairs;
 use WGE::Util::OffTargetServer;
 use WGE::Util::FindOffTargets;
+use WGE::Util::Haplotype;
 use WebAppCommon::Util::EnsEMBL;
 use JSON;
 use WGE::Util::TimeOut qw(timeout);
@@ -787,7 +788,6 @@ sub haplotypes_for_region :Local('haplotypes_for_region') Args(0) {
 
     $c->log->debug("Finding haplotypes for region " . $params->{chr_name}.":".$params->{chr_start}."-".$params->{chr_end});
 
-    use WGE::Util::Haplotype;
     my $haplotype = WGE::Util::Haplotype->new( { species => $params->{species} } );
 
     my $haplo_features = $haplotype->retrieve_haplotypes(
@@ -805,9 +805,6 @@ sub haplotypes_for_region :Local('haplotypes_for_region') Args(0) {
 
         push(@{$updated_haplo_features}, $phased_haplo);
     }
-
-use Data::Dumper;
-    print Dumper($params);
 
     $c->log->debug("Finished finding haplotypes for region");
 
