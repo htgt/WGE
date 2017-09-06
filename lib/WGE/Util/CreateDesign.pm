@@ -1,7 +1,7 @@
 package WGE::Util::CreateDesign;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::CreateDesign::VERSION = '0.106';
+    $WGE::Util::CreateDesign::VERSION = '0.108';
 }
 ## use critic
 

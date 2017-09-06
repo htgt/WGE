@@ -32,6 +32,7 @@ bin/recovery_pairs.pl
 bin/update_crispr_pair.pl
 human_genes_75.yaml
 human_genes_76.yaml
+human_genes_79.yaml
 lib/Catalyst/Authentication/Credential/OAuth2.pm
 lib/WGE.pm
 lib/WGE/Controller/API.pm
@@ -83,6 +84,8 @@ lib/WGE/Model/Schema/Result/GeneDesign.pm
 lib/WGE/Model/Schema/Result/GenotypingPrimer.pm
 lib/WGE/Model/Schema/Result/GenotypingPrimerType.pm
 lib/WGE/Model/Schema/Result/GibsonDesignBrowser.pm
+lib/WGE/Model/Schema/Result/LibraryDesignJob.pm
+lib/WGE/Model/Schema/Result/LibraryDesignStage.pm
 lib/WGE/Model/Schema/Result/PairOffTargets.pm
 lib/WGE/Model/Schema/Result/Species.pm
 lib/WGE/Model/Schema/Result/SpeciesDefaultAssembly.pm
@@ -93,6 +96,7 @@ lib/WGE/Model/Schema/Result/UserCrisprPairsMouse.pm
 lib/WGE/Model/Schema/Result/UserCrisprsGrch38.pm
 lib/WGE/Model/Schema/Result/UserCrisprsHuman.pm
 lib/WGE/Model/Schema/Result/UserCrisprsMouse.pm
+lib/WGE/Model/Schema/Result/VariantCallFormat.pm
 lib/WGE/Model/Schema/ResultSet/Crispr.pm
 lib/WGE/Model/Schema/ResultSet/CrisprPair.pm
 lib/WGE/Model/Schema/ResultSet/Gene.pm
@@ -107,6 +111,7 @@ lib/WGE/Util/FindCrisprs.pm
 lib/WGE/Util/FindOffTargets.pm
 lib/WGE/Util/FindPairs.pm
 lib/WGE/Util/GenomeBrowser.pm
+lib/WGE/Util/Haplotype.pm
 lib/WGE/Util/OAuthHelper.pm
 lib/WGE/Util/OffTargetServer.pm
 lib/WGE/Util/PersistCrisprs.pm
@@ -120,6 +125,7 @@ lib/WGE/View/CSV.pm
 lib/WGE/View/JSON.pm
 lib/WGE/View/Web.pm
 mouse_genes_75.yaml
+mouse_genes_79.yaml
 root/favicon.ico
 root/gibson/create_custom_target_gibson_design.tt
 root/gibson/create_gibson_design.tt
@@ -250,9 +256,12 @@ root/static/images/spinner-circle-small.gif
 root/static/images/spinner-circle.gif
 root/static/images/table_view.png
 root/static/js/bootstrap.min.js
+root/static/js/d3.min.js
 root/static/js/diagram.builder.js
+root/static/js/genoverse_haplotype_track.js
 root/static/js/genoverse_variation_track.js
 root/static/js/jquery-1.12.3.min.js
+root/static/js/jquery-2.2.4.min.js
 root/static/js/jquery-ui-1.11.4.js
 root/static/js/jquery-ui-1.12.0.custom.min.js
 root/static/js/jquery.cookie.js

@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::CrisprPairStatus;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::CrisprPairStatus::VERSION = '0.106';
+    $WGE::Model::Schema::Result::CrisprPairStatus::VERSION = '0.108';
 }
 ## use critic
 
@@ -138,8 +138,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-10-01 12:22:23
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:RJ6xNtUQLkkgMIbGL4vIuw
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2017-06-20 16:59:38
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:9FigKkUhzs7bIB327QOZzg
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

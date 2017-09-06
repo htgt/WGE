@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::User;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::User::VERSION = '0.106';
+    $WGE::Model::Schema::Result::User::VERSION = '0.108';
 }
 ## use critic
 
@@ -165,6 +165,21 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+=head2 library_design_jobs
+
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::LibraryDesignJob>
+
+=cut
+
+__PACKAGE__->has_many(
+  "library_design_jobs",
+  "WGE::Model::Schema::Result::LibraryDesignJob",
+  { "foreign.created_by_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
 =head2 user_crispr_pairs_grch38s
 
 Type: has_many
@@ -256,8 +271,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-10-01 12:22:23
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:J/qLmKV+gpIgBDi+P7cdaA
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2017-06-20 16:59:39
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:UJ7OzifV9cxI+2b+7jFN8Q
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

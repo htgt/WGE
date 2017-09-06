@@ -1,7 +1,7 @@
 package WGE::Util::Variation;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::Variation::VERSION = '0.106';
+    $WGE::Util::Variation::VERSION = '0.108';
 }
 ## use critic
 
@@ -82,7 +82,7 @@ sub variation_for_region {
                 $maff{'end'} = $vf->transform('chromosome')->end;
                 # NB: when we upgrade to ensembl API v83 $vf->source returns object
                 # rather than string so we'll need to fetch the $vf->source->name
-                $maff{'source'} = $vf->source;
+                $maff{'source'} = $vf->source->name;
                 push @vf_mafs, \%maff;
             }
         }

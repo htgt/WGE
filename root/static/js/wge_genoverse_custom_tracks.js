@@ -4,6 +4,7 @@
 
 Genoverse.Track.View.FilterCrisprs = Genoverse.Track.View.Transcript.extend({
     color : '#FFFFFF',
+
     drawFeature: function (feature, featureContext, labelContext, scale) {
         // Fade color of feature with off-target summary that does not match profile
         if(feature.ot_summary){
@@ -15,6 +16,22 @@ Genoverse.Track.View.FilterCrisprs = Genoverse.Track.View.Transcript.extend({
             if( fitsOTProfile(off_targets,ot_profile) ){
                 //restoreCDS(feature.cds);
                 this.base.apply(this, arguments);
+
+                var cds = feature.cds;
+                var add = Math.max(scale, this.widthCorrection);
+
+                for (var i = 0; i < cds.length; i++) {
+                  x = feature.x + (cds[i].start - feature.start) * scale;
+                  w = Math.max((cds[i].end - cds[i].start) * scale + add, this.minScaledWidth);
+
+                  if (x > this.width || x + w < 0) {
+                    continue;
+                  }
+
+                  featureContext.fillStyle = cds[i].color;
+                  featureContext.fillRect(x, feature.y, w, feature.height);
+                }
+
                 if(feature.name == this.track.crispr_id){
                     highlight_feature(feature,featureContext,scale);
                 }
@@ -28,6 +45,23 @@ Genoverse.Track.View.FilterCrisprs = Genoverse.Track.View.Transcript.extend({
         else{
             // Lack of off-target summary already indicated by grey feature color
             this.base.apply(this, arguments);
+
+            var cds = feature.cds;
+            var add = Math.max(scale, this.widthCorrection);
+
+            for (var i = 0; i < cds.length; i++) {
+              x = feature.x + (cds[i].start - feature.start) * scale;
+              w = Math.max((cds[i].end - cds[i].start) * scale + add, this.minScaledWidth);
+
+              if (x > this.width || x + w < 0) {
+                continue;
+              }
+
+              featureContext.fillStyle = cds[i].color;
+              featureContext.fillRect(x, feature.y, w, feature.height);
+            }
+
+
             if(feature.name == this.track.crispr_id){
                 highlight_feature(feature,featureContext,scale);
             }
@@ -88,6 +122,22 @@ Genoverse.Track.View.FilterCrisprPairs = Genoverse.Track.View.Transcript.extend(
             // Lack of off-target summary already indicated by grey color
             //restoreCDS(feature.cds);
             this.base.apply(this,arguments);
+
+            var cds = feature.cds;
+            var add = Math.max(scale, this.widthCorrection);
+
+            for (var i = 0; i < cds.length; i++) {
+              x = feature.x + (cds[i].start - feature.start) * scale;
+              w = Math.max((cds[i].end - cds[i].start) * scale + add, this.minScaledWidth);
+
+              if (x > this.width || x + w < 0) {
+                continue;
+              }
+
+              featureContext.fillStyle = cds[i].color;
+              featureContext.fillRect(x, feature.y, w, feature.height);
+            }
+
             if(feature.name == this.track.crispr_pair_id){
                 highlight_feature(feature,featureContext,scale);
             }
@@ -160,7 +210,7 @@ Genoverse.Track.Controller.Protein = Genoverse.Track.Controller.Sequence.extend(
     var controls = browser.selectorControls;
 
     //add our find oligo button to the context menu
-    $("<button class='oligos'>Get Oligo</button>").insertBefore( controls.find(".cancel") );
+    $("<div class='gv-button-set'><button class='oligos'>Get Oligo</button></div>").insertBefore( controls.find(".gv-cancel").parent() );
 
     //so we can access methods inside click method
     var parent = this;
@@ -355,9 +405,9 @@ Genoverse.Track.Controller.Protein = Genoverse.Track.Controller.Sequence.extend(
             .search({ x: x, y: y, w: 1, h: 1 })
             .sort(function (a, b) { return a.sort - b.sort; })[0];
 
-    console.log(f);
-
-    this._create_silent_mutation_table( f );
+    if (f) {
+      this._create_silent_mutation_table( f );
+    }
   },
 
   _create_silent_mutation_table: function(f) {
@@ -503,7 +553,7 @@ function highlight_feature (feature, context, scale) {
 
 // function to add a bookmarking button to the crispr and crispr pair
 // popup menus in the genoverse browse view
-function add_bookmark_button(menu, settings){
+/*function add_bookmark_button(menu, settings){
     $.get(settings.status_uri + "/" + settings.id,
       function (data){
         console.log(data);
@@ -525,7 +575,9 @@ function add_bookmark_button(menu, settings){
           $('[name=' + settings.id + ']').remove();
 
           // add the new button
-          menu.append('<button name="' + settings.id + '">' + button_text + '</button>');
+          menu.append('<button name="' + settings.id
+            + '" onClick="toggle_bookmark(this, settings.bookmark_uri, settings.id, settings.type, settings.spinner, settings.bookmark_track);">'
+            + button_text + '</button>');
 
           // add ajax request to button
           $('[name=' + settings.id + ']').click(function (event){
@@ -534,4 +586,4 @@ function add_bookmark_button(menu, settings){
         }
       }
     );
-}
+}*/
