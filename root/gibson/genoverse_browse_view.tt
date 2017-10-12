@@ -225,47 +225,6 @@
 </div>
 </div> [%# end of left-hand div %]
 
-[% IF species == 'Grch38' %]
-<div class="col-md-3">
-  <div id="haplo_filters_panel">
-    <form class="well">
-      <i id="pan" class="pull-right glyphicon glyphicon-move"></i>
-      <table class="table" id="haplo_filters_table">
-        <thead>
-          <tr>
-            <th id="haplo_filters_heading">Haplotype Filters</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>
-              <fieldset name="haplo_filters">
-                <!-- Filter so that only DB rows containing PASS in the filters field will be shown -->
-                <input type="checkbox" onclick="apply_haplo_filters();" id="10x_allele_fraction" value="allele_fraction" checked> Allele Fraction<br>
-                <!-- Filters out heterozygous variants with allele fraction under 15% -->
-                <input type="checkbox" onclick="apply_haplo_filters();" id="10x_qual_filter" value="qual_filter" checked> Quality Filter<br>
-                <!-- A basic variant quality filter, turned for 10x data. Heterzygous variants with QUAL under 15 and homozygous variants with QUAL under 50 have this filter applied. -->
-                <input type="checkbox" onclick="apply_haplo_filters();" id="10x_phasing_inconsistent" value="phasing_inconsistent" checked> Phasing Inconsistent<br>
-                <!-- Flags heterozygous variants where the reads supporting each allele do not segregate cleanly onto the local haplotypes. The phasing algorithm compares the likelihoods of a background false-positive model and a sequencing error model to classify likely false-positives. This is a powerful filter for reducing false-positive variant calls. Be aware that somatic or mosaic variants, where only a subset of the sample carries the variant, will be preferentially tagged with this filter. If you are interested in these variants, you may want to include these variants in your analysis -->
-                <input type="checkbox" onclick="apply_haplo_filters();" id="10x_homopolymer_unphased_insertion" value="homopolymer_unphased_insertion" checked> Homopolymer Unphased Insertion<br>
-                <!-- A 10x-specific filter for insertions in homopolymers with length greater than or equal to 4, that are unphased. This class of variations calls in observed to be mostly false positives. -->
-                <input type="checkbox" onclick="apply_haplo_filters();" id="10x_rescued_molecule_high_diversity" value="rescued_molecule_high_diversity" checked> Rescued Molecule High Diversity<br>
-                <!-- Filter variants that are supported primarity by reads that have been 'rescued' with barcode-aware alignment, where the mapped molecule has a high degree of divergence from the reference. This filter reduces false positive variant calls in complex duplicated loci that tend to have missing copies in the reference genome. -->
-              </fieldset>
-              <div>
-                <input class="btn btn-default btn-xs" type="button" onclick="remove_haplo_filters();" name="remove_all" value="Remove All">
-                <input class="btn btn-default btn-xs" type="button" onclick="apply_all_haplo_filters();" name="add_all_haplo_filters" value="Add All"  >
-
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </form>
-  </div>
-</div>
-[% END %]
-
 <div class="col-md-3">
 <div id="ot_filters_panel">
 <form class="well">
@@ -309,7 +268,46 @@
 </form>
 </div>
 
+[% IF species == 'Grch38' %]
+<div class="col-md-12">
+  <div id="haplo_filters_panel">
+    <form class="well">
+      <i id="pan" class="pull-right glyphicon glyphicon-move"></i>
+      <table class="table" id="haplo_filters_table">
+        <thead>
+          <tr>
+            <th id="haplo_filters_heading">Haplotype Filters</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <fieldset name="haplo_filters">
+                <!-- Filter so that only DB rows containing PASS in the filters field will be shown -->
+                <input type="checkbox" onclick="apply_haplo_filters();" id="10x_allele_fraction" value="allele_fraction" checked> Allele Fraction<br>
+                <!-- Filters out heterozygous variants with allele fraction under 15% -->
+                <input type="checkbox" onclick="apply_haplo_filters();" id="10x_qual_filter" value="qual_filter" checked> Quality Filter<br>
+                <!-- A basic variant quality filter, turned for 10x data. Heterzygous variants with QUAL under 15 and homozygous variants with QUAL under 50 have this filter applied. -->
+                <input type="checkbox" onclick="apply_haplo_filters();" id="10x_phasing_inconsistent" value="phasing_inconsistent" checked> Phasing Inconsistent<br>
+                <!-- Flags heterozygous variants where the reads supporting each allele do not segregate cleanly onto the local haplotypes. The phasing algorithm compares the likelihoods of a background false-positive model and a sequencing error model to classify likely false-positives. This is a powerful filter for reducing false-positive variant calls. Be aware that somatic or mosaic variants, where only a subset of the sample carries the variant, will be preferentially tagged with this filter. If you are interested in these variants, you may want to include these variants in your analysis -->
+                <input type="checkbox" onclick="apply_haplo_filters();" id="10x_homopolymer_unphased_insertion" value="homopolymer_unphased_insertion" checked> Homopolymer Unphased Insertion<br>
+                <!-- A 10x-specific filter for insertions in homopolymers with length greater than or equal to 4, that are unphased. This class of variations calls in observed to be mostly false positives. -->
+                <input type="checkbox" onclick="apply_haplo_filters();" id="10x_rescued_molecule_high_diversity" value="rescued_molecule_high_diversity" checked> Rescued Molecule High Diversity<br>
+                <!-- Filter variants that are supported primarity by reads that have been 'rescued' with barcode-aware alignment, where the mapped molecule has a high degree of divergence from the reference. This filter reduces false positive variant calls in complex duplicated loci that tend to have missing copies in the reference genome. -->
+              </fieldset>
+              <div>
+                <input class="btn btn-default btn-xs" type="button" onclick="remove_haplo_filters();" name="remove_all" value="Remove All">
+                <input class="btn btn-default btn-xs" type="button" onclick="apply_all_haplo_filters();" name="add_all_haplo_filters" value="Add All"  >
 
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+</div>
+[% END %]
 
 </div> [%# end of right-hand div %]
 </div> [%# end of row div %]
