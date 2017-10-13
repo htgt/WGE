@@ -23,6 +23,7 @@ export WGE_BASE=/www/user
 #    AutoCommit: 1
 #    user: wge_owner
 #    password: a_different_password
+# The location of this (and other YAML) files is a subdirectory of $WGE_OPT
 
 export WGE_CONFIGURE_DB=MY_DB_PROFILE
 
