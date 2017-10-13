@@ -6,10 +6,23 @@ export WGE_BASE=/www/user
 
 # The database profile
 # You must have a PostgreSQL database installed with the WGE schema and relevant
-# data loaded. Youj don't need every table to be populate dto use WGE.
+# data loaded. You don't need every table to be populate dto use WGE.
 # The details are documented on the WGE GitHub repo and elsewhere.
-# This line is NOT the name of the WGE database, it is the key that accesss a hash of data
+# This line is NOT the name of the WGE database, it is the key that accesses a hash of data (YAML)
 # that will enable the web application (WebApp) to connect to the PostgreSQL instance
+# e.g.
+# WGE_LIVE:
+#    schema_class: WGE::Model::Schema
+#    dsn: 'dbi:Pg:host=this-wge-db;port=5555;dbname=wge'
+#    AutoCommit: 1
+#    user: wge_owner
+#    password: my_secure_pass
+# WGE_STAGING:
+#    schema_class: WGE::Model::Schema
+#    dsn: 'dbi:Pg:host=this-wge-staging-db;port=5432;dbname=wge'
+#    AutoCommit: 1
+#    user: wge_owner
+#    password: a_different_password
 
 export WGE_CONFIGURE_DB=MY_DB_PROFILE
 
@@ -29,7 +42,7 @@ export WGE_SHARED=$WGE_BASE/git-checkout
 export WGE_DEV_ROOT=$WGE_SHARED/WGE
 
 # There may be an issue with Ensembl timeouts resulting in poor performance, if so set this variable to 1
-# In development mode, always set this to 1
+# In development mode (command: "wge webapp"), always set this to 1
 # In production mode unset this variable.
 # Running under FCGI and Apache a timeout from Ensembl will result in that FCGI thread
 # being terminated and the performance of WGE overall will be maintained.
@@ -39,7 +52,9 @@ export WGE_NO_TIMEOUT=1
 #unset WGE_NO_TIMEOUT
 
 # The default webapp server port is 3000, the fastcgi in default configuration expects 3031...
-# However, you must use whichever port is on you factcgi file, if you are setting up FCGI support
+# However, you must use whichever port is in your factcgi file, if you are setting up FCGI support
+# The conf directory contains helpful scripts to configure your fcgi and Apache setup, use them.
+# See: conf/
 
 export WGE_WEBAPP_SERVER_PORT=8002
 export WGE_LIVE_WEBAPP_SERVER_PORT=8000
@@ -55,6 +70,7 @@ export WGE_FCGI_PROC=8
 export WGE_FCGI_PID_FILE=/var/tmp/wge/run/fastcgi.pid
 
 # Apache configration
+# See the conf/generate_apache_conf.sh and conf/wge_apache.conf.tpl scripts for help in generating your Apache setup
 export WGE_APACHE_PORT=8001
 export WGE_PRODUCTION=/opt/wge/live
 export WGE_FCGI_HOST=localhost
