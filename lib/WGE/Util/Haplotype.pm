@@ -17,10 +17,6 @@ has species => (
 sub retrieve_haplotypes {
 	my ($self, $model, $params) = @_;
 
-
-
-    if ($params->{haplo_filter}){};
-
 	my @vcf_rs = $model->schema->resultset('VariantCallFormat')->search({
             chrom   => "chr" . $params->{chr_name},
             pos     => {'>' => $params->{chr_start}, '<' => $params->{chr_end} }
