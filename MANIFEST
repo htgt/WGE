@@ -309,3 +309,4 @@ t/lib/Test/WGE.pm
 t/release-no-smart-comments.t
 wge.conf
 wge.psgi
+wge_schema_2017_09_29.sql

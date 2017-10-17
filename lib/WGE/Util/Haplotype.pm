@@ -1,7 +1,7 @@
 package WGE::Util::Haplotype;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::Haplotype::VERSION = '0.107';
+    $WGE::Util::Haplotype::VERSION = '0.109';
 }
 ## use critic
 
@@ -22,10 +22,6 @@ has species => (
 
 sub retrieve_haplotypes {
 	my ($self, $model, $params) = @_;
-
-
-
-    if ($params->{haplo_filter}){};
 
 	my @vcf_rs = $model->schema->resultset('VariantCallFormat')->search({
             chrom   => "chr" . $params->{chr_name},
