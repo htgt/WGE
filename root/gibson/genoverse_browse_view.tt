@@ -276,7 +276,7 @@
       <table class="table" id="haplo_filters_table">
         <thead>
           <tr>
-            <th id="haplo_filters_heading">Haplotype Filters</th>
+            <th id="haplo_filters_heading">Haplotype Filters: Kolf2-C1</th>
           </tr>
         </thead>
         <tbody>
@@ -776,8 +776,6 @@
     reload_tracks(tracks);
   }
 
-
-
   function find_off_targets(data) {
     console.log('find off target button clicked');
     var params = {
@@ -812,7 +810,6 @@
   }
 
   // Add event handlers to filter forms
-
 
 </script>
 
@@ -875,7 +872,7 @@
           [% IF species == 'Grch38' %]
           Genoverse.Track.Haplotype.extend({
             id              : 'Haplotype_1',
-            name            : 'Haplotype_1',
+            name            : '<a style="color:white" title="Email wge@sanger.ac.uk for information on how to access the Kolf2-C1 clones.">Kolf2-C1_A</a>',
             trackNum        : 1,
             filterProfile   : [
                                 '10X_ALLELE_FRACTION',
@@ -890,14 +887,14 @@
             view            : Genoverse.Track.View.Transcript.Haplotype,
             threshold       : 5000,
             messages        : {
-              threshold : 'Haplotype variations not displayed for regions larger than ',
+              threshold : 'Kolf2-C1 variations not displayed for regions larger than ',
               resize    : 'Some features are currently hidden, <a class="gv-resize">resize to see all</a>'
             },
             autoheight      : true,
           }),
           Genoverse.Track.Haplotype.extend({
             id              : 'Haplotype_2',
-            name            : 'Haplotype_2',
+            name            : '<a style="color:white" title="Email wge@sanger.ac.uk for information on how to access the Kolf2-C1 clones.">Kolf2-C1_B</a>',
             trackNum        : 2,
             filterProfile   : [
                                 '10X_ALLELE_FRACTION',
@@ -912,7 +909,7 @@
             view            : Genoverse.Track.View.Transcript.Haplotype,
             threshold       : 5000,
             messages        : {
-              threshold : 'Haplotype variations not displayed for regions larger than ',
+              threshold : 'Kolf2-C1 variations not displayed for regions larger than ',
               resize    : 'Some features are currently hidden, <a class="gv-resize">resize to see all</a>'
             },
             autoheight      : true,
