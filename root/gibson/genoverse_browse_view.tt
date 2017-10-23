@@ -872,11 +872,7 @@
           [% IF species == 'Grch38' %]
           Genoverse.Track.Haplotype.extend({
             id              : 'Haplotype_1',
-<<<<<<< HEAD
-            name            : '<a style="color:white" title="Email wge@sanger.ac.uk for information on how to access the Kolf2-C1 clones.">Kolf2-C1_A</a>',
-=======
             name            : '<a style="color:white" title="Email wge@sanger.ac.uk for information on how to access the Kolf2-C1 clones.">Kolf2-C1_1</a>',
->>>>>>> redmine_12468_Filter_issues
             trackNum        : 1,
             filterProfile   : [
                                 '10X_ALLELE_FRACTION',
@@ -898,11 +894,7 @@
           }),
           Genoverse.Track.Haplotype.extend({
             id              : 'Haplotype_2',
-<<<<<<< HEAD
-            name            : '<a style="color:white" title="Email wge@sanger.ac.uk for information on how to access the Kolf2-C1 clones.">Kolf2-C1_B</a>',
-=======
             name            : '<a style="color:white" title="Email wge@sanger.ac.uk for information on how to access the Kolf2-C1 clones.">Kolf2-C1_2</a>',
->>>>>>> redmine_12468_Filter_issues
             trackNum        : 2,
             filterProfile   : [
                                 '10X_ALLELE_FRACTION',

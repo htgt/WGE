@@ -1,7 +1,7 @@
 package WGE::Util::GenomeBrowser;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::GenomeBrowser::VERSION = '0.110';
+    $WGE::Util::GenomeBrowser::VERSION = '0.111';
 }
 ## use critic
 
