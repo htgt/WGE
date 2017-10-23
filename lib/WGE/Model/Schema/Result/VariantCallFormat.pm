@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::VariantCallFormat;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::VariantCallFormat::VERSION = '0.109';
+    $WGE::Model::Schema::Result::VariantCallFormat::VERSION = '0.110';
 }
 ## use critic
 

@@ -1,7 +1,7 @@
 package WGE::Util::ExportCSV;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::ExportCSV::VERSION = '0.109';
+    $WGE::Util::ExportCSV::VERSION = '0.110';
 }
 ## use critic
 

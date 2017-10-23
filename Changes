@@ -1,3 +1,6 @@
+0.110     2017-10-23 14:10:52 Europe/London
+
+    Renamed haplotype to kolf2 and fixed filter issue
 0.109     2017-10-17 12:20:41 Europe/London
 
     Swapped the default locations of the Haplotype and Off-target Filter panels
