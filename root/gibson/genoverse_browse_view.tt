@@ -872,7 +872,11 @@
           [% IF species == 'Grch38' %]
           Genoverse.Track.Haplotype.extend({
             id              : 'Haplotype_1',
+<<<<<<< HEAD
             name            : '<a style="color:white" title="Email wge@sanger.ac.uk for information on how to access the Kolf2-C1 clones.">Kolf2-C1_A</a>',
+=======
+            name            : '<a style="color:white" title="Email wge@sanger.ac.uk for information on how to access the Kolf2-C1 clones.">Kolf2-C1_1</a>',
+>>>>>>> redmine_12468_Filter_issues
             trackNum        : 1,
             filterProfile   : [
                                 '10X_ALLELE_FRACTION',
@@ -894,7 +898,11 @@
           }),
           Genoverse.Track.Haplotype.extend({
             id              : 'Haplotype_2',
+<<<<<<< HEAD
             name            : '<a style="color:white" title="Email wge@sanger.ac.uk for information on how to access the Kolf2-C1 clones.">Kolf2-C1_B</a>',
+=======
+            name            : '<a style="color:white" title="Email wge@sanger.ac.uk for information on how to access the Kolf2-C1 clones.">Kolf2-C1_2</a>',
+>>>>>>> redmine_12468_Filter_issues
             trackNum        : 2,
             filterProfile   : [
                                 '10X_ALLELE_FRACTION',
@@ -1088,6 +1096,39 @@
           $("#show_designs").change(function (event){
             show_designs();
           });
+
+      var radios = document.getElementsByName("view_single"); // list of radio buttons
+      var val = sessionStorage.getItem('view_single'); // local storage value
+      for(var i=0;i<radios.length;i++){
+        if(radios[i].value == val){
+          radios[i].checked = true; // marking the required radio as checked
+        }
+      }
+      $('input[name="view_single"]').on('change', function(){
+        sessionStorage.setItem('view_single', $(this).val()); 
+      });
+
+      var radios = document.getElementsByName("view_paired"); 
+      var val = sessionStorage.getItem('view_paired'); 
+      for(var i=0;i<radios.length;i++){
+        if(radios[i].value == val){
+          radios[i].checked = true; 
+        }
+      }
+      $('input[name="view_paired"]').on('change', function(){
+        sessionStorage.setItem('view_paired', $(this).val()); 
+      });
+
+      var radios = document.getElementsByName("view_designs"); 
+      var val = sessionStorage.getItem('view_designs'); 
+      for(var i=0;i<radios.length;i++){
+        if(radios[i].value == val){
+          radios[i].checked = true; 
+        }
+      }
+      $('input[name="view_designs"]').on('change', function(){
+        sessionStorage.setItem('view_designs', $(this).val()); 
+      });
 
           $("#flank_size").keypress(function (event){
             if(event.which == 13){
