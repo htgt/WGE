@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+0.109     2017-10-17 12:20:41 Europe/London
+
+    Swapped the default locations of the Haplotype and Off-target Filter panels
 0.108     2017-09-06 10:34:18 Europe/London
     Haplo set to GRCH38 only
 0.107     2017-08-30 16:52:42 Europe/London
