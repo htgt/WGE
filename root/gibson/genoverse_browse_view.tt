@@ -100,7 +100,7 @@
 
   <div class="row-fluid">
   <div class="col-md-9">
-  <form action="[% c.uri_for( '/genoverse_browse' ) %]" class="well">
+  <form action="[% c.uri_for( '/genoverse_browse' ) %]" class="well" name='form1'>
     <input type="hidden" name="genome" value=[%genome%] />
     <input type="hidden" name="chromosome" value=[%chromosome%] />
     <input id="browse_start" type="hidden" name="browse_start" value=[%browse_start%] />
@@ -116,6 +116,7 @@
         <th><p id="spacer_filters_heading" [% UNLESS view_paired %]class="muted"[% END %]>Spacer Filter</p></th>
       </tr>
     </thead>
+
     <tbody>
       <tr>
         <td>
@@ -125,6 +126,7 @@
           <input id="hide_single" type="radio" name="view_single" value="0"  [% IF not view_single %]checked[% END %]>
           Hide</input>
         </td>
+
         <td>
           <input id="show_paired" type="radio" name="view_paired" value="1" [% IF view_paired %]checked[% END %]>
           Show</input>
@@ -276,7 +278,7 @@
       <table class="table" id="haplo_filters_table">
         <thead>
           <tr>
-            <th id="haplo_filters_heading">Haplotype Filters</th>
+            <th id="haplo_filters_heading">Haplotype Filters: Kolf2-C1</th>
           </tr>
         </thead>
         <tbody>
@@ -284,15 +286,15 @@
             <td>
               <fieldset name="haplo_filters">
                 <!-- Filter so that only DB rows containing PASS in the filters field will be shown -->
-                <input type="checkbox" onclick="apply_haplo_filters();" id="10x_allele_fraction" value="allele_fraction" checked> Allele Fraction<br>
+                <input type="checkbox" id="stat" name="switch" onclick="apply_haplo_filters();" id="10x_allele_fraction" value="allele_fraction" checked> Allele Fraction<br>
                 <!-- Filters out heterozygous variants with allele fraction under 15% -->
-                <input type="checkbox" onclick="apply_haplo_filters();" id="10x_qual_filter" value="qual_filter" checked> Quality Filter<br>
+                <input type="checkbox" name="switch" id="stat"  onclick="apply_haplo_filters();" id="10x_qual_filter" value="qual_filter" checked> Quality Filter<br>
                 <!-- A basic variant quality filter, turned for 10x data. Heterzygous variants with QUAL under 15 and homozygous variants with QUAL under 50 have this filter applied. -->
-                <input type="checkbox" onclick="apply_haplo_filters();" id="10x_phasing_inconsistent" value="phasing_inconsistent" checked> Phasing Inconsistent<br>
+                <input type="checkbox" name="switch" id="stat"  onclick="apply_haplo_filters();" id="10x_phasing_inconsistent" value="phasing_inconsistent" checked> Phasing Inconsistent<br>
                 <!-- Flags heterozygous variants where the reads supporting each allele do not segregate cleanly onto the local haplotypes. The phasing algorithm compares the likelihoods of a background false-positive model and a sequencing error model to classify likely false-positives. This is a powerful filter for reducing false-positive variant calls. Be aware that somatic or mosaic variants, where only a subset of the sample carries the variant, will be preferentially tagged with this filter. If you are interested in these variants, you may want to include these variants in your analysis -->
-                <input type="checkbox" onclick="apply_haplo_filters();" id="10x_homopolymer_unphased_insertion" value="homopolymer_unphased_insertion" checked> Homopolymer Unphased Insertion<br>
+                <input type="checkbox" name="switch" id="stat" onclick="apply_haplo_filters();" id="10x_homopolymer_unphased_insertion" value="homopolymer_unphased_insertion" checked> Homopolymer Unphased Insertion<br>
                 <!-- A 10x-specific filter for insertions in homopolymers with length greater than or equal to 4, that are unphased. This class of variations calls in observed to be mostly false positives. -->
-                <input type="checkbox" onclick="apply_haplo_filters();" id="10x_rescued_molecule_high_diversity" value="rescued_molecule_high_diversity" checked> Rescued Molecule High Diversity<br>
+                <input type="checkbox" name="switch" id="stat" onclick="apply_haplo_filters();" id="10x_rescued_molecule_high_diversity" value="rescued_molecule_high_diversity" checked> Rescued Molecule High Diversity<br>
                 <!-- Filter variants that are supported primarity by reads that have been 'rescued' with barcode-aware alignment, where the mapped molecule has a high degree of divergence from the reference. This filter reduces false positive variant calls in complex duplicated loci that tend to have missing copies in the reference genome. -->
               </fieldset>
               <div>
@@ -509,12 +511,14 @@
 
       // apply to visible tracks and reload them
       crispr_tracks.map(function (track_id){
+saveState();
         var track = get_track(track_id);
         if(track){
           track.urlParams.crispr_filter = crispr_filter;
           track.urlParams.flank_size = flank_size;
           track.reload();
         }
+          restoreState();
       });
 
       // apply to library tracks ready for them to be shown
@@ -776,8 +780,6 @@
     reload_tracks(tracks);
   }
 
-
-
   function find_off_targets(data) {
     console.log('find off target button clicked');
     var params = {
@@ -812,7 +814,6 @@
   }
 
   // Add event handlers to filter forms
-
 
 </script>
 
@@ -875,7 +876,7 @@
           [% IF species == 'Grch38' %]
           Genoverse.Track.Haplotype.extend({
             id              : 'Haplotype_1',
-            name            : 'Haplotype_1',
+            name            : '<a style="color:white" title="Email wge@sanger.ac.uk for information on how to access the Kolf2-C1 clones.">Kolf2-C1_1</a>',
             trackNum        : 1,
             filterProfile   : [
                                 '10X_ALLELE_FRACTION',
@@ -890,14 +891,14 @@
             view            : Genoverse.Track.View.Transcript.Haplotype,
             threshold       : 5000,
             messages        : {
-              threshold : 'Haplotype variations not displayed for regions larger than ',
+              threshold : 'Kolf2-C1 variations not displayed for regions larger than ',
               resize    : 'Some features are currently hidden, <a class="gv-resize">resize to see all</a>'
             },
             autoheight      : true,
           }),
           Genoverse.Track.Haplotype.extend({
             id              : 'Haplotype_2',
-            name            : 'Haplotype_2',
+            name            : '<a style="color:white" title="Email wge@sanger.ac.uk for information on how to access the Kolf2-C1 clones.">Kolf2-C1_2</a>',
             trackNum        : 2,
             filterProfile   : [
                                 '10X_ALLELE_FRACTION',
@@ -912,7 +913,7 @@
             view            : Genoverse.Track.View.Transcript.Haplotype,
             threshold       : 5000,
             messages        : {
-              threshold : 'Haplotype variations not displayed for regions larger than ',
+              threshold : 'Kolf2-C1 variations not displayed for regions larger than ',
               resize    : 'Some features are currently hidden, <a class="gv-resize">resize to see all</a>'
             },
             autoheight      : true,
@@ -1091,6 +1092,39 @@
           $("#show_designs").change(function (event){
             show_designs();
           });
+
+      var radios = document.getElementsByName("view_single"); // list of radio buttons
+      var val = sessionStorage.getItem('view_single'); // local storage value
+      for(var i=0;i<radios.length;i++){
+        if(radios[i].value == val){
+          radios[i].checked = true; // marking the required radio as checked
+        }
+      }
+      $('input[name="view_single"]').on('change', function(){
+        sessionStorage.setItem('view_single', $(this).val()); 
+      });
+
+      var radios = document.getElementsByName("view_paired"); 
+      var val = sessionStorage.getItem('view_paired'); 
+      for(var i=0;i<radios.length;i++){
+        if(radios[i].value == val){
+          radios[i].checked = true; 
+        }
+      }
+      $('input[name="view_paired"]').on('change', function(){
+        sessionStorage.setItem('view_paired', $(this).val()); 
+      });
+
+      var radios = document.getElementsByName("view_designs"); 
+      var val = sessionStorage.getItem('view_designs'); 
+      for(var i=0;i<radios.length;i++){
+        if(radios[i].value == val){
+          radios[i].checked = true; 
+        }
+      }
+      $('input[name="view_designs"]').on('change', function(){
+        sessionStorage.setItem('view_designs', $(this).val()); 
+      });
 
           $("#flank_size").keypress(function (event){
             if(event.which == 13){
