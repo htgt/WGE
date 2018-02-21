@@ -1018,8 +1018,11 @@
             if(feature.ot_summary){
                 return feature.ot_summary;
             }
-            var args = "'" + feature.start + "', '" + feature.end + "'";
-            return '<a href="#" onclick="find_off_targets(' + args + ')">Compute</a>';
+            var computeButton = document.createElement('a');
+            var args = [feature.start, feature.end].join(', ');
+            computeButton.setAttribute('href', 'javascript:find_off_targets(' + args + ');');
+            computeButton.text = 'Compute';
+            return computeButton.outerHTML;
         };
 
         // From WebApp-Common/shared_templates
