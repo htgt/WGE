@@ -1021,6 +1021,7 @@
             var computeButton = document.createElement('a');
             var args = [feature.start, feature.end].join(', ');
             computeButton.setAttribute('href', 'javascript:find_off_targets(' + args + ');');
+            computeButton.setAttribute('style', 'color:#00FFFF');
             computeButton.text = 'Compute';
             return computeButton.outerHTML;
         };
