@@ -514,6 +514,7 @@ sub crisprs_to_gff {
 
             # process crispr hash into correct format to be passed into method
             my %crispr_hash = %{$crispr_r->{_column_data}};
+            my $fwd_seq = _fwd_seq(\%crispr_hash);
 
             my %crispr_format_hash = (
                 'seqid' => $params->{'chromosome_number'},
@@ -528,7 +529,7 @@ sub crisprs_to_gff {
                     . $parent_id . ';'
                     . 'Name=' . $crispr_r->id . ';'
                     . 'Sequence=' . _split_crispr_seq(\%crispr_hash, reverse => 1) . ';'
-                    . 'CopySequence=' . _pam_right_seq(\%crispr_hash) 
+                    . 'CopySequence=' . $fwd_seq 
                 );
 
             my $ot_summary = $crispr_r->off_target_summary;
@@ -574,7 +575,7 @@ sub crisprs_to_gff {
                     . 'Parent=' . $parent_id . ';'
                     . 'Name=' . $crispr_r->id . ';'
                     . 'color=' . $colour . ';'
-                    . 'Sequence=' . $crispr_r->seq;
+                    . 'Sequence=' . $fwd_seq;
             my $crispr_child_datum = prep_gff_datum( \%crispr_format_hash );
 
             # This is the PAM
@@ -585,7 +586,7 @@ sub crisprs_to_gff {
                     . 'Parent=' . $parent_id . ';'
                     . 'Name=' . $crispr_r->id . ';'
                     . 'color=' . colours->{pam} . ';'
-                    . 'Sequence=' . $crispr_r->seq;
+                    . 'Sequence=' . $fwd_seq;
             my $pam_child_datum = prep_gff_datum( \%crispr_format_hash );
 
             push @crisprs_gff, $crispr_parent_datum, $crispr_child_datum, $pam_child_datum ;
@@ -597,10 +598,10 @@ sub crisprs_to_gff {
     return \@crisprs_gff;
 }
 
-=head _pam_right_seq
+=head _fwd_seq
 For a CRISPR, produce a PAM-right aligned version of its sequence.
 =cut
-sub _pam_right_seq {
+sub _fwd_seq {
     my $crispr = shift; 
     
     if ($crispr->{pam_right}) {
@@ -624,7 +625,7 @@ sub _split_crispr_seq {
         @parts = $crispr->{seq} =~ m/^(.{10})(.{10})(.{3})$/;
     }
     elsif ($options{reverse}){
-        @parts = _pam_right_seq($crispr) =~ m/^(.{10})(.{10})(.{3})$/;
+        @parts = _fwd_seq($crispr) =~ m/^(.{10})(.{10})(.{3})$/;
         push @parts, '(reversed)';
     }
     else {
