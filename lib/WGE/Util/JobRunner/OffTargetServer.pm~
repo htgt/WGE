@@ -1,0 +1,138 @@
+package WGE::Util::JobRunner::OffTargetServer;
+
+use strict;
+use warnings FATAL => 'all';
+use POSIX qw(ceil sys_wait_h _exit);
+use TryCatch;
+use List::MoreUtils qw(natatime);
+use WGE::Util::OffTargetServer;
+use Moose::Role;
+
+has ots_server => (
+    is => 'ro',
+    isa => 'WGE::Util::OffTargetServer',
+    lazy_build => 1,
+);
+
+sub _build_ots_server {
+    return WGE::Util::OffTargetServer->new;
+}
+
+sub generate_off_targets{
+    my ($self, $targets) = @_;
+    my $count = scalar( @{ $self->crisprs_missing_offs} );
+    if($count){
+        $self->_update_job({ info => "Generating off-targets for $count crispr sites"});
+        $self->_generate_missing_ots($self->crisprs_missing_offs);
+        $self->_update_job({ info => '' });
+    }
+    return;
+}
+
+sub _generate_missing_ots{
+    my ($self, $crisprs_missing_offs) = @_;
+
+    # crisprs_missing_offs is array of cripsr->as_hash
+    #my $ots_species = lc($self->species_name);
+	my $ots_species = 'human';
+
+    my $batch_size = 10;
+    my $max_children = 5;
+
+    my $missing_count = scalar @{$crisprs_missing_offs};
+
+    # Ensure smaller lists of crisprs are processed in parallel
+    if($missing_count < ($batch_size * $max_children) ){
+        $batch_size = ceil( $missing_count / $max_children );
+    }
+
+    my $iter = natatime $batch_size, @{ $crisprs_missing_offs };
+    my %pids;
+
+    # ensure we get signals from child processes
+    $SIG{CHLD} = 'DEFAULT';
+
+    my $done = 0;
+    while (my @tmp = $iter->() ){
+        $self->log->debug("Starting new child process to generate off-targets");
+        my $pid = fork();
+
+        if(!defined($pid)){
+            die "Could not fork - $!";
+        }
+
+        if($pid){
+            # parent keeps track of child pids
+            $pids{$pid} = 1;
+            my $child_pid_count = keys %pids;
+            $self->log->debug("Currently running $child_pid_count children");
+            # Do not exceed 5 child processes
+            while(keys %pids >= $max_children){
+                $self->_monitor_children(\%pids);
+            }
+        }
+        else{
+            # child runs ots query
+
+            # Child does not need the target info array so clear it to reduce mem usage
+            $self->targets([]);
+
+            #my @ids = map { $_->{id} } @tmp;
+            my @ids = @tmp;
+            $self->log->debug("updating off-targets for crisprs [PID: $$]: ".join ",", @ids);
+            my $e;
+
+            try{
+                $self->ots_server->update_off_targets($self->model, { ids => \@ids, species => $ots_species } );
+            }
+            catch($e){
+                $self->log->error("error doing OT search [PID: $$]: $e");
+                $self->_update_job({ complete => 1, error => $e });
+                $self->log->debug("exiting child process $$ with exit code 1");
+                # Using standard exit() did not always return the exit code of 1
+                # possibly due to object destructors and END routines changing $?
+                # see perldocs: http://perldoc.perl.org/functions/exit.html
+                # Using _exit() causes immediate exit so correct $? is seen by parent process
+                _exit(1);
+            }
+            $self->log->debug("off-target update done [PID: $$]");
+            exit(0);
+        }
+        $done += $batch_size;
+        $self->_update_progress('off_targets',$missing_count,$done);
+
+        sleep(2); # small delay between queries
+    }
+    # Wait for all pids to complete
+    while(keys %pids){
+        $self->_monitor_children(\%pids);
+    }
+    return;
+}
+
+sub _monitor_children{
+    my ($self, $pids) = @_;
+#$self->log->debug("monitoring children [PID: $$] ".Dumper($pids));
+    my $pid = waitpid( -1, WNOHANG );
+    return if $pid == -1;
+    if($pid){
+        my $exit_status = $? >> 8;
+        $self->log->debug("Exit status of $pid: $exit_status ($?)");
+
+        if($exit_status > 0){
+            foreach my $id (keys %$pids){
+                $self->log->debug("killing child process $id");
+                kill(15,$id);
+                delete $pids->{$id};
+            }
+            die "Child process $pid exited with error $exit_status";
+        }
+        else{
+            delete $pids->{$pid};
+        }
+    }
+    sleep(1);
+    return;
+}
+
+1;

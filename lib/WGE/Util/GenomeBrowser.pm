@@ -1,17 +1,17 @@
 package WGE::Util::GenomeBrowser;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::GenomeBrowser::VERSION = '0.107';
+    $WGE::Util::GenomeBrowser::VERSION = '0.112';
 }
 ## use critic
 
 use strict;
+use warnings FATAL => 'all';
+use Bio::Perl qw( revcom_as_string );
 use Data::Dumper;
 use TryCatch;
 use Log::Log4perl qw(:easy);
-use warnings FATAL => 'all';
 use Scalar::Util qw(looks_like_number);
-
 
 BEGIN {
     #try not to override the logger
@@ -520,8 +520,7 @@ sub crisprs_to_gff {
 
             # process crispr hash into correct format to be passed into method
             my %crispr_hash = %{$crispr_r->{_column_data}};
-            # process crispr seq
-            my $seq = _split_crispr_seq(%crispr_hash);
+            my $fwd_seq = _fwd_seq(\%crispr_hash);
 
             my %crispr_format_hash = (
                 'seqid' => $params->{'chromosome_number'},
@@ -530,14 +529,13 @@ sub crisprs_to_gff {
                 'start' => $crispr_r->chr_start,
                 'end' => $crispr_r->chr_start + 22,
                 'score' => '.',
-                'strand' => '+' ,
-#                'strand' => '.',
+                'strand' => $crispr_r->pam_right ? '+' : '-' ,
                 'phase' => '.',
                 'attributes' => 'ID='
                     . $parent_id . ';'
                     . 'Name=' . $crispr_r->id . ';'
-                    . 'Sequence=' . $seq . ';'
-                    . 'CopySequence=' . $crispr_r->seq
+                    . 'Sequence=' . _split_crispr_seq(\%crispr_hash, reverse => 1) . ';'
+                    . 'CopySequence=' . $fwd_seq 
                 );
 
             my $ot_summary = $crispr_r->off_target_summary;
@@ -583,7 +581,7 @@ sub crisprs_to_gff {
                     . 'Parent=' . $parent_id . ';'
                     . 'Name=' . $crispr_r->id . ';'
                     . 'color=' . $colour . ';'
-                    . 'Sequence=' . $crispr_r->seq;
+                    . 'Sequence=' . $fwd_seq;
             my $crispr_child_datum = prep_gff_datum( \%crispr_format_hash );
 
             # This is the PAM
@@ -594,7 +592,7 @@ sub crisprs_to_gff {
                     . 'Parent=' . $parent_id . ';'
                     . 'Name=' . $crispr_r->id . ';'
                     . 'color=' . colours->{pam} . ';'
-                    . 'Sequence=' . $crispr_r->seq;
+                    . 'Sequence=' . $fwd_seq;
             my $pam_child_datum = prep_gff_datum( \%crispr_format_hash );
 
             push @crisprs_gff, $crispr_parent_datum, $crispr_child_datum, $pam_child_datum ;
@@ -606,26 +604,40 @@ sub crisprs_to_gff {
     return \@crisprs_gff;
 }
 
+=head _fwd_seq
+For a CRISPR, produce a PAM-right aligned version of its sequence.
+=cut
+sub _fwd_seq {
+    my $crispr = shift; 
+    
+    if ($crispr->{pam_right}) {
+        return $crispr->{seq};
+    }
+
+    return revcom_as_string( $crispr->{seq} );
+}
+
 =head _split_crispr_seq
-Returns a string containing the crispr sequence split into 10-10-3 or 3-10-10 depending on PAM site
+Produces a version of the CRISPR sequence that has been formatted for display
+i.e. PAM-right aligned (if permitted) and split into a 10-10-3 for ease of reading
+or 3-10-10 if it is to stay left-aligned (the left-hand side of CRISPR pairs)
 =cut
 sub _split_crispr_seq {
-    my %crispr = @_;
+    my ($crispr, %options) = @_;
 
-    my $seq = $crispr{seq};
-
-    # choose method of splitting (based on PAM site)
-    if ($crispr{pam_right}) {
-        # use regex to find correct regions
-        $seq =~ m/^(.{10})(.{10})(.{3})$/;
-        # join regions found with regex with ' '
-        return join(' ', $1, $2, $3);
-    } else {
-        # use regex to find correct regions
-        $seq =~ m/^(.{3})(.{10})(.{10})$/;
-        # join regions found with regex with ' '
-        return join(' ', $1, $2, $3);
+    my @parts = ();
+    
+    if ($crispr->{pam_right}) {
+        @parts = $crispr->{seq} =~ m/^(.{10})(.{10})(.{3})$/;
     }
+    elsif ($options{reverse}){
+        @parts = _fwd_seq($crispr) =~ m/^(.{10})(.{10})(.{3})$/;
+        push @parts, '(reversed)';
+    }
+    else {
+        @parts = $crispr->{seq} =~ m/^(.{3})(.{10})(.{10})$/;
+    }
+    return join q/ /, @parts;
 }
 
 =head crispr_pairs_to_gff
@@ -666,12 +678,7 @@ sub crispr_pairs_to_gff {
 
             # process crispr info to pass into method in correct format
             my %crispr_hash = %{$$crispr_pair{left_crispr}};
-            # process left seq
-            my $left_seq = _split_crispr_seq(%crispr_hash);
-            %crispr_hash = %{$$crispr_pair{right_crispr}};
-            #process right seq
-            my $right_seq = _split_crispr_seq(%crispr_hash);
-
+            
             my %crispr_format_hash = (
                 'seqid' => $params->{'chromosome_number'},
                 'source' => 'WGE',
@@ -680,14 +687,14 @@ sub crispr_pairs_to_gff {
                 'end' => $right->{chr_start}+22,
                 'score' => '.',
                 'strand' => '+' ,
-#               'strand' => '.',
+#               'strand' => '.' ,
                 'phase' => '.',
                 'attributes' => 'ID='
                     . $id . ';'
                     . 'Name=' . $id .';'
                     . 'Spacer=' . $crispr_pair->{spacer} . ';'
-                    . 'Left_sequence=' . $left_seq . ';'
-                    . 'Right_sequence=' . $right_seq . ';'
+                    . 'Left_sequence=' . _split_crispr_seq($left) . ';'
+                    . 'Right_sequence=' . _split_crispr_seq($right) . ';'
                     . 'Copy_sequence_left=' . $left->{seq} . ';'
                     . 'Copy_sequence_right=' . $right->{seq}
                 );

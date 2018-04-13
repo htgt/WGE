@@ -21,6 +21,7 @@ bin/get_crisprs/Makefile
 bin/get_crisprs/get_all_crisprs
 bin/get_crisprs/get_all_crisprs.cpp
 bin/label_crisprs.pl
+bin/list_db_names.pl
 bin/load_genes.pl
 bin/loxp_pairs.pl
 bin/loxp_pairs_report.pl
@@ -30,6 +31,7 @@ bin/persist_crisprs.pl
 bin/promotor_region_crisprs.pl
 bin/recovery_pairs.pl
 bin/update_crispr_pair.pl
+bin/wge_setup.sh
 human_genes_75.yaml
 human_genes_76.yaml
 human_genes_79.yaml
@@ -112,6 +114,7 @@ lib/WGE/Util/FindOffTargets.pm
 lib/WGE/Util/FindPairs.pm
 lib/WGE/Util/GenomeBrowser.pm
 lib/WGE/Util/Haplotype.pm
+lib/WGE/Util/JobRunner/OffTargetServer.pm~
 lib/WGE/Util/OAuthHelper.pm
 lib/WGE/Util/OffTargetServer.pm
 lib/WGE/Util/PersistCrisprs.pm
@@ -309,3 +312,4 @@ t/lib/Test/WGE.pm
 t/release-no-smart-comments.t
 wge.conf
 wge.psgi
+wge_schema_2017_09_29.sql
