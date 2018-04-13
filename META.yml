@@ -102,7 +102,6 @@ requires:
   WebAppCommon::FormValidator::Constraint: 0
   WebAppCommon::Util::EnsEMBL: 0
   YAML::Any: 0
-  YAML::XS: 0
   autodie: 0
   base: 0
   feature: 0
@@ -110,4 +109,4 @@ requires:
   strict: 0
   utf8: 0
   warnings: 0
-version: 0.112
+version: 0.113
