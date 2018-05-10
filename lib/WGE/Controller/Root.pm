@@ -69,6 +69,22 @@ sub index :Path :Args(0) {
     return;
 }
 
+sub begin :Private {
+    my ( $self, $c ) = @_;
+
+    my $protocol = $c->req->headers->header('X-FORWARDED-PROTO') // '';
+    if($protocol eq 'HTTPS'){
+        my $base = $c->req->base;
+        $base =~ s/^http:/https:/;
+        $c->req->base(URI->new($base));
+        $c->req->secure(1);
+    }
+
+    $c->require_ssl;
+
+    return;
+}
+
 sub about :Path('/about') :Args(0) {
     my ( $self, $c ) = @_;
 
