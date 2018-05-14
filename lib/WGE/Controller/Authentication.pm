@@ -32,7 +32,10 @@ sub login :Path('/login') :Args(0) {
     # Redirect user to google to authenticate
     # After login the user will be redirected to /set_user
     my $oauth_helper = WGE::Util::OAuthHelper->new;
-    my $url = $oauth_helper->generate_auth_url($state, $c->uri_for('/set_user'));
+    my $redirect_url = $c->uri_for('/set_user');
+    $redirect_url =~ s/^http:/https:/;
+    $c->log->debug($redirect_url);
+    my $url = $oauth_helper->generate_auth_url($state, $redirect_url);
     $c->response->redirect($url);
     return;
 }

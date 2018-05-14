@@ -30,7 +30,7 @@ sub _build_ua {
 sub ots_server_uri {
     my ( $self, $path ) = @_;
 
-    my $uri = URI->new($ENV{OFF_TARGET_SERVER_URL} || 'https://htgt.internal.sanger.ac.uk:8080/');
+    my $uri = URI->new($ENV{OFF_TARGET_SERVER_URL} || 'http://htgt.internal.sanger.ac.uk:8080/');
     $uri->path( $path );
 
     return $uri;

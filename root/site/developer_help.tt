@@ -556,7 +556,7 @@ Or, with get_db_data set to 1 a list of CRISPRs:
         <section id="crispr_analyser">
             <h2>CRISPR-Analyser</h2>
             <p>
-            To calculate off targets for CRISPRs we use the CRISPR-Analyser package, hosted here: <a href="http://github.com/htgt/CRISPR-Analyser">CRISPR-Analyser on github</a>
+            To calculate off targets for CRISPRs we use the CRISPR-Analyser package, hosted here: <a href="https://github.com/htgt/CRISPR-Analyser">CRISPR-Analyser on github</a>
             <br>
             The CRISPR-Analyser works as follows: (A) Any Genome is scanned for all possible CRISPR sites (1,2,3…), and the resulting sequences (B) are stored as a CSV file. (C) Each CRISPR sequence in the file is converted to a 64 bit integer and the resulting index kept in-memory is a Mongoose server. All targets for a specific query-CRISPR string (D) are matched against every possible genomic crispr site using a rapid XOR (E) and the resulting possible Off-target sites returned as a list (F), along with the number of mismatches to the possible off-target site.
             <br>
@@ -569,7 +569,7 @@ Or, with get_db_data set to 1 a list of CRISPRs:
         <section id="source">
             <h2>Source code</h2>
             <p>
-                Our web application is written in <a href="http://www.perl.org/">Perl</a> using the <a href="http://www.catalystframework.org/">Catalyst</a> framework. The application runs on a <a href="http://www.postgresql.org/">PostgreSQL</a> database.<br/>
+                Our web application is written in <a href="https://www.perl.org/">Perl</a> using the <a href="https://www.catalystframework.org/">Catalyst</a> framework. The application runs on a <a href="https://www.postgresql.org/">PostgreSQL</a> database.<br/>
                 The code can be seen in our <a href="https://github.com/htgt/WGE">github repository</a><br/>
             </p>
         </section>

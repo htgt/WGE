@@ -823,7 +823,7 @@
     <script>
       var species = '[% species %]';
       ensembl_species = '[% species == "Grch38" ? "Human" : species %]'.toLowerCase();
-      var ensembl_url = 'http://[% species == "Human" ? "grch37." : "" %]rest.ensembl.org';
+      var ensembl_url = 'https://[% species == "Human" ? "grch37." : "" %]rest.ensembl.org';
 
       var genoverseConfig = {
         width     : 1060,

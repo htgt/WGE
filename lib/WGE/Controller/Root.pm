@@ -73,7 +73,7 @@ sub begin :Private {
     my ( $self, $c ) = @_;
 
     my $protocol = $c->req->headers->header('X-FORWARDED-PROTO') // '';
-    if($protocol eq 'HTTPS'){
+    if($protocol eq 'HTTP'){
         my $base = $c->req->base;
         $base =~ s/^http:/https:/;
         $c->req->base(URI->new($base));
