@@ -8,12 +8,12 @@
   [%- location = "${chr_name}:${chr_start}-${chr_end}" -%]
   [%# the default string is ':-' so thats why we check its > 2 %]
   [% IF location.length > 2 %]
-    [% url = 'http://www.ensembl.org' %]
+    [% url = 'https://www.ensembl.org' %]
     [% SWITCH species.lower %]
     [%  CASE 'mouse' %]
         [% ens_species = 'Mus_Musculus' %]
     [% CASE 'human' %]
-      [% url = 'http://grch37.ensembl.org' %]
+      [% url = 'https://grch37.ensembl.org' %]
       [% ens_species = 'Homo_Sapiens' %]
     [%  CASE 'grch38' %]
         [% ens_species = 'Homo_Sapiens' %]
@@ -79,10 +79,10 @@ This tool is being continuously developed and extended. If you wish to contact u
 </pre>
 
     You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <a href="http://www.gnu.org/licenses/">www.gnu.org/licenses</a>.
+    along with this program.  If not, see <a href="https://www.gnu.org/licenses/">www.gnu.org/licenses</a>.
             </p>
             <p>
-The GNU AFFERO GENERAL PUBLIC LICENSE requires us to provide a <a href="http://www.github.com/htgt/wge">link to our source code</a>. You must also provide this link if you use our code to run a web service. You also agree to pass on your modifications for the benefit of the community, just as we do. 
+The GNU AFFERO GENERAL PUBLIC LICENSE requires us to provide a <a href="https://www.github.com/htgt/wge">link to our source code</a>. You must also provide this link if you use our code to run a web service. You also agree to pass on your modifications for the benefit of the community, just as we do. 
 </p>
 
 <p>
@@ -93,7 +93,7 @@ Licence terms follow:
                     GNU AFFERO GENERAL PUBLIC LICENSE
                        Version 3, 19 November 2007
 
- Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>
+ Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
  Everyone is permitted to copy and distribute verbatim copies
  of this license document, but changing it is not allowed.
 

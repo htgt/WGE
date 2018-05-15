@@ -38,7 +38,7 @@
 
 
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="https://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="Content-type" content="text/html; charset=[% settings.charset %]" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -158,7 +158,7 @@
     [% IF c.uri_for('/').match('internal|staging') %]
     <div class="navbar-nav">
       <div class="navbar-body">
-        <div class="navbar-brand">This version of WGE is used for software testing. The stable version is <a href="http://www.sanger.ac.uk/htgt/wge">here</a></div>
+        <div class="navbar-brand">This version of WGE is used for software testing. The stable version is <a href="https://www.sanger.ac.uk/htgt/wge">here</a></div>
         <div class="container">
           <p class="nav pull-right navbar-text">
           version: <strong>[% c.model('DB').software_version %]</strong> |
