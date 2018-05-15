@@ -1,7 +1,7 @@
 package WGE::Controller::API;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::API::VERSION = '0.108';
+    $WGE::Controller::API::VERSION = '0.114';
 }
 ## use critic
 
@@ -1230,7 +1230,7 @@ sub handle_public_api {
     my ($self, $c) = @_;
     print Dumper "Entered";
     my $agent = LWP::UserAgent->new;
-    my $url = "http://www.sanger.ac.uk/htgt/lims2/public_api/announcements/?sys=wge";
+    my $url = "https://www.sanger.ac.uk/htgt/lims2/public_api/announcements/?sys=wge";
 
     my $req = HTTP::Request->new(GET => $url);
     $req->header('content-type' => 'application/json');

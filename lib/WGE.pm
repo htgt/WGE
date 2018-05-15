@@ -24,6 +24,7 @@ use Catalyst qw/
     Session
     Session::Store::FastMmap
     Session::State::Cookie
+    RequireSSL
 /;
 
 use Log::Log4perl::Catalyst;
@@ -45,6 +46,14 @@ __PACKAGE__->log(Log::Log4perl::Catalyst->new( $ENV{WGE_LOG4PERL_CONFIG}, autofl
 
 __PACKAGE__->config(
     name => 'WGE',
+    require_ssl => {
+            https => $ENV{WGE_HTTPS_DOMAIN},
+            http => $ENV{WGE_HTTP_DOMAIN},
+            remain_in_ssl => 1,
+            no_cache => 0,
+            detach_on_redirect => 0,
+            disabled => $ENV{WGE_ENABLE_HTTPS} ? 0 : 1,
+    },    
     # Disable deprecated behavior needed by old applications
     disable_component_resolution_regex_fallback => 1,
     enable_catalyst_header => 1, # Send X-Catalyst header
@@ -112,6 +121,26 @@ __PACKAGE__->config(
 
 # Start the application
 __PACKAGE__->setup();
+
+after uri_for => sub {
+    my ($self, $path, @args) = @_;
+
+    my $base = $self->req->base;
+    $base =~ s/^http:/https:/;
+    $self->req->base(URI->new($base));
+    $self->req->secure(1);
+
+    return;
+};
+
+sub secure_uri_for {
+    my ($self, @args) = @_;
+
+    my $uri = $self->uri_for(@args);
+    $uri->scheme('https');
+
+    return $uri;
+}
 
 =head1 NAME
 

@@ -1,7 +1,7 @@
 package WGE::Controller::Root;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::Root::VERSION = '0.108';
+    $WGE::Controller::Root::VERSION = '0.114';
 }
 ## use critic
 
@@ -72,6 +72,22 @@ sub index :Path :Args(0) {
             normal => \@normal,
         );
     }
+    return;
+}
+
+sub begin :Private {
+    my ( $self, $c ) = @_;
+
+    my $protocol = $c->req->headers->header('X-FORWARDED-PROTO') // '';
+    if($protocol eq 'HTTP'){
+        my $base = $c->req->base;
+        $base =~ s/^http:/https:/;
+        $c->req->base(URI->new($base));
+        $c->req->secure(1);
+    }
+
+    $c->require_ssl;
+
     return;
 }
 

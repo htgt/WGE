@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::Crispr;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::Crispr::VERSION = '0.108';
+    $WGE::Model::Schema::Result::Crispr::VERSION = '0.114';
 }
 ## use critic
 

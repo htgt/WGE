@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::LibraryDesignStage;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::LibraryDesignStage::VERSION = '0.108';
+    $WGE::Model::Schema::Result::LibraryDesignStage::VERSION = '0.114';
 }
 ## use critic
 

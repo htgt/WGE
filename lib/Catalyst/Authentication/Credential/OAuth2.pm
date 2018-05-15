@@ -1,7 +1,7 @@
 package Catalyst::Authentication::Credential::OAuth2;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $Catalyst::Authentication::Credential::OAuth2::VERSION = '0.108';
+    $Catalyst::Authentication::Credential::OAuth2::VERSION = '0.114';
 }
 ## use critic
 

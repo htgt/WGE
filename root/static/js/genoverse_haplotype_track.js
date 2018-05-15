@@ -71,8 +71,8 @@ Genoverse.Track.Haplotype = Genoverse.Track.extend({
       Mutation        : mutation,
       Allele          : feature.allele,
       Reference       : feature.ref,
-      "Haplotype 1"   : feature.haplotype_1 === 0 ? feature.ref : feature.haplotype_1,
-      "Haplotype 2"   : feature.haplotype_2 === 0 ? feature.ref : feature.haplotype_2,
+      "Kolf2-C1 1"   : feature.haplotype_1 === 0 ? feature.ref : feature.haplotype_1,
+      "Kolf2-C1 2"   : feature.haplotype_2 === 0 ? feature.ref : feature.haplotype_2,
       // Insert HTML help ? symbol, on hover displays 'title' field.
       "Phasing Qual \
         <i class='glyphicon glyphicon-question-sign' \

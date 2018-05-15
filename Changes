@@ -1,3 +1,25 @@
+0.114     2018-05-15 13:08:10 Europe/London
+    HTTPS
+0.113     2018-04-13 12:50:00 Europe/London
+
+    Correct release issues
+
+0.112     2018-04-13 12:22:58 Europe/London
+
+    Show PAM-right aligned sequences in browser and CRISPR report
+    Properly indicate strand in Genoverse browser
+    More visible button for computing single off-target
+    Fix EnsEMBL links for novel CRISPRs
+
+0.111     2017-10-23 15:34:40 Europe/London
+
+    Fixed filter reset issue and merge conflict
+0.110     2017-10-23 14:10:52 Europe/London
+
+    Renamed haplotype to kolf2 and fixed filter issue
+0.109     2017-10-17 12:20:41 Europe/London
+
+    Swapped the default locations of the Haplotype and Off-target Filter panels
 0.108     2017-09-06 10:34:18 Europe/London
     Haplo set to GRCH38 only
 0.107     2017-08-30 16:52:42 Europe/London

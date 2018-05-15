@@ -1,7 +1,7 @@
 package WGE::Util::TimeOut;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::TimeOut::VERSION = '0.108';
+    $WGE::Util::TimeOut::VERSION = '0.114';
 }
 ## use critic
 

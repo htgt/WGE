@@ -30,8 +30,6 @@ bin/persist_crisprs.pl
 bin/promotor_region_crisprs.pl
 bin/recovery_pairs.pl
 bin/update_crispr_pair.pl
-human_genes_75.yaml
-human_genes_76.yaml
 human_genes_79.yaml
 lib/Catalyst/Authentication/Credential/OAuth2.pm
 lib/WGE.pm
@@ -124,7 +122,6 @@ lib/WGE/Util/Variation.pm
 lib/WGE/View/CSV.pm
 lib/WGE/View/JSON.pm
 lib/WGE/View/Web.pm
-mouse_genes_75.yaml
 mouse_genes_79.yaml
 root/favicon.ico
 root/gibson/create_custom_target_gibson_design.tt
@@ -309,3 +306,4 @@ t/lib/Test/WGE.pm
 t/release-no-smart-comments.t
 wge.conf
 wge.psgi
+wge_schema_2017_09_29.sql
