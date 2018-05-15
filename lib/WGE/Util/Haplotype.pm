@@ -1,7 +1,7 @@
 package WGE::Util::Haplotype;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::Haplotype::VERSION = '0.114';
+    $WGE::Util::Haplotype::VERSION = '0.115';
 }
 ## use critic
 
