@@ -136,7 +136,7 @@ after uri_for => sub {
 sub secure_uri_for {
     my ($self, @args) = @_;
 
-    my $uri = $c->uri_for(@args);
+    my $uri = $self->uri_for(@args);
     $uri->scheme('https');
 
     return $uri;
