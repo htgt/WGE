@@ -133,6 +133,15 @@ after uri_for => sub {
     return;
 };
 
+sub secure_uri_for {
+    my ($self, @args) = @_;
+
+    my $uri = $c->uri_for(@args);
+    $uri->scheme('https');
+
+    return $uri;
+}
+
 =head1 NAME
 
 WGE - Catalyst based application
