@@ -1,7 +1,7 @@
 package WGE::Controller::API;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::API::VERSION = '0.107';
+    $WGE::Controller::API::VERSION = '0.116';
 }
 ## use critic
 
@@ -25,6 +25,7 @@ use POSIX qw( floor );
 use WGE::Util::FindPairs;
 use WGE::Util::OffTargetServer;
 use WGE::Util::FindOffTargets;
+use WGE::Util::Haplotype;
 use WebAppCommon::Util::EnsEMBL;
 use JSON;
 use WGE::Util::TimeOut qw(timeout);
@@ -793,7 +794,6 @@ sub haplotypes_for_region :Local('haplotypes_for_region') Args(0) {
 
     $c->log->debug("Finding haplotypes for region " . $params->{chr_name}.":".$params->{chr_start}."-".$params->{chr_end});
 
-    use WGE::Util::Haplotype;
     my $haplotype = WGE::Util::Haplotype->new( { species => $params->{species} } );
 
     my $haplo_features = $haplotype->retrieve_haplotypes(
@@ -811,9 +811,6 @@ sub haplotypes_for_region :Local('haplotypes_for_region') Args(0) {
 
         push(@{$updated_haplo_features}, $phased_haplo);
     }
-
-use Data::Dumper;
-    print Dumper($params);
 
     $c->log->debug("Finished finding haplotypes for region");
 
@@ -1233,7 +1230,7 @@ sub handle_public_api {
     my ($self, $c) = @_;
     print Dumper "Entered";
     my $agent = LWP::UserAgent->new;
-    my $url = "http://www.sanger.ac.uk/htgt/lims2/public_api/announcements/?sys=wge";
+    my $url = "https://www.sanger.ac.uk/htgt/lims2/public_api/announcements/?sys=wge";
 
     my $req = HTTP::Request->new(GET => $url);
     $req->header('content-type' => 'application/json');

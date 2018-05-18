@@ -225,7 +225,12 @@
     </tr>
     <tr>
       <td>Sequence</td>
-      <td>[% crispr.seq %]</td>
+      <td>
+          [% crispr_grna _ " " _ crispr_pam %]
+          [%- IF ! crispr.pam_right -%]
+            <span style="font-size:8px;vertical-align:sub;">(reversed)</span>
+          [%- END -%]
+      </td>
     </tr>
     <tr>
       <td>Strand</td>
