@@ -17,6 +17,10 @@
     vertical-align: middle;
     padding-top: 4px;
 }
+
+.gv-compute-ot {
+    white-space: normal !important;
+}
 </style>
 
 <div class="page-header">
@@ -808,9 +812,6 @@
       $("#compute_ot").text(button_text);
     });
   }
-
-  // Add event handlers to filter forms
-
 </script>
 
     <script type="text/javascript" src="[% c.uri_for( '/Genoverse/js/genoverse.combined.nojquery.js'  ) %]"></script>
@@ -1032,10 +1033,19 @@
         // code that needs to run AFTER genoverse is loaded and initialized
         window.genoverse.on('afterInit', function (){
           console.log("doing afterAddDomElements stuff");
-          // Change the text of the region summary button
-          $(".gv-highlight").text("Compute Off-Targets");
-          $(".gv-highlight").attr("id","compute_ot");
-          $(".gv-highlight").attr("style","white-space: normal !important");
+          //create a new button for calculating off-targets for a range
+          var ot_button = $('<button>Compute Off-Targets</button>')
+            .addClass('gv-compute-ot')
+            .attr('id', 'compute_ot')
+            .click(function(){
+                var pos = window.genoverse.getSelectorPosition();
+                find_off_targets(pos.start, pos.end);
+            });
+          //insert it below the current "Highlight" button
+          $('<div></div>')
+            .addClass('gv-button-set')
+            .append(ot_button)
+            .insertAfter($('.gv-highlight').parent());
           //$(".gv-highlight").attr("data-toggle","modal");
           //$(".gv-highlight").attr("data-target","#offTargetModal");
 
