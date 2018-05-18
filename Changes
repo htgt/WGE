@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+0.116     2018-05-18 15:05:57 Europe/London
+
+    Allow computing off-targets from range in Genoverse browser
+
 0.115     2018-05-15 14:21:47 Europe/London
     HTTPS bug fix
 0.114     2018-05-15 13:08:10 Europe/London
