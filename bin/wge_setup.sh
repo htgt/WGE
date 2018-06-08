@@ -352,7 +352,7 @@ function wge_opt {
 function wge_production {
     check_and_set WGE_LOG4PERL_CONFIG $WGE_OPT/conf/wge/wge.log4perl.production.conf 
     check_and_set WGE_PRODUCTION_ROOT $WGE_CONFIGURE_PRODUCTION_ROOT
-    check_and_set WGE_APACHE_PORT $WHE_CONFIGURE_APACHE_PORT
+    check_and_set WGE_APACHE_PORT $WGE_CONFIGURE_APACHE_PORT
     check_and_set WGE_SERVER_EMAIL $WGE_CONFIGURE_SERVER_EMAIL
 }
 
