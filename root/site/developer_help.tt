@@ -34,6 +34,7 @@ $(window).load(function() {
         <ul id="navigation" data-spy="affix" data-offset-top="180" class="nav nav-pills nav-stacked bs-docs-sidenav">
             <li><a href="#disclaimer">Disclaimer</a></li>
             <li><a href="#api">WGE API</a></li>
+            <li><a href="#species">&nbsp;&nbsp;Regarding species</a></li>
             <li><a href="#crispr_search">&nbsp;&nbsp;&nbsp;Crispr Search by Exon</a></li>
             <li><a href="#crisprs_in_region">&nbsp;&nbsp;&nbsp;Crispr Search by Region</a></li>
             <li><a href="#pair_search">&nbsp;&nbsp;&nbsp;Crispr Pair Search by Exon</a></li>
@@ -59,6 +60,26 @@ $(window).load(function() {
 
         <section id="api">
             <h2>WGE API</h2>
+            <section id="species">
+            <h3>Regarding species</h3>
+            Each of the queries below requires a <em>species</em> parameter. This WGE instance
+            accepts the following species:
+            <table class="table table-bordered table-striped">
+            <thead>
+                <th><em>species</em></th>
+                <th>Description</th>
+            </thead>
+            <tbody>
+            [% FOR s IN species %]
+                <tr>
+                    <td>[% s.id %]</td>
+                    <td>[% s.display_name %]</td>
+                </tr>
+            [% END %]
+            </tbody>
+            </table>
+            </section>
+
             <section id="crispr_search">
             <h3>Crispr Search by Exon</h3>
             Find CRISPRs for a given exon
@@ -210,7 +231,7 @@ $(window).load(function() {
             <br>
             Required: species, id
             <br>
-            [% url = c.uri_for('/api/crispr_off_targets', { id => [1106710989,1106710985], species => 'Human' }) %]
+            [% url = c.uri_for('/api/crispr_off_targets', { id => [1106710989,1106710985], species => 'Grch38' }) %]
             <a href="[% url %]">[% url %]</a>
             <br>
             Returns an object mapping crispr ID to its off-target summary and off-target list
@@ -361,7 +382,7 @@ Or, with get_db_data set to 1 a list of CRISPRs:
             <br>
             Required: species, id
             <br>
-            [% url = c.uri_for('/api/crispr_seq_by_id', { id => [1106710999,1106711006], species => 'Human' }) %]
+            [% url = c.uri_for('/api/crispr_seq_by_id', { id => [1106710999,1106711006], species => 'Grch38' }) %]
             <a href="[% url %]">[% url %]</a>
             <br>
             Returns an JSON containing the crispr sequence:
@@ -386,7 +407,7 @@ Or, with get_db_data set to 1 a list of CRISPRs:
             <br>
             Required: species, id
             <br>
-            [% url = c.uri_for('/api/crispr_by_id', { id => [1106710999,1106711006], species => 'Human' }) %]
+            [% url = c.uri_for('/api/crispr_by_id', { id => [1106710999,1106711006], species => 'Grch38' }) %]
             <a href="[% url %]">[% url %]</a>
             <br>
             Returns an JSON containing the crispr:
