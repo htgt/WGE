@@ -117,7 +117,10 @@ sub gibson_help :Path('/gibson_help') :Args(0) {
 
 sub developer_help :Path('/developer_help') :Args(0) {
     my ( $self, $c ) = @_;
-
+    my @species = sort { $a->{display_name} cmp $b->{display_name} }
+          map { $_->as_hash }
+          $c->model('DB')->resultset('Species')->search( { active => 1 } );
+    $c->stash( species => \@species );
     return;
 }
 
@@ -131,12 +134,10 @@ sub search_by_seq :Path('/search_by_seq') :Args(0) {
     my ( $self, $c ) = @_;
 
     my @species = sort { $a->{display_name} cmp $b->{display_name} }
-                      map { $_->as_hash }
-                          $c->model('DB')->resultset('Species')->search( { active => 1 } );
+          map { $_->as_hash }
+          $c->model('DB')->resultset('Species')->search( { active => 1 } );
 
-    $c->stash(
-        species => \@species,
-    );
+    $c->stash( species => \@species );
 
     #change to has
     # my $ots = WGE::Util::OffTargetServer->new;
