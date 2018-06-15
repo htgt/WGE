@@ -203,7 +203,7 @@ function wge_pg9.3 {
 function wge_psql {
     export WGE_DB_NAME=`$WGE_DEV_ROOT/bin/list_db_names.pl $WGE_DB --dbname`
     printf "Opening psql shell with database: $WGE_DB_NAME (profile: $WGE_DB)\n"
-    psql `$WGE_DEV_ROOT/bin/list_db_names.pl $WGE_DB --uri`
+    $PSQL_EXE `$WGE_DEV_ROOT/bin/list_db_names.pl $WGE_DB --uri`
 }
 
 
