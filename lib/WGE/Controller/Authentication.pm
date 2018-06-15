@@ -20,6 +20,7 @@ WGE::Controller::Authentication - Controller to handle user authentication
 
 =cut
 
+
 sub login :Path('/login') :Args(0) {
     my ( $self, $c ) = @_;
 
@@ -27,22 +28,35 @@ sub login :Path('/login') :Args(0) {
     # relates to this session
     my $state = rand_chars( set => 'alphanumeric', min => 30, max => 30);
     $c->session->{state} = $state;
-    $c->session->{login_referer} = $c->req->referer;
+
+    my $callback = $c->req->referer;
+    if (index($callback, 'wge') != 1) {
+        $callback = $c->secure_uri_for('/');
+    }
+    $c->session->{login_referer} = $callback;
 
     # Redirect user to google to authenticate
     # After login the user will be redirected to /set_user
     my $oauth_helper = WGE::Util::OAuthHelper->new;
-    my $url = $oauth_helper->generate_auth_url($state, $c->uri_for('/set_user'));
+    my $redirect_url = $c->uri_for('/set_user');
+    $redirect_url =~ s/^http:/https:/;
+    my $url = $oauth_helper->generate_auth_url($state, $redirect_url);
     $c->response->redirect($url);
+
     return;
 }
 
 sub set_user :Path('/set_user') :Args(0) {
 	my ( $self, $c ) = @_;
 
+    my $base = $c->req->base;
+    $base =~ s/^http:/https:/;
+    $c->req->base(URI->new($base));
+    $c->req->secure(1);
+
     $c->log->debug("Attempting to authenticate");
     $c->authenticate($c->req->params,'oauth');
-    $c->response->redirect($c->session->{login_referer} || $c->uri_for('/'));
+    $c->response->redirect($c->session->{login_referer} || $c->secure_uri_for('/'));
     return;
 }
 
@@ -52,7 +66,7 @@ sub logout :Path('logout') :Args(0) {
     $c->logout;
 
     $c->flash->{info_msg} = 'You have been logged out';
-    $c->response->redirect($c->uri_for('/'));
+    $c->response->redirect($c->secure_uri_for('/'));
     return;
 }
 

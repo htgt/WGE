@@ -17,6 +17,10 @@
     vertical-align: middle;
     padding-top: 4px;
 }
+
+.gv-compute-ot {
+    white-space: normal !important;
+}
 </style>
 
 <div class="page-header">
@@ -225,47 +229,6 @@
 </div>
 </div> [%# end of left-hand div %]
 
-[% IF species == 'Grch38' %]
-<div class="col-md-3">
-  <div id="haplo_filters_panel">
-    <form class="well">
-      <i id="pan" class="pull-right glyphicon glyphicon-move"></i>
-      <table class="table" id="haplo_filters_table">
-        <thead>
-          <tr>
-            <th id="haplo_filters_heading">Haplotype Filters</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>
-              <fieldset name="haplo_filters">
-                <!-- Filter so that only DB rows containing PASS in the filters field will be shown -->
-                <input type="checkbox" onclick="apply_haplo_filters();" id="10x_allele_fraction" value="allele_fraction" checked> Allele Fraction<br>
-                <!-- Filters out heterozygous variants with allele fraction under 15% -->
-                <input type="checkbox" onclick="apply_haplo_filters();" id="10x_qual_filter" value="qual_filter" checked> Quality Filter<br>
-                <!-- A basic variant quality filter, turned for 10x data. Heterzygous variants with QUAL under 15 and homozygous variants with QUAL under 50 have this filter applied. -->
-                <input type="checkbox" onclick="apply_haplo_filters();" id="10x_phasing_inconsistent" value="phasing_inconsistent" checked> Phasing Inconsistent<br>
-                <!-- Flags heterozygous variants where the reads supporting each allele do not segregate cleanly onto the local haplotypes. The phasing algorithm compares the likelihoods of a background false-positive model and a sequencing error model to classify likely false-positives. This is a powerful filter for reducing false-positive variant calls. Be aware that somatic or mosaic variants, where only a subset of the sample carries the variant, will be preferentially tagged with this filter. If you are interested in these variants, you may want to include these variants in your analysis -->
-                <input type="checkbox" onclick="apply_haplo_filters();" id="10x_homopolymer_unphased_insertion" value="homopolymer_unphased_insertion" checked> Homopolymer Unphased Insertion<br>
-                <!-- A 10x-specific filter for insertions in homopolymers with length greater than or equal to 4, that are unphased. This class of variations calls in observed to be mostly false positives. -->
-                <input type="checkbox" onclick="apply_haplo_filters();" id="10x_rescued_molecule_high_diversity" value="rescued_molecule_high_diversity" checked> Rescued Molecule High Diversity<br>
-                <!-- Filter variants that are supported primarity by reads that have been 'rescued' with barcode-aware alignment, where the mapped molecule has a high degree of divergence from the reference. This filter reduces false positive variant calls in complex duplicated loci that tend to have missing copies in the reference genome. -->
-              </fieldset>
-              <div>
-                <input class="btn btn-default btn-xs" type="button" onclick="remove_haplo_filters();" name="remove_all" value="Remove All">
-                <input class="btn btn-default btn-xs" type="button" onclick="apply_all_haplo_filters();" name="add_all_haplo_filters" value="Add All"  >
-
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </form>
-  </div>
-</div>
-[% END %]
-
 <div class="col-md-3">
 <div id="ot_filters_panel">
 <form class="well">
@@ -309,7 +272,46 @@
 </form>
 </div>
 
+[% IF species == 'Grch38' %]
+<div class="col-md-12">
+  <div id="haplo_filters_panel">
+    <form class="well">
+      <i id="pan" class="pull-right glyphicon glyphicon-move"></i>
+      <table class="table" id="haplo_filters_table">
+        <thead>
+          <tr>
+            <th id="haplo_filters_heading">Haplotype Filters: Kolf2-C1</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <fieldset name="haplo_filters">
+                <!-- Filter so that only DB rows containing PASS in the filters field will be shown -->
+                <input type="checkbox" onclick="apply_haplo_filters();" id="10x_allele_fraction" value="allele_fraction" checked> Allele Fraction<br>
+                <!-- Filters out heterozygous variants with allele fraction under 15% -->
+                <input type="checkbox" onclick="apply_haplo_filters();" id="10x_qual_filter" value="qual_filter" checked> Quality Filter<br>
+                <!-- A basic variant quality filter, turned for 10x data. Heterzygous variants with QUAL under 15 and homozygous variants with QUAL under 50 have this filter applied. -->
+                <input type="checkbox" onclick="apply_haplo_filters();" id="10x_phasing_inconsistent" value="phasing_inconsistent" checked> Phasing Inconsistent<br>
+                <!-- Flags heterozygous variants where the reads supporting each allele do not segregate cleanly onto the local haplotypes. The phasing algorithm compares the likelihoods of a background false-positive model and a sequencing error model to classify likely false-positives. This is a powerful filter for reducing false-positive variant calls. Be aware that somatic or mosaic variants, where only a subset of the sample carries the variant, will be preferentially tagged with this filter. If you are interested in these variants, you may want to include these variants in your analysis -->
+                <input type="checkbox" onclick="apply_haplo_filters();" id="10x_homopolymer_unphased_insertion" value="homopolymer_unphased_insertion" checked> Homopolymer Unphased Insertion<br>
+                <!-- A 10x-specific filter for insertions in homopolymers with length greater than or equal to 4, that are unphased. This class of variations calls in observed to be mostly false positives. -->
+                <input type="checkbox" onclick="apply_haplo_filters();" id="10x_rescued_molecule_high_diversity" value="rescued_molecule_high_diversity" checked> Rescued Molecule High Diversity<br>
+                <!-- Filter variants that are supported primarity by reads that have been 'rescued' with barcode-aware alignment, where the mapped molecule has a high degree of divergence from the reference. This filter reduces false positive variant calls in complex duplicated loci that tend to have missing copies in the reference genome. -->
+              </fieldset>
+              <div>
+                <input class="btn btn-default btn-xs" type="button" onclick="remove_haplo_filters();" name="remove_all" value="Remove All">
+                <input class="btn btn-default btn-xs" type="button" onclick="apply_all_haplo_filters();" name="add_all_haplo_filters" value="Add All"  >
 
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+</div>
+[% END %]
 
 </div> [%# end of right-hand div %]
 </div> [%# end of row div %]
@@ -778,14 +780,12 @@
     reload_tracks(tracks);
   }
 
-
-
-  function find_off_targets(data) {
+  function find_off_targets(start, end) {
     console.log('find off target button clicked');
     var params = {
       species: "[% species %]",
-      start_coord: data['start'],
-      end_coord: data['end'],
+      start_coord: start,
+      end_coord: end,
       chromosome_number: '[% chromosome %]',
       assembly_id: '[% genome %]',
       all_singles: 1
@@ -812,10 +812,6 @@
       $("#compute_ot").text(button_text);
     });
   }
-
-  // Add event handlers to filter forms
-
-
 </script>
 
     <script type="text/javascript" src="[% c.uri_for( '/Genoverse/js/genoverse.combined.nojquery.js'  ) %]"></script>
@@ -828,7 +824,7 @@
     <script>
       var species = '[% species %]';
       ensembl_species = '[% species == "Grch38" ? "Human" : species %]'.toLowerCase();
-      var ensembl_url = 'http://[% species == "Human" ? "grch37." : "" %]rest.ensembl.org';
+      var ensembl_url = 'https://[% species == "Human" ? "grch37." : "" %]rest.ensembl.org';
 
       var genoverseConfig = {
         width     : 1060,
@@ -840,7 +836,6 @@
         chr           : '[% chromosome %]',
         start         : [% browse_start %] - 200,
         end           : [% browse_end %] + 200,
-        addHighlight  : find_off_targets, //override the summary method to find off targets
         plugins       : [ 'controlPanel', 'karyotype', 'trackControls', 'resizer', 'fileDrop' ],
         tracks        : [
           Genoverse.Track.Scalebar,
@@ -877,7 +872,7 @@
           [% IF species == 'Grch38' %]
           Genoverse.Track.Haplotype.extend({
             id              : 'Haplotype_1',
-            name            : 'Haplotype_1',
+            name            : '<a style="color:white" title="Email wge@sanger.ac.uk for information on how to access the Kolf2-C1 clones.">Kolf2-C1_1</a>',
             trackNum        : 1,
             filterProfile   : [
                                 '10X_ALLELE_FRACTION',
@@ -892,14 +887,14 @@
             view            : Genoverse.Track.View.Transcript.Haplotype,
             threshold       : 5000,
             messages        : {
-              threshold : 'Haplotype variations not displayed for regions larger than ',
+              threshold : 'Kolf2-C1 variations not displayed for regions larger than ',
               resize    : 'Some features are currently hidden, <a class="gv-resize">resize to see all</a>'
             },
             autoheight      : true,
           }),
           Genoverse.Track.Haplotype.extend({
             id              : 'Haplotype_2',
-            name            : 'Haplotype_2',
+            name            : '<a style="color:white" title="Email wge@sanger.ac.uk for information on how to access the Kolf2-C1 clones.">Kolf2-C1_2</a>',
             trackNum        : 2,
             filterProfile   : [
                                 '10X_ALLELE_FRACTION',
@@ -914,7 +909,7 @@
             view            : Genoverse.Track.View.Transcript.Haplotype,
             threshold       : 5000,
             messages        : {
-              threshold : 'Haplotype variations not displayed for regions larger than ',
+              threshold : 'Kolf2-C1 variations not displayed for regions larger than ',
               resize    : 'Some features are currently hidden, <a class="gv-resize">resize to see all</a>'
             },
             autoheight      : true,
@@ -1020,7 +1015,17 @@
                                    .style("fill", "#00AA00");
 
         window.genoverse = new Genoverse(genoverseConfig);
-
+        Genoverse.off_target_display = function (feature){
+            if(feature.ot_summary){
+                return feature.ot_summary;
+            }
+            var computeButton = document.createElement('a');
+            var args = [feature.start, feature.end].join(', ');
+            computeButton.setAttribute('href', 'javascript:find_off_targets(' + args + ');');
+            computeButton.setAttribute('style', 'color:#00FFFF');
+            computeButton.text = 'Compute';
+            return computeButton.outerHTML;
+        };
 
         // From WebApp-Common/shared_templates
         [% INCLUDE 'genoverse_mods/selector_size_display.tt' %]
@@ -1028,10 +1033,19 @@
         // code that needs to run AFTER genoverse is loaded and initialized
         window.genoverse.on('afterInit', function (){
           console.log("doing afterAddDomElements stuff");
-          // Change the text of the region summary button
-          $(".gv-highlight").text("Compute Off-Targets");
-          $(".gv-highlight").attr("id","compute_ot");
-          $(".gv-highlight").attr("style","white-space: normal !important");
+          //create a new button for calculating off-targets for a range
+          var ot_button = $('<button>Compute Off-Targets</button>')
+            .addClass('gv-compute-ot')
+            .attr('id', 'compute_ot')
+            .click(function(){
+                var pos = window.genoverse.getSelectorPosition();
+                find_off_targets(pos.start, pos.end);
+            });
+          //insert it below the current "Highlight" button
+          $('<div></div>')
+            .addClass('gv-button-set')
+            .append(ot_button)
+            .insertAfter($('.gv-highlight').parent());
           //$(".gv-highlight").attr("data-toggle","modal");
           //$(".gv-highlight").attr("data-target","#offTargetModal");
 
@@ -1093,6 +1107,39 @@
           $("#show_designs").change(function (event){
             show_designs();
           });
+
+      var radios = document.getElementsByName("view_single"); // list of radio buttons
+      var val = sessionStorage.getItem('view_single'); // local storage value
+      for(var i=0;i<radios.length;i++){
+        if(radios[i].value == val){
+          radios[i].checked = true; // marking the required radio as checked
+        }
+      }
+      $('input[name="view_single"]').on('change', function(){
+        sessionStorage.setItem('view_single', $(this).val()); 
+      });
+
+      var radios = document.getElementsByName("view_paired"); 
+      var val = sessionStorage.getItem('view_paired'); 
+      for(var i=0;i<radios.length;i++){
+        if(radios[i].value == val){
+          radios[i].checked = true; 
+        }
+      }
+      $('input[name="view_paired"]').on('change', function(){
+        sessionStorage.setItem('view_paired', $(this).val()); 
+      });
+
+      var radios = document.getElementsByName("view_designs"); 
+      var val = sessionStorage.getItem('view_designs'); 
+      for(var i=0;i<radios.length;i++){
+        if(radios[i].value == val){
+          radios[i].checked = true; 
+        }
+      }
+      $('input[name="view_designs"]').on('change', function(){
+        sessionStorage.setItem('view_designs', $(this).val()); 
+      });
 
           $("#flank_size").keypress(function (event){
             if(event.which == 13){
