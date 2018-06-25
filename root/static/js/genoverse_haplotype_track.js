@@ -12,10 +12,8 @@ Genoverse.Track.Haplotype = Genoverse.Track.extend({
       y = target.height() - y;
     }
 
-    var trackId = "Haplotype_" + (this.track.trackNum === 1 ? 2 : 1);
-
+    var trackId = this.track.otherTrack;
     var otherHaploTrack = window.genoverse.tracksById[trackId];
-
     this.track.highlightFeatures(this, otherHaploTrack.controller, x, y, target);
 
     return this.track.makeMenu(this.getClickedFeatures(x, y, target), e, this.track);
@@ -71,14 +69,14 @@ Genoverse.Track.Haplotype = Genoverse.Track.extend({
       Mutation        : mutation,
       Allele          : feature.allele,
       Reference       : feature.ref,
-      "Kolf2-C1 1"   : feature.haplotype_1 === 0 ? feature.ref : feature.haplotype_1,
-      "Kolf2-C1 2"   : feature.haplotype_2 === 0 ? feature.ref : feature.haplotype_2,
       // Insert HTML help ? symbol, on hover displays 'title' field.
       "Phasing Qual \
         <i class='glyphicon glyphicon-question-sign' \
         title='The quality score is a Phred-like probability of the correct phasing. Higher scores imply a lower probability of incorrect phasing.'\
         ></i>"        : feature.qual,
     };
+    atts[this.track.line + ' 1'] = feature.haplotype_1 === 0 ? feature.ref : feature.haplotype_1;
+    atts[this.track.line + ' 2'] = feature.haplotype_2 === 0 ? feature.ref : feature.haplotype_2;
     return atts;
   },
   // Set correct label info. If on wrong haplotype display ref seq as label
@@ -126,7 +124,7 @@ Genoverse.Track.Haplotype = Genoverse.Track.extend({
         var data = $(this).data();
 
         var track = data.track;
-        var otherTrackId = track.id === "Haplotype_1" ? "Haplotype_2" : "Haplotype_1";
+        var otherTrackId = track.otherTrack; 
         var otherTrack = window.genoverse.tracksById[otherTrackId];
 
         data.track.removeFeatureHighlight(data.feature, data.feature.pairedFeature, track, otherTrack);

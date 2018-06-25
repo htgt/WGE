@@ -16,15 +16,16 @@ has species => (
 
 sub retrieve_haplotypes {
 	my ($self, $model, $params) = @_;
-
-	my @vcf_rs = $model->schema->resultset('VariantCallFormat')->search({
-            chrom   => "chr" . $params->{chr_name},
-            pos     => {'>' => $params->{chr_start}, '<' => $params->{chr_end} }
-        },
+    my $line = $model->schema->resultset('Haplotype')->search(
+        { name => $params->{line} }
+    )->single;
+	my @vcf_rs = $model->schema->resultset($line->name)->search(
         {
-            result_class => 'DBIx::Class::ResultClass::HashRefInflator',
-        });
-
+            chrom => $params->{chr_name},
+            pos   => { '>' => $params->{chr_start}, '<' => $params->{chr_end} },
+        },
+        { result_class => 'DBIx::Class::ResultClass::HashRefInflator' },
+    );
     return \@vcf_rs;
 
 }

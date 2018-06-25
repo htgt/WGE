@@ -70,7 +70,7 @@ join design_oligo_loci d_l
 	on ( d_l.design_oligo_id = d_o.id )
 join users u
     on ( u.id = gibsons.created_by )
-where u.name = ?
+where u.name = ? OR 1=1
 order by chr_start
 EOT
 
