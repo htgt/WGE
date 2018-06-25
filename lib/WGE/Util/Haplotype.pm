@@ -37,16 +37,14 @@ sub phase_haplotype {
     my @genome_phasing = split(/:/, $haplotype->{genome_phasing});
     my @gt = split(/[\|,\/]/, $genome_phasing[0]);
     my @alleles = split(/,/, $haplotype->{alt});
-    unshift(@alleles, $haplotype->{ref});
-
-    for(my $i = 0; $i < @alleles; $i++) {
-
-        $haplotype->{haplotype_1}   = $i == $gt[0] ? $alleles[$i] : 0; # if data in $gt[0] == 0 set haplotype 1 to ref value
-        $haplotype->{haplotype_2}   = $i == $gt[1] ? $alleles[$i] : 0; # if data in $gt[1] == 0 set haplotype 2 to ref value
-
+    
+    for my $hap ( 0 .. 1 ) {
+        my $key = sprintf "haplotype_%d", $hap + 1;
+        $haplotype->{$key} = $gt[$hap] ? $alleles[$gt[$hap] - 1] : 0;
     }
 
-    $haplotype->{phased}        = $genome_phasing[0] =~ /\|/ ? 1 : 0; # If data in genome_phasing[0] contains '|' then mark phased flag 1
+    $haplotype->{phased}      = $genome_phasing[0] =~ /\// ? 0 : 1;
+    # unphased iff genome_phasing element contains "/"
 
     return $haplotype;
 }
