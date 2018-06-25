@@ -1,12 +1,12 @@
 use utf8;
-package WGE::Model::Schema::Result::VariantCallFormat;
+package WGE::Model::Schema::Result::Kolf2;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-WGE::Model::Schema::Result::VariantCallFormat
+WGE::Model::Schema::Result::Kolf2
 
 =cut
 
@@ -30,11 +30,11 @@ extends 'DBIx::Class::Core';
 
 __PACKAGE__->load_components("InflateColumn::DateTime");
 
-=head1 TABLE: C<variant_call_format>
+=head1 TABLE: C<kolf2>
 
 =cut
 
-__PACKAGE__->table("variant_call_format");
+__PACKAGE__->table("kolf2");
 
 =head1 ACCESSORS
 
@@ -43,7 +43,7 @@ __PACKAGE__->table("variant_call_format");
   data_type: 'integer'
   is_auto_increment: 1
   is_nullable: 0
-  sequence: 'variant_call_format_id_seq'
+  sequence: 'kolf2_id_seq'
 
 =head2 chrom
 
@@ -55,11 +55,6 @@ __PACKAGE__->table("variant_call_format");
   data_type: 'integer'
   is_nullable: 0
 
-=head2 vcf_id
-
-  data_type: 'text'
-  is_nullable: 1
-
 =head2 ref
 
   data_type: 'text'
@@ -68,7 +63,7 @@ __PACKAGE__->table("variant_call_format");
 =head2 alt
 
   data_type: 'text'
-  is_nullable: 1
+  is_nullable: 0
 
 =head2 qual
 
@@ -76,16 +71,6 @@ __PACKAGE__->table("variant_call_format");
   is_nullable: 1
 
 =head2 filter
-
-  data_type: 'text'
-  is_nullable: 1
-
-=head2 info
-
-  data_type: 'text'
-  is_nullable: 1
-
-=head2 format
 
   data_type: 'text'
   is_nullable: 1
@@ -103,25 +88,19 @@ __PACKAGE__->add_columns(
     data_type         => "integer",
     is_auto_increment => 1,
     is_nullable       => 0,
-    sequence          => "variant_call_format_id_seq",
+    sequence          => "kolf2_id_seq",
   },
   "chrom",
   { data_type => "text", is_nullable => 0 },
   "pos",
   { data_type => "integer", is_nullable => 0 },
-  "vcf_id",
-  { data_type => "text", is_nullable => 1 },
   "ref",
   { data_type => "text", is_nullable => 0 },
   "alt",
-  { data_type => "text", is_nullable => 1 },
+  { data_type => "text", is_nullable => 0 },
   "qual",
   { data_type => "numeric", is_nullable => 1 },
   "filter",
-  { data_type => "text", is_nullable => 1 },
-  "info",
-  { data_type => "text", is_nullable => 1 },
-  "format",
   { data_type => "text", is_nullable => 1 },
   "genome_phasing",
   { data_type => "text", is_nullable => 1 },
@@ -140,8 +119,8 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key("id");
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2018-06-25 17:39:59
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:bAv9SQ7GEaOmWh6VWEGqfQ
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2018-07-04 14:36:04
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:k4/bBUb4NybFXUarizSUDg
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

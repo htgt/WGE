@@ -531,8 +531,14 @@ sub genoverse_browse_view :Path( '/genoverse_browse') : Args(0){
     my ($self, $c) = @_;
 
     my $region;
+    my @lines;
     try{
         $region = get_region_from_params($c->model, $c->request->params);
+        @lines  = map { $_->name }
+            $c->model->schema->resultset('Haplotype')->search(
+                { species_id => $region->{species} },
+                { columns    => ['name'] },
+            );
     }
     catch ($e){
         $c->stash( error_msg => "Could not display genome browser: $e" );
@@ -548,6 +554,7 @@ sub genoverse_browse_view :Path( '/genoverse_browse') : Args(0){
         'browse_start'  => $region->{'browse_start'},
         'browse_end'    => $region->{'browse_end'},
         'genes'         => $region->{'genes'},
+        'lines'         => \@lines,
         'design_id'     => $c->request->params->{'design_id'},
         'view_single'   => $c->request->params->{'view_single'},
         'view_paired'   => $c->request->params->{'view_paired'},
