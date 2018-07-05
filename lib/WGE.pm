@@ -139,7 +139,10 @@ sub secure_uri_for {
     my ($self, @args) = @_;
 
     my $uri = $self->uri_for(@args);
-    $uri->scheme('https');
+
+    if ($self->model('DB')->software_version ne 'dev') {
+        $uri->scheme('https');
+    }
 
     return $uri;
 }
