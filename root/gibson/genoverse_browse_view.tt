@@ -115,7 +115,7 @@
     <table class='table'>
     <thead>
       <tr>
-        <th>Single Crisprs</th><th>Paired Crisprs</th><th>Designs</th>
+        <th>Show</th>
         <th><p id="crispr_filters_heading" [% UNLESS view_single OR view_paired %]class="muted"[% END %]>Crispr Filters</p></th>
         <th><p id="spacer_filters_heading" [% UNLESS view_paired %]class="muted"[% END %]>Spacer Filter</p></th>
       </tr>
@@ -123,25 +123,9 @@
     <tbody>
       <tr>
         <td>
-          <input id="show_single" type="radio" name="view_single" value="1" [% IF view_single %]checked[% END %]>
-          Show</input>
-          <br />
-          <input id="hide_single" type="radio" name="view_single" value="0"  [% IF not view_single %]checked[% END %]>
-          Hide</input>
-        </td>
-        <td>
-          <input id="show_paired" type="radio" name="view_paired" value="1" [% IF view_paired %]checked[% END %]>
-          Show</input>
-          <br />
-          <input id="hide_paired" type="radio" name="view_paired" value="0" [% IF not view_paired %]checked[% END %]>
-          Hide</input>
-        </td>
-        <td>
-          <input id="show_designs" type="radio" name="view_designs" value="1" checked>
-          Show</input>
-          <br />
-          <input id="hide_designs" type="radio" name="view_designs" value="0" >
-          Hide</input>
+          <input id="show_single" type="checkbox" name="view_single" [% IF view_single %]checked[% END %]>Single CRISPRs</input><br/>
+          <input id="show_paired" type="checkbox" name="view_paired" [% IF view_single %]checked[% END %]>Paired CRISPRs</input><br/>
+          <input id="show_designs" type="checkbox" name="view_designs" [% IF view_single %]checked[% END %]>Designs</input>
         </td>
         <td>
           <fieldset name="crispr_filters" [% UNLESS view_paired OR view_single %]disabled[% END %]>
@@ -168,7 +152,7 @@
         </td>
       </tr>
 
-    <th>Variation</th>
+    <tr><th>Variation</th></tr>
     <tr>
         <td>
             MAF threshold <input type="text" id="MAF_threshold" name="MAF_threshold" onblur="test_MAF_threshold_value(this);" value="0.005" style="width: 60px">
@@ -429,35 +413,37 @@
       });
   }
 
-  function hide_single (){
-      hide_tracks(["Crisprs", "Bookmarked Crisprs"]);
-      disable_crispr_filters();
+  function show_single (state){
+      if (state) {
+          show_tracks(["Crisprs", "Bookmarked Crisprs"]);
+          enable_crispr_filters();
+          add_download_button("Crisprs","[% c.uri_for('/api/crisprs_in_region') %]");
+      }
+      else {
+          hide_tracks(["Crisprs", "Bookmarked Crisprs"]);
+          disable_crispr_filters();
+      }
   }
 
-  function show_single (){
-      show_tracks(["Crisprs", "Bookmarked Crisprs"]);
-      enable_crispr_filters();
-      add_download_button("Crisprs","[% c.uri_for('/api/crisprs_in_region') %]");
+  function show_paired (state){
+      if (state) {
+          show_tracks(["Crispr Pairs","Bookmarked Crispr Pairs"]);
+          enable_crispr_pair_filters();
+          add_download_button("Crispr Pairs","[% c.uri_for('/api/crispr_pairs_in_region') %]");
+      }
+      else {
+          hide_tracks(["Crispr Pairs", "Bookmarked Crispr Pairs"]);
+          disable_crispr_pair_filters();
+      }
   }
 
-  function hide_paired (){
-      hide_tracks(["Crispr Pairs", "Bookmarked Crispr Pairs"]);
-      disable_crispr_pair_filters();
-  }
-
-  function show_paired (){
-      show_tracks(["Crispr Pairs","Bookmarked Crispr Pairs"]);
-      enable_crispr_pair_filters();
-      add_download_button("Crispr Pairs","[% c.uri_for('/api/crispr_pairs_in_region') %]");
-
-  }
-
-  function hide_designs (){
-      hide_tracks(["Designs"]);
-  }
-
-  function show_designs (){
-      show_tracks(["Designs"]);
+  function show_designs (state){
+      if (state) {
+          show_tracks(["Designs"]);
+      }
+      else {
+          hide_tracks(["Designs"]);
+      }
   }
 
   function get_track(id){
@@ -465,7 +451,7 @@
   }
 
   function get_library_track(id){
-    var tracks = $.grep( $(window)[0].genoverse.tracksLibrary, function(n,i){ return n.id== id });
+    var tracks = $.grep( $(window)[0].genoverse.tracksLibrary, function(n,i){ return n.prototype.id == id });
     return tracks[0];
   }
 
@@ -1095,29 +1081,14 @@
           $('#colour_key').css('z-index', '100');
           console.log($("#genoverse").offset());
 
-          // Handle clicks on the show/hide radio inputs
-          $("#hide_single").change(function (event){
-            hide_single();
-          });
-
           $("#show_single").change(function (event){
-            show_single();
+            show_single(this.checked);
           });
-
-          $("#hide_paired").change(function (event){
-            hide_paired();
-          });
-
           $("#show_paired").change(function (event){
-            show_paired();
+            show_paired(this.checked);
           });
-
-          $("#hide_designs").change(function (event){
-            hide_designs();
-          });
-
           $("#show_designs").change(function (event){
-            show_designs();
+            show_designs(this.checked);
           });
 
       var radios = document.getElementsByName("view_single"); // list of radio buttons
