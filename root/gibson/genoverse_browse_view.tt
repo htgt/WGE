@@ -831,6 +831,8 @@
         start         : [% browse_start %] - 200,
         end           : [% browse_end %] + 200,
         plugins       : [ 'controlPanel', 'karyotype', 'trackControls', 'resizer', 'fileDrop' ],
+        saveable      : true,
+        storageType   : 'localStorage',
         tracks        : [
           Genoverse.Track.Scalebar,
           Genoverse.Track.SequenceSelect.extend({
