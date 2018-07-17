@@ -21,6 +21,15 @@
 .gv-compute-ot {
     white-space: normal !important;
 }
+
+.btn-track {
+    background-color: transparent;
+    border-color: transparent;
+}
+
+.btn-track .glyphicon {
+    color: white;
+}
 </style>
 
 <div class="page-header">
@@ -350,16 +359,17 @@
 
 
 <script type="text/javascript">
+  function show_download_button(url){
+    $("#download_url").text(url);
+    $("#download_url").hide();
+  }
 
   function add_download_button(track,url){
     var download_btn = $("<button class='btn-xs btn-primary' data-toggle='modal' data-target='#downloadModal'><i class='glyphicon glyphicon-download'></i>download</button>");
 
     $(download_btn).appendTo("[title='" + track + "']");
 
-    download_btn.click(function(){
-      $("#download_url").text(url);
-      $("#download_url").hide();
-    });
+    download_btn.click(function(){ show_download_button(url) });
   }
 
   // Use this to query a url with the current region params
@@ -977,6 +987,14 @@
             crispr_report_uri : "[%c.uri_for('/crispr')%]",
             crispr_id : "[%crispr_id || '' %]",
             urlParams : { crispr_filter: "[%crispr_filter%]", flank_size: "[%flank_size%]"},
+            controls  : [
+                '<button class="btn-xs btn-track" data-toggle="modal"'
+                + ' onclick="show_download_button(\''
+                + '[% c.uri_for('/api/crisprs_in_region') %]\')"'
+                + ' data-target="#downloadModal">'
+                + '<span class="glyphicon glyphicon-download"></span>'
+                + '</button>'
+            ],
           }),
 
 [% IF c.user %]
@@ -998,7 +1016,15 @@
             // and get reset by genoverse setMVC function each time user zooms in or out.
             // urlParams does not get reset - you can change this dynamically and the new
             // param values are maintained during zooming
-            crispr_pair_id : "[%crispr_pair_id || '' %]"
+            crispr_pair_id : "[%crispr_pair_id || '' %]",
+            controls  : [
+                '<button class="btn-xs btn-track" data-toggle="modal"'
+                + ' onclick="show_download_button(\''
+                + '[% c.uri_for('/api/crispr_pairs_in_region') %]\')"'
+                + ' data-target="#downloadModal">'
+                + '<span class="glyphicon glyphicon-download"></span>'
+                + '</button>'
+            ],
           }),
           Genoverse.Track.Scaleline
         ]
