@@ -17,9 +17,9 @@ has species => (
 sub retrieve_haplotypes {
 	my ($self, $model, $params) = @_;
     my $line = $model->schema->resultset('Haplotype')->search(
-        { name => $params->{line} }
+        { id => $params->{line} }
     )->single;
-	my @vcf_rs = $model->schema->resultset($line->name)->search(
+	my @vcf_rs = $model->schema->resultset($line->id)->search(
         {
             chrom => $params->{chr_name},
             pos   => { '>' => $params->{chr_start}, '<' => $params->{chr_end} },

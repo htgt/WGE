@@ -534,10 +534,10 @@ sub genoverse_browse_view :Path( '/genoverse_browse') : Args(0){
     my @lines;
     try{
         $region = get_region_from_params($c->model, $c->request->params);
-        @lines  = map { $_->name }
+        @lines  = map { $_->id }
             $c->model->schema->resultset('Haplotype')->search(
                 { species_id => $region->{species} },
-                { columns    => ['name'] },
+                { columns    => ['id'] },
             );
     }
     catch ($e){
