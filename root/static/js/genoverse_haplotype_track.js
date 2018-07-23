@@ -308,6 +308,10 @@ Genoverse.Track.Model.Haplotype = Genoverse.Track.Model.extend({
     parseData: function(data, chr, start, end) {
         var feature;
 
+        if ( data.error ) {
+            this.track.controller.showError(data.error);
+            return;
+        }
         // For each datum in data:
         // Process and insert feature to track.
         for (var i = 0; i < data.length; i++) {

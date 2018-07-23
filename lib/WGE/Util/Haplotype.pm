@@ -15,10 +15,27 @@ has species => (
 );
 
 sub retrieve_haplotypes {
-	my ($self, $model, $params) = @_;
+	my ($self, $model, $user, $params) = @_;
     my $line = $model->schema->resultset('Haplotype')->search(
         { id => $params->{line} }
     )->single;
+    if ( not $line ) {
+        die { error => 'Haplotype line not found' };
+    }
+
+    my %allowed_haplotypes = ();
+    if ( $line->restricted ) {
+        if ( $user ) {
+            my $search = { user_id => $user->id, haplotype_id => $line->id };
+            if ( not $model->schema->resultset('UserHaplotype')->count($search) ) {
+                die { error => 'You do not have access to this haplotype. Contact wge@sanger.ac.uk for more information' };
+            }
+        }
+        else {
+            die { error => 'You must log in to see this haplotype' };
+        }
+    }
+
 	my @vcf_rs = $model->schema->resultset($line->id)->search(
         {
             chrom => $params->{chr_name},
@@ -27,7 +44,6 @@ sub retrieve_haplotypes {
         { result_class => 'DBIx::Class::ResultClass::HashRefInflator' },
     );
     return \@vcf_rs;
-
 }
 
 sub phase_haplotype {
