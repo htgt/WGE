@@ -789,11 +789,19 @@ sub haplotypes_for_region :Local('haplotypes_for_region') Args(0) {
     $c->log->debug("Finding haplotypes for region " . $params->{chr_name}.":".$params->{chr_start}."-".$params->{chr_end});
 
     my $haplotype = WGE::Util::Haplotype->new( { species => $params->{species} } );
-
-    my $haplo_features = $haplotype->retrieve_haplotypes(
-        $c->model('DB'),
-        $params
-    );
+    my $haplo_features;
+    try {
+        $haplo_features = $haplotype->retrieve_haplotypes(
+            $c->model('DB'),
+            $c->user,
+            $params
+        );
+    }
+    catch ( $e ) {
+        $c->stash->{json_data} = $e;
+        $c->forward('View::JSON');
+        return;
+    }
 
     my $updated_haplo_features = [];
 
