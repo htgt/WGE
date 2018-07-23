@@ -7,7 +7,7 @@ use feature qw( say );
 
 use Getopt::Long;
 use Pod::Usage;
-use LIMS2::Util::EnsEMBL;
+use WebAppCommon::Util::EnsEMBL;
 use YAML::Any qw( DumpFile );
 use Data::Dumper;
 
@@ -25,7 +25,7 @@ GetOptions(
 
 for my $species ( @species ) {
     say "Getting genes for $species";
-    my $e = LIMS2::Util::EnsEMBL->new( species => $species );
+    my $e = WebAppCommon::Util::EnsEMBL->new( species => $species );
     my $ens_version = $e->gene_adaptor->schema_version;
 
     #if they say all we should just do a fetch_all
@@ -118,3 +118,4 @@ The yaml file name is <species>_genes_<ensembl_version>.yaml
 Alex Hodgkins
 
 =cut
+
