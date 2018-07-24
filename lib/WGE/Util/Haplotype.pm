@@ -15,20 +15,22 @@ has species => (
 );
 
 sub retrieve_haplotypes {
-	my ($self, $model, $user, $params) = @_;
-    my $line = $model->schema->resultset('Haplotype')->search(
-        { id => $params->{line} }
-    )->single;
+    my ( $self, $model, $user, $params ) = @_;
+    my $line = $model->schema->resultset('Haplotype')
+        ->search( { id => $params->{line} } )->single;
     if ( not $line ) {
         die { error => 'Haplotype line not found' };
     }
 
     my %allowed_haplotypes = ();
     if ( $line->restricted ) {
-        if ( $user ) {
+        if ($user) {
             my $search = { user_id => $user->id, haplotype_id => $line->id };
-            if ( not $model->schema->resultset('UserHaplotype')->count($search) ) {
-                die { error => 'You do not have access to this haplotype. Contact wge@sanger.ac.uk for more information' };
+            if ( not $model->schema->resultset('UserHaplotype')->count($search) )
+            {
+                die { error =>
+'You do not have access to this haplotype. Contact wge@sanger.ac.uk for more information'
+                };
             }
         }
         else {
@@ -36,7 +38,7 @@ sub retrieve_haplotypes {
         }
     }
 
-	my @vcf_rs = $model->schema->resultset($line->id)->search(
+    my @vcf_rs = $model->schema->resultset( $line->id )->search(
         {
             chrom => $params->{chr_name},
             pos   => { '>' => $params->{chr_start}, '<' => $params->{chr_end} },
@@ -47,20 +49,21 @@ sub retrieve_haplotypes {
 }
 
 sub phase_haplotype {
-    my ($self, $haplotype, $params) = @_;
+    my ( $self, $haplotype, $params ) = @_;
 
     my $phased;
 
-    my @genome_phasing = split(/:/, $haplotype->{genome_phasing});
-    my @gt = split(/[\|,\/]/, $genome_phasing[0]);
-    my @alleles = split(/,/, $haplotype->{alt});
-    
+    my @genome_phasing = split( /:/,       $haplotype->{genome_phasing} );
+    my @gt             = split( /[\|,\/]/, $genome_phasing[0] );
+    my @alleles        = split( /,/,       $haplotype->{alt} );
+
     for my $hap ( 0 .. 1 ) {
         my $key = sprintf "haplotype_%d", $hap + 1;
-        $haplotype->{$key} = $gt[$hap] ? $alleles[$gt[$hap] - 1] : 0;
+        $haplotype->{$key} = $gt[$hap] ? $alleles[ $gt[$hap] - 1 ] : 0;
     }
 
-    $haplotype->{phased}      = $genome_phasing[0] =~ /\// ? 0 : 1;
+    $haplotype->{phased} = $genome_phasing[0] =~ /\// ? 0 : 1;
+
     # unphased iff genome_phasing element contains "/"
 
     return $haplotype;
