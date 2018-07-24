@@ -336,184 +336,187 @@
 
 
 <script type="text/javascript">
-  function show_download_button(url){
+function show_download_button(url) {
     $("#download_url").text(url);
     $("#download_url").hide();
-  }
+}
 
-  function add_download_button(track,url){
+function add_download_button(track, url) {
     var download_btn = $("<button class='btn-xs btn-primary' data-toggle='modal' data-target='#downloadModal'><i class='glyphicon glyphicon-download'></i>download</button>");
 
     $(download_btn).appendTo("[title='" + track + "']");
 
-    download_btn.click(function(){ show_download_button(url) });
-  }
+    download_btn.click(function() {
+        show_download_button(url)
+    });
+}
 
-  // Use this to query a url with the current region params
-  // and download csv it returns
-  function download(fileType){
+// Use this to query a url with the current region params
+// and download csv it returns
+function download(fileType) {
     var region_params = {
-      "species_id"    : "[% species %]",
-      "start"         : $(window)[0].genoverse.start,
-      "end"           : $(window)[0].genoverse.end,
-      "chr"           : "[% chromosome %]",
-      "assembly"      : "[% genome %]",
-      "crispr_filter" : $('input[name=crispr_filter]:checked').val(),
-      "flank_size"    :  $('#flank_size').val()
+        "species_id": "[% species %]",
+        "start": $(window)[0].genoverse.start,
+        "end": $(window)[0].genoverse.end,
+        "chr": "[% chromosome %]",
+        "assembly": "[% genome %]",
+        "crispr_filter": $('input[name=crispr_filter]:checked').val(),
+        "flank_size": $('#flank_size').val()
     };
     region_params[fileType] = 1;
     var url = $("#download_url").text();
-    window.open( build_url(url, region_params) );
-  }
+    window.open(build_url(url, region_params));
+}
 
-  //Function to retrieve the current coords on display to the user
-  function update_coords(){
-      var browse_start = $(window)[0].genoverse.start + 200;
-      var browse_end = $(window)[0].genoverse.end - 200;
-      var genome = '[% genome %]';
-      var species = '[% species %]';
-      var chromosome = '[% chromosome %]';
-      var url_base = "[% c.uri_for('/crispr_ranking') %]";
-      window.location.replace(url_base + '?loc=' + browse_start + "_" + browse_end + "_" + genome + "_" + species + "_" + chromosome);
+//Function to retrieve the current coords on display to the user
+function update_coords() {
+    var browse_start = $(window)[0].genoverse.start + 200;
+    var browse_end = $(window)[0].genoverse.end - 200;
+    var genome = '[% genome %]';
+    var species = '[% species %]';
+    var chromosome = '[% chromosome %]';
+    var url_base = "[% c.uri_for('/crispr_ranking') %]";
+    window.location.replace(url_base + '?loc=' + browse_start + "_" + browse_end + "_" + genome + "_" + species + "_" + chromosome);
 
-  }
+}
 
-  // Functions to show and hide sets of tracks
-  function hide_tracks(track_ids){
-      track_ids.map(function(id){
-          var track = get_track(id);
-          if(track){
+// Functions to show and hide sets of tracks
+function hide_tracks(track_ids) {
+    track_ids.map(function(id) {
+        var track = get_track(id);
+        if (track) {
             $(window)[0].genoverse.removeTrack(track);
-          }
-      });
-  }
+        }
+    });
+}
 
-  function get_track(id){
+function get_track(id) {
     return $(window)[0].genoverse.tracksById[id];
-  }
+}
 
-  function get_library_track(id){
-    var tracks = $.grep( $(window)[0].genoverse.tracksLibrary, function(n,i){ return n.prototype.id == id });
+function get_library_track(id) {
+    var tracks = $.grep($(window)[0].genoverse.tracksLibrary, function(n, i) {
+        return n.prototype.id == id
+    });
     return tracks[0];
-  }
+}
 
-  function get_haplo_tracks() {
+function get_haplo_tracks() {
     return [
-        [% FOREACH line IN lines.keys %]
-        '[% line %]_1', '[% line %]_2',
-        [% END %]
+        [ % FOREACH line IN lines.keys % ]
+        '[% line %]_1', '[% line %]_2', [ % END % ]
     ];
-  }
+}
 
-  function apply_all_haplo_filters() {
+function apply_all_haplo_filters() {
     var haploTracks = get_haplo_tracks();
 
     var filterNames = [
-                        '10x_allele_fraction',
-                        '10x_qual_filter',
-                        '10x_phasing_inconsistent',
-                        '10x_homopolymer_unphased_insertion',
-                        '10x_rescued_molecule_high_diversity'
-                      ];
-    haploTracks.map(function (trackId){
-      var track = get_track(trackId);
-      if(track){
+        '10x_allele_fraction',
+        '10x_qual_filter',
+        '10x_phasing_inconsistent',
+        '10x_homopolymer_unphased_insertion',
+        '10x_rescued_molecule_high_diversity'
+    ];
+    haploTracks.map(function(trackId) {
+        var track = get_track(trackId);
+        if (track) {
 
-        track.filterProfile = filterNames.map(function(filterName){
-          $('#'+filterName).prop("checked", true);
-          return filterName.toUpperCase();
-        });
-        track.controller.resetImages();
-        track.controller.imgContainers.empty();
-        track.controller.makeFirstImage();
-      }
-      libTrack = get_library_track(trackId);
-      if(libTrack) {
-        libTrack.filterProfile = haploFilters;
-      }
+            track.filterProfile = filterNames.map(function(filterName) {
+                $('#' + filterName).prop("checked", true);
+                return filterName.toUpperCase();
+            });
+            track.controller.resetImages();
+            track.controller.imgContainers.empty();
+            track.controller.makeFirstImage();
+        }
+        libTrack = get_library_track(trackId);
+        if (libTrack) {
+            libTrack.filterProfile = haploFilters;
+        }
     });
 
-  }
+}
 
-  function remove_haplo_filters() {
+function remove_haplo_filters() {
     var haploTracks = get_haplo_tracks();
     var filterNames = [
-                        '10x_allele_fraction',
-                        '10x_qual_filter',
-                        '10x_phasing_inconsistent',
-                        '10x_homopolymer_unphased_insertion',
-                        '10x_rescued_molecule_high_diversity'
-                      ];
+        '10x_allele_fraction',
+        '10x_qual_filter',
+        '10x_phasing_inconsistent',
+        '10x_homopolymer_unphased_insertion',
+        '10x_rescued_molecule_high_diversity'
+    ];
 
-    haploTracks.map(function (trackId){
-      var track = get_track(trackId);
-      if(track){
+    haploTracks.map(function(trackId) {
+        var track = get_track(trackId);
+        if (track) {
 
-        filterNames.map(function(filterName) {
-          $('#'+filterName).prop("checked", false);
-        });
-        track.filterProfile = ["noFilter"];
-        track.controller.resetImages();
-        track.controller.imgContainers.empty();
-        track.controller.makeFirstImage();
-      }
-      libTrack = get_library_track(trackId);
-      if(libTrack) {
-        libTrack.filterProfile = haploFilters;
-      }
+            filterNames.map(function(filterName) {
+                $('#' + filterName).prop("checked", false);
+            });
+            track.filterProfile = ["noFilter"];
+            track.controller.resetImages();
+            track.controller.imgContainers.empty();
+            track.controller.makeFirstImage();
+        }
+        libTrack = get_library_track(trackId);
+        if (libTrack) {
+            libTrack.filterProfile = haploFilters;
+        }
     });
-  }
+}
 
-  function apply_haplo_filters(){
+function apply_haplo_filters() {
     var haploTracks = get_haplo_tracks();
 
     var filterNames = [
-                          '10x_allele_fraction',
-                          '10x_qual_filter',
-                          '10x_phasing_inconsistent',
-                          '10x_homopolymer_unphased_insertion',
-                          '10x_rescued_molecule_high_diversity'
-                        ];
+        '10x_allele_fraction',
+        '10x_qual_filter',
+        '10x_phasing_inconsistent',
+        '10x_homopolymer_unphased_insertion',
+        '10x_rescued_molecule_high_diversity'
+    ];
     var haploFilters = [];
 
     // loop over filter names array and for each filter if checked push to haplo_filters array, in upper case
-    filterNames.map(function (filterName){
-      if( $('#'+filterName).is(":checked") ){
-        haploFilters.push(filterName.toUpperCase());
-      }
+    filterNames.map(function(filterName) {
+        if ($('#' + filterName).is(":checked")) {
+            haploFilters.push(filterName.toUpperCase());
+        }
     });
     // for each track in haplo_tracks, add filters to the profile and then reload image
-    haploTracks.map(function (trackId){
-      var track = get_track(trackId);
-      if(track){
-        track.filterProfile = haploFilters;
-        track.controller.resetImages();
-        track.controller.imgContainers.empty();
-        track.controller.makeFirstImage();
-      }
-      libTrack = get_library_track(trackId);
-      if(libTrack) {
-        libTrack.filterProfile = haploFilters;
-      }
+    haploTracks.map(function(trackId) {
+        var track = get_track(trackId);
+        if (track) {
+            track.filterProfile = haploFilters;
+            track.controller.resetImages();
+            track.controller.imgContainers.empty();
+            track.controller.makeFirstImage();
+        }
+        libTrack = get_library_track(trackId);
+        if (libTrack) {
+            libTrack.filterProfile = haploFilters;
+        }
     });
-  }
+}
 
-  function apply_ot_filters(){
+function apply_ot_filters() {
     var ot_profile = {};
-    for (var mismatch_number = 0; mismatch_number < 5; mismatch_number++){
-      var input_id = '#' + mismatch_number + '_mismatch';
-      var input = $(input_id)[0];
-      var value = input.value;
-      if (value !== ""){
-        ot_profile[mismatch_number] = value;
-      }
+    for (var mismatch_number = 0; mismatch_number < 5; mismatch_number++) {
+        var input_id = '#' + mismatch_number + '_mismatch';
+        var input = $(input_id)[0];
+        var value = input.value;
+        if (value !== "") {
+            ot_profile[mismatch_number] = value;
+        }
     }
 
     var filtered_tracks = ['Crisprs', 'Crispr Pairs'];
     // apply to visible tracks
-    filtered_tracks.map(function (track_id){
+    filtered_tracks.map(function(track_id) {
         var track = get_track(track_id);
-        if(track){
+        if (track) {
             track.ot_profile = ot_profile;
             track.controller.resetImages();
             track.controller.imgContainers.empty();
@@ -522,108 +525,112 @@
     });
 
     // apply to library tracks
-    filtered_tracks.map(function (track_id){
+    filtered_tracks.map(function(track_id) {
         var track = get_library_track(track_id);
-        if(track){
+        if (track) {
             track.ot_profile = ot_profile;
         }
     });
-  }
+}
 
-  function reset_ot_filters(){
-      for (var mismatch_number = 0; mismatch_number < 5; mismatch_number++){
-          var input_id = '#' + mismatch_number + '_mismatch';
-          $(input_id).val("");
+function reset_ot_filters() {
+    for (var mismatch_number = 0; mismatch_number < 5; mismatch_number++) {
+        var input_id = '#' + mismatch_number + '_mismatch';
+        $(input_id).val("");
 
-          var help_span_id = '#' + mismatch_number + '_mismatch_no_max';
-          $(help_span_id).show();
-      }
-      $("#0_mismatch_input_error").hide();
+        var help_span_id = '#' + mismatch_number + '_mismatch_no_max';
+        $(help_span_id).show();
+    }
+    $("#0_mismatch_input_error").hide();
 
-      apply_ot_filters();
-  }
+    apply_ot_filters();
+}
 
-  function set_ot_filters(percentile){
-      // Distributions caculated using all human crispr off-target counts
-      // available on 2014-06-17
-      var profiles = { 10: {}, 25: {}, 50: {}, 75: {} };
+function set_ot_filters(percentile) {
+    // Distributions caculated using all human crispr off-target counts
+    // available on 2014-06-17
+    var profiles = {
+        10: {},
+        25: {},
+        50: {},
+        75: {}
+    };
 
-      // Uses percentiles from WGE::Util::Statistics
-      [% FOREACH p IN [10,25,50,75] %]
-        [% FOREACH mm IN [0,1,2,3,4] %]
-          profiles[ [%p%] ][ [%mm%] ] = [% ot_distributions.$p.$mm %];
-        [% END %]
-      [% END %]
+    // Uses percentiles from WGE::Util::Statistics
+    [ % FOREACH p IN[10, 25, 50, 75] % ]
+    [ % FOREACH mm IN[0, 1, 2, 3, 4] % ]
+    profiles[[ % p % ]][
+        [ % mm % ]
+    ] = [ % ot_distributions.$p.$mm % ];
+    [ % END % ]
+    [ % END % ]
 
-      var profile = profiles[percentile];
+    var profile = profiles[percentile];
 
-      if(!profile){
+    if (!profile) {
         console.log('No off-target profile available for percentile ' + percentile);
         return;
-      }
+    }
 
-      for (var mismatch_number = 0; mismatch_number < 5; mismatch_number++){
-          var input_id = '#' + mismatch_number + '_mismatch';
-          $(input_id).val(profile[mismatch_number]);
-          var help_span_id = '#' + mismatch_number + '_mismatch_no_max';
-          $(help_span_id).hide();
-      }
-  }
+    for (var mismatch_number = 0; mismatch_number < 5; mismatch_number++) {
+        var input_id = '#' + mismatch_number + '_mismatch';
+        $(input_id).val(profile[mismatch_number]);
+        var help_span_id = '#' + mismatch_number + '_mismatch_no_max';
+        $(help_span_id).hide();
+    }
+}
 
-  function apply_spacer_filters(){
-      var min = $('#spacer_min')[0].value;
-      var max = $('#spacer_max')[0].value;
-      var track = get_track('Crispr Pairs');
-      if(track){
-        if(min === ""){
-          track.spacer_min = undefined;
-        }
-        else{
-          track.spacer_min = parseInt(min);
+function apply_spacer_filters() {
+    var min = $('#spacer_min')[0].value;
+    var max = $('#spacer_max')[0].value;
+    var track = get_track('Crispr Pairs');
+    if (track) {
+        if (min === "") {
+            track.spacer_min = undefined;
+        } else {
+            track.spacer_min = parseInt(min);
         }
 
-        if(max === ""){
-          track.spacer_max = undefined;
-        }
-        else{
-          track.spacer_max = parseInt(max);
+        if (max === "") {
+            track.spacer_max = undefined;
+        } else {
+            track.spacer_max = parseInt(max);
         }
 
         track.controller.resetImages();
         track.controller.imgContainers.empty();
         track.controller.makeFirstImage();
-      }
+    }
 
-      var library_track = get_library_track('Crispr Pairs');
-      if(library_track){
-        if(min !== ""){
-          track.spacer_min = parseInt(min);
+    var library_track = get_library_track('Crispr Pairs');
+    if (library_track) {
+        if (min !== "") {
+            track.spacer_min = parseInt(min);
         }
-        if(max !== ""){
-          track.spacer_max = parseInt(max);
+        if (max !== "") {
+            track.spacer_max = parseInt(max);
         }
-      }
-  }
+    }
+}
 
-  function reset_spacer_filters(){
+function reset_spacer_filters() {
     $('#spacer_min').val("");
     $('#spacer_max').val("");
     apply_spacer_filters();
-  }
+}
 
 
-  function test_MAF_threshold_value(field){
-    if ( ! $.isNumeric(field.value) ) {
+function test_MAF_threshold_value(field) {
+    if (!$.isNumeric(field.value)) {
         field.value = "0.0";
         $('#MAF_error_text').show();
-    }
-    else {
+    } else {
         $('#MAF_error_text').hide();
     }
-  }
+}
 
 
-  function apply_MAF_threshold(){
+function apply_MAF_threshold() {
     var track = get_track('MAF_variations');
 
     $('#MAF_error_text').hide();
@@ -631,462 +638,486 @@
     track.controller.resetImages();
     track.controller.imgContainers.empty();
     track.controller.makeFirstImage();
-  }
+}
 
-  function reload_tracks(){
+function reload_tracks() {
     //tracks.map(function (track_id){
-      var track = get_track('Sequence');
-      if(track){
+    var track = get_track('Sequence');
+    if (track) {
         var base = "[% c.uri_for('/genoverse_browse' ) %]";
         var genome = '[% genome %]';
         reload_track(track, base, species, genome);
-      }
+    }
     //});
-  }
+}
 
-  function reload_crispr_tracks(){
+function reload_crispr_tracks() {
     var tracks = ['Crisprs', 'Bookmarked Crisprs', 'Crispr Pairs', 'Bookmarked Crispr Pairs'];
     reload_tracks(tracks);
-  }
+}
 
-  function reload_ensembl_tracks(){
-    var tracks = ['Variation','MAF_variations','Protein'];
+function reload_ensembl_tracks() {
+    var tracks = ['Variation', 'MAF_variations', 'Protein'];
     reload_tracks(tracks);
-  }
+}
 
-  function find_off_targets(start, end) {
+function find_off_targets(start, end) {
     console.log('find off target button clicked');
     var params = {
-      species: "[% species %]",
-      start_coord: start,
-      end_coord: end,
-      chromosome_number: '[% chromosome %]',
-      assembly_id: '[% genome %]',
-      all_singles: 1
+        species: "[% species %]",
+        start_coord: start,
+        end_coord: end,
+        chromosome_number: '[% chromosome %]',
+        assembly_id: '[% genome %]',
+        all_singles: 1
     };
     var button_text = $("#compute_ot").text();
     var spinner = "[% c.uri_for( '/static/images/spinner-circle.gif' ) %]";
     $("#compute_ot").html('<img alt="Waiting" src="' + spinner + '" height="30" width="30">');
-    $.get("[% c.uri_for('/api/region_off_target_search') %]", params, function(data){
-      console.log(data);
-      if(data.error_msg){
-        $("#offTargetModal_content").text("Off-target computation failed with error: <br>" + data.error_msg);
-        $("#offTargetModal_success").hide();
-      }
-      else{
-        var text = data.pair_count + " pairs and " + data.crispr_count + " individual crisprs submitted for off-target calculation";
+    $.get("[% c.uri_for('/api/region_off_target_search') %]", params, function(data) {
+        console.log(data);
+        if (data.error_msg) {
+            $("#offTargetModal_content").text("Off-target computation failed with error: <br>" + data.error_msg);
+            $("#offTargetModal_success").hide();
+        } else {
+            var text = data.pair_count + " pairs and " + data.crispr_count + " individual crisprs submitted for off-target calculation";
 
-        $("#offTargetModal_content").text(text);
-        $("#offTargetModal_success").show();
-      }
-      $("#offTargetModal").modal("show");
-    }).always( function() {
-      // remove spinner and restore button text
-      $("#compute_ot").html("");
-      $("#compute_ot").text(button_text);
+            $("#offTargetModal_content").text(text);
+            $("#offTargetModal_success").show();
+        }
+        $("#offTargetModal").modal("show");
+    }).always(function() {
+        // remove spinner and restore button text
+        $("#compute_ot").html("");
+        $("#compute_ot").text(button_text);
     });
-  }
-</script>
+} <
+/script>
 
-    <script type="text/javascript" src="[% c.uri_for( '/Genoverse/js/genoverse.combined.nojquery.js'  ) %]"></script>
-    <script type="text/javascript" src="[% c.uri_for( '/static/js/wge_genoverse_custom_tracks.js'     ) %]"></script>
-    <script type="text/javascript" src="[% c.uri_for( '/js/genoverse_custom_tracks.js'                ) %]"></script>
-    <script type="text/javascript" src="[% c.uri_for( '/static/js/genoverse_variation_track.js'       ) %]"></script>
-    <script type="text/javascript" src="[% c.uri_for( '/static/js/genoverse_haplotype_track.js'       ) %]"></script>
-    <script type="text/javascript" src="[% c.uri_for( '/static/js/d3.min.js'                          ) %]"></script>
+<
+script type = "text/javascript"
+src = "[% c.uri_for( '/Genoverse/js/genoverse.combined.nojquery.js'  ) %]" > < /script> <
+    script type = "text/javascript"
+src = "[% c.uri_for( '/static/js/wge_genoverse_custom_tracks.js'     ) %]" > < /script> <
+    script type = "text/javascript"
+src = "[% c.uri_for( '/js/genoverse_custom_tracks.js'                ) %]" > < /script> <
+    script type = "text/javascript"
+src = "[% c.uri_for( '/static/js/genoverse_variation_track.js'       ) %]" > < /script> <
+    script type = "text/javascript"
+src = "[% c.uri_for( '/static/js/genoverse_haplotype_track.js'       ) %]" > < /script> <
+    script type = "text/javascript"
+src = "[% c.uri_for( '/static/js/d3.min.js'                          ) %]" > < /script>
 
-    <script>
-      var species = '[% species %]';
-      ensembl_species = '[% species == "Grch38" ? "Human" : species %]'.toLowerCase();
-      var ensembl_url = 'https://[% species == "Human" ? "grch37." : "" %]rest.ensembl.org';
+    <
+    script >
+    var species = '[% species %]';
+ensembl_species = '[% species == "Grch38" ? "Human" : species %]'.toLowerCase();
+var ensembl_url = 'https://[% species == "Human" ? "grch37." : "" %]rest.ensembl.org';
 
-      var genoverseConfig = {
-        width     : 1060,
-        container : '#genoverse', // Where to inject Genoverse (css/jQuery selector)
-        // If no genome supplied, it must have at least chromosomeSize, e.g.:
-        // chromosomeSize : 249250621, // chromosome 1, human
-        [% USE String(genome) %]
-        genome        : '[% String.lower() %]', // see js/genomes/
-        chr           : '[% chromosome %]',
-        start         : [% browse_start %] - 200,
-        end           : [% browse_end %] + 200,
-        plugins       : [ 'controlPanel', 'karyotype', 'trackControls', 'resizer', 'fileDrop' ],
-        saveable      : true,
-        storageType   : 'localStorage',
-        tracks        : [
-          Genoverse.Track.Scalebar,
-          Genoverse.Track.SequenceSelect.extend({
-            name       : 'Sequence',
-            id         : 'Sequence', //need this for tracksById
-            url        : ensembl_url + '/sequence/region/' + ensembl_species + '/__CHR__:__START__-__END__?content-type=text/plain',
-            resizable  : 'auto',
-            100000     : false,
-            controls   : 'off',
-            unsortable : true
-          }),
-          Genoverse.Track.Variation.extend({
-            id              : 'Variation',
-            name            : 'Variation',
-            url             : ensembl_url + '/overlap/region/' + ensembl_species + '/__CHR__:__START__-__END__?feature=variation;content-type=application/json',
-            model           : Genoverse.Track.Model.extend({ dataRequestLimit : 5000000 }),
-            setFeatureColor : function (f) { f.color = '#1B0AB5'; },
-            threshold       : 50000,
-            messages        : { threshold : 'Variation not displayed for regions larger than ' },
-            autoheight      : true
-          }),
-          Genoverse.Track.MAFVariation.extend({
-            id              : 'MAF_variations',
-            name            : 'MAF_variations',
-            url             : "[% c.uri_for('/api/variation_for_region') %]" + "?species="+ensembl_species+"&chr_name=__CHR__&chr_start=__START__&chr_end=__END__",
-            model           : Genoverse.Track.Model.extend({ dataRequestLimit : 5000000 }),
-            view            : Genoverse.Track.View.FilterMAFVariation.extend({ thresholdMAF : $('#MAF_threshold').val() }),
-            setFeatureColor : function (f) { f.color = '#48C402'; },
-            threshold       : 5000,
-            messages        : { threshold : 'MAF variations not displayed for regions larger than ' },
-            autoheight      : true
-          }),
-          [% FOREACH line IN lines.keys.sort %]
-          [% IF lines.$line %]
-          Genoverse.Track.Haplotype.extend({
-            id           : '[% line %]_1',
-            name         : '<a style="color:white" title="Email wge@sanger.ac.uk for information on how to access the [% line %] clones.">[% line %]_1</a>',
-            line         : '[% line %]',
-            trackNum     : 1,
-            otherTrack   : '[% line %]_2',
+var genoverseConfig = {
+    width: 1060,
+    container: '#genoverse', // Where to inject Genoverse (css/jQuery selector)
+    // If no genome supplied, it must have at least chromosomeSize, e.g.:
+    // chromosomeSize : 249250621, // chromosome 1, human
+    [ % USE String(genome) % ]
+    genome: '[% String.lower() %]', // see js/genomes/
+    chr: '[% chromosome %]',
+    start: [ % browse_start % ] - 200,
+    end: [ % browse_end % ] + 200,
+    plugins: ['controlPanel', 'karyotype', 'trackControls', 'resizer', 'fileDrop'],
+    saveable: true,
+    storageType: 'localStorage',
+    tracks: [
+        Genoverse.Track.Scalebar,
+        Genoverse.Track.SequenceSelect.extend({
+            name: 'Sequence',
+            id: 'Sequence', //need this for tracksById
+            url: ensembl_url + '/sequence/region/' + ensembl_species + '/__CHR__:__START__-__END__?content-type=text/plain',
+            resizable: 'auto',
+            100000: false,
+            controls: 'off',
+            unsortable: true
+        }),
+        Genoverse.Track.Variation.extend({
+            id: 'Variation',
+            name: 'Variation',
+            url: ensembl_url + '/overlap/region/' + ensembl_species + '/__CHR__:__START__-__END__?feature=variation;content-type=application/json',
+            model: Genoverse.Track.Model.extend({
+                dataRequestLimit: 5000000
+            }),
+            setFeatureColor: function(f) {
+                f.color = '#1B0AB5';
+            },
+            threshold: 50000,
+            messages: {
+                threshold: 'Variation not displayed for regions larger than '
+            },
+            autoheight: true
+        }),
+        Genoverse.Track.MAFVariation.extend({
+            id: 'MAF_variations',
+            name: 'MAF_variations',
+            url: "[% c.uri_for('/api/variation_for_region') %]" + "?species=" + ensembl_species + "&chr_name=__CHR__&chr_start=__START__&chr_end=__END__",
+            model: Genoverse.Track.Model.extend({
+                dataRequestLimit: 5000000
+            }),
+            view: Genoverse.Track.View.FilterMAFVariation.extend({
+                thresholdMAF: $('#MAF_threshold').val()
+            }),
+            setFeatureColor: function(f) {
+                f.color = '#48C402';
+            },
+            threshold: 5000,
+            messages: {
+                threshold: 'MAF variations not displayed for regions larger than '
+            },
+            autoheight: true
+        }), [ % FOREACH line IN lines.keys.sort % ]
+        [ % IF lines.$line % ]
+        Genoverse.Track.Haplotype.extend({
+            id: '[% line %]_1',
+            name: '<a style="color:white" title="Email wge@sanger.ac.uk for information on how to access the [% line %] clones.">[% line %]_1</a>',
+            line: '[% line %]',
+            trackNum: 1,
+            otherTrack: '[% line %]_2',
             filterProfile: [
-                                '10X_ALLELE_FRACTION',
-                                '10X_QUAL_FILTER',
-                                '10X_PHASING_INCONSISTENT',
-                                '10X_HOMOPOLYMER_UNPHASED_INSERTION',
-                                '10X_RESCUED_MOLECULE_HIGH_DIVERSITY'
-                              ],
-            url          : "[% c.uri_for('/api/haplotypes_for_region') %]" + "?species="+ensembl_species+"&line=[% line %]&chr_name=chr__CHR__&chr_start=__START__&chr_end=__END__",
-            controller   : Genoverse.Track.Controller.Haplotype,
-            model        : Genoverse.Track.Model.Haplotype,
-            view         : Genoverse.Track.View.Transcript.Haplotype,
-            threshold    : 5000,
-            messages     : {
-            threshold    : '[% line %] variations not displayed for regions larger than ',
-              resize  : 'Some features are currently hidden, <a class="gv-resize">resize to see all</a>',
-              error   : 'Error: '
+                '10X_ALLELE_FRACTION',
+                '10X_QUAL_FILTER',
+                '10X_PHASING_INCONSISTENT',
+                '10X_HOMOPOLYMER_UNPHASED_INSERTION',
+                '10X_RESCUED_MOLECULE_HIGH_DIVERSITY'
+            ],
+            url: "[% c.uri_for('/api/haplotypes_for_region') %]" + "?species=" + ensembl_species + "&line=[% line %]&chr_name=chr__CHR__&chr_start=__START__&chr_end=__END__",
+            controller: Genoverse.Track.Controller.Haplotype,
+            model: Genoverse.Track.Model.Haplotype,
+            view: Genoverse.Track.View.Transcript.Haplotype,
+            threshold: 5000,
+            messages: {
+                threshold: '[% line %] variations not displayed for regions larger than ',
+                resize: 'Some features are currently hidden, <a class="gv-resize">resize to see all</a>',
+                error: 'Error: '
             },
             autoheight: true,
-          }),
-          Genoverse.Track.Haplotype.extend({
-            id           : '[% line %]_2',
-            name         : '<a style="color:white" title="Email wge@sanger.ac.uk for information on how to access the [% line %] clones.">[% line %]_2</a>',
-            line         : '[% line %]',
-            trackNum     : 2,
-            otherTrack   : '[% line %]_1',
+        }),
+        Genoverse.Track.Haplotype.extend({
+            id: '[% line %]_2',
+            name: '<a style="color:white" title="Email wge@sanger.ac.uk for information on how to access the [% line %] clones.">[% line %]_2</a>',
+            line: '[% line %]',
+            trackNum: 2,
+            otherTrack: '[% line %]_1',
             filterProfile: [
-                                '10X_ALLELE_FRACTION',
-                                '10X_QUAL_FILTER',
-                                '10X_PHASING_INCONSISTENT',
-                                '10X_HOMOPOLYMER_UNPHASED_INSERTION',
-                                '10X_RESCUED_MOLECULE_HIGH_DIVERSITY'
-                              ],
-            url          : "[% c.uri_for('/api/haplotypes_for_region') %]" + "?species="+ensembl_species+"&line=[% line %]&chr_name=chr__CHR__&chr_start=__START__&chr_end=__END__",
-            controller   : Genoverse.Track.Controller.Haplotype,
-            model        : Genoverse.Track.Model.Haplotype,
-            view         : Genoverse.Track.View.Transcript.Haplotype,
-            threshold    : 5000,
-            messages     : {
-                threshold: '[% line %] variations not displayed for regions larger than ',
-                resize   : 'Some features are currently hidden, <a class="gv-resize">resize to see all</a>',
-                error    : 'Error: '
-            },
-            autoheight   : true,
-          }),
-          [% END %]
-          [% END %]
-          [% IF genome.lower != 'grch37' %]
-          Genoverse.Track.extend({
-            name       : 'Protein',
-            id         : 'Protein',
-            url        : "[% c.uri_for('/api/translation_for_region') %]" + "?species="+ensembl_species+"&chr_name=__CHR__&chr_start=__START__&chr_end=__END__",
-            controller : Genoverse.Track.Controller.Protein,
-            model      : Genoverse.Track.Model.Protein,
-            view       : Genoverse.Track.View.Protein,
-            controls   : 'off',
-            unsortable : false,
-            threshold  : 5000,
-            messages   : { threshold : 'Protein not displayed for regions larger than ' },
-          }),
-          [% END %]
-          Genoverse.Track.Genes.extend({
-            name   : 'Genes',
-            id     : 'Genes',
-            //FIXME: should pass species to this template so we do not rely on assembly
-            url    : ensembl_url + '/overlap/region/' + ensembl_species + '/__CHR__:__START__-__END__?feature=gene;feature=transcript;feature=exon;feature=cds;content-type=application/json',
-            height : 200,
-            controls  : 'off',
-            unsortable : true
-          }),
-          Genoverse.Track.extend({
-            name      : 'Designs',
-            id        : 'Designs',
-            url       : "[% c.uri_for('/api/designs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]" ,
-            model     : Genoverse.Track.Model.Transcript.GFF3,
-            view      : Genoverse.Track.View.Transcript,
-            height    : 50,
-
-            populateMenu : function (feature) {
-              var link = "<a href='[%c.uri_for('/view_gibson_design')%]?design_id=" + feature.name
-                                + "' target='_blank'><font color='#00FFFF'>Design Report</font></a>";
-              var atts = {
-                ID     : feature.id,
-                url    : link,
-                Type   : feature.type,
-                Start  : feature.start,
-                End    : feature.end,
-                Strand : feature.strand,
-              };
-              return atts;
-            }
-          }),
-[% IF c.user %]
-          Genoverse.Track.Crisprs.extend({
-            id        : 'Bookmarked Crisprs',
-            name      : 'Bookmarked Crisprs',
-            url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&species_id=[%species%]&design_id=[%design_id%]&bookmarked_only=1" ,
-            crispr_report_uri : "[%c.uri_for('/crispr')%]",
-            autoheight : false
-          }),
-[% END %]
-          Genoverse.Track.Crisprs.extend({
-            name      : 'Crisprs',
-            id        : 'Crisprs',
-            url       : "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&species_id=[%species%]&design_id=[%design_id%]" ,
-            view      : Genoverse.Track.View.FilterCrisprs,
-            crispr_report_uri : "[%c.uri_for('/crispr')%]",
-            crispr_id : "[%crispr_id || '' %]",
-            urlParams : { crispr_filter: "[%crispr_filter%]", flank_size: "[%flank_size%]"},
-            controls  : [
-                '<button class="btn-xs btn-track" data-toggle="modal"'
-                + ' onclick="show_download_button(\''
-                + '[% c.uri_for('/api/crisprs_in_region') %]\')"'
-                + ' data-target="#downloadModal">'
-                + '<span class="glyphicon glyphicon-download"></span>'
-                + '</button>'
+                '10X_ALLELE_FRACTION',
+                '10X_QUAL_FILTER',
+                '10X_PHASING_INCONSISTENT',
+                '10X_HOMOPOLYMER_UNPHASED_INSERTION',
+                '10X_RESCUED_MOLECULE_HIGH_DIVERSITY'
             ],
-          }),
+            url: "[% c.uri_for('/api/haplotypes_for_region') %]" + "?species=" + ensembl_species + "&line=[% line %]&chr_name=chr__CHR__&chr_start=__START__&chr_end=__END__",
+            controller: Genoverse.Track.Controller.Haplotype,
+            model: Genoverse.Track.Model.Haplotype,
+            view: Genoverse.Track.View.Transcript.Haplotype,
+            threshold: 5000,
+            messages: {
+                threshold: '[% line %] variations not displayed for regions larger than ',
+                resize: 'Some features are currently hidden, <a class="gv-resize">resize to see all</a>',
+                error: 'Error: '
+            },
+            autoheight: true,
+        }), [ % END % ]
+        [ % END % ]
+        [ % IF genome.lower != 'grch37' % ]
+        Genoverse.Track.extend({
+            name: 'Protein',
+            id: 'Protein',
+            url: "[% c.uri_for('/api/translation_for_region') %]" + "?species=" + ensembl_species + "&chr_name=__CHR__&chr_start=__START__&chr_end=__END__",
+            controller: Genoverse.Track.Controller.Protein,
+            model: Genoverse.Track.Model.Protein,
+            view: Genoverse.Track.View.Protein,
+            controls: 'off',
+            unsortable: false,
+            threshold: 5000,
+            messages: {
+                threshold: 'Protein not displayed for regions larger than '
+            },
+        }), [ % END % ]
+        Genoverse.Track.Genes.extend({
+            name: 'Genes',
+            id: 'Genes',
+            //FIXME: should pass species to this template so we do not rely on assembly
+            url: ensembl_url + '/overlap/region/' + ensembl_species + '/__CHR__:__START__-__END__?feature=gene;feature=transcript;feature=exon;feature=cds;content-type=application/json',
+            height: 200,
+            controls: 'off',
+            unsortable: true
+        }),
+        Genoverse.Track.extend({
+            name: 'Designs',
+            id: 'Designs',
+            url: "[% c.uri_for('/api/designs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]",
+            model: Genoverse.Track.Model.Transcript.GFF3,
+            view: Genoverse.Track.View.Transcript,
+            height: 50,
 
-[% IF c.user %]
-          Genoverse.Track.CrisprPairs.extend({
-            id        : 'Bookmarked Crispr Pairs',
-            name      : 'Bookmarked Crispr Pairs',
-            url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&species_id=[%species%]&design_id=[%design_id%]&bookmarked_only=1" ,
-            pair_report_uri : "[%c.uri_for('/crispr_pair')%]"
-          }),
-[% END %]
-          Genoverse.Track.CrisprPairs.extend({
-            name      : 'Crispr Pairs',
-            id        : 'Crispr Pairs',
-            url       : "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&species_id=[%species%]&design_id=[%design_id%]" ,
-            pair_report_uri : "[%c.uri_for('/crispr_pair')%]",
-            urlParams : { crispr_filter: "[%crispr_filter%]", flank_size: "[%flank_size%]"},
-            view      : Genoverse.Track.View.FilterCrisprPairs,
+            populateMenu: function(feature) {
+                var link = "<a href='[%c.uri_for('/view_gibson_design')%]?design_id=" + feature.name +
+                    "' target='_blank'><font color='#00FFFF'>Design Report</font></a>";
+                var atts = {
+                    ID: feature.id,
+                    url: link,
+                    Type: feature.type,
+                    Start: feature.start,
+                    End: feature.end,
+                    Strand: feature.strand,
+                };
+                return atts;
+            }
+        }), [ % IF c.user % ]
+        Genoverse.Track.Crisprs.extend({
+            id: 'Bookmarked Crisprs',
+            name: 'Bookmarked Crisprs',
+            url: "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&species_id=[%species%]&design_id=[%design_id%]&bookmarked_only=1",
+            crispr_report_uri: "[%c.uri_for('/crispr')%]",
+            autoheight: false
+        }), [ % END % ]
+        Genoverse.Track.Crisprs.extend({
+            name: 'Crisprs',
+            id: 'Crisprs',
+            url: "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&species_id=[%species%]&design_id=[%design_id%]",
+            view: Genoverse.Track.View.FilterCrisprs,
+            crispr_report_uri: "[%c.uri_for('/crispr')%]",
+            crispr_id: "[%crispr_id || '' %]",
+            urlParams: {
+                crispr_filter: "[%crispr_filter%]",
+                flank_size: "[%flank_size%]"
+            },
+            controls: [
+                '<button class="btn-xs btn-track" data-toggle="modal"' +
+                ' onclick="show_download_button(\'' +
+                '[% c.uri_for(' / api / crisprs_in_region ') %]\')"' +
+                ' data-target="#downloadModal">' +
+                '<span class="glyphicon glyphicon-download"></span>' +
+                '</button>'
+            ],
+        }),
+
+        [ % IF c.user % ]
+        Genoverse.Track.CrisprPairs.extend({
+            id: 'Bookmarked Crispr Pairs',
+            name: 'Bookmarked Crispr Pairs',
+            url: "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&species_id=[%species%]&design_id=[%design_id%]&bookmarked_only=1",
+            pair_report_uri: "[%c.uri_for('/crispr_pair')%]"
+        }), [ % END % ]
+        Genoverse.Track.CrisprPairs.extend({
+            name: 'Crispr Pairs',
+            id: 'Crispr Pairs',
+            url: "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&species_id=[%species%]&design_id=[%design_id%]",
+            pair_report_uri: "[%c.uri_for('/crispr_pair')%]",
+            urlParams: {
+                crispr_filter: "[%crispr_filter%]",
+                flank_size: "[%flank_size%]"
+            },
+            view: Genoverse.Track.View.FilterCrisprPairs,
             // NB: custom settings added here seem to be treated as defaults
             // and get reset by genoverse setMVC function each time user zooms in or out.
             // urlParams does not get reset - you can change this dynamically and the new
             // param values are maintained during zooming
-            crispr_pair_id : "[%crispr_pair_id || '' %]",
-            controls  : [
-                '<button class="btn-xs btn-track" data-toggle="modal"'
-                + ' onclick="show_download_button(\''
-                + '[% c.uri_for('/api/crispr_pairs_in_region') %]\')"'
-                + ' data-target="#downloadModal">'
-                + '<span class="glyphicon glyphicon-download"></span>'
-                + '</button>'
+            crispr_pair_id: "[%crispr_pair_id || '' %]",
+            controls: [
+                '<button class="btn-xs btn-track" data-toggle="modal"' +
+                ' onclick="show_download_button(\'' +
+                '[% c.uri_for(' / api / crispr_pairs_in_region ') %]\')"' +
+                ' data-target="#downloadModal">' +
+                '<span class="glyphicon glyphicon-download"></span>' +
+                '</button>'
             ],
-          }),
-          Genoverse.Track.Scaleline
-        ]
-      };
+        }),
+        Genoverse.Track.Scaleline
+    ]
+};
 
-      $(function () {
+$(function() {
 
-        var svgContainer = d3.select("#insertionKey").append("svg:svg")
-                                                     .attr("width", 20)
-                                                     .attr("height", 20);
+    var svgContainer = d3.select("#insertionKey").append("svg:svg")
+        .attr("width", 20)
+        .attr("height", 20);
 
-        var triangle = svgContainer.append("svg:path")
-                                   .attr("d", "M 9 0 L 4 18 L 14 18")
-                                   .style("fill", "#00AA00");
+    var triangle = svgContainer.append("svg:path")
+        .attr("d", "M 9 0 L 4 18 L 14 18")
+        .style("fill", "#00AA00");
 
-        window.genoverse = new Genoverse(genoverseConfig);
-        Genoverse.off_target_display = function (feature){
-            if(feature.ot_summary){
-                return feature.ot_summary;
-            }
-            var computeButton = document.createElement('a');
-            var args = [feature.start, feature.end].join(', ');
-            computeButton.setAttribute('href', 'javascript:find_off_targets(' + args + ');');
-            computeButton.setAttribute('style', 'color:#00FFFF');
-            computeButton.text = 'Compute';
-            return computeButton.outerHTML;
-        };
-        // From WebApp-Common/shared_templates
-        [% INCLUDE 'genoverse_mods/selector_size_display.tt' %]
+    window.genoverse = new Genoverse(genoverseConfig);
+    Genoverse.off_target_display = function(feature) {
+        if (feature.ot_summary) {
+            return feature.ot_summary;
+        }
+        var computeButton = document.createElement('a');
+        var args = [feature.start, feature.end].join(', ');
+        computeButton.setAttribute('href', 'javascript:find_off_targets(' + args + ');');
+        computeButton.setAttribute('style', 'color:#00FFFF');
+        computeButton.text = 'Compute';
+        return computeButton.outerHTML;
+    };
+    // From WebApp-Common/shared_templates
+    [ % INCLUDE 'genoverse_mods/selector_size_display.tt' % ]
 
-        // code that needs to run AFTER genoverse is loaded and initialized
-        window.genoverse.on('afterInit', function (){
-          console.log("doing afterAddDomElements stuff");
-[% FOREACH line IN lines.keys %]
-    [% IF not lines.$line %]
+    // code that needs to run AFTER genoverse is loaded and initialized
+    window.genoverse.on('afterInit', function() {
+        console.log("doing afterAddDomElements stuff");
+        [ % FOREACH line IN lines.keys % ]
+        [ % IF not lines.$line % ]
         hide_tracks(['[% line %]_1', '[% line %]_2']);
-    [% END %]
-[% END %]
-          //create a new button for calculating off-targets for a range
-          var ot_button = $('<button>Compute Off-Targets</button>')
+        [ % END % ]
+        [ % END % ]
+        //create a new button for calculating off-targets for a range
+        var ot_button = $('<button>Compute Off-Targets</button>')
             .addClass('gv-compute-ot')
             .attr('id', 'compute_ot')
-            .click(function(){
+            .click(function() {
                 var pos = window.genoverse.getSelectorPosition();
                 find_off_targets(pos.start, pos.end);
             });
-          //insert it below the current "Highlight" button
-          $('<div></div>')
+        //insert it below the current "Highlight" button
+        $('<div></div>')
             .addClass('gv-button-set')
             .append(ot_button)
             .insertAfter($('.gv-highlight').parent());
-          //$(".gv-highlight").attr("data-toggle","modal");
-          //$(".gv-highlight").attr("data-target","#offTargetModal");
+        //$(".gv-highlight").attr("data-toggle","modal");
+        //$(".gv-highlight").attr("data-target","#offTargetModal");
 
-          // All tracks are loaded by default on page refresh
-          // Hide the ones we don't want to see
-          // We are doing it this way because using the hidden attribute
-          // on the genoverse tracks caused "call stack size exceeded" error
-          if ( $("#hide_single").is(':checked') ) {
+        // All tracks are loaded by default on page refresh
+        // Hide the ones we don't want to see
+        // We are doing it this way because using the hidden attribute
+        // on the genoverse tracks caused "call stack size exceeded" error
+        if ($("#hide_single").is(':checked')) {
             hide_single();
-          }
+        }
 
-          if ( $("#hide_paired").is(':checked') ) {
+        if ($("#hide_paired").is(':checked')) {
             hide_paired();
-          }
+        }
 
-          if ( $("#hide_designs").is(':checked') ) {
+        if ($("#hide_designs").is(':checked')) {
             hide_designs();
-          }
-
-          // Add buttons to allow users to download crisprs from tracks
-          add_download_button("Crisprs","[% c.uri_for('/api/crisprs_in_region') %]");
-          add_download_button("Crispr Pairs","[% c.uri_for('/api/crispr_pairs_in_region') %]");
-
-      });
-          // Close selection and refresh tracks when modal is closed
-          $("#offTargetModal").on('hidden.bs.modal', function(){
-            $(window)[0].genoverse.cancelSelect();
-            reload_tracks();
-          });
-
-          $("#ot_filters_panel").draggable();
-          $("#haplo_filters_panel").draggable();
-          $("#colour_key").draggable({ stack: ".drag", zIndex: 2500  });
-          $("#colour_key").css('boxShadow','0px 0px 1px 1px grey');
-          $('#colour_key').css('z-index', '100');
-          console.log($("#genoverse").offset());
-
-      var radios = document.getElementsByName("view_single"); // list of radio buttons
-      var val = sessionStorage.getItem('view_single'); // local storage value
-      for(var i=0;i<radios.length;i++){
-        if(radios[i].value == val){
-          radios[i].checked = true; // marking the required radio as checked
         }
-      }
-      $('input[name="view_single"]').on('change', function(){
-        sessionStorage.setItem('view_single', $(this).val()); 
-      });
 
-      var radios = document.getElementsByName("view_paired"); 
-      var val = sessionStorage.getItem('view_paired'); 
-      for(var i=0;i<radios.length;i++){
-        if(radios[i].value == val){
-          radios[i].checked = true; 
+        // Add buttons to allow users to download crisprs from tracks
+        add_download_button("Crisprs", "[% c.uri_for('/api/crisprs_in_region') %]");
+        add_download_button("Crispr Pairs", "[% c.uri_for('/api/crispr_pairs_in_region') %]");
+
+    });
+    // Close selection and refresh tracks when modal is closed
+    $("#offTargetModal").on('hidden.bs.modal', function() {
+        $(window)[0].genoverse.cancelSelect();
+        reload_tracks();
+    });
+
+    $("#ot_filters_panel").draggable();
+    $("#haplo_filters_panel").draggable();
+    $("#colour_key").draggable({
+        stack: ".drag",
+        zIndex: 2500
+    });
+    $("#colour_key").css('boxShadow', '0px 0px 1px 1px grey');
+    $('#colour_key').css('z-index', '100');
+    console.log($("#genoverse").offset());
+
+    var radios = document.getElementsByName("view_single"); // list of radio buttons
+    var val = sessionStorage.getItem('view_single'); // local storage value
+    for (var i = 0; i < radios.length; i++) {
+        if (radios[i].value == val) {
+            radios[i].checked = true; // marking the required radio as checked
         }
-      }
-      $('input[name="view_paired"]').on('change', function(){
-        sessionStorage.setItem('view_paired', $(this).val()); 
-      });
+    }
+    $('input[name="view_single"]').on('change', function() {
+        sessionStorage.setItem('view_single', $(this).val());
+    });
 
-      var radios = document.getElementsByName("view_designs"); 
-      var val = sessionStorage.getItem('view_designs'); 
-      for(var i=0;i<radios.length;i++){
-        if(radios[i].value == val){
-          radios[i].checked = true; 
+    var radios = document.getElementsByName("view_paired");
+    var val = sessionStorage.getItem('view_paired');
+    for (var i = 0; i < radios.length; i++) {
+        if (radios[i].value == val) {
+            radios[i].checked = true;
         }
-      }
-      $('input[name="view_designs"]').on('change', function(){
-        sessionStorage.setItem('view_designs', $(this).val()); 
-      });
+    }
+    $('input[name="view_paired"]').on('change', function() {
+        sessionStorage.setItem('view_paired', $(this).val());
+    });
 
-          $("#apply_ot_filters").click(function (event){
-            apply_ot_filters();
-          });
+    var radios = document.getElementsByName("view_designs");
+    var val = sessionStorage.getItem('view_designs');
+    for (var i = 0; i < radios.length; i++) {
+        if (radios[i].value == val) {
+            radios[i].checked = true;
+        }
+    }
+    $('input[name="view_designs"]').on('change', function() {
+        sessionStorage.setItem('view_designs', $(this).val());
+    });
 
-          $("#reset_ot_filters").click(function (event){
-            reset_ot_filters();
-          });
+    $("#apply_ot_filters").click(function(event) {
+        apply_ot_filters();
+    });
 
-          $('#apply_spacer_filters').click(function (event){
-            apply_spacer_filters();
-          });
+    $("#reset_ot_filters").click(function(event) {
+        reset_ot_filters();
+    });
 
-          $('#reset_spacer_filters').click(function (event){
-            reset_spacer_filters();
-          });
+    $('#apply_spacer_filters').click(function(event) {
+        apply_spacer_filters();
+    });
 
-          $('#apply_MAF_threshold').click(function (event){
-            apply_MAF_threshold();
-          });
+    $('#reset_spacer_filters').click(function(event) {
+        reset_spacer_filters();
+    });
 
-          // show/hide help messages when values are entered in mismatch counts
-          $("[id$=mismatch]").bind('keyup mouseup',function (event){
-              var help_span_id = "#" + this.id + "_no_max";
-              if(this.value !== ""){
-                  $(help_span_id).hide();
-              }
-              else{
-                  $(help_span_id).show();
-              }
-              if(this.id == '0_mismatch'){
-                  if(this.value == "0"){
-                      $('#0_mismatch_input_error').show();
-                  }
-                  else{
-                      $('#0_mismatch_input_error').hide();
-                  }
-              }
-          });
+    $('#apply_MAF_threshold').click(function(event) {
+        apply_MAF_threshold();
+    });
 
-          $('#go_to_filters').click(function (event){
-            $("html, body").animate({ scrollTop: $(document).height() }, 1000);
-          });
+    // show/hide help messages when values are entered in mismatch counts
+    $("[id$=mismatch]").bind('keyup mouseup', function(event) {
+        var help_span_id = "#" + this.id + "_no_max";
+        if (this.value !== "") {
+            $(help_span_id).hide();
+        } else {
+            $(help_span_id).show();
+        }
+        if (this.id == '0_mismatch') {
+            if (this.value == "0") {
+                $('#0_mismatch_input_error').show();
+            } else {
+                $('#0_mismatch_input_error').hide();
+            }
+        }
+    });
 
-          $('#reload_tracks').click(function (event){
-            reload_tracks();
-            //reload_ensembl_tracks();
-          });
+    $('#go_to_filters').click(function(event) {
+        $("html, body").animate({
+            scrollTop: $(document).height()
+        }, 1000);
+    });
 
-          $('#best_10_percent').click(function(){
-              set_ot_filters(10);
-              apply_ot_filters();
-          });
+    $('#reload_tracks').click(function(event) {
+        reload_tracks();
+        //reload_ensembl_tracks();
+    });
 
-          $('#best_25_percent').click(function(){
-              set_ot_filters(25);
-              apply_ot_filters();
-          });
+    $('#best_10_percent').click(function() {
+        set_ot_filters(10);
+        apply_ot_filters();
+    });
 
-          $('#best_50_percent').click(function(){
-              set_ot_filters(50);
-              apply_ot_filters();
-          });
+    $('#best_25_percent').click(function() {
+        set_ot_filters(25);
+        apply_ot_filters();
+    });
 
-          $('#MAF_error_text').hide();
-      });
+    $('#best_50_percent').click(function() {
+        set_ot_filters(50);
+        apply_ot_filters();
+    });
 
-
+    $('#MAF_error_text').hide();
+});
     </script>
 
 
