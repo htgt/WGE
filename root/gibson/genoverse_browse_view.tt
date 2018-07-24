@@ -124,32 +124,12 @@
     <table class='table'>
     <thead>
       <tr>
-        <th>Show</th>
-        <th><p id="crispr_filters_heading" [% UNLESS view_single OR view_paired %]class="muted"[% END %]>Crispr Filters</p></th>
         <th><p id="spacer_filters_heading" [% UNLESS view_paired %]class="muted"[% END %]>Spacer Filter</p></th>
+        <th>Variation</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td>
-          <input id="show_single" type="checkbox" name="view_single" [% IF view_single %]checked[% END %]>Single CRISPRs</input><br/>
-          <input id="show_paired" type="checkbox" name="view_paired" [% IF view_single %]checked[% END %]>Paired CRISPRs</input><br/>
-          <input id="show_designs" type="checkbox" name="view_designs" [% IF view_single %]checked[% END %]>Designs</input>
-        </td>
-        <td>
-          <fieldset name="crispr_filters" [% UNLESS view_paired OR view_single %]disabled[% END %]>
-            <input type="radio" name="crispr_filter" value="all" [% IF crispr_filter == 'all'  or not crispr_filter %]checked[% END %]>
-            Show All</input>
-            <br />
-            <input type="radio" name="crispr_filter" value="exonic" [% IF crispr_filter == 'exonic' %]checked[% END %]>
-            Exon Only</input>
-            <br />
-            <input type="radio" name="crispr_filter" value="exon_flanking" [% IF crispr_filter == 'exon_flanking' %]checked[% END %]>
-            Exon Flanking Only</input>
-            <br />
-            Flanking region: <br/><input type="number" id="flank_size" name="flank_size" value="[% flank_size OR 100 %]" min="1" max="1000" style="width: 60px"/>
-          </fieldset>
-        </td>
         <td>
           <fieldset name="spacer_filters" [% UNLESS view_paired %]disabled[% END %]>
             Crispr Pair Spacer Length<br/>(-10 to 30 bp)<br />
@@ -159,10 +139,6 @@
             <button type="button" class="btn btn-primary btn-sm" id="apply_spacer_filters">Apply Spacer Filter</button>
           </fieldset>
         </td>
-      </tr>
-
-    <tr><th>Variation</th></tr>
-    <tr>
         <td>
             MAF threshold <input type="text" id="MAF_threshold" name="MAF_threshold" onblur="test_MAF_threshold_value(this);" value="0.005" style="width: 60px">
             <p id="MAF_error_text"> Enter a decimal number. </p>
@@ -170,7 +146,8 @@
             </input>
             <button type="button" class="btn btn-primary btn-sm" id="apply_MAF_threshold">Apply MAF filter</button>
         </td>
-    </tr>
+      </tr>
+
   </tbody>
   </table>
 
@@ -411,51 +388,6 @@
       });
   }
 
-  function show_tracks(track_ids){
-    // Insert the tracks at position 5, just below genes track
-    //(assuming user has not closed gene, variation, protein, sequence tracks..)
-      track_ids.map(function(id){
-          var track = get_library_track(id);
-          if(track){
-              $(window)[0].genoverse.addTrack(
-                Genoverse.Track.extend($.extend(true, {},track)),5);
-          }
-      });
-  }
-
-  function show_single (state){
-      if (state) {
-          show_tracks(["Crisprs", "Bookmarked Crisprs"]);
-          enable_crispr_filters();
-          add_download_button("Crisprs","[% c.uri_for('/api/crisprs_in_region') %]");
-      }
-      else {
-          hide_tracks(["Crisprs", "Bookmarked Crisprs"]);
-          disable_crispr_filters();
-      }
-  }
-
-  function show_paired (state){
-      if (state) {
-          show_tracks(["Crispr Pairs","Bookmarked Crispr Pairs"]);
-          enable_crispr_pair_filters();
-          add_download_button("Crispr Pairs","[% c.uri_for('/api/crispr_pairs_in_region') %]");
-      }
-      else {
-          hide_tracks(["Crispr Pairs", "Bookmarked Crispr Pairs"]);
-          disable_crispr_pair_filters();
-      }
-  }
-
-  function show_designs (state){
-      if (state) {
-          show_tracks(["Designs"]);
-      }
-      else {
-          hide_tracks(["Designs"]);
-      }
-  }
-
   function get_track(id){
     return $(window)[0].genoverse.tracksById[id];
   }
@@ -463,68 +395,6 @@
   function get_library_track(id){
     var tracks = $.grep( $(window)[0].genoverse.tracksLibrary, function(n,i){ return n.prototype.id == id });
     return tracks[0];
-  }
-
-  function enable_crispr_filters(){
-      $("[name='crispr_filters']")[0].disabled = false;
-      $("#crispr_filters_heading")[0].className = "";
-      $("[name='crispr_ot_filters']")[0].disabled = false;
-      $("#crispr_ot_filters_heading")[0].className = "";
-  }
-
-  function enable_crispr_pair_filters(){
-      enable_crispr_filters();
-      $("[name='spacer_filters']")[0].disabled = false;
-      $("#spacer_filters_heading")[0].className = "";
-  }
-
-  function disable_crispr_filters(){
-      // only disable them if neither crisprs or pairs
-      // are shown
-      if ($("#show_single").is(':checked')){
-        return;
-      }
-      if($("#show_paired").is(':checked')){
-        return;
-      }
-
-      $("[name='crispr_filters']")[0].disabled = true;
-      $("#crispr_filters_heading")[0].className = "muted";
-      $("[name='crispr_ot_filters']")[0].disabled = true;
-      $("#crispr_ot_filters_heading")[0].className = "muted";
-  }
-
-  function disable_crispr_pair_filters(){
-      $("[name='spacer_filters']")[0].disabled = true;
-      $("#spacer_filters_heading")[0].className = "muted";
-
-      disable_crispr_filters();
-  }
-
-  function apply_crispr_filters(){
-      var crispr_tracks = ['Crisprs','Crispr Pairs'];
-
-      var crispr_filter = $('input[name=crispr_filter]:checked').val();
-      var flank_size = $('#flank_size').val();
-
-      // apply to visible tracks and reload them
-      crispr_tracks.map(function (track_id){
-        var track = get_track(track_id);
-        if(track){
-          track.urlParams.crispr_filter = crispr_filter;
-          track.urlParams.flank_size = flank_size;
-          track.reload();
-        }
-      });
-
-      // apply to library tracks ready for them to be shown
-      crispr_tracks.map(function (track_id){
-        var track = get_library_track(track_id);
-        if(track){
-          track.urlParams.crispr_filter = crispr_filter;
-          track.urlParams.flank_size = flank_size;
-        }
-      });
   }
 
   function get_haplo_tracks() {
@@ -1117,16 +987,6 @@
           $('#colour_key').css('z-index', '100');
           console.log($("#genoverse").offset());
 
-          $("#show_single").change(function (event){
-            show_single(this.checked);
-          });
-          $("#show_paired").change(function (event){
-            show_paired(this.checked);
-          });
-          $("#show_designs").change(function (event){
-            show_designs(this.checked);
-          });
-
       var radios = document.getElementsByName("view_single"); // list of radio buttons
       var val = sessionStorage.getItem('view_single'); // local storage value
       for(var i=0;i<radios.length;i++){
@@ -1159,23 +1019,6 @@
       $('input[name="view_designs"]').on('change', function(){
         sessionStorage.setItem('view_designs', $(this).val()); 
       });
-
-          $("#flank_size").keypress(function (event){
-            if(event.which == 13){
-              apply_crispr_filters();
-              // enter key was pressed
-              //$("#browse_start")[0].value = $(window)[0].genoverse.start + 200;
-              //$("#browse_end")[0].value = $(window)[0].genoverse.end - 200;
-              //this.form.submit();
-            }
-          });
-
-          $('input[name=crispr_filter]').click(function (event){
-            apply_crispr_filters();
-            //$("#browse_start")[0].value = $(window)[0].genoverse.start + 200;
-            //$("#browse_end")[0].value = $(window)[0].genoverse.end - 200;
-            //this.form.submit();
-          });
 
           $("#apply_ot_filters").click(function (event){
             apply_ot_filters();
