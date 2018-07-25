@@ -35,7 +35,7 @@
 <div class="page-header">
 <br>
   <h1>[%- genes -%]
-    <small>[% IF design_id %]design: <strong>[%design_id%]</strong>[% END %]
+    <small>[% IF design_id %]design: <strong>[% design_id %]</strong>[% END %]
   assembly: [%- genome -%]
   [% IF species == "Grch38" %]
   species: Human
@@ -114,12 +114,12 @@
   <div class="row-fluid">
   <div class="col-md-9">
   <form action="[% c.uri_for( '/genoverse_browse' ) %]" class="well">
-    <input type="hidden" name="genome" value=[%genome%] />
-    <input type="hidden" name="chromosome" value=[%chromosome%] />
-    <input id="browse_start" type="hidden" name="browse_start" value=[%browse_start%] />
-    <input id="browse_end" type="hidden" name="browse_end" value=[%browse_end%] />
-    <input type="hidden" name="genes" value="[%genes%]" />
-    [% IF design_id %]<input type="hidden" name="design_id" value=[%design_id%] />[% END %]
+    <input type="hidden" name="genome" value=[% genome %] />
+    <input type="hidden" name="chromosome" value=[% chromosome %] />
+    <input id="browse_start" type="hidden" name="browse_start" value=[% browse_start %] />
+    <input id="browse_end" type="hidden" name="browse_end" value=[% browse_end %] />
+    <input type="hidden" name="genes" value="[% genes %]" />
+    [% IF design_id %]<input type="hidden" name="design_id" value=[% design_id %] />[% END %]
 
     <table class='table'>
     <thead>
@@ -162,23 +162,23 @@
 
     <div class="col-md-4">
       <strong>Crispr Colour Key:</strong><br>
-      <div style="background: [%colours.left_crispr%]; width: 20px; height: 20px; float: left"></div>
+      <div style="background: [% colours.left_crispr %]; width: 20px; height: 20px; float: left"></div>
       <div style="margin-left: 30px">Off-targets computed</div>
 
-      <div style="background: [%colours.no_ot_summary%]; width: 20px; height: 20px; float: left"></div>
+      <div style="background: [% colours.no_ot_summary %]; width: 20px; height: 20px; float: left"></div>
       <div style="margin-left: 30px">Off-targets not computed</div>
 
-      <div style="background: [%colours.pam%]; width: 10px; height: 20px; float: left"></div>
+      <div style="background: [% colours.pam %]; width: 10px; height: 20px; float: left"></div>
       <div style="margin-left: 30px">PAM site</div>
     </div>
     <div class="col-md-4">
       <strong>Crispr Pair Colour Key:</strong><br>
-      <div style="background: [%colours.left_crispr%]; width: 20px; height: 20px; float: left;"></div>
-      <div style="background: [%colours.right_crispr%]; width: 20px; height: 20px; float: left;"></div>
+      <div style="background: [% colours.left_crispr %]; width: 20px; height: 20px; float: left;"></div>
+      <div style="background: [% colours.right_crispr %]; width: 20px; height: 20px; float: left;"></div>
       <div style="margin-left: 50px">Left and right off-targets computed</div>
 
-      <div style="background: [%colours.no_ot_summary%]; width: 20px; height: 20px; float: left;"></div>
-      <div style="background: [%colours.no_ot_summary%]; width: 20px; height: 20px; float: left;"></div>
+      <div style="background: [% colours.no_ot_summary %]; width: 20px; height: 20px; float: left;"></div>
+      <div style="background: [% colours.no_ot_summary %]; width: 20px; height: 20px; float: left;"></div>
       <div style="margin-left: 50px">Left and right off-targets not computed</div>
     </div>
     <div class="col-md-4">
@@ -197,7 +197,8 @@
     </div>
   </div>
 </div>
-</div> [%# end of left-hand div %]
+</div> [% # end of left-hand div
+%]
 
 <div class="col-md-3">
 <div id="ot_filters_panel">
@@ -283,8 +284,10 @@
 </div>
 [% END %]
 
-</div> [%# end of right-hand div %]
-</div> [%# end of row div %]
+</div> [% # end of right-hand div
+%]
+</div> [% # end of row div
+%]
 </div>
 
 <div id="downloadModal" class="modal fade" role="dialog" aria-labelledby="downloadModalLable" aria-hidden="true">
@@ -403,8 +406,8 @@ function get_library_track(id) {
 
 function get_haplo_tracks() {
     return [
-        [ % FOREACH line IN lines.keys % ]
-        '[% line %]_1', '[% line %]_2', [ % END % ]
+        [% FOREACH line IN lines.keys %]
+        '[% line %]_1', '[% line %]_2', [% END %]
     ];
 }
 
@@ -557,13 +560,13 @@ function set_ot_filters(percentile) {
     };
 
     // Uses percentiles from WGE::Util::Statistics
-    [ % FOREACH p IN[10, 25, 50, 75] % ]
-    [ % FOREACH mm IN[0, 1, 2, 3, 4] % ]
-    profiles[[ % p % ]][
-        [ % mm % ]
-    ] = [ % ot_distributions.$p.$mm % ];
-    [ % END % ]
-    [ % END % ]
+    [% FOREACH p IN[10, 25, 50, 75] %]
+    [% FOREACH mm IN[0, 1, 2, 3, 4] %]
+    profiles[[% p %]][
+        [% mm %]
+    ] = [% ot_distributions.$p.$mm %];
+    [% END %]
+    [% END %]
 
     var profile = profiles[percentile];
 
@@ -691,26 +694,18 @@ function find_off_targets(start, end) {
         $("#compute_ot").html("");
         $("#compute_ot").text(button_text);
     });
-} <
-/script>
+}
+</script>
 
-<
-script type = "text/javascript"
-src = "[% c.uri_for( '/Genoverse/js/genoverse.combined.nojquery.js'  ) %]" > < /script> <
-    script type = "text/javascript"
-src = "[% c.uri_for( '/static/js/wge_genoverse_custom_tracks.js'     ) %]" > < /script> <
-    script type = "text/javascript"
-src = "[% c.uri_for( '/js/genoverse_custom_tracks.js'                ) %]" > < /script> <
-    script type = "text/javascript"
-src = "[% c.uri_for( '/static/js/genoverse_variation_track.js'       ) %]" > < /script> <
-    script type = "text/javascript"
-src = "[% c.uri_for( '/static/js/genoverse_haplotype_track.js'       ) %]" > < /script> <
-    script type = "text/javascript"
-src = "[% c.uri_for( '/static/js/d3.min.js'                          ) %]" > < /script>
+<script type="text/javascript" src="[% c.uri_for( '/Genoverse/js/genoverse.combined.nojquery.js' ) %]"></script>
+<script type="text/javascript" src="[% c.uri_for( '/static/js/wge_genoverse_custom_tracks.js' ) %]"></script>
+<script type="text/javascript" src="[% c.uri_for( '/js/genoverse_custom_tracks.js' ) %]"></script>
+<script type="text/javascript" src="[% c.uri_for( '/static/js/genoverse_variation_track.js' ) %]"></script>
+<script type="text/javascript" src="[% c.uri_for( '/static/js/genoverse_haplotype_track.js' ) %]"></script>
+<script type="text/javascript" src="[% c.uri_for( '/static/js/d3.min.js' ) %]"></script>
 
-    <
-    script >
-    var species = '[% species %]';
+<script>
+var species = '[% species %]';
 ensembl_species = '[% species == "Grch38" ? "Human" : species %]'.toLowerCase();
 var ensembl_url = 'https://[% species == "Human" ? "grch37." : "" %]rest.ensembl.org';
 
@@ -719,11 +714,11 @@ var genoverseConfig = {
     container: '#genoverse', // Where to inject Genoverse (css/jQuery selector)
     // If no genome supplied, it must have at least chromosomeSize, e.g.:
     // chromosomeSize : 249250621, // chromosome 1, human
-    [ % USE String(genome) % ]
+    [% USE String(genome) %]
     genome: '[% String.lower() %]', // see js/genomes/
     chr: '[% chromosome %]',
-    start: [ % browse_start % ] - 200,
-    end: [ % browse_end % ] + 200,
+    start: [% browse_start %] - 200,
+    end: [% browse_end %] + 200,
     plugins: ['controlPanel', 'karyotype', 'trackControls', 'resizer', 'fileDrop'],
     saveable: true,
     storageType: 'localStorage',
@@ -772,8 +767,8 @@ var genoverseConfig = {
                 threshold: 'MAF variations not displayed for regions larger than '
             },
             autoheight: true
-        }), [ % FOREACH line IN lines.keys.sort % ]
-        [ % IF lines.$line % ]
+        }), [% FOREACH line IN lines.keys.sort %]
+        [% IF lines.$line %]
         Genoverse.Track.Haplotype.extend({
             id: '[% line %]_1',
             name: '<a style="color:white" title="Email wge@sanger.ac.uk for information on how to access the [% line %] clones.">[% line %]_1</a>',
@@ -823,9 +818,9 @@ var genoverseConfig = {
                 error: 'Error: '
             },
             autoheight: true,
-        }), [ % END % ]
-        [ % END % ]
-        [ % IF genome.lower != 'grch37' % ]
+        }), [% END %]
+        [% END %]
+        [% IF genome.lower != 'grch37' %]
         Genoverse.Track.extend({
             name: 'Protein',
             id: 'Protein',
@@ -839,7 +834,7 @@ var genoverseConfig = {
             messages: {
                 threshold: 'Protein not displayed for regions larger than '
             },
-        }), [ % END % ]
+        }), [% END %]
         Genoverse.Track.Genes.extend({
             name: 'Genes',
             id: 'Genes',
@@ -852,13 +847,13 @@ var genoverseConfig = {
         Genoverse.Track.extend({
             name: 'Designs',
             id: 'Designs',
-            url: "[% c.uri_for('/api/designs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]",
+            url: "[% c.uri_for('/api/designs_in_region') %]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[% genome %]",
             model: Genoverse.Track.Model.Transcript.GFF3,
             view: Genoverse.Track.View.Transcript,
             height: 50,
 
             populateMenu: function(feature) {
-                var link = "<a href='[%c.uri_for('/view_gibson_design')%]?design_id=" + feature.name +
+                var link = "<a href='[% c.uri_for('/view_gibson_design') %]?design_id=" + feature.name +
                     "' target='_blank'><font color='#00FFFF'>Design Report</font></a>";
                 var atts = {
                     ID: feature.id,
@@ -870,24 +865,24 @@ var genoverseConfig = {
                 };
                 return atts;
             }
-        }), [ % IF c.user % ]
+        }), [% IF c.user %]
         Genoverse.Track.Crisprs.extend({
             id: 'Bookmarked Crisprs',
             name: 'Bookmarked Crisprs',
-            url: "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&species_id=[%species%]&design_id=[%design_id%]&bookmarked_only=1",
-            crispr_report_uri: "[%c.uri_for('/crispr')%]",
+            url: "[% c.uri_for('/api/crisprs_in_region') %]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[% genome %]&species_id=[% species %]&design_id=[% design_id %]&bookmarked_only=1",
+            crispr_report_uri: "[% c.uri_for('/crispr') %]",
             autoheight: false
-        }), [ % END % ]
+        }), [% END %]
         Genoverse.Track.Crisprs.extend({
             name: 'Crisprs',
             id: 'Crisprs',
-            url: "[% c.uri_for('/api/crisprs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&species_id=[%species%]&design_id=[%design_id%]",
+            url: "[% c.uri_for('/api/crisprs_in_region') %]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[% genome %]&species_id=[% species %]&design_id=[% design_id %]",
             view: Genoverse.Track.View.FilterCrisprs,
-            crispr_report_uri: "[%c.uri_for('/crispr')%]",
-            crispr_id: "[%crispr_id || '' %]",
+            crispr_report_uri: "[% c.uri_for('/crispr') %]",
+            crispr_id: "[% crispr_id || '' %]",
             urlParams: {
-                crispr_filter: "[%crispr_filter%]",
-                flank_size: "[%flank_size%]"
+                crispr_filter: "[% crispr_filter %]",
+                flank_size: "[% flank_size %]"
             },
             controls: [
                 '<button class="btn-xs btn-track" data-toggle="modal"' +
@@ -899,28 +894,28 @@ var genoverseConfig = {
             ],
         }),
 
-        [ % IF c.user % ]
+        [% IF c.user %]
         Genoverse.Track.CrisprPairs.extend({
             id: 'Bookmarked Crispr Pairs',
             name: 'Bookmarked Crispr Pairs',
-            url: "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&species_id=[%species%]&design_id=[%design_id%]&bookmarked_only=1",
-            pair_report_uri: "[%c.uri_for('/crispr_pair')%]"
-        }), [ % END % ]
+            url: "[% c.uri_for('/api/crispr_pairs_in_region') %]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[% genome %]&species_id=[% species %]&design_id=[% design_id %]&bookmarked_only=1",
+            pair_report_uri: "[% c.uri_for('/crispr_pair') %]"
+        }), [% END %]
         Genoverse.Track.CrisprPairs.extend({
             name: 'Crispr Pairs',
             id: 'Crispr Pairs',
-            url: "[% c.uri_for('/api/crispr_pairs_in_region')%]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[%genome%]&species_id=[%species%]&design_id=[%design_id%]",
-            pair_report_uri: "[%c.uri_for('/crispr_pair')%]",
+            url: "[% c.uri_for('/api/crispr_pairs_in_region') %]" + "?chr=__CHR__&start=__START__&end=__END__&assembly=[% genome %]&species_id=[% species %]&design_id=[% design_id %]",
+            pair_report_uri: "[% c.uri_for('/crispr_pair') %]",
             urlParams: {
-                crispr_filter: "[%crispr_filter%]",
-                flank_size: "[%flank_size%]"
+                crispr_filter: "[% crispr_filter %]",
+                flank_size: "[% flank_size %]"
             },
             view: Genoverse.Track.View.FilterCrisprPairs,
             // NB: custom settings added here seem to be treated as defaults
             // and get reset by genoverse setMVC function each time user zooms in or out.
             // urlParams does not get reset - you can change this dynamically and the new
             // param values are maintained during zooming
-            crispr_pair_id: "[%crispr_pair_id || '' %]",
+            crispr_pair_id: "[% crispr_pair_id || '' %]",
             controls: [
                 '<button class="btn-xs btn-track" data-toggle="modal"' +
                 ' onclick="show_download_button(\'' +
@@ -957,16 +952,16 @@ $(function() {
         return computeButton.outerHTML;
     };
     // From WebApp-Common/shared_templates
-    [ % INCLUDE 'genoverse_mods/selector_size_display.tt' % ]
+    [% INCLUDE 'genoverse_mods/selector_size_display.tt' %]
 
     // code that needs to run AFTER genoverse is loaded and initialized
     window.genoverse.on('afterInit', function() {
         console.log("doing afterAddDomElements stuff");
-        [ % FOREACH line IN lines.keys % ]
-        [ % IF not lines.$line % ]
+        [% FOREACH line IN lines.keys %]
+        [% IF not lines.$line %]
         hide_tracks(['[% line %]_1', '[% line %]_2']);
-        [ % END % ]
-        [ % END % ]
+        [% END %]
+        [% END %]
         //create a new button for calculating off-targets for a range
         var ot_button = $('<button>Compute Off-Targets</button>')
             .addClass('gv-compute-ot')
