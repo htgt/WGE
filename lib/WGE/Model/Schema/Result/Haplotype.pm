@@ -1,8 +1,8 @@
 use utf8;
-package WGE::Model::Schema::Result::Chromosome;
+package WGE::Model::Schema::Result::Haplotype;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::Chromosome::VERSION = '0.117';
+    $WGE::Model::Schema::Result::Haplotype::VERSION = '0.117';
 }
 ## use critic
 
@@ -12,7 +12,7 @@ package WGE::Model::Schema::Result::Chromosome;
 
 =head1 NAME
 
-WGE::Model::Schema::Result::Chromosome
+WGE::Model::Schema::Result::Haplotype
 
 =cut
 
@@ -36,11 +36,11 @@ extends 'DBIx::Class::Core';
 
 __PACKAGE__->load_components("InflateColumn::DateTime");
 
-=head1 TABLE: C<chromosomes>
+=head1 TABLE: C<haplotype>
 
 =cut
 
-__PACKAGE__->table("chromosomes");
+__PACKAGE__->table("haplotype");
 
 =head1 ACCESSORS
 
@@ -55,9 +55,9 @@ __PACKAGE__->table("chromosomes");
   is_foreign_key: 1
   is_nullable: 0
 
-=head2 name
+=head2 restricted
 
-  data_type: 'text'
+  data_type: 'boolean'
   is_nullable: 0
 
 =cut
@@ -67,8 +67,8 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 0 },
   "species_id",
   { data_type => "text", is_foreign_key => 1, is_nullable => 0 },
-  "name",
-  { data_type => "text", is_nullable => 0 },
+  "restricted",
+  { data_type => "boolean", is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -85,21 +85,6 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 RELATIONS
 
-=head2 design_oligo_locis
-
-Type: has_many
-
-Related object: L<WGE::Model::Schema::Result::DesignOligoLoci>
-
-=cut
-
-__PACKAGE__->has_many(
-  "design_oligo_locis",
-  "WGE::Model::Schema::Result::DesignOligoLoci",
-  { "foreign.chr_id" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
-
 =head2 species
 
 Type: belongs_to
@@ -115,9 +100,24 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
+=head2 user_haplotypes
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2018-07-04 14:36:04
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:J2s0HKyyISILDGdLocdiZQ
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::UserHaplotype>
+
+=cut
+
+__PACKAGE__->has_many(
+  "user_haplotypes",
+  "WGE::Model::Schema::Result::UserHaplotype",
+  { "foreign.haplotype_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2018-07-19 11:20:38
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:aR8PkWuufTQXLEJ5ZLv65g
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

@@ -20,8 +20,6 @@ meta-spec:
   version: 1.4
 name: WGE
 requires:
-  Bio::EnsEMBL::ApiVersion: 0
-  Bio::EnsEMBL::Registry: 0
   Bio::Perl: 0
   Bio::Seq: 0
   Bio::SeqIO: 0
@@ -67,7 +65,6 @@ requires:
   LIMS2::Exception: 0
   LIMS2::Exception::InvalidState: 0
   LIMS2::REST::Client: 0
-  LIMS2::Util::EnsEMBL: 0
   LWP::UserAgent: 0
   List::MoreUtils: 0
   List::Util: 0
@@ -109,4 +106,4 @@ requires:
   strict: 0
   utf8: 0
   warnings: 0
-version: 0.116
+version: 0.117

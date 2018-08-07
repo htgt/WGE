@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::User;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::User::VERSION = '0.116';
+    $WGE::Model::Schema::Result::User::VERSION = '0.117';
 }
 ## use critic
 
@@ -270,9 +270,24 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+=head2 user_haplotypes
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2017-06-20 16:59:39
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:UJ7OzifV9cxI+2b+7jFN8Q
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::UserHaplotype>
+
+=cut
+
+__PACKAGE__->has_many(
+  "user_haplotypes",
+  "WGE::Model::Schema::Result::UserHaplotype",
+  { "foreign.user_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2018-07-19 11:20:38
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:vPDmO7zc5MlLQfrPEU1u2A
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

@@ -1,7 +1,7 @@
 package WGE::Util::Variation;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::Variation::VERSION = '0.116';
+    $WGE::Util::Variation::VERSION = '0.117';
 }
 ## use critic
 
@@ -10,7 +10,7 @@ use feature qw( say );
 
 use Moose;
 use namespace::autoclean;
-use WGE::Util::EnsEMBL;
+use WebAppCommon::Util::EnsEMBL;
 use WGE::Util::TimeOut qw(timeout);
 
 with 'MooseX::Log::Log4perl';
@@ -23,7 +23,7 @@ has species => (
 
 has ensembl => (
     is         => 'rw',
-    isa        => 'WGE::Util::EnsEMBL',
+    isa        => 'WebAppCommon::Util::EnsEMBL',
     lazy_build => 1,
     handles    => [ 'variation_feature_adaptor', 'slice_adaptor' ],
 );
@@ -31,7 +31,7 @@ has ensembl => (
 sub _build_ensembl {
     my $self = shift;
 
-    return WGE::Util::EnsEMBL->new( species => $self->species );
+    return WebAppCommon::Util::EnsEMBL->new( species => $self->species );
 }
 
 =head variation_for_region

@@ -1,7 +1,7 @@
 package WGE::Util::FindCrisprs;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::FindCrisprs::VERSION = '0.116';
+    $WGE::Util::FindCrisprs::VERSION = '0.117';
 }
 ## use critic
 
@@ -12,7 +12,7 @@ use warnings;
 use feature qw( say );
 
 use Moose;
-use WGE::Util::EnsEMBL;
+use WebAppCommon::Util::EnsEMBL;
 use Bio::Perl qw( revcom );
 
 has species => (
@@ -44,7 +44,7 @@ has expand_seq => (
 
 has ensembl => (
     is         => 'rw',
-    isa        => 'WGE::Util::EnsEMBL',
+    isa        => 'WebAppCommon::Util::EnsEMBL',
     lazy_build => 1,
     handles    => [ 'gene_adaptor', 'slice_adaptor' ],
 );
@@ -52,7 +52,7 @@ has ensembl => (
 sub _build_ensembl {
     my $self = shift;
 
-    return WGE::Util::EnsEMBL->new( species => $self->species );
+    return WebAppCommon::Util::EnsEMBL->new( species => $self->species );
 }
 
 has exon_regexes => (

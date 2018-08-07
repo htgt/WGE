@@ -122,13 +122,15 @@ __PACKAGE__->config(
 # Start the application
 __PACKAGE__->setup();
 
-after uri_for => sub {
+before uri_for => sub {
     my ($self, $path, @args) = @_;
-
-    my $base = $self->req->base;
-    $base =~ s/^http:/https:/;
-    $self->req->base(URI->new($base));
-    $self->req->secure(1);
+    
+    if ($self->model('DB')->software_version ne 'dev') {
+        my $base = $self->req->base;
+        $base =~ s/^http:/https:/;
+        $self->req->base(URI->new($base));
+        $self->req->secure(1);
+    }
 
     return;
 };
@@ -137,7 +139,10 @@ sub secure_uri_for {
     my ($self, @args) = @_;
 
     my $uri = $self->uri_for(@args);
-    $uri->scheme('https');
+
+    if ($self->model('DB')->software_version ne 'dev') {
+        $uri->scheme('https');
+    }
 
     return $uri;
 }

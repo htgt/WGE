@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::VariantCallFormat;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::VariantCallFormat::VERSION = '0.116';
+    $WGE::Model::Schema::Result::VariantCallFormat::VERSION = '0.117';
 }
 ## use critic
 
@@ -146,8 +146,8 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key("id");
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2017-06-20 16:23:05
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:HtGM1qKp6GN+GsIFzoCWDA
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2018-06-25 17:39:59
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:bAv9SQ7GEaOmWh6VWEGqfQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

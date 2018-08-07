@@ -1,7 +1,7 @@
 package WGE::Controller::Gibson;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::Gibson::VERSION = '0.116';
+    $WGE::Controller::Gibson::VERSION = '0.117';
 }
 ## use critic
 
@@ -533,17 +533,40 @@ sub download_design :Path( '/download_design' ) : Args(0) {
     return;
 }
 
+sub _is_line_allowed {
+    my ( $line, $user_haplotypes ) = @_;
+    return not $line->restricted or exists $user_haplotypes->{$line->id}; 
+}
+
+sub _get_user_lines {
+    my ( $user, $schema ) = @_;
+    my %user_lines = ();
+    if ( $user ) {
+        my $search = { user_id => $user->id };
+        %user_lines = map { $_->haplotype_id => 1 }
+            $schema->resultset('UserHaplotype')->search($search);
+    }
+    return \%user_lines;
+}
+
 sub genoverse_browse_view :Path( '/genoverse_browse') : Args(0){
     my ($self, $c) = @_;
 
     my $region;
+    my %lines;
+    my $search = {};
     try{
         $region = get_region_from_params($c->model, $c->request->params);
+        my $user_lines = _get_user_lines($c->user, $c->model->schema);
+        my $search     = { species_id => $region->{species} };
+        %lines = map { $_->id => _is_line_allowed( $_, $user_lines ) ? 1 : 0 }
+            $c->model->schema->resultset('Haplotype')->search($search);
+        
     }
     catch ($e){
         $c->stash( error_msg => "Could not display genome browser: $e" );
         return;
-    }
+    };
 
     $c->log->debug('Displaying region: '.Dumper($region));
 
@@ -554,6 +577,7 @@ sub genoverse_browse_view :Path( '/genoverse_browse') : Args(0){
         'browse_start'  => $region->{'browse_start'},
         'browse_end'    => $region->{'browse_end'},
         'genes'         => $region->{'genes'},
+        'lines'         => \%lines,
         'design_id'     => $c->request->params->{'design_id'},
         'view_single'   => $c->request->params->{'view_single'},
         'view_paired'   => $c->request->params->{'view_paired'},

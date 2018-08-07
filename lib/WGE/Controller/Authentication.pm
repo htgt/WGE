@@ -1,7 +1,7 @@
 package WGE::Controller::Authentication;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::Authentication::VERSION = '0.116';
+    $WGE::Controller::Authentication::VERSION = '0.117';
 }
 ## use critic
 
@@ -44,8 +44,7 @@ sub login :Path('/login') :Args(0) {
     # Redirect user to google to authenticate
     # After login the user will be redirected to /set_user
     my $oauth_helper = WGE::Util::OAuthHelper->new;
-    my $redirect_url = $c->uri_for('/set_user');
-    $redirect_url =~ s/^http:/https:/;
+    my $redirect_url = $c->secure_uri_for('/set_user');
     my $url = $oauth_helper->generate_auth_url($state, $redirect_url);
     $c->response->redirect($url);
 
@@ -54,11 +53,6 @@ sub login :Path('/login') :Args(0) {
 
 sub set_user :Path('/set_user') :Args(0) {
 	my ( $self, $c ) = @_;
-
-    my $base = $c->req->base;
-    $base =~ s/^http:/https:/;
-    $c->req->base(URI->new($base));
-    $c->req->secure(1);
 
     $c->log->debug("Attempting to authenticate");
     $c->authenticate($c->req->params,'oauth');
