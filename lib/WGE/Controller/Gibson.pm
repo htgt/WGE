@@ -1,7 +1,7 @@
 package WGE::Controller::Gibson;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::Gibson::VERSION = '0.117';
+    $WGE::Controller::Gibson::VERSION = '0.118';
 }
 ## use critic
 
@@ -535,7 +535,7 @@ sub download_design :Path( '/download_design' ) : Args(0) {
 
 sub _is_line_allowed {
     my ( $line, $user_haplotypes ) = @_;
-    return not $line->restricted or exists $user_haplotypes->{$line->id}; 
+    return (not $line->restricted) || (exists $user_haplotypes->{$line->id}); 
 }
 
 sub _get_user_lines {

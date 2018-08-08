@@ -44,7 +44,6 @@ lib/WGE/Controller/REST/CrisprPair.pm
 lib/WGE/Controller/REST/Design.pm
 lib/WGE/Controller/REST/Species.pm
 lib/WGE/Controller/Root.pm
-lib/WGE/Controller/Root.pm.tdy
 lib/WGE/Controller/UserPage.pm
 lib/WGE/Exception.pm
 lib/WGE/Exception/Validation.pm
@@ -115,7 +114,6 @@ lib/WGE/Util/FindOffTargets.pm
 lib/WGE/Util/FindPairs.pm
 lib/WGE/Util/GenomeBrowser.pm
 lib/WGE/Util/Haplotype.pm
-lib/WGE/Util/Haplotype.pm.bak
 lib/WGE/Util/OAuthHelper.pm
 lib/WGE/Util/OffTargetServer.pm
 lib/WGE/Util/PersistCrisprs.pm
@@ -133,7 +131,6 @@ root/favicon.ico
 root/gibson/create_custom_target_gibson_design.tt
 root/gibson/create_gibson_design.tt
 root/gibson/genoverse_browse_view.tt
-root/gibson/genoverse_browse_view.tt~
 root/gibson/gibson_design_attempts.tt
 root/gibson/gibson_design_exon_pick.tt
 root/gibson/gibson_design_gene_pick.tt
