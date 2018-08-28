@@ -95,7 +95,51 @@ sub get_all_species :Local('get_all_species') {
     return;
 }
 
-sub gene_search :Local('gene_search') {
+sub retrieve_genes {
+    my ( $model, $params ) = @_;
+    my $set = $model->resultset('GeneSet')->search(
+        { id => $params->{set} }
+    )->single;
+    die { error => 'Geneset not found' } if not $set;
+    die { error => 'Start locus must come before end locus' }
+        if $params->{start} >= $params->{end};
+    my %search = (
+        chr_name  => $params->{chr},
+        chr_end   => { '>=' => $params->{start} },
+        chr_start => { '<=', => $params->{end} },
+    );
+    # If >100kb of genome requested, only return genes instead of full
+    # gene+transcript+exon+CDS data
+    if ( $params->{end} - $params->{start} > 100_000 ) {
+        $search{feature_type_id} = 'gene';
+    }
+    # Mostly using HashRefInflator as TT needs hashes rather than classes
+    # rather than for speed (that's a bonus)
+    my @genes = $model->resultset($set->id)->search(
+        \%search,
+        { result_class => 'DBIx::Class::ResultClass::HashRefInflator' },
+    );
+    return \@genes;
+}
+
+sub find_genes : Local('find_genes') {
+    my ($self, $c) = @_;
+    my $params = $c->req->params;
+
+    check_params_exist( $c, $params, [qw/set chr start end/] );
+
+    try {
+        my $genes = retrieve_genes( $c->model('DB'), $params );
+        $c->stash->{json_data} = $genes;
+    }
+    catch ( $e ) {
+        $c->stash->{json_data} = $e;
+    }
+    $c->forward('View::JSON');
+    return;
+}
+
+sub gene_search : Local('gene_search') {
     my ($self, $c) = @_;
     my $params = $c->req->params;
 

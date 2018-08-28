@@ -702,6 +702,7 @@ function find_off_targets(start, end) {
 <script type="text/javascript" src="[% c.uri_for( '/js/genoverse_custom_tracks.js' ) %]"></script>
 <script type="text/javascript" src="[% c.uri_for( '/static/js/genoverse_variation_track.js' ) %]"></script>
 <script type="text/javascript" src="[% c.uri_for( '/static/js/genoverse_haplotype_track.js' ) %]"></script>
+<script type="text/javascript" src="[% c.uri_for( '/static/js/gene_sets.js' ) %]"></script>
 <script type="text/javascript" src="[% c.uri_for( '/static/js/d3.min.js' ) %]"></script>
 
 <script>
@@ -844,6 +845,13 @@ var genoverseConfig = {
             controls: 'off',
             unsortable: true
         }),
+        [% FOREACH gene_set IN gene_sets %]
+        Genoverse.Track.GeneSet.extend({
+            id  : '[% gene_set %]',
+            name: '[% gene_set %]',
+            url : "[% c.uri_for('/api/find_genes') %]?set=[% gene_set %]&chr=__CHR__&start=__START__&end=__END__",
+        }),
+        [% END %]
         Genoverse.Track.extend({
             name: 'Designs',
             id: 'Designs',
