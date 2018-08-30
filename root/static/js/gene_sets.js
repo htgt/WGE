@@ -82,27 +82,27 @@ Genoverse.Track.View.GeneSet = Genoverse.Track.View.Transcript.extend({
         feature.color = '#000000';
         var colors = {
             'protein_coding': {
-                color: '#a00000',
+                color: '#a00000', //dark red
                 legend: 'Protein coding'
             },
             'psueogene': {
-                color: '#666666',
+                color: '#666666', //medium grey
                 legend: 'Pseudogene'
             },
             'mRNA': {
-                color: '#a00000',
+                color: '#808000', //dark yellow
                 legend: 'mRNA'
             },
             'miRNA': {
-                color: '#00a000',
+                color: '#00a000', //dark green
                 legend: 'miRNA'
             },
             'transcript': {
-                color: '#0000f0',
+                color: '#0000f0', //blue
                 legend: 'Transcript'
             },
             'primary_transcript': {
-                color: '#0000a0',
+                color: '#0000a0', //dark blue
                 legend: 'Primary transcript'
             },
         };
@@ -111,7 +111,7 @@ Genoverse.Track.View.GeneSet = Genoverse.Track.View.Transcript.extend({
             feature.color = colors[feature.biotype].color;
             feature.legend = colors[feature.biotype].legend;
         } else if (/rna$/i.test(feature.biotype)) {
-            feature.color = '#8b668b';
+            feature.color = '#8b668b'; //plum
             feature.legend = 'RNA gene';
         }
 
