@@ -24,6 +24,21 @@ function getGeneSetLabel(feature) {
 Genoverse.Track.Model.Transcript.GeneSet = Genoverse.Track.Model.Transcript.extend({
     // The url above responds in json format, data is an array
     // We assume that parents always preceed children in data array, gene -> transcript -> exon
+    findOrAddParent: function(feature) {
+        if (this.featuresById[feature.parent_id]) {
+            return this.featuresById[feature.parent_id];
+        }
+        var gene = this.genes[feature.parent_id];
+        if (!gene) {
+            return 0;
+        }
+        gene.gene  = gene;
+        gene.label = getGeneSetLabel(gene);
+        gene.exons = {};
+        gene.cds   = {};
+        this.insertFeature(gene);
+        return gene;
+    },
     parseData: function(data, chr) {
         if (!('genes' in this)) {
             this.genes = {};
@@ -36,16 +51,25 @@ Genoverse.Track.Model.Transcript.GeneSet = Genoverse.Track.Model.Transcript.exte
             feature.end   = feature.chr_end;
             if (feature.feature_type_id === 'gene' && !this.genes[feature.id]) {
                 this.genes[feature.id] = feature;
-            } else if (feature.feature_type_id === 'rna' && !this.featuresById[feature.id]) {
+            }
+            else if (feature.feature_type_id === 'rna' && !this.featuresById[feature.id]) {
                 feature.gene  = this.genes[feature.parent_id];
                 feature.label = getGeneSetLabel(feature);
                 feature.exons = {};
                 feature.cds   = {};
                 this.insertFeature(feature);
-            } else if (feature.feature_type_id === 'exon' && this.featuresById[feature.parent_id]) {
-                this.featuresById[feature.parent_id].exons[feature.id] = feature;
-            } else if (feature.feature_type_id === 'CDS' && this.featuresById[feature.parent_id]) {
-                this.featuresById[feature.parent_id].cds[feature.id] = feature;
+            }
+            else if (feature.feature_type_id === 'exon') {
+                var p = this.findOrAddParent(feature);
+                if (p) {
+                    p.exons[feature.id] = feature;
+                }
+            }
+            else if (feature.feature_type_id === 'CDS') {
+                var p = this.findOrAddParent(feature);
+                if (p) {
+                    p.cds[feature.id] = feature;
+                }
             }
         }
     }
@@ -114,7 +138,7 @@ Genoverse.Track.GeneSet = Genoverse.Track.extend({
             Biotype: feature.biotype,
             Strand: feature.strand,
         };
-        ['name', 'gene_id', 'transcript_id', 'protein_id', 'description']
+        ['name', 'gene_id', 'transcript_id', 'protein_id', 'description', 'rank']
         .forEach((prop, i) => {
             if (feature[prop]) {
                 menu[prop] = feature[prop];
