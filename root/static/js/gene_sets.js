@@ -1,4 +1,5 @@
 Genoverse.Track.Model.Gene.GeneSet = Genoverse.Track.Model.Gene.extend({
+    dataRequestLimit: 1e7,
     parseData: function(data, chr) {
         for (var i = 0; i < data.length; i++) {
             var feature = data[i];
@@ -22,8 +23,7 @@ function getGeneSetLabel(feature) {
 }
 
 Genoverse.Track.Model.Transcript.GeneSet = Genoverse.Track.Model.Transcript.extend({
-    // The url above responds in json format, data is an array
-    // We assume that parents always preceed children in data array, gene -> transcript -> exon
+    dataRequestLimit: 1e7,
     findOrAddParent: function(feature) {
         if (this.featuresById[feature.parent_id]) {
             return this.featuresById[feature.parent_id];
@@ -39,6 +39,8 @@ Genoverse.Track.Model.Transcript.GeneSet = Genoverse.Track.Model.Transcript.exte
         this.insertFeature(gene);
         return gene;
     },
+    // The url above responds in json format, data is an array
+    // We assume that parents always preceed children in data array, gene -> transcript -> exon
     parseData: function(data, chr) {
         if (!('genes' in this)) {
             this.genes = {};

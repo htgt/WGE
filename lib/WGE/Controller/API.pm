@@ -108,9 +108,9 @@ sub retrieve_genes {
         chr_end   => { '>=' => $params->{start} },
         chr_start => { '<=', => $params->{end} },
     );
-    # If >100kb of genome requested, only return genes instead of full
+    # If >1mb of genome requested, only return genes instead of full
     # gene+transcript+exon+CDS data
-    if ( $params->{end} - $params->{start} > 100_000 ) {
+    if ( $params->{end} - $params->{start} > 1_000_000 ) {
         $search{feature_type_id} = 'gene';
     }
     # Mostly using HashRefInflator as TT needs hashes rather than classes
