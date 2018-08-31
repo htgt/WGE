@@ -1,8 +1,8 @@
 use utf8;
-package WGE::Model::Schema::Result::Chromosome;
+package WGE::Model::Schema::Result::GeneSet;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::Chromosome::VERSION = '0.119';
+    $WGE::Model::Schema::Result::GeneSet::VERSION = '0.119';
 }
 ## use critic
 
@@ -12,7 +12,7 @@ package WGE::Model::Schema::Result::Chromosome;
 
 =head1 NAME
 
-WGE::Model::Schema::Result::Chromosome
+WGE::Model::Schema::Result::GeneSet
 
 =cut
 
@@ -36,11 +36,11 @@ extends 'DBIx::Class::Core';
 
 __PACKAGE__->load_components("InflateColumn::DateTime");
 
-=head1 TABLE: C<chromosomes>
+=head1 TABLE: C<gene_set>
 
 =cut
 
-__PACKAGE__->table("chromosomes");
+__PACKAGE__->table("gene_set");
 
 =head1 ACCESSORS
 
@@ -55,11 +55,6 @@ __PACKAGE__->table("chromosomes");
   is_foreign_key: 1
   is_nullable: 0
 
-=head2 name
-
-  data_type: 'text'
-  is_nullable: 0
-
 =cut
 
 __PACKAGE__->add_columns(
@@ -67,8 +62,6 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 0 },
   "species_id",
   { data_type => "text", is_foreign_key => 1, is_nullable => 0 },
-  "name",
-  { data_type => "text", is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -84,21 +77,6 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key("id");
 
 =head1 RELATIONS
-
-=head2 design_oligo_locis
-
-Type: has_many
-
-Related object: L<WGE::Model::Schema::Result::DesignOligoLoci>
-
-=cut
-
-__PACKAGE__->has_many(
-  "design_oligo_locis",
-  "WGE::Model::Schema::Result::DesignOligoLoci",
-  { "foreign.chr_id" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
 
 =head2 species
 
@@ -116,8 +94,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2018-07-04 14:36:04
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:J2s0HKyyISILDGdLocdiZQ
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2018-08-28 11:39:14
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:5tfJj2CVRzsqjG5/zJIo+w
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

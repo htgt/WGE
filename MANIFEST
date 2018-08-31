@@ -38,6 +38,7 @@ lib/WGE/Controller/Authentication.pm
 lib/WGE/Controller/CrisprRanking.pm
 lib/WGE/Controller/CrisprReports.pm
 lib/WGE/Controller/Gibson.pm
+lib/WGE/Controller/Gibson.pm.bak
 lib/WGE/Controller/REST.pm
 lib/WGE/Controller/REST/Crispr.pm
 lib/WGE/Controller/REST/CrisprPair.pm
@@ -79,8 +80,10 @@ lib/WGE/Model/Schema/Result/DesignOligoLoci.pm
 lib/WGE/Model/Schema/Result/DesignOligoType.pm
 lib/WGE/Model/Schema/Result/DesignType.pm
 lib/WGE/Model/Schema/Result/Exon.pm
+lib/WGE/Model/Schema/Result/FeatureType.pm
 lib/WGE/Model/Schema/Result/Gene.pm
 lib/WGE/Model/Schema/Result/GeneDesign.pm
+lib/WGE/Model/Schema/Result/GeneSet.pm
 lib/WGE/Model/Schema/Result/GenotypingPrimer.pm
 lib/WGE/Model/Schema/Result/GenotypingPrimerType.pm
 lib/WGE/Model/Schema/Result/GibsonDesignBrowser.pm
@@ -89,9 +92,11 @@ lib/WGE/Model/Schema/Result/Kolf2.pm
 lib/WGE/Model/Schema/Result/LibraryDesignJob.pm
 lib/WGE/Model/Schema/Result/LibraryDesignStage.pm
 lib/WGE/Model/Schema/Result/PairOffTargets.pm
+lib/WGE/Model/Schema/Result/Refseq.pm
 lib/WGE/Model/Schema/Result/Species.pm
 lib/WGE/Model/Schema/Result/SpeciesDefaultAssembly.pm
 lib/WGE/Model/Schema/Result/User.pm
+lib/WGE/Model/Schema/Result/User.pm~
 lib/WGE/Model/Schema/Result/UserCrisprPairsGrch38.pm
 lib/WGE/Model/Schema/Result/UserCrisprPairsHuman.pm
 lib/WGE/Model/Schema/Result/UserCrisprPairsMouse.pm
@@ -259,6 +264,8 @@ root/static/images/table_view.png
 root/static/js/bootstrap.min.js
 root/static/js/d3.min.js
 root/static/js/diagram.builder.js
+root/static/js/gene_sets.js
+root/static/js/gene_sets.js.bak
 root/static/js/genoverse_haplotype_track.js
 root/static/js/genoverse_variation_track.js
 root/static/js/jquery-1.12.3.min.js

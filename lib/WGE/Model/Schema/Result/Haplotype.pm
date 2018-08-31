@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::Haplotype;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::Haplotype::VERSION = '0.118';
+    $WGE::Model::Schema::Result::Haplotype::VERSION = '0.119';
 }
 ## use critic
 

@@ -1,8 +1,8 @@
 use utf8;
-package WGE::Model::Schema::Result::DesignType;
+package WGE::Model::Schema::Result::FeatureType;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::DesignType::VERSION = '0.119';
+    $WGE::Model::Schema::Result::FeatureType::VERSION = '0.119';
 }
 ## use critic
 
@@ -12,7 +12,7 @@ package WGE::Model::Schema::Result::DesignType;
 
 =head1 NAME
 
-WGE::Model::Schema::Result::DesignType
+WGE::Model::Schema::Result::FeatureType
 
 =cut
 
@@ -36,11 +36,11 @@ extends 'DBIx::Class::Core';
 
 __PACKAGE__->load_components("InflateColumn::DateTime");
 
-=head1 TABLE: C<design_types>
+=head1 TABLE: C<feature_type>
 
 =cut
 
-__PACKAGE__->table("design_types");
+__PACKAGE__->table("feature_type");
 
 =head1 ACCESSORS
 
@@ -67,24 +67,24 @@ __PACKAGE__->set_primary_key("id");
 
 =head1 RELATIONS
 
-=head2 designs
+=head2 refseqs
 
 Type: has_many
 
-Related object: L<WGE::Model::Schema::Result::Design>
+Related object: L<WGE::Model::Schema::Result::Refseq>
 
 =cut
 
 __PACKAGE__->has_many(
-  "designs",
-  "WGE::Model::Schema::Result::Design",
-  { "foreign.design_type_id" => "self.id" },
+  "refseqs",
+  "WGE::Model::Schema::Result::Refseq",
+  { "foreign.feature_type_id" => "self.id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2014-01-23 10:25:34
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Jhlvx7xC5d5XPLJtLyrIdA
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2018-08-23 14:19:50
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:6ASpwp3l0FitYreBROJqoQ
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

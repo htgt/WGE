@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::Species;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::Species::VERSION = '0.118';
+    $WGE::Model::Schema::Result::Species::VERSION = '0.119';
 }
 ## use critic
 
@@ -173,6 +173,21 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+=head2 gene_sets
+
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::GeneSet>
+
+=cut
+
+__PACKAGE__->has_many(
+  "gene_sets",
+  "WGE::Model::Schema::Result::GeneSet",
+  { "foreign.species_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
 =head2 genes
 
 Type: has_many
@@ -219,8 +234,8 @@ __PACKAGE__->might_have(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2018-06-25 17:31:18
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:ZMW2r9qOA3cpUthQBVvRyg
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2018-08-28 11:39:14
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:gc4WqAZXevWG8DafXJCVvw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
