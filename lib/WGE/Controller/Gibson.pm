@@ -548,6 +548,7 @@ sub genoverse_browse_view :Path( '/genoverse_browse') : Args(0){
 
     my $region;
     my %lines;
+    my @gene_sets;
     my $search = {};
     try{
         $region = get_region_from_params($c->model, $c->request->params);
@@ -555,6 +556,8 @@ sub genoverse_browse_view :Path( '/genoverse_browse') : Args(0){
         my $search     = { species_id => $region->{species} };
         %lines = map { $_->id => _is_line_allowed( $_, $user_lines ) ? 1 : 0 }
             $c->model->schema->resultset('Haplotype')->search($search);
+        @gene_sets = map { $_->id } 
+            $c->model->schema->resultset('GeneSet')->search($search);
         
     }
     catch ($e){
@@ -572,6 +575,7 @@ sub genoverse_browse_view :Path( '/genoverse_browse') : Args(0){
         'browse_end'    => $region->{'browse_end'},
         'genes'         => $region->{'genes'},
         'lines'         => \%lines,
+        'gene_sets'     => \@gene_sets,
         'design_id'     => $c->request->params->{'design_id'},
         'view_single'   => $c->request->params->{'view_single'},
         'view_paired'   => $c->request->params->{'view_paired'},
