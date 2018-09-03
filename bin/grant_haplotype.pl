@@ -31,7 +31,7 @@ if ($domain) {
 
 my $model = WGE::Model::DB->new;
 my $line =
-  $model->schema->resultset('Haplotype')->search( { id => $haplotype } )
+  $model->schema->resultset('Haplotype')->search( { name => $haplotype } )
   ->single;
 die "Cannot find line '$haplotype'" if not $line;
 
@@ -54,7 +54,7 @@ foreach my $email (@emails) {
             }
         );
     }
-    printf "GRANT %s TO %s (%d)\n", $line->id, $email, $user;
+    printf "GRANT %s TO %s (%d)\n", $line->name, $email, $user;
 }
 
 __END__
