@@ -40,13 +40,25 @@ __PACKAGE__->table("haplotype");
 
 =head2 id
 
-  data_type: 'text'
+  data_type: 'integer'
+  is_auto_increment: 1
   is_nullable: 0
+  sequence: 'haplotype_id_seq'
 
 =head2 species_id
 
   data_type: 'text'
   is_foreign_key: 1
+  is_nullable: 0
+
+=head2 name
+
+  data_type: 'text'
+  is_nullable: 0
+
+=head2 source
+
+  data_type: 'text'
   is_nullable: 0
 
 =head2 restricted
@@ -58,9 +70,18 @@ __PACKAGE__->table("haplotype");
 
 __PACKAGE__->add_columns(
   "id",
-  { data_type => "text", is_nullable => 0 },
+  {
+    data_type         => "integer",
+    is_auto_increment => 1,
+    is_nullable       => 0,
+    sequence          => "haplotype_id_seq",
+  },
   "species_id",
   { data_type => "text", is_foreign_key => 1, is_nullable => 0 },
+  "name",
+  { data_type => "text", is_nullable => 0 },
+  "source",
+  { data_type => "text", is_nullable => 0 },
   "restricted",
   { data_type => "boolean", is_nullable => 0 },
 );
@@ -76,6 +97,20 @@ __PACKAGE__->add_columns(
 =cut
 
 __PACKAGE__->set_primary_key("id");
+
+=head1 UNIQUE CONSTRAINTS
+
+=head2 C<haplotype_name_key>
+
+=over 4
+
+=item * L</name>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint("haplotype_name_key", ["name"]);
 
 =head1 RELATIONS
 
@@ -110,8 +145,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2018-07-19 11:20:38
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:aR8PkWuufTQXLEJ5ZLv65g
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2018-09-03 11:20:51
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:pXJ8asU9Ufr9ne+oJaXo1Q
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
