@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+0.120     2018-09-04 10:39:55 Europe/London
+
+    Make it easier to rename/manage haplotypes
+
 0.119     2018-08-31 11:33:47 Europe/London
 
     Create a track for RefSeq genes & transcripts
