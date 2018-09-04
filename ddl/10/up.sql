@@ -3,11 +3,13 @@ CREATE TABLE IF NOT EXISTS feature_type (
 );
 
 CREATE TABLE IF NOT EXISTS gene_set (
-    id TEXT NOT NULL PRIMARY KEY,   
+    id SERIAL NOT NULL PRIMARY KEY,   
+    name TEXT NOT NULL UNIQUE,
+    source TEXT NOT NULL UNIQUE,
     species_id TEXT NOT NULL REFERENCES species(id)
 );
 
-CREATE TABLE refseq (
+CREATE TABLE geneset_refseq (
     id TEXT NOT NULL PRIMARY KEY,
     feature_type_id TEXT NOT NULL REFERENCES feature_type(id),
     chr_name TEXT NOT NULL,

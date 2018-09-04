@@ -556,7 +556,7 @@ sub genoverse_browse_view :Path( '/genoverse_browse') : Args(0){
         my $search     = { species_id => $region->{species} };
         %lines = map { $_->name => _is_line_allowed( $_, $user_lines ) ? 1 : 0 }
             $c->model->schema->resultset('Haplotype')->search($search);
-        @gene_sets = map { $_->id } 
+        @gene_sets = map { $_->name } 
             $c->model->schema->resultset('GeneSet')->search($search);
         
     }
