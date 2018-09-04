@@ -1,1 +1,1 @@
-CREATE INDEX refseq_index ON refseq USING btree (chr_name, chr_start, chr_end);
+CREATE INDEX geneset_refseq_index ON geneset_refseq USING btree (chr_name, chr_start, chr_end);
