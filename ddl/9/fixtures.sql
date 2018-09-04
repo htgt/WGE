@@ -3,11 +3,13 @@ DROP TABLE IF EXISTS bob1;
 DROP TABLE IF EXISTS bob2;
 DROP TABLE IF EXISTS kolf2;
 CREATE TABLE haplotype (
-    id TEXT PRIMARY KEY NOT NULL,
+    id SERIAL PRIMARY KEY NOT NULL,
     species_id TEXT NOT NULL REFERENCES species(id),
+    name TEXT NOT NULL UNIQUE,
+    source TEXT NOT NULL,
     restricted BOOLEAN NOT NULL
 );
-CREATE TABLE bob1 (
+CREATE TABLE haplotype_bob1n (
     id SERIAL PRIMARY KEY,
     chrom TEXT NOT NULL,
     pos INTEGER NOT NULL,
@@ -17,7 +19,7 @@ CREATE TABLE bob1 (
     filter TEXT,
     genome_phasing TEXT
 );
-CREATE TABLE bob2 (
+CREATE TABLE haplotype_thp1 (
     id SERIAL PRIMARY KEY,
     chrom TEXT NOT NULL,
     pos INTEGER NOT NULL,
@@ -27,7 +29,7 @@ CREATE TABLE bob2 (
     filter TEXT,
     genome_phasing TEXT
 );
-CREATE TABLE kolf2 (
+CREATE TABLE haplotype_kolf2 (
     id SERIAL PRIMARY KEY,
     chrom TEXT NOT NULL,
     pos INTEGER NOT NULL,
@@ -39,5 +41,5 @@ CREATE TABLE kolf2 (
 );
 CREATE TABLE user_haplotype (
     user_id INTEGER NOT NULL REFERENCES users(id),
-    haplotype_id TEXT NOT NULL REFERENCES haplotype(id)
+    haplotype_id INTEGER NOT NULL REFERENCES haplotype(id)
 );

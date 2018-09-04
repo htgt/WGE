@@ -46,7 +46,7 @@ __PACKAGE__->table("user_haplotype");
 
 =head2 haplotype_id
 
-  data_type: 'text'
+  data_type: 'integer'
   is_foreign_key: 1
   is_nullable: 0
 
@@ -56,7 +56,7 @@ __PACKAGE__->add_columns(
   "user_id",
   { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
   "haplotype_id",
-  { data_type => "text", is_foreign_key => 1, is_nullable => 0 },
+  { data_type => "integer", is_foreign_key => 1, is_nullable => 0 },
 );
 
 =head1 RELATIONS
@@ -92,8 +92,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2018-07-19 11:20:38
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:zwJNOgUjBZ+BfLzpecltwA
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2018-09-03 10:37:27
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Pkz3jUnWUaNsGS8UIODyBw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

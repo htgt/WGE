@@ -1,3 +1,6 @@
+DELETE FROM refseq;
+DELETE from feature_type;
+DELETE FROM gene_set;
 DELETE FROM user_haplotype;
 DELETE FROM haplotype;
 DELETE FROM user_crispr_pairs_human;
