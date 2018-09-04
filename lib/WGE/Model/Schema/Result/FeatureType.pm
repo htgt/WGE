@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::FeatureType;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::FeatureType::VERSION = '0.120';
+    $WGE::Model::Schema::Result::FeatureType::VERSION = '0.121';
 }
 ## use critic
 
@@ -65,26 +65,9 @@ __PACKAGE__->add_columns("id", { data_type => "text", is_nullable => 0 });
 
 __PACKAGE__->set_primary_key("id");
 
-=head1 RELATIONS
 
-=head2 refseqs
-
-Type: has_many
-
-Related object: L<WGE::Model::Schema::Result::Refseq>
-
-=cut
-
-__PACKAGE__->has_many(
-  "refseqs",
-  "WGE::Model::Schema::Result::Refseq",
-  { "foreign.feature_type_id" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
-
-
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2018-08-23 14:19:50
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:6ASpwp3l0FitYreBROJqoQ
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2018-09-03 14:27:54
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:kbr7a4HOu4qjPKKpzGmloA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::GeneSet;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::GeneSet::VERSION = '0.120';
+    $WGE::Model::Schema::Result::GeneSet::VERSION = '0.121';
 }
 ## use critic
 
@@ -46,6 +46,18 @@ __PACKAGE__->table("gene_set");
 
 =head2 id
 
+  data_type: 'integer'
+  is_auto_increment: 1
+  is_nullable: 0
+  sequence: 'gene_set_id_seq'
+
+=head2 name
+
+  data_type: 'text'
+  is_nullable: 0
+
+=head2 source
+
   data_type: 'text'
   is_nullable: 0
 
@@ -59,6 +71,15 @@ __PACKAGE__->table("gene_set");
 
 __PACKAGE__->add_columns(
   "id",
+  {
+    data_type         => "integer",
+    is_auto_increment => 1,
+    is_nullable       => 0,
+    sequence          => "gene_set_id_seq",
+  },
+  "name",
+  { data_type => "text", is_nullable => 0 },
+  "source",
   { data_type => "text", is_nullable => 0 },
   "species_id",
   { data_type => "text", is_foreign_key => 1, is_nullable => 0 },
@@ -75,6 +96,32 @@ __PACKAGE__->add_columns(
 =cut
 
 __PACKAGE__->set_primary_key("id");
+
+=head1 UNIQUE CONSTRAINTS
+
+=head2 C<gene_set_name_key>
+
+=over 4
+
+=item * L</name>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint("gene_set_name_key", ["name"]);
+
+=head2 C<gene_set_source_key>
+
+=over 4
+
+=item * L</source>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint("gene_set_source_key", ["source"]);
 
 =head1 RELATIONS
 
@@ -94,8 +141,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2018-08-28 11:39:14
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:5tfJj2CVRzsqjG5/zJIo+w
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2018-09-03 14:26:54
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:z4p8sBfBnI42rTRUxOpAsA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

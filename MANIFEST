@@ -20,7 +20,7 @@ bin/get_crisprs.pl
 bin/get_crisprs/Makefile
 bin/get_crisprs/get_all_crisprs
 bin/get_crisprs/get_all_crisprs.cpp
-bin/gff_to_geneset.pl.bak
+bin/gff_to_geneset.pl
 bin/grant_haplotype.pl
 bin/label_crisprs.pl
 bin/load_genes.pl
@@ -83,6 +83,7 @@ lib/WGE/Model/Schema/Result/FeatureType.pm
 lib/WGE/Model/Schema/Result/Gene.pm
 lib/WGE/Model/Schema/Result/GeneDesign.pm
 lib/WGE/Model/Schema/Result/GeneSet.pm
+lib/WGE/Model/Schema/Result/GeneSetData.pm
 lib/WGE/Model/Schema/Result/GenotypingPrimer.pm
 lib/WGE/Model/Schema/Result/GenotypingPrimerType.pm
 lib/WGE/Model/Schema/Result/GibsonDesignBrowser.pm
@@ -91,7 +92,6 @@ lib/WGE/Model/Schema/Result/HaplotypeData.pm
 lib/WGE/Model/Schema/Result/LibraryDesignJob.pm
 lib/WGE/Model/Schema/Result/LibraryDesignStage.pm
 lib/WGE/Model/Schema/Result/PairOffTargets.pm
-lib/WGE/Model/Schema/Result/Refseq.pm
 lib/WGE/Model/Schema/Result/Species.pm
 lib/WGE/Model/Schema/Result/SpeciesDefaultAssembly.pm
 lib/WGE/Model/Schema/Result/User.pm

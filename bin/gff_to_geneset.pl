@@ -1,22 +1,25 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
+use Carp;
 use Getopt::Long;
 use List::Util qw/first/;
-use Text::CSV;
 use Pod::Usage qw/pod2usage/;
+use Text::CSV;
 
 #types of genomic data to capture
-my %types   = map { $_ => 1 } qw/gene exon CDS rna/;
+my %types = map { $_ => 1 } qw/gene exon CDS rna/;
+
 #GFF data to directly output
-my @fields  = qw/transcript_id protein_id biotype description/;
+my @fields = qw/transcript_id protein_id biotype description/;
+
 #columns to write to output
 my @columns = (
     qw/id feature_type_id chr_name chr_start chr_end strand rank name parent_id gene_type gene_id/,
     @fields
 );
 
-#grab these types of genomic data by grouping them in with some other... lots of RNA 
+#grab these types of genomic data by grouping them in with some other... lots of RNA
 my %synonyms = map { $_ => 'rna' } qw/transcript primary_transcript mRNA miRNA/;
 $synonyms{pseudogene} = 'gene';
 
@@ -40,29 +43,35 @@ my %strands = (
 );
 
 sub read_line {
-    my ( $num, $line ) = @_;
+    my $line = shift;
     chomp $line;
     return if /^[#]/xms;
     return if not /^NC_0000/xms;
     my (
         $seqname, $source, $feature, $start, $end,
         $score,   $strand, $frame,   $atts
-    ) = split m/\t/, $line;
+    ) = split m/\t/x, $line;
+
+    #apply synonyms
     my $original_feature = $feature;
     if ( exists $synonyms{$feature} ) {
         $feature = $synonyms{$feature};
     }
-    my %fields = split /[;=]/, $atts;
+
+    my %fields = split /[;=]/x, $atts;
     my $gene = exists $fields{gene} ? $fields{gene} : '?';
+    
+    #filter out nonselected types
     return if not exists $types{$feature};
+    
     my $id = $fields{ID};
     $genes{$id}->{rank}++;
     my $rank = $genes{$id}->{rank};
     if ( $rank > 1 ) {
         $id = join '_', $id, $rank;
     }
-    my ($chr) = $seqname =~ m/^NC_[0]+([1-2]?[0-9])\.[0-9]+/;
-    my %dbx = map { split /:/, $_, 2 } split /,/, $fields{Dbxref};
+    my ($chr) = $seqname =~ m/^NC_[0]+([1-2]?[0-9])\.[0-9]+/x;
+    my %dbx = map { split /:/x, $_, 2 } split /,/x, $fields{Dbxref};
     my ( $dbkey, $dbval ) = extract_id( \%dbx );
     $strand = exists $strands{$strand} ? $strands{$strand} : 0;
     my %data = (
@@ -77,21 +86,25 @@ sub read_line {
         rank            => $rank,
     );
 
+    #read in fields
     foreach my $field (@fields) {
         $data{$field} = $fields{$field} // q//;
     }
-    foreach my $field (keys %field_maps) {
+    #read in renamed fields
+    foreach my $field ( keys %field_maps ) {
         $data{ $field_maps{$field} } = $fields{$field} // q//;
     }
-    if ((not $data{biotype}) and ($feature ne $original_feature)) {
+    if ( ( not $data{biotype} ) and ( $feature ne $original_feature ) ) {
         $data{biotype} = $original_feature;
     }
+    
+    #find and annotate with the parent
     my $parent = $data{parent_id};
-    if ($parent and not exists $genes{$parent}) {
+    if ( $parent and not exists $genes{$parent} ) {
         return;
     }
     if ($parent) {
-        if ( not $parent =~ m/^(gene|rna)/ ) {
+        if ( not $parent =~ m/^(gene|rna)/x ) {
             $parent = $genes{$parent}->{parent};
         }
         $genes{$id}->{parent} = $parent;
@@ -101,31 +114,37 @@ sub read_line {
     return \%data;
 }
 
+sub print_header {
+    my ( $csv, $output, $columns ) = @_;
+    $csv->print( $output, $columns );
+    $csv->column_names(   $columns );
+    return;
+}
+
 my ( $file, $limit, $help );
 GetOptions(
     'limit=i' => \$limit,
     'file=s'  => \$file,
     'help|?'  => \$help,
 ) or pod2usage(2);
-pod2usage(-verbose => 2) if $help;
-die "Missing required argument --file" if not defined $file;
+pod2usage( -verbose => 2 ) if $help;
+croak "Missing required argument --file" if not defined $file;
 
-my $csv = Text::CSV->new({ binary => 1, eol => "\n" })
-  or die 'Cannot export CSV';
+my $csv = Text::CSV->new( { binary => 1, eol => "\n" } )
+  or croak 'Cannot export CSV';
 my $num = 0;
-open my $input,  '<', $file;
-open my $output, '>', "$file.csv";
-$csv->print($output, \@columns);
-$csv->column_names(\@columns);
+open my $input,  '<', $file or croak "Could not open $file for reading: $!";
+open my $output, '>', "$file.csv" or croak "Could not open $file.csv for writing: $!";
+print_header( $csv, $output, \@columns );
 while (<$input>) {
-    $num++;
-    if (my $data = read_line($num, $_)) {
-        $csv->print_hr($output, $data);
+    if ( my $data = read_line( $_ ) ) {
+        $csv->print_hr( $output, $data );
+        $num++;
     }
-    last if $limit && $num > $limit;
+    last if $limit && $num >= $limit;
 }
-close $input;
-close $output;
+close $output or croak "Could not close $file.csv: $!";
+close $input or croak "Could not close $file: $!";
 
 __END__
 

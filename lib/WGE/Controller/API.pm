@@ -1,7 +1,7 @@
 package WGE::Controller::API;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::API::VERSION = '0.120';
+    $WGE::Controller::API::VERSION = '0.121';
 }
 ## use critic
 
@@ -103,10 +103,10 @@ sub get_all_species :Local('get_all_species') {
 
 sub retrieve_genes {
     my ( $model, $params ) = @_;
-    my $set = $model->resultset('GeneSet')->search(
-        { id => $params->{set} }
+    my $geneset = $model->resultset('GeneSet')->search(
+        { name => $params->{set} }
     )->single;
-    die { error => 'Geneset not found' } if not $set;
+    die { error => 'Geneset not found' } if not $geneset;
     die { error => 'Start locus must come before end locus' }
         if $params->{start} >= $params->{end};
     my %search = (
@@ -121,9 +121,13 @@ sub retrieve_genes {
     }
     # Mostly using HashRefInflator as TT needs hashes rather than classes
     # rather than for speed (that's a bonus)
-    my @genes = $model->resultset($set->id)->search(
+    my @genes = $model->resultset('GeneSetData')->search(
         \%search,
-        { result_class => 'DBIx::Class::ResultClass::HashRefInflator' },
+        {
+            result_class => 'DBIx::Class::ResultClass::HashRefInflator',
+            from         => $geneset->source,
+            alias        => $geneset->source,
+        },
     );
     return \@genes;
 }
