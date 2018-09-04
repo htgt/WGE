@@ -20,6 +20,8 @@ bin/get_crisprs.pl
 bin/get_crisprs/Makefile
 bin/get_crisprs/get_all_crisprs
 bin/get_crisprs/get_all_crisprs.cpp
+bin/gff_to_geneset.pl.bak
+bin/grant_haplotype.pl
 bin/label_crisprs.pl
 bin/load_genes.pl
 bin/loxp_pairs.pl
@@ -38,7 +40,6 @@ lib/WGE/Controller/Authentication.pm
 lib/WGE/Controller/CrisprRanking.pm
 lib/WGE/Controller/CrisprReports.pm
 lib/WGE/Controller/Gibson.pm
-lib/WGE/Controller/Gibson.pm.bak
 lib/WGE/Controller/REST.pm
 lib/WGE/Controller/REST/Crispr.pm
 lib/WGE/Controller/REST/CrisprPair.pm
@@ -55,8 +56,6 @@ lib/WGE/Model/Plugin/CrisprPair.pm
 lib/WGE/Model/Plugin/User.pm
 lib/WGE/Model/Schema.pm
 lib/WGE/Model/Schema/Result/Assembly.pm
-lib/WGE/Model/Schema/Result/Bob1.pm
-lib/WGE/Model/Schema/Result/Bob2.pm
 lib/WGE/Model/Schema/Result/Chromosome.pm
 lib/WGE/Model/Schema/Result/Crispr.pm
 lib/WGE/Model/Schema/Result/CrisprByExon.pm
@@ -88,7 +87,7 @@ lib/WGE/Model/Schema/Result/GenotypingPrimer.pm
 lib/WGE/Model/Schema/Result/GenotypingPrimerType.pm
 lib/WGE/Model/Schema/Result/GibsonDesignBrowser.pm
 lib/WGE/Model/Schema/Result/Haplotype.pm
-lib/WGE/Model/Schema/Result/Kolf2.pm
+lib/WGE/Model/Schema/Result/HaplotypeData.pm
 lib/WGE/Model/Schema/Result/LibraryDesignJob.pm
 lib/WGE/Model/Schema/Result/LibraryDesignStage.pm
 lib/WGE/Model/Schema/Result/PairOffTargets.pm
@@ -96,7 +95,6 @@ lib/WGE/Model/Schema/Result/Refseq.pm
 lib/WGE/Model/Schema/Result/Species.pm
 lib/WGE/Model/Schema/Result/SpeciesDefaultAssembly.pm
 lib/WGE/Model/Schema/Result/User.pm
-lib/WGE/Model/Schema/Result/User.pm~
 lib/WGE/Model/Schema/Result/UserCrisprPairsGrch38.pm
 lib/WGE/Model/Schema/Result/UserCrisprPairsHuman.pm
 lib/WGE/Model/Schema/Result/UserCrisprPairsMouse.pm
@@ -265,7 +263,6 @@ root/static/js/bootstrap.min.js
 root/static/js/d3.min.js
 root/static/js/diagram.builder.js
 root/static/js/gene_sets.js
-root/static/js/gene_sets.js.bak
 root/static/js/genoverse_haplotype_track.js
 root/static/js/genoverse_variation_track.js
 root/static/js/jquery-1.12.3.min.js

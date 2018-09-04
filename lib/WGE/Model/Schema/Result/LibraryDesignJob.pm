@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::LibraryDesignJob;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::LibraryDesignJob::VERSION = '0.119';
+    $WGE::Model::Schema::Result::LibraryDesignJob::VERSION = '0.120';
 }
 ## use critic
 
@@ -86,6 +86,16 @@ __PACKAGE__->table("library_design_jobs");
   data_type: 'text'
   is_nullable: 1
 
+=head2 warning
+
+  data_type: 'text'
+  is_nullable: 1
+
+=head2 results_file
+
+  data_type: 'text'
+  is_nullable: 1
+
 =head2 created_at
 
   data_type: 'timestamp'
@@ -105,16 +115,6 @@ __PACKAGE__->table("library_design_jobs");
   default_value: current_timestamp
   is_nullable: 0
   original: {default_value => \"now()"}
-
-=head2 warning
-
-  data_type: 'text'
-  is_nullable: 1
-
-=head2 results_file
-
-  data_type: 'text'
-  is_nullable: 1
 
 =head2 info
 
@@ -145,6 +145,10 @@ __PACKAGE__->add_columns(
   { data_type => "boolean", default_value => \"false", is_nullable => 0 },
   "error",
   { data_type => "text", is_nullable => 1 },
+  "warning",
+  { data_type => "text", is_nullable => 1 },
+  "results_file",
+  { data_type => "text", is_nullable => 1 },
   "created_at",
   {
     data_type     => "timestamp",
@@ -161,10 +165,6 @@ __PACKAGE__->add_columns(
     is_nullable   => 0,
     original      => { default_value => \"now()" },
   },
-  "warning",
-  { data_type => "text", is_nullable => 1 },
-  "results_file",
-  { data_type => "text", is_nullable => 1 },
   "info",
   { data_type => "text", is_nullable => 1 },
   "input_file",
@@ -221,8 +221,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2017-06-20 16:59:38
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:BvOf1LghkBuD/m1BoDMUdA
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2018-09-03 11:40:42
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:G1BSHe2zRUCgKAZWkfRhqA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

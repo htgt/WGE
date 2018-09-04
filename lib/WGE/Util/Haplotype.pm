@@ -1,7 +1,7 @@
 package WGE::Util::Haplotype;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::Haplotype::VERSION = '0.119';
+    $WGE::Util::Haplotype::VERSION = '0.120';
 }
 ## use critic
 
@@ -23,7 +23,7 @@ has species => (
 sub retrieve_haplotypes {
     my ( $self, $model, $user, $params ) = @_;
     my $line = $model->schema->resultset('Haplotype')
-        ->search( { id => $params->{line} } )->single;
+        ->search( { name => $params->{line} } )->single;
     if ( not $line ) {
         die { error => 'Haplotype line not found' };
     }
@@ -44,12 +44,16 @@ sub retrieve_haplotypes {
         }
     }
 
-    my @vcf_rs = $model->schema->resultset( $line->id )->search(
+    my @vcf_rs = $model->schema->resultset('HaplotypeData')->search(
         {
             chrom => $params->{chr_name},
             pos   => { '>' => $params->{chr_start}, '<' => $params->{chr_end} },
         },
-        { result_class => 'DBIx::Class::ResultClass::HashRefInflator' },
+        {
+            result_class => 'DBIx::Class::ResultClass::HashRefInflator',
+            from         => $line->source,
+            alias        => $line->source,
+        },
     );
     return \@vcf_rs;
 }
