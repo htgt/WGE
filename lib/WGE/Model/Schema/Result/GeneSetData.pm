@@ -1,7 +1,7 @@
 package WGE::Model::Schema::Result::GeneSetData;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::GeneSetData::VERSION = '0.121';
+    $WGE::Model::Schema::Result::GeneSetData::VERSION = '0.122';
 }
 ## use critic
 

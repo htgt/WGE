@@ -1,7 +1,7 @@
 package WGE::Model::Schema::Result::HaplotypeData;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::HaplotypeData::VERSION = '0.121';
+    $WGE::Model::Schema::Result::HaplotypeData::VERSION = '0.122';
 }
 ## use critic
 
