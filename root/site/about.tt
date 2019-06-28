@@ -1,11 +1,11 @@
-[% META title = "About WTSI Genome Editing"; META header_text = "About WTSI Genome Editing"; META tab_name = 'about' %]
+[% META title = "About Wellcome Sanger Institute Genome Editing"; META header_text = "About Wellcome Sanger Institute Genome Editing"; META tab_name = 'about' %]
 [% PROCESS utils.tt %]
 
 <div class="col-md-12">
     <section id="wge">
         <h2>WGE</h2>
         <p class="lead">
-            The WTSI Genome Editing tool has been written and is developed by the Stem Cell Informatics group at the Wellcome Trust Sanger Institute, and is a logical outgrowth of the genome editing tools we use to create knockouts for our high throughput knockout programs.
+            The Wellcome Sanger Institute Genome Editing tool has been written and is developed by the Stem Cell Informatics group at the Wellcome Sanger Institute, and is a logical outgrowth of the genome editing tools we use to create knockouts for our high throughput knockout programs.
         </p>
         <p class="lead">
             [% PROCESS contact %]
@@ -16,8 +16,7 @@
             <br>
         </p>
         <p>
-            WGE stands for WTSI Genome Editing.<br/>
-            WTSI stands for Wellcome Trust Sanger Institute<br/>
+            WGE stands for Wellcome Sanger Institute Genome Editing.<br/>
         </p>
         <h5>This work was supported by a core grant from the Wellcome Trust.</h5>
     </section>
