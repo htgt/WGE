@@ -3,6 +3,4 @@ INSERT INTO feature_type(id) VALUES
     ('rna'),
     ('exon'),
     ('CDS');
-INSERT INTO gene_set(id, species_id) VALUES
-    ('Refseq', 'Grch38');
 
