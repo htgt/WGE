@@ -1,5 +1,7 @@
 use utf8;
 package WGE::Model::Schema::ResultSet::CrisprPair;
+use strict;
+use warnings;
 
 use base 'DBIx::Class::ResultSet';
 use Try::Tiny;
@@ -14,6 +16,7 @@ sub load_from_hash {
     my ( $self, $pairs_yaml, $test ) = @_;
     
     my $schema = $self->result_source->schema;
+    my %pair = ();
 
     while( my ( $id, $pair ) = each %{ $pairs_yaml } ) {
         try {
