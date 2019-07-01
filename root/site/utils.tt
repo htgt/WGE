@@ -18,7 +18,7 @@
     [%  CASE 'grch38' %]
         [% ens_species = 'Homo_Sapiens' %]
     [% END %]
-    <a href='[% url %]/[% ens_species %]/psychic?q=[% location %]'>[% location %]</a>
+    <a href='[% url %]/[% ens_species %]/Location/View?r=[% location %]'>[% location %]</a>
   [% END %]
 [%- END -%]
 
