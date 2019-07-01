@@ -151,7 +151,7 @@ function get_ensembl_link(location, species) {
       console.log("Invalid species");
   }
 
-  return $("<a>", { href: ens_url + "/" + ens_species + "/psychic?q=" + location, html: location });
+  return $("<a>", { href: ens_url + "/" + ens_species + "/Location/View?r=" + location, html: location });
 }
 
 //make a crispr object so all this type of stuff is in one place

@@ -2,10 +2,12 @@ use utf8;
 package WGE::Model::Schema::ResultSet::Gene;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::ResultSet::Gene::VERSION = '0.122';
+    $WGE::Model::Schema::ResultSet::Gene::VERSION = '0.123';
 }
 ## use critic
 
+use strict;
+use warnings;
 
 use base 'DBIx::Class::ResultSet';
 use Try::Tiny;

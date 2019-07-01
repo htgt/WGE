@@ -1,7 +1,7 @@
 ---
 abstract: 'Catalyst based application'
 author:
-  - 'Wellcome Trust Sanger Institute'
+  - 'Wellcome Sanger Institute'
 build_requires:
   File::Find: 0
   File::Temp: 0
@@ -106,4 +106,4 @@ requires:
   strict: 0
   utf8: 0
   warnings: 0
-version: 0.122
+version: 0.123

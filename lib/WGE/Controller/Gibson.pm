@@ -1,7 +1,7 @@
 package WGE::Controller::Gibson;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::Gibson::VERSION = '0.122';
+    $WGE::Controller::Gibson::VERSION = '0.123';
 }
 ## use critic
 
