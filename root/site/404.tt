@@ -1,4 +1,4 @@
-[% META title = "WTSI Genome Editing"; META header_text = "Page Not Found" %]
+[% META title = "Wellcome Sanger Institute Genome Editing"; META header_text = "Page Not Found" %]
 [% PROCESS utils.tt %]
 
 <h3>

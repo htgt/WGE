@@ -1,5 +1,7 @@
 use utf8;
 package WGE::Model::Schema::ResultSet::Species;
+use strict;
+use warnings;
 
 use base 'DBIx::Class::ResultSet';
 use Try::Tiny;

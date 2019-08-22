@@ -1,3 +1,8 @@
+DELETE FROM refseq;
+DELETE from feature_type;
+DELETE FROM gene_set;
+DELETE FROM user_haplotype;
+DELETE FROM haplotype;
 DELETE FROM user_crispr_pairs_human;
 DELETE FROM user_crispr_pairs_mouse;
 DELETE FROM user_crisprs_human;
@@ -28,3 +33,4 @@ DELETE FROM users;
 DELETE FROM chromosomes;
 DELETE FROM assemblies;
 DELETE FROM species;
+

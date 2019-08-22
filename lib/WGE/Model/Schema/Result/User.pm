@@ -264,9 +264,24 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+=head2 user_haplotypes
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2017-06-20 16:59:39
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:UJ7OzifV9cxI+2b+7jFN8Q
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::UserHaplotype>
+
+=cut
+
+__PACKAGE__->has_many(
+  "user_haplotypes",
+  "WGE::Model::Schema::Result::UserHaplotype",
+  { "foreign.user_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2018-09-03 11:41:59
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:7v9gKEBIAQnX38a0UgOp6Q
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
@@ -316,3 +331,4 @@ sub grch38_crispr_pairs { return shift->_species_crispr_pairs( 'grch38s' ); }
 
 __PACKAGE__->meta->make_immutable;
 1;
+

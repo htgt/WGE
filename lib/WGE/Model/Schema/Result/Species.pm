@@ -167,6 +167,21 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+=head2 gene_sets
+
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::GeneSet>
+
+=cut
+
+__PACKAGE__->has_many(
+  "gene_sets",
+  "WGE::Model::Schema::Result::GeneSet",
+  { "foreign.species_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
 =head2 genes
 
 Type: has_many
@@ -178,6 +193,21 @@ Related object: L<WGE::Model::Schema::Result::Gene>
 __PACKAGE__->has_many(
   "genes",
   "WGE::Model::Schema::Result::Gene",
+  { "foreign.species_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 haplotypes
+
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::Haplotype>
+
+=cut
+
+__PACKAGE__->has_many(
+  "haplotypes",
+  "WGE::Model::Schema::Result::Haplotype",
   { "foreign.species_id" => "self.id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
@@ -198,8 +228,8 @@ __PACKAGE__->might_have(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2017-06-20 16:59:39
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:aeNSuaYhmHAAxfXoP/X4rw
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2018-08-28 11:39:14
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:gc4WqAZXevWG8DafXJCVvw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

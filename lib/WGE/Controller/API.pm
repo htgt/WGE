@@ -95,7 +95,55 @@ sub get_all_species :Local('get_all_species') {
     return;
 }
 
-sub gene_search :Local('gene_search') {
+sub retrieve_genes {
+    my ( $model, $params ) = @_;
+    my $geneset = $model->resultset('GeneSet')->search(
+        { name => $params->{set} }
+    )->single;
+    die { error => 'Geneset not found' } if not $geneset;
+    die { error => 'Start locus must come before end locus' }
+        if $params->{start} >= $params->{end};
+    my %search = (
+        chr_name  => $params->{chr},
+        chr_end   => { '>=' => $params->{start} },
+        chr_start => { '<=', => $params->{end} },
+    );
+    # If >1mb of genome requested, only return genes instead of full
+    # gene+transcript+exon+CDS data
+    if ( $params->{end} - $params->{start} > 1_000_000 ) {
+        $search{feature_type_id} = 'gene';
+    }
+    # Mostly using HashRefInflator as TT needs hashes rather than classes
+    # rather than for speed (that's a bonus)
+    my @genes = $model->resultset('GeneSetData')->search(
+        \%search,
+        {
+            result_class => 'DBIx::Class::ResultClass::HashRefInflator',
+            from         => $geneset->source,
+            alias        => $geneset->source,
+        },
+    );
+    return \@genes;
+}
+
+sub find_genes : Local('find_genes') {
+    my ($self, $c) = @_;
+    my $params = $c->req->params;
+
+    check_params_exist( $c, $params, [qw/set chr start end/] );
+
+    try {
+        my $genes = retrieve_genes( $c->model('DB'), $params );
+        $c->stash->{json_data} = $genes;
+    }
+    catch ( $e ) {
+        $c->stash->{json_data} = $e;
+    }
+    $c->forward('View::JSON');
+    return;
+}
+
+sub gene_search : Local('gene_search') {
     my ($self, $c) = @_;
     my $params = $c->req->params;
 
@@ -789,11 +837,19 @@ sub haplotypes_for_region :Local('haplotypes_for_region') Args(0) {
     $c->log->debug("Finding haplotypes for region " . $params->{chr_name}.":".$params->{chr_start}."-".$params->{chr_end});
 
     my $haplotype = WGE::Util::Haplotype->new( { species => $params->{species} } );
-
-    my $haplo_features = $haplotype->retrieve_haplotypes(
-        $c->model('DB'),
-        $params
-    );
+    my $haplo_features;
+    try {
+        $haplo_features = $haplotype->retrieve_haplotypes(
+            $c->model('DB'),
+            $c->user,
+            $params
+        );
+    }
+    catch ( $e ) {
+        $c->stash->{json_data} = $e;
+        $c->forward('View::JSON');
+        return;
+    }
 
     my $updated_haplo_features = [];
 

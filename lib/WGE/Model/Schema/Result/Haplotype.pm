@@ -1,12 +1,12 @@
 use utf8;
-package WGE::Model::Schema::Result::Chromosome;
+package WGE::Model::Schema::Result::Haplotype;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-WGE::Model::Schema::Result::Chromosome
+WGE::Model::Schema::Result::Haplotype
 
 =cut
 
@@ -30,18 +30,20 @@ extends 'DBIx::Class::Core';
 
 __PACKAGE__->load_components("InflateColumn::DateTime");
 
-=head1 TABLE: C<chromosomes>
+=head1 TABLE: C<haplotype>
 
 =cut
 
-__PACKAGE__->table("chromosomes");
+__PACKAGE__->table("haplotype");
 
 =head1 ACCESSORS
 
 =head2 id
 
-  data_type: 'text'
+  data_type: 'integer'
+  is_auto_increment: 1
   is_nullable: 0
+  sequence: 'haplotype_id_seq'
 
 =head2 species_id
 
@@ -54,15 +56,34 @@ __PACKAGE__->table("chromosomes");
   data_type: 'text'
   is_nullable: 0
 
+=head2 source
+
+  data_type: 'text'
+  is_nullable: 0
+
+=head2 restricted
+
+  data_type: 'boolean'
+  is_nullable: 0
+
 =cut
 
 __PACKAGE__->add_columns(
   "id",
-  { data_type => "text", is_nullable => 0 },
+  {
+    data_type         => "integer",
+    is_auto_increment => 1,
+    is_nullable       => 0,
+    sequence          => "haplotype_id_seq",
+  },
   "species_id",
   { data_type => "text", is_foreign_key => 1, is_nullable => 0 },
   "name",
   { data_type => "text", is_nullable => 0 },
+  "source",
+  { data_type => "text", is_nullable => 0 },
+  "restricted",
+  { data_type => "boolean", is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -77,22 +98,21 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("id");
 
-=head1 RELATIONS
+=head1 UNIQUE CONSTRAINTS
 
-=head2 design_oligo_locis
+=head2 C<haplotype_name_key>
 
-Type: has_many
+=over 4
 
-Related object: L<WGE::Model::Schema::Result::DesignOligoLoci>
+=item * L</name>
+
+=back
 
 =cut
 
-__PACKAGE__->has_many(
-  "design_oligo_locis",
-  "WGE::Model::Schema::Result::DesignOligoLoci",
-  { "foreign.chr_id" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
+__PACKAGE__->add_unique_constraint("haplotype_name_key", ["name"]);
+
+=head1 RELATIONS
 
 =head2 species
 
@@ -109,9 +129,24 @@ __PACKAGE__->belongs_to(
   { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
 );
 
+=head2 user_haplotypes
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2018-07-04 14:36:04
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:J2s0HKyyISILDGdLocdiZQ
+Type: has_many
+
+Related object: L<WGE::Model::Schema::Result::UserHaplotype>
+
+=cut
+
+__PACKAGE__->has_many(
+  "user_haplotypes",
+  "WGE::Model::Schema::Result::UserHaplotype",
+  { "foreign.haplotype_id" => "self.id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2018-09-03 11:20:51
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:pXJ8asU9Ufr9ne+oJaXo1Q
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

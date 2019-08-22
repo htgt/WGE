@@ -1,12 +1,12 @@
 use utf8;
-package WGE::Model::Schema::Result::Chromosome;
+package WGE::Model::Schema::Result::GeneSet;
 
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
 
 =head1 NAME
 
-WGE::Model::Schema::Result::Chromosome
+WGE::Model::Schema::Result::GeneSet
 
 =cut
 
@@ -30,15 +30,27 @@ extends 'DBIx::Class::Core';
 
 __PACKAGE__->load_components("InflateColumn::DateTime");
 
-=head1 TABLE: C<chromosomes>
+=head1 TABLE: C<gene_set>
 
 =cut
 
-__PACKAGE__->table("chromosomes");
+__PACKAGE__->table("gene_set");
 
 =head1 ACCESSORS
 
 =head2 id
+
+  data_type: 'integer'
+  is_auto_increment: 1
+  is_nullable: 0
+  sequence: 'gene_set_id_seq'
+
+=head2 name
+
+  data_type: 'text'
+  is_nullable: 0
+
+=head2 source
 
   data_type: 'text'
   is_nullable: 0
@@ -49,20 +61,22 @@ __PACKAGE__->table("chromosomes");
   is_foreign_key: 1
   is_nullable: 0
 
-=head2 name
-
-  data_type: 'text'
-  is_nullable: 0
-
 =cut
 
 __PACKAGE__->add_columns(
   "id",
+  {
+    data_type         => "integer",
+    is_auto_increment => 1,
+    is_nullable       => 0,
+    sequence          => "gene_set_id_seq",
+  },
+  "name",
+  { data_type => "text", is_nullable => 0 },
+  "source",
   { data_type => "text", is_nullable => 0 },
   "species_id",
   { data_type => "text", is_foreign_key => 1, is_nullable => 0 },
-  "name",
-  { data_type => "text", is_nullable => 0 },
 );
 
 =head1 PRIMARY KEY
@@ -77,22 +91,33 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("id");
 
-=head1 RELATIONS
+=head1 UNIQUE CONSTRAINTS
 
-=head2 design_oligo_locis
+=head2 C<gene_set_name_key>
 
-Type: has_many
+=over 4
 
-Related object: L<WGE::Model::Schema::Result::DesignOligoLoci>
+=item * L</name>
+
+=back
 
 =cut
 
-__PACKAGE__->has_many(
-  "design_oligo_locis",
-  "WGE::Model::Schema::Result::DesignOligoLoci",
-  { "foreign.chr_id" => "self.id" },
-  { cascade_copy => 0, cascade_delete => 0 },
-);
+__PACKAGE__->add_unique_constraint("gene_set_name_key", ["name"]);
+
+=head2 C<gene_set_source_key>
+
+=over 4
+
+=item * L</source>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint("gene_set_source_key", ["source"]);
+
+=head1 RELATIONS
 
 =head2 species
 
@@ -110,8 +135,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2018-07-04 14:36:04
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:J2s0HKyyISILDGdLocdiZQ
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2018-09-03 14:26:54
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:z4p8sBfBnI42rTRUxOpAsA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

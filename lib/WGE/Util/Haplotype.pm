@@ -15,38 +15,60 @@ has species => (
 );
 
 sub retrieve_haplotypes {
-	my ($self, $model, $params) = @_;
+    my ( $self, $model, $user, $params ) = @_;
+    my $line = $model->schema->resultset('Haplotype')
+        ->search( { name => $params->{line} } )->single;
+    if ( not $line ) {
+        die { error => 'Haplotype line not found' };
+    }
 
-	my @vcf_rs = $model->schema->resultset('VariantCallFormat')->search({
-            chrom   => "chr" . $params->{chr_name},
-            pos     => {'>' => $params->{chr_start}, '<' => $params->{chr_end} }
+    my %allowed_haplotypes = ();
+    if ( $line->restricted ) {
+        if ($user) {
+            my $search = { user_id => $user->id, haplotype_id => $line->id };
+            if ( not $model->schema->resultset('UserHaplotype')->count($search) )
+            {
+                die { error =>
+'You do not have access to this haplotype. Contact wge@sanger.ac.uk for more information'
+                };
+            }
+        }
+        else {
+            die { error => 'You must log in to see this haplotype' };
+        }
+    }
+
+    my @vcf_rs = $model->schema->resultset('HaplotypeData')->search(
+        {
+            chrom => $params->{chr_name},
+            pos   => { '>' => $params->{chr_start}, '<' => $params->{chr_end} },
         },
         {
             result_class => 'DBIx::Class::ResultClass::HashRefInflator',
-        });
-
+            from         => $line->source,
+            alias        => $line->source,
+        },
+    );
     return \@vcf_rs;
-
 }
 
 sub phase_haplotype {
-    my ($self, $haplotype, $params) = @_;
+    my ( $self, $haplotype, $params ) = @_;
 
     my $phased;
 
-    my @genome_phasing = split(/:/, $haplotype->{genome_phasing});
-    my @gt = split(/[\|,\/]/, $genome_phasing[0]);
-    my @alleles = split(/,/, $haplotype->{alt});
-    unshift(@alleles, $haplotype->{ref});
+    my @genome_phasing = split( /:/,       $haplotype->{genome_phasing} );
+    my @gt             = split( /[\|,\/]/, $genome_phasing[0] );
+    my @alleles        = split( /,/,       $haplotype->{alt} );
 
-    for(my $i = 0; $i < @alleles; $i++) {
-
-        $haplotype->{haplotype_1}   = $i == $gt[0] ? $alleles[$i] : 0; # if data in $gt[0] == 0 set haplotype 1 to ref value
-        $haplotype->{haplotype_2}   = $i == $gt[1] ? $alleles[$i] : 0; # if data in $gt[1] == 0 set haplotype 2 to ref value
-
+    for my $hap ( 0 .. 1 ) {
+        my $key = sprintf "haplotype_%d", $hap + 1;
+        $haplotype->{$key} = $gt[$hap] ? $alleles[ $gt[$hap] - 1 ] : 0;
     }
 
-    $haplotype->{phased}        = $genome_phasing[0] =~ /\|/ ? 1 : 0; # If data in genome_phasing[0] contains '|' then mark phased flag 1
+    $haplotype->{phased} = $genome_phasing[0] =~ /\// ? 0 : 1;
+
+    # unphased iff genome_phasing element contains "/"
 
     return $haplotype;
 }

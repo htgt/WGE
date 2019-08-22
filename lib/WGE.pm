@@ -125,7 +125,7 @@ __PACKAGE__->setup();
 before uri_for => sub {
     my ($self, $path, @args) = @_;
     
-    if ($self->model('DB')->software_version != 'dev') {
+    if ($self->model('DB')->software_version ne 'dev') {
         my $base = $self->req->base;
         $base =~ s/^http:/https:/;
         $self->req->base(URI->new($base));
@@ -139,7 +139,10 @@ sub secure_uri_for {
     my ($self, @args) = @_;
 
     my $uri = $self->uri_for(@args);
-    $uri->scheme('https');
+
+    if ($self->model('DB')->software_version ne 'dev') {
+        $uri->scheme('https');
+    }
 
     return $uri;
 }
