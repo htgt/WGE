@@ -110,6 +110,16 @@ __PACKAGE__->table("library_design_jobs");
   is_nullable: 0
   original: {default_value => \"now()"}
 
+=head2 warning
+
+  data_type: 'text'
+  is_nullable: 1
+
+=head2 results_file
+
+  data_type: 'text'
+  is_nullable: 1
+
 =head2 info
 
   data_type: 'text'
@@ -159,6 +169,10 @@ __PACKAGE__->add_columns(
     is_nullable   => 0,
     original      => { default_value => \"now()" },
   },
+  "warning",
+  { data_type => "text", is_nullable => 1 },
+  "results_file",
+  { data_type => "text", is_nullable => 1 },
   "info",
   { data_type => "text", is_nullable => 1 },
   "input_file",
@@ -220,5 +234,15 @@ __PACKAGE__->belongs_to(
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
+use JSON;
+
+__PACKAGE__->inflate_column( params => {
+    inflate => sub{ from_json( +shift ) },
+    deflate => sub{
+      my $json = shift;
+      ref $json ? to_json($json) : $json;
+    },
+});
+
 __PACKAGE__->meta->make_immutable;
 1;

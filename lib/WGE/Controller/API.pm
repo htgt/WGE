@@ -358,8 +358,8 @@ sub crispr_search :Local('crispr_search') {
             }
         }
 
-        my $show_exon_id = 1;
-        my $csv_data = format_crisprs_for_csv(\@crispr_list, $show_exon_id);
+        my $extra_fields = [ 'ensembl_exon_id' ];
+        my $csv_data = format_crisprs_for_csv(\@crispr_list, $extra_fields);
         $c->log->debug( "Total CSV rows:" . scalar( @$csv_data ) );
 
 

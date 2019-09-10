@@ -20,6 +20,8 @@ use Sub::Exporter -setup => {
     exports => [ qw(
         write_design_data_csv
         format_crisprs_for_csv
+        format_crisprs_for_csv_header
+        format_crisprs_for_csv_data
         format_pairs_for_csv
         format_crisprs_for_bed
         format_pairs_for_bed
@@ -62,46 +64,57 @@ sub write_design_data_csv{
 }
 
 sub format_crisprs_for_csv {
-    my ($crispr_list, $with_exon_id) = @_;
+    my ($crispr_list, $extra_fields) = @_;
 
     $crispr_list ||= [];
 
     # Make sure we have hashes instead of objects
     my @crisprs = map { blessed($_) ? $_->as_hash : $_ } @$crispr_list;
-
     my @csv_data;
-    my @fields = qw( crispr_id location strand seq gRNA off_target_summary );
-    if($with_exon_id){
-        unshift @fields, 'exon_id';
-    }
-    push @csv_data, \@fields;
 
-    foreach my $crispr ( @crisprs ) {
-        my $location = $crispr->{chr_name}.":".$crispr->{chr_start}."-".$crispr->{chr_end};
-        my $strand = $crispr->{pam_right} ? "+" : "-";
-        my $gRNA;
-        if ($crispr->{pam_right}) {
-            $gRNA = $crispr->{seq};
-        }
-        else {
-            $gRNA = reverse $crispr->{seq};             #reverse direction of crispr. E.G. CCN N...N becomes N...N NCC
-            $gRNA =~ tr/ATCG/TAGC/;                     #complement crispr sequence.  E.G. C...A ACC becomes G...T TGG
-        }
-        my @row = (
-            $crispr->{id},
-            $location,
-            $strand,
-            $crispr->{seq},
-            $gRNA,
-            $crispr->{off_target_summary} // '',
-        );
-        if($with_exon_id){
-            unshift @row, ($crispr->{ensembl_exon_id} // '');
-        }
-        push @csv_data, \@row;
+    push @csv_data, format_crisprs_for_csv_header($extra_fields);
+
+    foreach my $crispr ( @$crispr_list ) {
+        push @csv_data, format_crisprs_for_csv_data($crispr, $extra_fields);
     }
 
     return \@csv_data;
+}
+
+sub format_crisprs_for_csv_header{
+    my $extra_fields = shift;
+    my @fields = qw( crispr_id location strand seq off_target_summary );
+    if ( $extra_fields ) {
+        unshift @fields, @{$extra_fields};
+    }
+    return \@fields;
+}
+
+sub format_crisprs_for_csv_data{
+    my ($crispr, $extra_fields) = @_;
+
+    # Make sure we have hashes instead of objects
+    if(blessed($crispr)){
+        $crispr = $crispr->as_hash;
+    }
+
+    my $location = $crispr->{chr_start} ? $crispr->{chr_name}.":".$crispr->{chr_start}."-".$crispr->{chr_end}
+                                        : '';
+    my $strand = $crispr->{pam_right} ? "+" : "-";
+    my @row = (
+        $crispr->{id},
+        $location,
+        $strand,
+        $crispr->{seq},
+        $crispr->{off_target_summary} // '',
+    );
+
+    if ($extra_fields){
+        my @extra_data = map { $crispr->{$_} // '' } @$extra_fields;
+        unshift @row, @extra_data;
+    }
+
+    return \@row;
 }
 
 sub format_pairs_for_csv {
@@ -185,8 +198,8 @@ sub format_crisprs_for_bed {
             $gRNA = $crispr->{seq};
         }
         else {
-            $gRNA = reverse $crispr->{seq};         #reverse direction of crispr. E.G. CCN N...N becomes N...N NCC
-            $gRNA =~ tr/ATCG/TAGC/;                 #complement crispr sequence.  E.G. C...A ACC becomes G...T TGG
+            $gRNA = reverse $crispr->{seq}; #reverse direction of crispr. E.G. CCN N...N becomes N...N NCC
+            $gRNA =~ tr/ATCG/TAGC/;         #complement crispr sequence.  E.G. C...A ACC becomes G...T TGG
         }
         my @row = (
             $chrom,

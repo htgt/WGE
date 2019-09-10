@@ -273,5 +273,21 @@ sub target_seq{
     return $target_seq;
 }
 
+sub location_type{
+    my ($self) = @_;
+    my $type;
+    if( $self->exonic ){
+      $type = 'Exonic';
+    }
+    elsif( $self->genic ){
+      $type = 'Intronic';
+    }
+    else{
+      $type = 'Intergenic'
+    }
+
+    return $type;
+}
+
 __PACKAGE__->meta->make_immutable;
 1;

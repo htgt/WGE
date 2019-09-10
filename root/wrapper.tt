@@ -35,10 +35,8 @@
 .navbar-default .navbar-toggle:focus {
   background-color: #3691c8;
 }</style>
-
-
-
 <html xmlns="https://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta http-equiv="Content-type" content="text/html; charset=[% settings.charset %]" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -98,6 +96,9 @@
                 <li><a href="[% c.uri_for('/find_crisprs_id') %]">Search by ID</a></li>
                 <li class="divider"></li>
                 <li><a href="[% c.uri_for('/find_off_targets_by_seq') %]">Off-Targets by Sequence</a></li>
+                <li class="divider"></li>
+                <li><a href="[% c.uri_for('/crispr_library_design') %]">Generate CRISPR Library</a></li>
+                <li><a href="[% c.uri_for('/crispr_library_jobs') %]">View CRISPR Library Jobs</a></li>
               </ul>
             </li>
 
@@ -161,12 +162,14 @@
         <div class="navbar-brand">This version of WGE is used for software testing. The stable version is <a href="https://www.sanger.ac.uk/htgt/wge">here</a></div>
         <div class="container">
           <p class="nav pull-right navbar-text">
+        <div class="alert alert-warning">This version of WGE is used for software testing. The stable version is <a href="http://www.sanger.ac.uk/htgt/wge">here</a>
+          <p class="pull-right">
           version: <strong>[% c.model('DB').software_version %]</strong> |
           database: <strong>[% c.model('DB').database_name %]</strong>
           </p>
         </div>
-      </div>
-    </div>
+
+    </nav>
     [% END %]
 
     <div id="page_container" class="container">
@@ -178,7 +181,7 @@
 
         <!-- catalyst error message disply taken from LIMS2 -->
         [% SET error = error_msg || c.stash.error_msg || c.flash.error_msg; IF error.length > 0 %]
-        <div class="alert alert-error">
+        <div class="alert alert-danger">
           <button class="close" data-dismiss="alert" href="#">&times;</button>
           <p>[% error | html_line_break %]</p>
         </div>

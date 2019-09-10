@@ -1,0 +1,112 @@
+[%- META title = "CRISPR Library Design Tool"; META tab_name = "crispr"; META header_text = "CRISPR Library Jobs" -%]
+
+<a href="[% c.uri_for('crispr_library_design') %]" class="btn btn-primary"><span class="glyphicon glyphicon-plus-sign"></span> New Library Job</a>
+
+
+[% IF jobs.size %]
+  [% FOR job IN jobs %]
+    <div class="well container-fluid">
+    <a href="[% c.uri_for('/delete_library_design_job/') _ job.id %]" class="btn btn-danger pull-right"><span class="glyphicon glyphicon-remove"></span> Delete Job</a>
+    <h2>Job [% job.name %] <small>[% job.id %]</small></h2>
+
+      <div class="row">
+        <div class="col-xs-6">
+          <p><strong>Start time:</strong> [% job.created_at %]</p>
+          <p><strong>Species:</strong> [% job.params.species_name %]</p>
+          <p><strong>Search region count:</strong> [% job.target_region_count %]</p>
+        </div>
+        <div class="col-xs-6">
+          <p>Job description: For each <strong>[% job.params.location_type %]</strong> search region find the <strong>[% job.params.num_crisprs %]</strong> best crisprs</p>
+            <ul>
+            [% IF job.params.within %]<li>within the region</li>[% END %]
+            [% IF job.params.flank_size %]<li>flanking the region by [% job.params.flank_size %]bp</li>[% END %]
+            </ul>
+        </div>
+      </div>
+
+    [% IF job.error %]
+    <p class="bg-danger">Job failed at [% job.last_modified %] with error: [% job.error %]</p>
+    [% ELSIF job.complete %]
+    <p class="bg-success"><strong>Job completed:</strong> [% job.last_modified %]</p>
+    <a class="btn btn-default" href="[% c.uri_for('/download_library_csv/') _ job.id %]">Download results</a>
+      [% IF job.warning %]
+        <p class="bg-warning">Warnings: [% job.warning %]</p>
+      [% END %]
+
+    [% ELSE %]
+        <strong>Job in progress. <span id="[% job.id %]_stage">[% job.library_design_stage.description %]</span>...</strong>
+        <p id="[% job.id %]_info">job.info
+        </p>
+        <p id="[% job.id %]_ot_info" class="hide">
+           <button type="button" class="btn btn-info" data-toggle="popover" title="Off-Target Calculation" data-content="Your search regions contain CRISPR sites which WGE has not yet calculated off-targets for. WGE is now calculating the number of off-targets for these sites. This process may take several hours depending on the number of CRISPR sites and the demand from other users on our resources. Progress will be updated every 10 minutes." data-trigger="focus">
+            <span class='glyphicon glyphicon-info-sign'</span></button>
+        </p>
+        <div class="progress">
+          <div id="[% job.id %]_progress" class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em; width: [% job.progress_percent %]%">
+          [% job.progress_percent %]%
+          </div>
+        </div>
+        <p>progress last updated <span id="[% job.id %]_timestamp">[% job.last_modified %]</span></p>
+    [% END %]
+        <a class="btn btn-primary" href="[% c.uri_for('/crispr_library_design', { retry_job_id => job.id }) %]"><span class="glyphicon glyphicon-repeat"></span> Retry Job</a>
+    </div>
+  [% END %]
+[% ELSE %]
+  <p>You have no CRISPR library design jobs. Start one using the <a href="[% c.uri_for('/crispr_library_design/') %]">CRISPR library design tool</a>.</p>
+[% END %]
+
+<script type="text/javascript">
+  var progress_url = "[% c.uri_for('/library_job_progress/') %]";
+
+  $(document).ready( function() {
+
+    $(function () {
+      $('[data-toggle="popover"]').popover();
+    });
+
+    $.smartPoller( 250, function(retry){
+      var bar_count = 0;
+      $(".progress-bar").each(function(i,bar){
+        bar_count++;
+        // get job id from div id. ajax call to progress_url/job_id (not yet written)
+        var id = bar.id.replace(/_progress/,"");
+        var uri = "[% c.uri_for('/crispr_library_job_progress') %]" + "/" + id;
+        $.get(uri, function(data){
+            // update progress and <job_id>_stage with returned info
+            // refresh page if complete or error
+            if(data.error || data.complete){
+              location.reload();
+            }
+            else{
+              console.log("progress for " + data.job_id + ": " + data.progress_percent);
+              $(bar).attr('style', 'min-width: 2em; width: ' + data.progress_percent + '%');
+              $(bar).text(data.progress_percent + '%');
+
+              var stage_id = data.job_id + '_stage';
+              $("#" + stage_id).text(data.stage_description);
+
+              var info_id = data.job_id + '_info';
+              $("#" + info_id).text(data.info);
+
+              var ot_info_id = data.job_id + '_ot_info';
+              console.log("job stage is " + data.stage_id);
+              if(data.stage_id == 'off_targets'){
+                $("#" + ot_info_id).removeClass('hide');
+              }
+              else{
+                $("#" + ot_info_id).addClass('hide');
+              }
+
+              var time_id = data.job_id + '_timestamp';
+              $("#" + time_id).text(data.last_modified);
+            }
+        });
+      });
+      if(bar_count){
+        retry();
+      }
+  	});
+
+
+  });
+</script>
