@@ -26,11 +26,19 @@ my $variants = Haplotype->new( "$line.csv",
 open my $input, '<', $source or croak $!;
 while (<$input>) {
     next if m/^\#/xms;
+    # VCF format specification: https://samtools.github.io/hts-specs/VCFv4.2.pdf
     my (
         $chrom, $pos,    $vcf_id, $ref,    $alt,
         $qual,  $filter, $info,   $format, $data
     ) = split /\t/xms;
-    my ($phasing) = $data =~ m/^(\d(?:[|\/]\d)?)/xms;
+    my ($phasing) = $data =~ m/
+        ^(\d    # starts with an allele index - 0 for reference, 1 for first alternative, etc
+        (?:     # noncapture group as we don't need this bit _specifically_
+        [|\/]   # followed by a pipe - genotype is phased - or a forward slash - unphased
+        \d)     # finally the index of the second allele
+        ?       # usually only the first allele is included if haploid eg on chrY
+        )       # there may be some other information after this, but this is all we want
+        /xms;
     $qual = $qual eq q/./ ? q// : $qual;
     $info = q/./;
     $variants->add( $chrom, $pos, $ref, $alt, $qual, $filter, $phasing );
