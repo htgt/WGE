@@ -1,4 +1,4 @@
-[% META title = "WTSI Genome Editing"; META tab_name = "WGE" %]
+[% META title = "Wellcome Sanger Institute Genome Editing"; META tab_name = "WGE" %]
 
 <div class="content">
   <div class="row">
@@ -9,7 +9,7 @@
 [% FOREACH status IN normal %]
     [% INCLUDE message/warning_message.tt warning = status.message prior = 'info' date = status.created sid = status.id %]
 [% END %]
-        <h4>WTSI Genome Editing (WGE) is a website that provides tools to aid with genome editing of human and mouse genomes</h4><br/>
+        <h4>Wellcome Sanger Institute Genome Editing (WGE) is a website that provides tools to aid with genome editing of human and mouse genomes</h4><br/>
         <h5 style="display:inline;"><a href="[% c.uri_for('/find_crisprs') %]">CRISPR Finder</a></h5>&emsp;&emsp;
         <h6 style="display:inline;"><a href="https://www.ensembl.org/Homo_sapiens/Location/View?db=core;r=17:63998085-63998525;contigviewbottom=crispr_WGE_CRISPR_sites=as_alignment_nolabel">Ensembl for Human</a></h6>&emsp;
         <h6 style="display:inline;"><a href="https://www.ensembl.org/Mus_musculus/Location/View?r=4:136447166-136447522 ;contigviewbottom=crispr_WGE_CRISPR_sites=as_alignment_nolabel">Ensembl for Mouse</a></h6>
@@ -68,10 +68,10 @@
             If you use this site in your research, please cite:<br/>
             <em>WGE: A CRISPR database for genome engineering.</em> Alex Hodgkins; Anna Farne; Sajith Perera; Tiago Grego; David J. Parry-Smith; William C. Skarnes; Vivek Iyer (Bioinformatics 2015) <a href="https://academic.oup.com/bioinformatics/article/31/18/3078/240857">doi:10.1093/bioinformatics/btv308</a>
         </p><br/>
-        Copyright (c) 2015 Genome Research Limited <a href="[% c.uri_for('/about#licence') %]">Your use of this site indicates your agreement to the GNU AGPLv3 licence</a>
+        Copyright (c) 2019 Genome Research Limited <a href="[% c.uri_for('/about#licence') %]">Your use of this site indicates your agreement to the GNU AGPLv3 licence</a>
         <br/><br/>
         <a href="https://www.sanger.ac.uk">
-            <img src="[% c.uri_for('/static/images/sanger-logo.png') %]" title="sanger logo" />
+            <img src="[% c.uri_for('/static/images/sanger-logo.png') %]" title="sanger logo" height="100" />
         </a>
     </div>
   </div>
