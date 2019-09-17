@@ -1,7 +1,7 @@
 package WGE::Controller::API;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::API::VERSION = '0.123';
+    $WGE::Controller::API::VERSION = '0.124';
 }
 ## use critic
 
@@ -838,9 +838,11 @@ sub crispr_pairs_in_region :Local('crispr_pairs_in_region') Args(0){
 sub haplotypes_for_region :Local('haplotypes_for_region') Args(0) {
     my ($self, $c) = @_;
 
-    my $params = $c->request->params();
+    my $params = $c->request->params;
+    check_params_exist($c, $params, [qw/species line chr_name chr_start chr_end/]);
 
-    $c->log->debug("Finding haplotypes for region " . $params->{chr_name}.":".$params->{chr_start}."-".$params->{chr_end});
+    $c->log->debug(sprintf('Finding haplotypes for region %s:%d-%d',
+            $params->{chr_name}, $params->{chr_start}, $params->{chr_end}));
 
     my $haplotype = WGE::Util::Haplotype->new( { species => $params->{species} } );
     my $haplo_features;
@@ -848,10 +850,11 @@ sub haplotypes_for_region :Local('haplotypes_for_region') Args(0) {
         $haplo_features = $haplotype->retrieve_haplotypes(
             $c->model('DB'),
             $c->user,
-            $params
+            $params,
         );
     }
     catch ( $e ) {
+        $e = { error => $e };
         $c->stash->{json_data} = $e;
         $c->forward('View::JSON');
         return;

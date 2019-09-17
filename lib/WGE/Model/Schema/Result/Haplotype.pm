@@ -2,7 +2,7 @@ use utf8;
 package WGE::Model::Schema::Result::Haplotype;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Model::Schema::Result::Haplotype::VERSION = '0.123';
+    $WGE::Model::Schema::Result::Haplotype::VERSION = '0.124';
 }
 ## use critic
 
@@ -69,8 +69,8 @@ __PACKAGE__->table("haplotype");
 
 =head2 restricted
 
-  data_type: 'boolean'
-  is_nullable: 0
+  data_type: 'text[]'
+  is_nullable: 1
 
 =cut
 
@@ -89,7 +89,7 @@ __PACKAGE__->add_columns(
   "source",
   { data_type => "text", is_nullable => 0 },
   "restricted",
-  { data_type => "boolean", is_nullable => 0 },
+  { data_type => "text[]", is_nullable => 1 },
 );
 
 =head1 PRIMARY KEY
@@ -151,8 +151,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2018-09-03 11:20:51
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:pXJ8asU9Ufr9ne+oJaXo1Q
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2019-01-31 17:01:52
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:sG/jolS+4bqlz+rB4QjOJg
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

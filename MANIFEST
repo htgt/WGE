@@ -22,6 +22,7 @@ bin/get_crisprs/get_all_crisprs
 bin/get_crisprs/get_all_crisprs.cpp
 bin/gff_to_geneset.pl
 bin/grant_haplotype.pl
+bin/import_vcf.pl
 bin/label_crisprs.pl
 bin/load_genes.pl
 bin/loxp_pairs.pl

@@ -1,7 +1,7 @@
 package WGE::Util::Haplotype;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Util::Haplotype::VERSION = '0.123';
+    $WGE::Util::Haplotype::VERSION = '0.124';
 }
 ## use critic
 
@@ -20,33 +20,58 @@ has species => (
     required => 1,
 );
 
+use Data::Dumper;
+sub _is_line_visible {
+    my ( $line, $user_haplotypes ) = @_;
+    my $restricted = grep { $_ eq q/*/ } @{$line->restricted};
+    return (not $restricted) || (exists $user_haplotypes->{$line->id}); 
+}
+
+sub _get_user_lines {
+    my ( $model, $user ) = @_;
+    my %user_lines = ();
+    if ( $user ) {
+        my $search = { user_id => $user->id };
+        %user_lines = map { $_->haplotype_id => 1 }
+            $model->schema->resultset('UserHaplotype')->search($search);
+    }
+    return \%user_lines;
+}
+
+sub visible_lines {
+    my ( $self, $model, $user ) = @_;
+    my $user_lines = _get_user_lines($model, $user);
+    return map { $_->name => _is_line_visible( $_, $user_lines ) ? 1 : 0 }
+        $model->schema->resultset('Haplotype')->search({ species_id => $self->species });
+}
+
 sub retrieve_haplotypes {
     my ( $self, $model, $user, $params ) = @_;
     my $line = $model->schema->resultset('Haplotype')
         ->search( { name => $params->{line} } )->single;
     if ( not $line ) {
-        die { error => 'Haplotype line not found' };
+        die "Haplotype line not found\n";
     }
+    my $chrom = $params->{chr_name};
 
     my %allowed_haplotypes = ();
-    if ( $line->restricted ) {
+    my %haplotype_restricted_for_chroms = ( q/*/ => 1, $chrom => 1 );
+    if ( grep { exists $haplotype_restricted_for_chroms{$_} } @{$line->restricted} ) {
         if ($user) {
             my $search = { user_id => $user->id, haplotype_id => $line->id };
             if ( not $model->schema->resultset('UserHaplotype')->count($search) )
             {
-                die { error =>
-'You do not have access to this haplotype. Contact wge@sanger.ac.uk for more information'
-                };
+                die "You do not have access to this haplotype. Contact wge\@sanger.ac.uk for more information\n";
             }
         }
         else {
-            die { error => 'You must log in to see this haplotype' };
+            die "You must log in to see this haplotype\n";
         }
     }
 
     my @vcf_rs = $model->schema->resultset('HaplotypeData')->search(
         {
-            chrom => $params->{chr_name},
+            chrom => $chrom,
             pos   => { '>' => $params->{chr_start}, '<' => $params->{chr_end} },
         },
         {
