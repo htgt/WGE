@@ -5,8 +5,9 @@ use Data::Dumper;
 use TryCatch;
 use IO::File;
 use WGE::Util::CreateDesign;
-use WGE::Util::GenomeBrowser qw(fetch_design_data get_region_from_params colours);
 use WGE::Util::ExportCSV qw(write_design_data_csv);
+use WGE::Util::GenomeBrowser qw(fetch_design_data get_region_from_params colours);
+use WGE::Util::Haplotype;
 use WGE::Util::Statistics qw( human_ot_distributions );
 
 BEGIN { extends 'Catalyst::Controller' }
@@ -527,22 +528,6 @@ sub download_design :Path( '/download_design' ) : Args(0) {
     return;
 }
 
-sub _is_line_allowed {
-    my ( $line, $user_haplotypes ) = @_;
-    return (not $line->restricted) || (exists $user_haplotypes->{$line->id}); 
-}
-
-sub _get_user_lines {
-    my ( $user, $schema ) = @_;
-    my %user_lines = ();
-    if ( $user ) {
-        my $search = { user_id => $user->id };
-        %user_lines = map { $_->haplotype_id => 1 }
-            $schema->resultset('UserHaplotype')->search($search);
-    }
-    return \%user_lines;
-}
-
 sub genoverse_browse_view :Path( '/genoverse_browse') : Args(0){
     my ($self, $c) = @_;
 
@@ -552,13 +537,11 @@ sub genoverse_browse_view :Path( '/genoverse_browse') : Args(0){
     my $search = {};
     try{
         $region = get_region_from_params($c->model, $c->request->params);
-        my $user_lines = _get_user_lines($c->user, $c->model->schema);
+        %lines = WGE::Util::Haplotype->new({ species => $region->{species} })
+            ->visible_lines( $c->model, $c->user );
         my $search     = { species_id => $region->{species} };
-        %lines = map { $_->name => _is_line_allowed( $_, $user_lines ) ? 1 : 0 }
-            $c->model->schema->resultset('Haplotype')->search($search);
         @gene_sets = map { $_->name } 
             $c->model->schema->resultset('GeneSet')->search($search);
-        
     }
     catch ($e){
         $c->stash( error_msg => "Could not display genome browser: $e" );
