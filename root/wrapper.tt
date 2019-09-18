@@ -121,6 +121,9 @@
                   <a href="[% c.uri_for('/gibson_help') %]">Gibson Designs</a>
                 </li>
                 <li>
+                  <a href="[% c.uri_for('/cell_line_help') %]">Custom cell lines</a>
+                </li>
+                <li>
                   <a href="[% c.uri_for('/developer_help') %]">Developer Information</a>
                 </li>
               </ul>
