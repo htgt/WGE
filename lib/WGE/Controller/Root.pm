@@ -124,6 +124,11 @@ sub developer_help :Path('/developer_help') :Args(0) {
     return;
 }
 
+sub cell_line_help :Path('/cell_line_help') :Args(0) {
+    my ( $self, $c ) = @_;
+    return;
+}
+
 sub contact :Path('/contact') :Args(0){
     my ( $self, $c ) = @_;
 

@@ -1,0 +1,26 @@
+<style type="text/css">
+section img {
+    border-color: #000000;
+    border-width: 1px;
+    border-style: solid;
+    max-width: 100%;
+}
+
+.affix {
+    position: fixed;
+    top: 12px;
+}
+
+.docs-separator {
+    margin: 40px 0 39px
+}
+
+</style>
+
+<script type="text/javascript">
+//need to wait for images to load or the scrollspy is broken
+$(window).load(function() {
+    //link the nav to the anchors
+    $("body").scrollspy({target: ".bs-docs-sidebar", offset: 20});
+});
+</script>
