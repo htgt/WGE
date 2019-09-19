@@ -1,7 +1,7 @@
 package WGE::Controller::Root;
 ## no critic(RequireUseStrict,RequireUseWarnings)
 {
-    $WGE::Controller::Root::VERSION = '0.124';
+    $WGE::Controller::Root::VERSION = '0.125';
 }
 ## use critic
 
@@ -127,6 +127,11 @@ sub developer_help :Path('/developer_help') :Args(0) {
           map { $_->as_hash }
           $c->model('DB')->resultset('Species')->search( { active => 1 } );
     $c->stash( species => \@species );
+    return;
+}
+
+sub cell_line_help :Path('/cell_line_help') :Args(0) {
+    my ( $self, $c ) = @_;
     return;
 }
 

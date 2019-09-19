@@ -147,6 +147,7 @@ root/site/about.tt
 root/site/api/exon_off_target_search.tt
 root/site/api/fork_test.tt
 root/site/api/region_off_target_search.tt
+root/site/cell_line_help.tt
 root/site/contact.tt
 root/site/crispr_help.tt
 root/site/crispr_pair_report.tt
@@ -158,6 +159,7 @@ root/site/find_off_targets.tt
 root/site/find_off_targets_by_seq.tt
 root/site/gibson_designer.tt
 root/site/gibson_help.tt
+root/site/help_header.tt
 root/site/index.tt
 root/site/my_bookmarks.tt
 root/site/novel_crispr_off_targets.tt
@@ -247,6 +249,10 @@ root/static/images/btn_88x31_powered.png
 root/static/images/btn_88x31_powered_shadow.png
 root/static/images/bulk_seq_search_view.png
 root/static/images/catalyst_logo.png
+root/static/images/cell_lines/adding_tracks.gif
+root/static/images/cell_lines/deleting_tracks.gif
+root/static/images/cell_lines/moving_tracks.gif
+root/static/images/cell_lines/tracks_menu.gif
 root/static/images/distributions/human_0mm.png
 root/static/images/distributions/human_1mm.png
 root/static/images/distributions/human_2mm.png
