@@ -54,8 +54,8 @@
       </p></a>
       <section id="installing">
         <h2>Creating custom cell lines</h2>
-        <p class="lead">Custom cell lines are supported from WGE v0.124 onwards</p>. 
-        <p>You also need a few special tables.</p>
+        <p class="lead">Custom cell lines are supported from WGE v0.124 onwards.</p> 
+        <p>To support custom cell lines, you will need a few special tables:</p>
         <pre>CREATE TABLE haplotype (
     id SERIAL PRIMARY KEY NOT NULL,
     species_id TEXT NOT NULL REFERENCES species(id),
@@ -102,7 +102,7 @@ CREATE TABLE user_haplotype (
           specifically:
         </p>
         <pre>UPDATE haplotype SET restricted='{"chrY"}' WHERE id=&lt;ID&gt;;</pre>
-        <p>To restrict acces to the X and Y chromosomes:</p>
+        <p>To restrict access to the X and Y chromosomes:</p>
         <pre>UPDATE haplotype SET restricted='{"chrX", "chrY"}' WHERE id=&lt;ID&gt;;</pre>
         </p>
         <p>It can also be set to block everything (by giving it a value of *).</p>
