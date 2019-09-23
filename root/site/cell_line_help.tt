@@ -1,0 +1,112 @@
+[% META title = "Cell line information"; META tab_name="help"; META header_text = "Adding and using custom cell lines" %]
+[% PROCESS utils.tt %]
+[% PROCESS help_header.tt %]
+
+<div class="content">
+  <div class="row">
+    <div class="col-md-3 bs-docs-sidebar">
+        <ul id="navigation" data-spy="affix" data-offset-top="180"
+          class="nav nav-pills nav-stacked bs-docs-sidenav">
+            <li><a href="#disclaimer">Disclaimer</a></li>
+            <li><a href="#usage">Using custom cell lines</a></li>
+            <li><a href="#moving">&nbsp;&nbsp;&nbsp;&nbsp;Moving cell lines</a></li>
+            <li><a href="#deleting">&nbsp;&nbsp;&nbsp;&nbsp;Deleting cell lines</a></li>
+            <li><a href="#menu">&nbsp;&nbsp;&nbsp;&nbsp;Using the menu</a></li>
+            <li><a href="#installing">Creating custom cell lines</a></li>
+            <li><a href="#restricting">&nbsp;&nbsp;&nbsp;&nbsp;Restricting access</a></li>
+        </ul>
+    </div>
+    <div class="col-md-9">
+			[% PROCESS disclaimer %]
+			<hr class="docs-separator" />
+      <section id="usage">
+        <h2>Using custom cell lines</h2>
+        <p class="lead">You can view a track showing the haplotype of a given cell line.</p>
+        <p>
+          To use a custom cell line in the Genoverse browser, you must first enable it.
+          In the top-left corner of the Genoverse, open the "Tracks" menu and click select the
+          tracks you want to add from the list of available tracks.
+          <img src="[% c.uri_for('/static/images/cell_lines/adding_tracks.gif') %]" title="Adding tracks" />
+        </p>
+        <p>
+          Some cell lines may be hidden.
+          If you don't see any available cell lines and you need access to them, please contact
+          <a href="mailto:[% email %]">[% email %]</a>.
+        </p>
+      </section>
+      <section id="moving"><p>
+        When you enable the tracks, they will appear at the bottom of the Genoverse browser.
+        You can move them where you want using the handle at the left on the browser.
+        Your preferred settings will still be there when you next use WGE
+        (this is saved in your web browser so will not be retained if you use WGE in a
+        different web browser or on a different computer).
+        <img src="[% c.uri_for('/static/images/cell_lines/moving_tracks.gif') %]" title="Moving tracks" />
+      </p></a>
+      <section id="deleting"><p>
+        You can delete tracks by expanding the track controls on the right of the track and
+        pressing the bin icon.
+        <img src="[% c.uri_for('/static/images/cell_lines/deleting_tracks.gif') %]" title="Deleting tracks" />
+      </p></a>
+      <section id="menu"><p>
+        It is also possible to rearrange or delete tracks from the tracks menu.</p>
+        <img src="[% c.uri_for('/static/images/cell_lines/tracks_menu.gif') %]"
+          title="Moving and deleting tracks using the menu" />
+      </p></a>
+      <section id="installing">
+        <h2>Creating custom cell lines</h2>
+        <p class="lead">Custom cell lines are supported from WGE v0.124 onwards.</p> 
+        <p>To support custom cell lines, you will need a few special tables:</p>
+        <pre>CREATE TABLE haplotype (
+    id SERIAL PRIMARY KEY NOT NULL,
+    species_id TEXT NOT NULL REFERENCES species(id),
+    name TEXT NOT NULL UNIQUE,
+    source TEXT NOT NULL,
+    restricted TEXT[]
+);
+CREATE TABLE user_haplotype (
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    haplotype_id INTEGER NOT NULL REFERENCES haplotype(id)
+);</pre>
+				<p>For each cell line you want to add, you should also create a table of the form:</p>
+   			<pre>CREATE TABLE haplotype_&lt;NAME&gt; (
+    id SERIAL PRIMARY KEY,
+    chrom TEXT NOT NULL,
+    pos INTEGER NOT NULL,
+    ref TEXT NOT NULL,
+    alt TEXT NOT NULL,
+    qual NUMERIC,
+    filter TEXT,
+    genome_phasing TEXT
+);</pre> 
+			  <p>
+          You should also add an entry to the haplotype table. The source column should contain the name of the
+          specific haplotype table you added.
+        </p>
+        <p>
+          You can extract the information you need from a VCF file using the
+          <a href="https://github.com/htgt/WGE/blob/devel/bin/import_vcf.pl">import_vcf.pl</a> script.
+          You can run it with the command:
+        </p>
+        <pre>import_vcf.pl --source &lt;VCF file&gt; --line &lt;NAME&gt;</pre>
+        <p>
+          This will create a CSV file named <i>&lt;NAME&gt;.csv</i> which can be imported into the
+          haplotype_&lt;NAME&gt; table using the Postgres \COPY command.
+        </p>
+      </section>
+      <section id="restricting">
+        <h3>Restricting access to cell lines</h3>
+        <p>
+          If a cell line is not supposed to be widely available, you can restrict access to it to certain users.
+          It is also possible to restrict access to specific chromosomes. The <code>restricted</code> column is
+          an array containing a list of restricted chromosomes. To restrict access to the Y chromosome
+          specifically:
+        </p>
+        <pre>UPDATE haplotype SET restricted='{"chrY"}' WHERE id=&lt;ID&gt;;</pre>
+        <p>To restrict access to the X and Y chromosomes:</p>
+        <pre>UPDATE haplotype SET restricted='{"chrX", "chrY"}' WHERE id=&lt;ID&gt;;</pre>
+        </p>
+        <p>It can also be set to block everything (by giving it a value of *).</p>
+        <pre>UPDATE haplotype SET restricted='{"*"}' WHERE id=&lt;ID&gt;;</pre>
+    </div>
+  </div>
+</div>

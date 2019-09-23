@@ -1,5 +1,26 @@
 {{$NEXT}}
 
+0.124     2019-09-17 10:43:39 Europe/London
+
+    Easier/more flexible haplotype management
+
+0.123     2019-07-01 11:22:15 Europe/London
+
+    Branding update
+    Update EnsEMBL links
+
+0.122     2018-11-16 12:50:59 Europe/London
+
+    Fix IE compatibility issues
+
+0.121     2018-09-04 14:56:19 Europe/London
+
+    Make it easier to rename/manage gene sets
+
+0.120     2018-09-04 10:39:55 Europe/London
+
+    Make it easier to rename/manage haplotypes
+
 0.119     2018-08-31 11:33:47 Europe/London
 
     Create a track for RefSeq genes & transcripts

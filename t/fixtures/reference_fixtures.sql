@@ -17,9 +17,20 @@ INSERT INTO species_default_assembly
 VALUES ('Human','GRCh38'),
        ('Mouse','GRCm38');
 
-INSERT INTO users (name, password)
-VALUES ('guest','guest'),
-       ('unknown','unknown');
+INSERT INTO users (id, name, password)
+VALUES (100, 'guest','guest'),
+       (101, 'unknown','unknown'),
+       (102, 'known', 'known');
+
+INSERT INTO haplotype (id, species_id, name, source, restricted)
+VALUES (100, 'Human', 'Hap1', 'haplotype_test', '{}'),
+       (101, 'Human', 'Hap2', 'haplotype_test', '{"*"}'),
+       (102, 'Human', 'Hap3', 'haplotype_test', '{"X", "Y"}');
+
+INSERT INTO user_haplotype (user_id, haplotype_id)
+VALUES (101, 101),
+       (102, 101),
+       (102, 102);
 
 INSERT INTO design_types (id)
 VALUES ('gibson'),

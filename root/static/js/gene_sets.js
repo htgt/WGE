@@ -141,7 +141,7 @@ Genoverse.Track.GeneSet = Genoverse.Track.extend({
             Strand: feature.strand,
         };
         ['name', 'gene_id', 'transcript_id', 'protein_id', 'description', 'rank']
-        .forEach((prop, i) => {
+        .forEach(function(prop, i) {
             if (feature[prop]) {
                 menu[prop] = feature[prop];
             }

@@ -18,7 +18,7 @@ CREATE TABLE geneset_refseq (
     strand INTEGER NOT NULL,
     rank INTEGER NOT NULL,
     name TEXT,
-    parent_id TEXT REFERENCES refseq(id),
+    parent_id TEXT REFERENCES geneset_refseq(id),
     gene_type TEXT,
     gene_id TEXT,
     transcript_id TEXT,
