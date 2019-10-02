@@ -2,15 +2,25 @@ package WGE::Controller::CrisprLibraryDesign;
 use Moose;
 use namespace::autoclean;
 use Data::Dumper;
+use File::Spec::Functions;
 use TryCatch;
-use IO::File;
 use WGE::Util::CrisprLibrary;
 use WebAppCommon::Util::FarmJobRunner;
-use Path::Class::Dir;
+use WebAppCommon::Util::FileAccess;
 
 BEGIN { extends 'Catalyst::Controller' }
 
 __PACKAGE__->config(namespace => '');
+
+has file_api => (
+    is         => 'ro',
+    isa        => 'WebAppCommon::Util::FileAccess',
+    lazy_build => 1,
+);
+
+sub _build_file_api {
+    return WebAppCommon::Util::FileAccess->new({ server => 'file-access-server' });
+}
 
 sub _logged_in {
     my ( $self, $c ) = @_;
@@ -161,11 +171,9 @@ sub download_library_csv :Path('/download_library_csv') :Args(1){
         return;
     }
 
-    my $path = $job->results_file;
-    open(my $fh, "<", $path) or die "Could not open file $path - $!";
-
     $c->res->content_type('text/tab-separated-values');
-    $c->response->body($fh);
+    my $content = $self->file_api->get_file_content($job->results_file);
+    $c->response->body($content);
     return;
 }
 
@@ -202,11 +210,12 @@ sub delete_library_design_job :Path('/delete_library_design_job') :Args(1){
         my $library_job_dir = $ENV{WGE_LIBRARY_JOB_DIR}
             or die "No WGE_LIBRARY_JOB_DIR environment variable set";
 
-        my $dir = Path::Class::Dir->new($library_job_dir, $job_id);
-        my $bjob_id_file = $dir->file("job_ids.txt");
-        if(-e $bjob_id_file){
+        my $dir = catdir($library_job_dir, $job_id);
+        $self->file_api->make_dir($dir);
+        my $bjob_id_file = catfile($dir, 'job_ids.txt');
+        if( 1 ) {
             my $job_runner = WebAppCommon::Util::FarmJobRunner->new({ dry_run => 0 });
-            my @ids = $bjob_id_file->slurp(chomp => 1);
+            my @ids = $self->file_api->get_file_content($bjob_id_file);
             foreach my $id (@ids){
                 $c->log->debug("Killing job $id");
                 # Catch errors and ignore those for already finished jobs
@@ -225,7 +234,8 @@ sub delete_library_design_job :Path('/delete_library_design_job') :Args(1){
             }
         }
         $job->delete;
-        $dir->rmtree;
+        #TODO restore this?
+        #$dir->rmtree;
     }
     else{
         $c->flash->{error_msg} = "Could not find job with ID $job_id for user ".$c->user->name;

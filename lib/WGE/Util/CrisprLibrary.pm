@@ -8,6 +8,7 @@ use WGE::Util::ScoreCrisprs qw(score_and_sort_crisprs);
 use Data::UUID;
 use Path::Class;
 use Data::Dumper;
+use File::Spec::Functions;
 use Moose;
 use POSIX qw(ceil sys_wait_h _exit);
 use JSON;
@@ -16,7 +17,7 @@ use List::MoreUtils qw(natatime);
 use Text::CSV;
 use TryCatch;
 use WebAppCommon::Util::FarmJobRunner;
-use HTGT::QC::Util::FileAccessServer;
+use WebAppCommon::Util::FileAccess;
 use IPC::Run 'run';
 
 with 'MooseX::Log::Log4perl';
@@ -142,9 +143,19 @@ sub _build_job_id{
     return Data::UUID->new->create_str;
 }
 
+has file_api => (
+    is         => 'ro',
+    isa        => 'WebAppCommon::Util::FileAccess',
+    lazy_build => 1,
+);
+
+sub _build_file_api {
+    return WebAppCommon::Util::FileAccess->new({ server => 'file-access-server' });
+}
+
 has workdir => (
     is  => 'ro',
-    isa => 'Path::Class::Dir',
+    isa => 'Str',
     lazy_build => 1,
 );
 
@@ -154,8 +165,8 @@ sub _build_workdir{
     my $library_job_dir = $ENV{WGE_LIBRARY_JOB_DIR}
         or die "No WGE_LIBRARY_JOB_DIR environment variable set";
 
-    my $dir = Path::Class::Dir->new($library_job_dir, $self->job_id);
-    $dir->mkpath or die "Could not create directory $dir";
+    my $dir = catdir($library_job_dir, $self->job_id);
+    $self->file_api->make_dir($dir);
     return $dir;
 }
 
@@ -559,16 +570,16 @@ sub generate_off_targets_on_farm{
             progress_percent => 0,
         });
         my $farm_dir = dir($ENV{'OFF_TARGET_RUN_DIR'})->subdir($self->job_id);
-        my $file_api = HTGT::QC::Util::FileAccessServer->new({ file_api_url => $ENV{FILE_API_URL} });
-        $file_api->make_dir("$farm_dir");
+        my $file_api = WebAppCommon::Util::FileAccess->new({ server => 'file_access_server' });
+        $file_api->make_dir($farm_dir);
 
         my $farm_runner =  WebAppCommon::Util::FarmJobRunner->new({
             dry_run => 1,
             bsub_wrapper => "/nfs/team87/farm3_lims2_vms/conf/run_in_farm3_af11"
         });
 
-        my $id_file = $self->workdir->file("job_ids.txt");
-        $id_file->touch();
+        my $id_file = catfile($self->workdir, 'job_ids.txt');
+        $self->file_api->post_file_content($id_file, '');
 
         # split list of offs into batches of 500 (or smaller for short lists)
         my $batch_size = 500;
@@ -593,7 +604,7 @@ sub generate_off_targets_on_farm{
                 out_file => $out_file,
                 err_file => $err_file,
                 cmd      => $cmd,
-                queue    => 'basement',
+                queue    => 'normal',
                 group    => 'team87-grp', # change this to team229-grp when available
                 memory_required => 3000,
             });
@@ -605,10 +616,7 @@ sub generate_off_targets_on_farm{
             $self->log->debug("command output: $output");
             my ($job_id) = ( $output =~ /(\d+)/g );
             $self->log->debug("adding bjob ID $job_id to file");
-            my $fh = $id_file->opena
-                or die "Cannot open $id_file for append - $!";
-            print $fh "$job_id\n";
-            close $fh;
+            $self->file_api->append_file_content($id_file, "$job_id\n");
         }
 
         # every 10 mins repeat the check for missing offs, update progress percent
@@ -636,14 +644,15 @@ sub generate_off_targets_on_farm{
 sub write_csv_data_to_file{
     my ($self, $filename) = @_;
 
-    my $file = $self->workdir->file($filename);
-    my $fh = $file->openw or die "Could not open file $file for writing - $!";
+    my $file = catfile($self->workdir, $filename);
+    my $contents = q//;
+    open my $fh, '>', \$contents or die "Could not open string for writing - $!";
 
     my $extra_fields = [ qw(search_region_name search_region_chromosome search_region_start search_region_end) ];
 
     # print header to file
-    print $fh join "\t", @{ format_crisprs_for_csv_header($extra_fields) };
-    print $fh "\n";
+    print {$fh} join "\t", @{ format_crisprs_for_csv_header($extra_fields) };
+    print {$fh} "\n";
 
     foreach my $target (@{ $self->targets }){
         if($target->{target_coords}->{error}){
@@ -658,8 +667,8 @@ sub write_csv_data_to_file{
                 $crispr_info{search_region_start} = $target->{target_coords}->{start};
                 $crispr_info{search_region_end} = $target->{target_coords}->{end};
 
-                print $fh join "\t", @{ format_crisprs_for_csv_data(\%crispr_info, $extra_fields) };
-                print $fh "\n";
+                print {$fh} join "\t", @{ format_crisprs_for_csv_data(\%crispr_info, $extra_fields) };
+                print {$fh} "\n";
             }
             else{
                 $self->log->warn("Not enough crisprs found for target ".$target->{target_name});
@@ -668,6 +677,7 @@ sub write_csv_data_to_file{
     }
 
     close $fh;
+    $self->file_api->post_file_content($file, $contents);
 
     $self->_update_job({ complete => 1, results_file => "$file" });
 
@@ -677,16 +687,20 @@ sub write_csv_data_to_file{
 sub write_input_data_to_file{
     my ($self, $filename) = @_;
 
-    my $file = $self->workdir->file($filename);
-    my $out_fh = $file->openw or die "Could not open file $file for writing - $!";
+    my $file = catfile($self->workdir, $filename);
+
+    my $contents;
+    open my $out_fh, '>', \$contents or die "Could not open string for writing - $!";
 
     my $in_fh = $self->input_fh;
     seek($in_fh,0,0);
 
     foreach my $line(<$in_fh>){
-        print $out_fh $line;
+        print {$out_fh} $line;
     }
-
+    
+    close $out_fh;
+    $self->file_api->post_file_content($file, $contents);
     $self->_update_job({ input_file => "$file" });
 
     return $file;
