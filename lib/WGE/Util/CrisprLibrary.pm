@@ -16,7 +16,7 @@ use WGE::Util::OffTargetServer;
 use List::MoreUtils qw(natatime);
 use Text::CSV;
 use TryCatch;
-use WebAppCommon::Util::FarmJobRunner;
+use WebAppCommon::Util::JobRunner;
 use WebAppCommon::Util::FileAccess;
 use IPC::Run 'run';
 
@@ -88,7 +88,7 @@ has flank_size => (
 has write_progress_to_db => (
     is  => 'rw',
     isa => 'Bool',
-    default => 0,
+    default => 1,
 );
 
 has update_after_n_items => (
@@ -150,7 +150,21 @@ has file_api => (
 );
 
 sub _build_file_api {
-    return WebAppCommon::Util::FileAccess->new({ server => 'file-access-server' });
+    return WebAppCommon::Util::FileAccess->construct({ server => $ENV{FILE_SERVER} });
+}
+
+has job_runner => (
+    is         => 'ro',
+    isa        => 'WebAppCommon::Util::JobRunner',
+    lazy_build => 1,
+);
+
+sub _build_job_runner {
+    return WebAppCommon::Util::JobRunner->construct({
+            server  => $ENV{FARM_SERVER},
+            check_return => 0,
+            bsub_wrapper => "/nfs/team87/farm3_lims2_vms/conf/run_in_farm3_af11"
+        });
 }
 
 has workdir => (
@@ -570,13 +584,7 @@ sub generate_off_targets_on_farm{
             progress_percent => 0,
         });
         my $farm_dir = dir($ENV{'OFF_TARGET_RUN_DIR'})->subdir($self->job_id);
-        my $file_api = WebAppCommon::Util::FileAccess->new({ server => 'file_access_server' });
-        $file_api->make_dir($farm_dir);
-
-        my $farm_runner =  WebAppCommon::Util::FarmJobRunner->new({
-            dry_run => 1,
-            bsub_wrapper => "/nfs/team87/farm3_lims2_vms/conf/run_in_farm3_af11"
-        });
+        $self->file_api->make_dir($farm_dir);
 
         my $id_file = catfile($self->workdir, 'job_ids.txt');
         $self->file_api->post_file_content($id_file, '');
@@ -594,24 +602,19 @@ sub generate_off_targets_on_farm{
             $batch_num++;
 
             my $input_file = $farm_dir->file("ot_input_list_$batch_num.txt");
-            $file_api->post_file_content("$input_file", (join "\n", @tmp));
+            $self->file_api->post_file_content("$input_file", (join "\n", @tmp));
 
             my $out_file = $farm_dir->file("ot_job_$batch_num.out");
             my $err_file = $farm_dir->file("ot_job_$batch_num.err");
 
-            my $cmd = ["perl"," /nfs/team87/CRISPR-Analyser/bin/wge_off_targets.pl", $self->species_name, $input_file];
-            my $farm_cmd = $farm_runner->submit({
+            my $cmd = ['perl',$ENV{OFF_TARGET_SCRIPT}, $self->species_name, $input_file];
+            my $output = $self->job_runner->submit({
                 out_file => $out_file,
                 err_file => $err_file,
                 cmd      => $cmd,
-                queue    => 'normal',
                 group    => 'team87-grp', # change this to team229-grp when available
                 memory_required => 3000,
             });
-            my $cmd_string = join " ", @{$farm_cmd};
-            $self->log->debug("Running command: $cmd_string");
-            # FIXME: why does bsub return -1 when job has been submitted?
-            run $farm_cmd, ">", \my $output;
 
             $self->log->debug("command output: $output");
             my ($job_id) = ( $output =~ /(\d+)/g );
@@ -632,7 +635,7 @@ sub generate_off_targets_on_farm{
             }
             else{
                 # All done!
-                $id_file->remove;
+                $self->file_api->delete_file($id_file);
                 return;
             }
         }

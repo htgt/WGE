@@ -5,7 +5,7 @@ use Data::Dumper;
 use File::Spec::Functions;
 use TryCatch;
 use WGE::Util::CrisprLibrary;
-use WebAppCommon::Util::FarmJobRunner;
+use WebAppCommon::Util::JobRunner;
 use WebAppCommon::Util::FileAccess;
 
 BEGIN { extends 'Catalyst::Controller' }
@@ -19,7 +19,17 @@ has file_api => (
 );
 
 sub _build_file_api {
-    return WebAppCommon::Util::FileAccess->new({ server => 'file-access-server' });
+    return WebAppCommon::Util::FileAccess->construct({ server => $ENV{FILE_SERVER} });
+}
+
+has job_runner => (
+    is         => 'ro',
+    isa        => 'WebAppCommon::Util::JobRunner',
+    lazy_build => 1,
+);
+
+sub _build_job_runner {
+    return WebAppCommon::Util::JobRunner->construct({ server => $ENV{FARM_SERVER} });
 }
 
 sub _logged_in {
@@ -213,16 +223,16 @@ sub delete_library_design_job :Path('/delete_library_design_job') :Args(1){
         my $dir = catdir($library_job_dir, $job_id);
         $self->file_api->make_dir($dir);
         my $bjob_id_file = catfile($dir, 'job_ids.txt');
-        if( 1 ) {
-            my $job_runner = WebAppCommon::Util::FarmJobRunner->new({ dry_run => 0 });
-            my @ids = $self->file_api->get_file_content($bjob_id_file);
+        my @ids = $self->file_api->get_file_content($bjob_id_file);
+        if ( @ids ) {
             foreach my $id (@ids){
+                chomp($id);
                 $c->log->debug("Killing job $id");
                 # Catch errors and ignore those for already finished jobs
                 try{
                     # FIXME: this is throwing errors even when it works and output says:
                     # Job <4834669> is being terminated
-                    $job_runner->kill_job($id);
+                    $self->job_runner->kill_job($id);
                 }
                 catch($e){
                     unless($e =~ /(already finished|No matching job found)/ ){
@@ -234,8 +244,7 @@ sub delete_library_design_job :Path('/delete_library_design_job') :Args(1){
             }
         }
         $job->delete;
-        #TODO restore this?
-        #$dir->rmtree;
+        $self->file_api->delete_dir($dir);
     }
     else{
         $c->flash->{error_msg} = "Could not find job with ID $job_id for user ".$c->user->name;
