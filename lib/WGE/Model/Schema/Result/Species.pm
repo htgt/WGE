@@ -61,6 +61,11 @@ __PACKAGE__->table("species");
   default_value: false
   is_nullable: 0
 
+=head2 species_name
+
+  data_type: 'text'
+  is_nullable: 1
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -77,6 +82,8 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 0 },
   "active",
   { data_type => "boolean", default_value => \"false", is_nullable => 0 },
+  "species_name",
+  { data_type => "text", is_nullable => 1 },
 );
 
 =head1 PRIMARY KEY
@@ -228,8 +235,8 @@ __PACKAGE__->might_have(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2018-08-28 11:39:14
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:gc4WqAZXevWG8DafXJCVvw
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2019-10-23 16:34:29
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:C3fR4BgHA2Nvb1Hdm4pB8g
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
