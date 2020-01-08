@@ -28,17 +28,19 @@ __PACKAGE__->result_source_instance->is_virtual(1);
 
 #we need species twice so the query won't ever search the wrong table
 __PACKAGE__->result_source_instance->view_definition( <<'EOT' );
-with ots as (
-    select x.crispr_id, unnest(off_target_ids) as ot_id
-    from (SELECT unnest(?::int[]) as crispr_id) x
-    join crisprs on crisprs.id=x.crispr_id and crisprs.species_id=?
+WITH ots AS (
+    SELECT c.id AS parent_id, unnest(c.off_target_ids || o.off_targets) AS ot_id
+    FROM crisprs AS c
+    LEFT JOIN sequences s ON s.crispr_id=c.id
+    LEFT JOIN off_targets o ON s.seq_id=o.seq_id
+    WHERE c.id=? AND c.species_id=?
 )
-select
-    ots.crispr_id as parent_id,
+SELECT
+    ots.parent_id,
     c.*
-from ots
-join crisprs c on c.id=ots.ot_id and c.species_id=?
-order by ots.crispr_id, c.chr_name, c.chr_start
+FROM ots
+JOIN crisprs c ON c.id=ots.ot_id AND c.species_id=?
+ORDER BY ots.parent_id, c.chr_name, c.chr_start
 EOT
 
 __PACKAGE__->add_columns(

@@ -226,7 +226,7 @@ sub crispr_by_id :Local('crispr_by_id') {
             seq                => $crispr->seq,
             species_id         => $crispr->species_id,
             pam_right          => $crispr->pam_right,
-            off_target_summary => $crispr->off_target_summary,
+            off_target_summary => $crispr->ot_summary,
             exonic             => $crispr->exonic,
             genic              => $crispr->genic,
 
@@ -495,7 +495,7 @@ sub crispr_off_targets :Local('crispr_off_targets'){
         $data->{ $crispr->id } = {
             id                 => $crispr->id,
             off_targets        => $crispr->off_target_ids,
-            off_target_summary => $crispr->off_target_summary,
+            off_target_summary => $crispr->ot_summary,
         };
 
         if($c->req->param('with_detail')){
