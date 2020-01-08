@@ -9,11 +9,11 @@ Genoverse.Track.Variation = Genoverse.Track.extend({
 
         var deferred = $.Deferred();
 
-        $.get("http://rest.ensembl.org/variation/" + ensembl_species + "/" + feature.id + "?content-type=application/json",
+        $.get("https://rest.ensembl.org/variation/" + ensembl_species + "/" + feature.id + "?content-type=application/json",
             write_menu);
 
         function write_menu(data) {
-            var snp_url = "http://www.ensembl.org/" + ensembl_species + "/Variation/Explore?v=" + feature.id;
+            var snp_url = "https://www.ensembl.org/" + ensembl_species + "/Variation/Explore?v=" + feature.id;
             var id_link = "<a href='" + snp_url +
                 "' target='_blank'><font color='#00FFFF'>" + feature.id + "</font></a>";
             var atts = {
@@ -41,7 +41,7 @@ Genoverse.Track.MAFVariation = Genoverse.Track.extend({
 
     populateMenu: function(feature) {
 
-        var snp_url = "http://www.ensembl.org/" + ensembl_species + "/Variation/Explore?v=" + feature.variation_name;
+        var snp_url = "https://www.ensembl.org/" + ensembl_species + "/Variation/Explore?v=" + feature.variation_name;
         var id_link = "<a href='" + snp_url +
             "' target='_blank'><font color='#00FFFF'>" + feature.variation_name + "</font></a>";
         var atts = {
