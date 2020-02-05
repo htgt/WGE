@@ -19,7 +19,8 @@
 .pam_proximal_mm{
 }
 </style>
-
+<script type="text/javascript" src="https://mpld3.github.io/js/d3.v3.min.js"></script>
+<script type="text/javascript" src="https://mpld3.github.io/js/mpld3.v0.3.js"></script>
 <script type="text/javascript">
   //we use this for doing the mismatch counts
   var crispr_grna = "[% crispr_grna %]";
@@ -178,7 +179,18 @@
       location.reload();
 
     });
-
+    [%- IF species == 'Grch38';
+      forecast_species = 'human';
+    END; -%]
+    [% IF forecast_species %]
+    $.ajax('https://selftarget.cellgeni.sanger.ac.uk/plot?wge=[% crispr.id %]&species=[% forecast_species %]')
+      .success(function(data, status, jqXHR) {
+      if(data.plot){
+        $('#forecast').show();
+        $('#forecast').append(data.plot);
+      }
+    });
+    [% END %]
   });
 
 
@@ -324,8 +336,12 @@
     </div>
   </div>
 </div>
-
-
+[% IF forecast_species %]
+<div id="forecast" style="display:none">
+  <h3>FORECasT</h3>
+  <a href="https://partslab.sanger.ac.uk/FORECasT?wge=[% crispr.id %]&species=[% forecast_species %]">View on FORECasT</a>
+</div>
+[% END %]
 <h3>Off-Target Sites
   <small>
     <p id="sorted_by"></p>
