@@ -80,16 +80,6 @@ __PACKAGE__->table("library_design_jobs");
   data_type: 'text'
   is_nullable: 1
 
-=head2 warning
-
-  data_type: 'text'
-  is_nullable: 1
-
-=head2 results_file
-
-  data_type: 'text'
-  is_nullable: 1
-
 =head2 created_at
 
   data_type: 'timestamp'
@@ -148,10 +138,6 @@ __PACKAGE__->add_columns(
   "complete",
   { data_type => "boolean", default_value => \"false", is_nullable => 0 },
   "error",
-  { data_type => "text", is_nullable => 1 },
-  "warning",
-  { data_type => "text", is_nullable => 1 },
-  "results_file",
   { data_type => "text", is_nullable => 1 },
   "created_at",
   {
@@ -229,8 +215,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2018-09-03 11:40:42
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:G1BSHe2zRUCgKAZWkfRhqA
+# Created by DBIx::Class::Schema::Loader v0.07049 @ 2020-02-27 12:07:40
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:baEfKEK721i2fesSRsF5LA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
