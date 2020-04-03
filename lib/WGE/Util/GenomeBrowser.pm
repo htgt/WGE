@@ -456,11 +456,9 @@ sub crisprs_for_region_as_arrayref {
     my $params = shift;
 
     my $crisprs_rs = crisprs_for_region( $schema, $params ) ;
-    $crisprs_rs->result_class('DBIx::Class::ResultClass::HashRefInflator');
     my @crisprs;
-
-    while ( my $hashref = $crisprs_rs->next ) {
-        push @crisprs, $hashref;
+    while ( my $crispr = $crisprs_rs->next ) {
+        push @crisprs, $crispr->as_hash({with_offs => 1});
     }
     return \@crisprs;
 }
@@ -530,7 +528,7 @@ sub crisprs_to_gff {
                     . 'CopySequence=' . $fwd_seq 
                 );
 
-            my $ot_summary = $crispr_r->off_target_summary;
+            my $ot_summary = $crispr_r->ot_summary;
             if($ot_summary){
                 TRACE("Found off target summary for crispr ".$crispr_r->id);
                 $crispr_format_hash{attributes}.=';OT_Summary='.$ot_summary;

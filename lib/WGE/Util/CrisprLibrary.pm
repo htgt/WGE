@@ -16,6 +16,7 @@ use WGE::Util::OffTargetServer;
 use List::MoreUtils qw(natatime);
 use Text::CSV;
 use TryCatch;
+use WebAppCommon::Util::EnsEMBL;
 use WebAppCommon::Util::JobRunner;
 use WebAppCommon::Util::FileAccess;
 use IPC::Run 'run';
@@ -122,7 +123,7 @@ sub _build_ots_server {
 
 has ensembl => (
     is => 'ro',
-    isa => 'WGE::Util::EnsEMBL',
+    isa => 'WebAppCommon::Util::EnsEMBL',
     lazy_build => 1,
 );
 
@@ -130,7 +131,7 @@ sub _build_ensembl{
 	my ($self) = @_;
     # Human could be 'Human' or 'GRCh38'
     my $ens_species = ($self->species_name eq 'Mouse' ? 'mouse' : 'human' );
-	return WGE::Util::EnsEMBL->new({ species => $ens_species });
+	return WebAppCommon::Util::EnsEMBL->new({ species => $ens_species });
 }
 
 has job_id => (
@@ -577,6 +578,11 @@ sub generate_off_targets_on_farm{
 
     my $count = scalar( @{ $self->crisprs_missing_offs } );
     $self->log->debug("** generating off-targets on farm for $count crisprs");
+    my $user = $self->model->resultset('User')->find({ id => $self->user_id });
+    if( !$user || ( $user->library_jobs_restricted && $count > 2000 ) ) {
+        die "Too many missing off targets. This requires calculating $count off-targets, "
+            . "you may only submit jobs needing up to 2000 at a time.\n";
+    }
     if($count){
         $self->_update_job({
             library_design_stage_id => 'off_targets',

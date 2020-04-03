@@ -174,11 +174,21 @@ __PACKAGE__->has_many(
 __PACKAGE__->set_primary_key('id');
 
 __PACKAGE__->might_have( ots_pending => 'WGE::Model::Schema::Result::CrisprOtPending', 'crispr_id' );
+__PACKAGE__->has_one( sequence   => 'WGE::Model::Schema::Result::Sequence',
+    { 'foreign.crispr_id' => 'self.id' } );
 
 with 'WGE::Util::CrisprRole';
 
 use YAML::Any;
 use Bio::Perl qw( revcom_as_string );
+
+sub ot_summary {
+    my $self = shift;
+    if(!$self->off_target_summary && $self->sequence->off_target) {
+        return $self->sequence->off_target->summary;
+    }
+    return $self->off_target_summary;
+}
 
 sub as_hash {
   my ( $self, $options ) = @_;
@@ -192,7 +202,7 @@ sub as_hash {
     seq                => $self->seq,
     species_id         => $self->species_id,
     pam_right          => $self->pam_right,
-    off_target_summary => $self->off_target_summary,
+    off_target_summary => $self->ot_summary,
     exonic             => $self->exonic,
     genic              => $self->genic,
   };
@@ -204,7 +214,7 @@ sub as_hash {
   }
 
   #should get rid of this eventually, it doesnt make it much easier
-  if ( $self->off_target_summary ) {
+  if ( $data->{off_target_summary} ) {
     my @sum;
     #convert hash to array
     my $summary = Load( $self->off_target_summary );
@@ -230,7 +240,7 @@ sub off_targets {
 
   return $self->result_source->schema->resultset('CrisprOffTargets')->search(
     {},
-    { bind => [ "{" . $self->id . "}", $self->species_id, $self->species_id ] }
+    { bind => [ $self->id, $self->species_id, $self->species_id ] }
   );
 }
 

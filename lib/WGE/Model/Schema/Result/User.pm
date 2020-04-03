@@ -55,6 +55,12 @@ __PACKAGE__->table("users");
   data_type: 'text'
   is_nullable: 1
 
+=head2 library_jobs_restricted
+
+  data_type: 'boolean'
+  default_value: true
+  is_nullable: 1
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -69,6 +75,8 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 0 },
   "password",
   { data_type => "text", is_nullable => 1 },
+  "library_jobs_restricted",
+  { data_type => "boolean", default_value => \"true", is_nullable => 1 },
 );
 
 =head1 PRIMARY KEY
@@ -280,8 +288,9 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2018-09-03 11:41:59
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:7v9gKEBIAQnX38a0UgOp6Q
+# Created by DBIx::Class::Schema::Loader v0.07022 @ 2019-10-23 16:34:29
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:VpIbR/5zHhK7UWQQp8cl7w
+
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
 

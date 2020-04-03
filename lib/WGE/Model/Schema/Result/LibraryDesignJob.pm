@@ -110,16 +110,6 @@ __PACKAGE__->table("library_design_jobs");
   is_nullable: 0
   original: {default_value => \"now()"}
 
-=head2 warning
-
-  data_type: 'text'
-  is_nullable: 1
-
-=head2 results_file
-
-  data_type: 'text'
-  is_nullable: 1
-
 =head2 info
 
   data_type: 'text'
@@ -169,10 +159,6 @@ __PACKAGE__->add_columns(
     is_nullable   => 0,
     original      => { default_value => \"now()" },
   },
-  "warning",
-  { data_type => "text", is_nullable => 1 },
-  "results_file",
-  { data_type => "text", is_nullable => 1 },
   "info",
   { data_type => "text", is_nullable => 1 },
   "input_file",
@@ -205,7 +191,7 @@ __PACKAGE__->belongs_to(
   "created_by",
   "WGE::Model::Schema::Result::User",
   { id => "created_by_id" },
-  { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
+  { is_deferrable => 0, on_delete => "NO ACTION", on_update => "NO ACTION" },
 );
 
 =head2 library_design_stage
@@ -221,16 +207,16 @@ __PACKAGE__->belongs_to(
   "WGE::Model::Schema::Result::LibraryDesignStage",
   { id => "library_design_stage_id" },
   {
-    is_deferrable => 1,
+    is_deferrable => 0,
     join_type     => "LEFT",
-    on_delete     => "CASCADE",
-    on_update     => "CASCADE",
+    on_delete     => "NO ACTION",
+    on_update     => "NO ACTION",
   },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2018-09-03 11:40:42
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:G1BSHe2zRUCgKAZWkfRhqA
+# Created by DBIx::Class::Schema::Loader v0.07049 @ 2019-12-06 15:03:57
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:WDgQXwsWgv1hdUDDVIOwpA
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
@@ -243,6 +229,5 @@ __PACKAGE__->inflate_column( params => {
       ref $json ? to_json($json) : $json;
     },
 });
-
 __PACKAGE__->meta->make_immutable;
 1;
