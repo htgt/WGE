@@ -20,7 +20,7 @@ use WGE::Util::FindPairs;
 use WGE::Util::OffTargetServer;
 use WGE::Util::FindOffTargets;
 use WGE::Util::Haplotype;
-use WGE::Util::Mutability qw/calculate_mutability/;
+use WGE::Util::Mutability qw/calculate_phasing/;
 use WebAppCommon::Util::EnsEMBL;
 use JSON;
 use WGE::Util::TimeOut qw(timeout);
@@ -1212,7 +1212,7 @@ sub _get_exon_attribute {
         my @vals = map { blessed $_ ? $_->as_hash : $_ } $exon->$attr( @args );
         foreach my $crispr ( @vals ) {
             $crispr->{ensembl_exon_id} = $exon_id;
-            $crispr = { %{$crispr}, calculate_mutability($exon, $crispr) };
+            $crispr->{phase} = calculate_phasing($exon, $crispr);
         }
 
         _send_error($c, "None found!", 400) unless @vals;

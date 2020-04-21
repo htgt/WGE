@@ -1,35 +1,48 @@
 package WGE::Util::Mutability;
 require Exporter;
+use Carp;
+use Data::Dumper;
 our @ISA = qw/Exporter/;
-our @EXPORT_OK = qw/calculate_mutability/;
+our @EXPORT_OK = qw/calculate_phasing/;
 
-my %mutability_table = (
-    "++" => { 2 => 2, 1 => 1 },
-    "+-" => { 2 => 2, },
-    "-+" => { 0 => 2, },
-    "--" => { 0 => 2, 1 => 1 },
+my %phasing = (
+    q/++/ => sub {
+        my ( $exon, $crispr ) = @_;
+        croak "plus_plus phase $phase" if $exon->phase < 0;
+        my $phased_start = $exon->chr_start + $exon->phase;
+        return ($crispr->{chr_end} - $phased_start) % 3;
+    },
+    q/+-/ => sub {
+        my ( $exon, $crispr ) = @_;
+        croak "plus_minus phase $phase" if $exon->phase < 0;
+        my $phased_start = $exon->chr_start + $exon->phase;
+        return ($crispr->{chr_start} - $phased_start - 1) % 3;
+    },
+    q/-+/ => sub {
+        my ( $exon, $crispr ) = @_;
+        croak "minus_plus phase $phase" if $exon->end_phase < 0;
+        my $phased_end = $exon->chr_end - $exon->end_phase;
+        return ($phased_end - $crispr->{chr_end} + 1) % 3;
+    },
+    q/--/ => sub {
+        my ( $exon, $crispr ) = @_;
+        croak "minus_plus phase $phase" if $exon->end_phase < 0;
+        my $phased_end = $exon->chr_end - $exon->end_phase;
+        return ($crispr->{chr_start} - $phased_end) % 3;
+    },
 );
 
-sub calculate_mutability {
+sub calculate_phasing {
     my ( $exon, $crispr ) = @_;
-    my $strands = ( $exon->strand   >= 0 ? q/+/ : q/-/ )
-                . ( $crispr->{pam_right} ? q/+/ : q/-/ );
     my $phase = $exon->phase;
-    return 0 if $exon->phase < 0 && $exon->end_phase < 0;
-    my $phase = $exon->phase;
-    if ( $phase < 0 ) {
-        my $length = $exon->chr_end - $exon->chr_start + 1;
-        if ( $exon->strand < 0 ) {
-            $length = $exon->chr_start - $exon->chr_end + 1;
-        }
-        $phase = ($exon->end_phase - $length) % 3;
-    }
-    my $phased_start = $exon->chr_start - $phase + 1;
-    my $position = ($crispr->{chr_end} - $phased_start) % 3;
-    return (
-        frame_position => $position,
-        frame_value    => $mutability_table{$strands}->{$position} // 0,
-    );
+    my $cut_site = $crispr->{pam_right}
+        ? $crispr->{chr_end} - 5
+        : $crispr->{chr_start} + 6;
+    my $exonic = ($cut_site > $exon->chr_start) && ($cut_site < $exon->chr_end);
+    my $tkey = ( $exon->strand < 0 ? q/-/ : q/+/ ) . ( $crispr->{pam_right} ? q/+/ : q/-/ );
+    return -1 if !$exonic || ($exon->phase < 0 && $exon->end_phase < 0);
+    
+    return $phasing{$tkey}->($exon, $crispr);
 }
 
 1;
