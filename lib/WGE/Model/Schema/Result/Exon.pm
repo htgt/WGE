@@ -76,6 +76,21 @@ __PACKAGE__->table("exons");
   data_type: 'integer'
   is_nullable: 0
 
+=head2 strand
+
+  data_type: 'integer'
+  is_nullable: 1
+
+=head2 phase
+
+  data_type: 'integer'
+  is_nullable: 1
+
+=head2 end_phase
+
+  data_type: 'integer'
+  is_nullable: 1
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -98,6 +113,12 @@ __PACKAGE__->add_columns(
   { data_type => "text", is_nullable => 0 },
   "rank",
   { data_type => "integer", is_nullable => 0 },
+  "strand",
+  { data_type => "integer", is_nullable => 1 },
+  "phase",
+  { data_type => "integer", is_nullable => 1 },
+  "end_phase",
+  { data_type => "integer", is_nullable => 1 },
 );
 
 =head1 PRIMARY KEY
@@ -146,8 +167,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07022 @ 2017-06-20 16:59:38
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:0F3PWxibYTbEEh/CEozsew
+# Created by DBIx::Class::Schema::Loader v0.07049 @ 2020-02-27 12:07:40
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:PHAf/jGdUlO5VTEDVhXMGA
 
 use WGE::Util::FindPairs;
 

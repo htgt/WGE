@@ -15,6 +15,7 @@ my $biotype = 'protein_coding';
 #my @species = ( 'human', 'mouse' );
 my @species = ( );
 my $output_folder = ""; #default to cwd
+my $verbose = 0;
 
 GetOptions(
     'help'            => sub { pod2usage( 1 ) },
@@ -22,7 +23,13 @@ GetOptions(
     'biotype=s'       => \$biotype,
     'species=s@'      => \@species,
     'output-folder=s' => \$output_folder,
+    'verbose'         => \$verbose,
 ) or pod2usage( 2 );
+
+my %skip = map { $_ => 1 } qw/ENSG00000280987 ENSG00000286070 ENSG00000285258 ENSG00000258724 ENSG00000285441 ENSG00000286169 ENSG00000286169 ENSG00000284741 ENSG00000284024 ENSG00000285053 ENSG00000206549 ENSG00000285064 ENSG00000285292 ENSG00000168255/;
+my %alter = (
+    ENSG00000269226 => { marker_symbol => 'TMSB15Balt' },
+);
 
 for my $species ( @species ) {
     say "Getting genes for $species";
@@ -46,29 +53,44 @@ for my $species ( @species ) {
 
     my %exon_fields = (
         chr_start  => 'seq_region_start',
+        strand     => 'seq_region_strand',
         chr_end    => 'seq_region_end',
         chr_name   => 'seq_region_name',
+        phase      => 'phase',
+        end_phase  => 'end_phase',
     );
 
-    while ( my $gene = shift @{ $genes } ) {
-
+    my $done = 0;
+    my $increments = scalar(@{ $genes }) / 100;
+    foreach my $gene ( @{ $genes } ) {
+        my $id = $gene->stable_id;
+        next if exists $skip{$id};
         #add all the gene fields
-        $genes_yaml{ $gene->stable_id } =
+        $genes_yaml{$id} =
             get_fields(
                 $gene,
                 \%gene_fields,
                 canonical_transcript => $gene->canonical_transcript->stable_id
             );
+        if ( exists $alter{$id} ) {
+            while ( my ( $key, $value ) = each %{$alter{$id}} ) {
+                $genes_yaml{$id}->{$key} = $value;
+            }
+        }
 
         #populate the exons hash
         my $rank = 1;
         for my $exon ( @{ $gene->canonical_transcript->get_all_Exons} ) {
-            $genes_yaml{ $gene->stable_id }->{ exons }{ $exon->stable_id } =
+            $genes_yaml{ $id }->{ exons }{ $exon->stable_id } =
                 get_fields(
                     $exon,
                     \%exon_fields,
                     rank => $rank++
                 );
+        }
+        $done++;
+        if($verbose && $done % $increments == 0) {
+            printf {\*STDERR} "%d%%...\n", ($done / $increments) + 1;
         }
     }
 
@@ -79,7 +101,6 @@ for my $species ( @species ) {
 #to method names any additional parameters are added into the data hash.
 sub get_fields {
     my ( $object, $fields, %data ) = @_;
-
     while ( my ( $field_name, $method ) = each %{ $fields } ) {
         $data{ $field_name } = $object->$method;
     }
@@ -119,7 +140,4 @@ The yaml file name is <species>_genes_<ensembl_version>.yaml
 Alex Hodgkins
 
 =cut
-<<<<<<< HEAD
-=======
 
->>>>>>> devel

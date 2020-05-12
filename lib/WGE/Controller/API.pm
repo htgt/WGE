@@ -20,6 +20,7 @@ use WGE::Util::FindPairs;
 use WGE::Util::OffTargetServer;
 use WGE::Util::FindOffTargets;
 use WGE::Util::Haplotype;
+use WGE::Util::Mutability qw/calculate_phasing/;
 use WebAppCommon::Util::EnsEMBL;
 use JSON;
 use WGE::Util::TimeOut qw(timeout);
@@ -347,6 +348,19 @@ sub crispr_search :Local('crispr_search') {
         undef, #species which is optional
         $params->{ flank }
     );
+    foreach my $key ( keys %{ $crispr_data } ) {
+        if ( exists $params->{frame_position} ) {
+            my %allowed_positions = map { $_ => 1 } split q/,/, $params->{frame_position};
+            $crispr_data->{$key} = [ grep { exists $allowed_positions{$_->{frame_position}} }
+                @{ $crispr_data->{$key} } ];
+        }
+        if ( exists $params->{frame_value} ) {
+            my %allowed_values = map { $_ => 1 } split q/,/, $params->{frame_value};
+            $crispr_data->{$key} = [ grep { exists $allowed_values{$_->{frame_value}} }
+                @{ $crispr_data->{$key} } ];
+        }
+    }
+    $c->log->info(Dumper($crispr_data));
     $c->log->debug("crispr_search done");
 
     #default to json, but allow csv
@@ -1196,7 +1210,10 @@ sub _get_exon_attribute {
         #sometimes we get a hash, sometimes an object.
         #if its an object then call as hash
         my @vals = map { blessed $_ ? $_->as_hash : $_ } $exon->$attr( @args );
-        $_->{ensembl_exon_id} = $exon_id for @vals;
+        foreach my $crispr ( @vals ) {
+            $crispr->{ensembl_exon_id} = $exon_id;
+            $crispr->{phase} = calculate_phasing($exon, $crispr);
+        }
 
         _send_error($c, "None found!", 400) unless @vals;
 
