@@ -33,7 +33,7 @@ WITH ots AS (
     FROM crisprs AS c
     LEFT JOIN sequences s ON s.crispr_id=c.id
     LEFT JOIN off_targets o ON s.seq_id=o.seq_id
-    WHERE c.id=? AND c.species_id=?
+    WHERE c.id=ANY(?) AND c.species_id=?
 )
 SELECT
     ots.parent_id,

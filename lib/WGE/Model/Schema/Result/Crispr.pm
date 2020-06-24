@@ -184,7 +184,7 @@ use Bio::Perl qw( revcom_as_string );
 
 sub ot_summary {
     my $self = shift;
-    if(!$self->off_target_summary && $self->sequence->off_target) {
+    if(!$self->off_target_summary && $self->sequence && $self->sequence->off_target) {
         return $self->sequence->off_target->summary;
     }
     return $self->off_target_summary;
@@ -240,7 +240,7 @@ sub off_targets {
 
   return $self->result_source->schema->resultset('CrisprOffTargets')->search(
     {},
-    { bind => [ $self->id, $self->species_id, $self->species_id ] }
+    { bind => [ [$self->id], $self->species_id, $self->species_id ] }
   );
 }
 
