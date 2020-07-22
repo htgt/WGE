@@ -181,6 +181,7 @@ sub download_library_csv :Path('/download_library_csv') :Args(1){
         return;
     }
 
+    $c->res->header('Content-Disposition', qq[attachment; filename="job$job_id.tsv"]);
     $c->res->content_type('text/tab-separated-values');
     my $content = $self->file_api->get_file_content($job->results_file);
     $c->response->body($content);
